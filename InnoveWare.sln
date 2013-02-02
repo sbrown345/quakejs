@@ -27,9 +27,8 @@ Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "InnoveWareWeb", "InnoveWare
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScriptProject", "ScriptProject\ScriptProject.csproj", "{3339BC81-5FCA-4706-AD15-612152D1B968}"
 EndProject
-Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "web", "http://localhost:10234", "{06B86A6C-EA9F-4C89-9E49-B420279410A9}"
+Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "web", "web\", "{06B86A6C-EA9F-4C89-9E49-B420279410A9}"
 	ProjectSection(WebsiteProperties) = preProject
-		UseIISExpress = "true"
 		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.0"
 		Debug.AspNetCompiler.VirtualPath = "/localhost_10234"
 		Debug.AspNetCompiler.PhysicalPath = "web\"
@@ -45,7 +44,8 @@ Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "web", "http://localhost:102
 		Release.AspNetCompiler.ForceOverwrite = "true"
 		Release.AspNetCompiler.FixedNames = "false"
 		Release.AspNetCompiler.Debug = "False"
-		SlnRelativePath = "web\"
+		VWDPort = "27467"
+		VWDVirtualPath = "/"
 		DefaultWebSiteLanguage = "Visual C#"
 	EndProjectSection
 EndProject
