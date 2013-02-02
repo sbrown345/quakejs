@@ -1127,7 +1127,12 @@ namespace quake
         //=============================================================================
         /* GAME OPTIONS MENU */
 
-        class level_t
+#if SILVERLIGHT
+        struct 
+#else
+        class
+#endif
+            level_t
         {
 	        public string	name;
 	        public string	description;
@@ -1238,7 +1243,12 @@ namespace quake
 	        new level_t("ctf1",     "Division of Change")
         };
 
-        class episode_t
+#if SILVERLIGHT
+        struct 
+#else
+        class
+#endif
+            episode_t
         {
 	        public string	description;
 	        public int		firstLevel;

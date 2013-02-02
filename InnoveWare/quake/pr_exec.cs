@@ -24,7 +24,13 @@ namespace quake
 {
     public partial class prog
     {
-        public class prstack_t
+        public
+#if SILVERLIGHT
+        struct 
+#else
+        class
+#endif
+            prstack_t
         {
 	        public int			s;
 	        public dfunction_t  f;
