@@ -680,7 +680,7 @@ namespace quake
         //
         // allocate a new model
         //
-	        common.COM_FileBase (mod.name, ref loadname);
+            loadname = common.COM_FileBase(mod.name);
         	
 	        loadmodel = mod;
 
@@ -1694,13 +1694,15 @@ namespace quake
 
 	        for (i=0 ; i<numframes ; i++)
 	        {
-		        Mod_LoadAliasFrame (pin,
-							        ref paliasgroup.frames[i].frame,
+                object frame_temp = new object();
+                Mod_LoadAliasFrame(pin,
+                                    ref frame_temp,
 							        numv,
 							        paliasgroup.frames[i].bboxmin,
 							        paliasgroup.frames[i].bboxmax,
 							        pheader, name);
-	        }
+                paliasgroup.frames[i].frame = frame_temp;
+            }
         }
 
         /*
@@ -1708,7 +1710,7 @@ namespace quake
         Mod_LoadAliasSkin
         =================
         */
-        static void Mod_LoadAliasSkin(bspfile.ByteBuffer pin, ref object pskinindex, int skinsize, aliashdr_t pheader)
+        static object Mod_LoadAliasSkin(bspfile.ByteBuffer pin, object pskinindex, int skinsize, aliashdr_t pheader)
         {
 	        int		i;
 	        byte[]	pskin;
@@ -1729,6 +1731,7 @@ namespace quake
 	        }
 
 	        pin.ofs += skinsize;
+            return pskinindex;
         }
 
         /*
@@ -1736,7 +1739,7 @@ namespace quake
         Mod_LoadAliasSkinGroup
         =================
         */
-        static void Mod_LoadAliasSkinGroup(bspfile.ByteBuffer pin, ref object pskinindex, int skinsize, aliashdr_t pheader)
+        static object Mod_LoadAliasSkinGroup(bspfile.ByteBuffer pin, object pskinindex, int skinsize, aliashdr_t pheader)
         {
 	        daliasskingroup_t		pinskingroup;
 	        maliasskingroup_t		paliasskingroup;
@@ -1770,8 +1773,10 @@ namespace quake
 
 	        for (i=0 ; i<numskins ; i++)
 	        {
-		        Mod_LoadAliasSkin (pin, ref paliasskingroup.skindescs[i].skin, skinsize, pheader);
+                paliasskingroup.skindescs[i].skin = Mod_LoadAliasSkin(
+                    pin, paliasskingroup.skindescs[i].skin, skinsize, pheader);
 	        }
+            return pskinindex;
         }
 
         /*
@@ -1882,12 +1887,12 @@ namespace quake
                 if (skintype == aliasskintype_t.ALIAS_SKIN_SINGLE)
                 {
                     aux.ofs += sizeof_daliasskintype_t;
-                    Mod_LoadAliasSkin(aux, ref pskindesc[i].skin, skinsize, pheader);
+                    pskindesc[i].skin = Mod_LoadAliasSkin(aux, pskindesc[i].skin, skinsize, pheader);
                 }
                 else
                 {
                     aux.ofs += sizeof_daliasskintype_t;
-                    Mod_LoadAliasSkinGroup(aux, ref pskindesc[i].skin, skinsize, pheader);
+                    pskindesc[i].skin = Mod_LoadAliasSkinGroup(aux, pskindesc[i].skin, skinsize, pheader);
                 }
             }
 
@@ -1951,22 +1956,26 @@ namespace quake
                 if (frametype == aliasframetype_t.ALIAS_SINGLE)
                 {
                     aux.ofs += sizeof_daliasframetype_t;
+                    object frame_temp = new object();
                     Mod_LoadAliasFrame(aux,
-                                        ref pheader.frames[i].frame,
+                                        ref frame_temp,
                                         pmodel.numverts,
                                         pheader.frames[i].bboxmin,
                                         pheader.frames[i].bboxmax,
                                         pheader, pheader.frames[i].name);
+                    pheader.frames[i].frame = frame_temp;
                 }
                 else
                 {
                     aux.ofs += sizeof_daliasframetype_t;
+                    object frame_temp = new object();
                     Mod_LoadAliasGroup(aux,
-                                        ref pheader.frames[i].frame,
+                                        ref frame_temp,
                                         pmodel.numverts,
                                         pheader.frames[i].bboxmin,
                                         pheader.frames[i].bboxmax,
                                         pheader, pheader.frames[i].name);
+                    pheader.frames[i].frame = frame_temp;
                 }
             }
 
@@ -1989,7 +1998,7 @@ namespace quake
         Mod_LoadSpriteFrame
         =================
         */
-        static void Mod_LoadSpriteFrame(bspfile.ByteBuffer pin, ref object ppframe)
+        static void Mod_LoadSpriteFrame(bspfile.ByteBuffer pin, object ppframe)
         {
 	        dspriteframe_t		pinframe;
 	        mspriteframe_t		pspriteframe;
@@ -2039,7 +2048,7 @@ namespace quake
         Mod_LoadSpriteGroup
         =================
         */
-        static void Mod_LoadSpriteGroup(bspfile.ByteBuffer pin, ref object ppframe)
+        static void Mod_LoadSpriteGroup(bspfile.ByteBuffer pin, object ppframe)
         {
 	        dspritegroup_t		pingroup;
 	        mspritegroup_t		pspritegroup;
@@ -2073,7 +2082,7 @@ namespace quake
 
 	        for (i=0 ; i<numframes ; i++)
 	        {
-		        Mod_LoadSpriteFrame (pin, ref pspritegroup.frames[i]);
+		        Mod_LoadSpriteFrame (pin, pspritegroup.frames[i]);
 	        }
         }
 
@@ -2141,12 +2150,12 @@ namespace quake
                 if (frametype == spriteframetype_t.SPR_SINGLE)
 		        {
                     aux.ofs += sizeof_dspriteframetype_t;
-                    Mod_LoadSpriteFrame(aux, ref psprite.frames[i].frameptr);
+                    Mod_LoadSpriteFrame(aux, psprite.frames[i].frameptr);
 		        }
 		        else
 		        {
                     aux.ofs += sizeof_dspriteframetype_t;
-    		        Mod_LoadSpriteGroup(aux, ref psprite.frames[i].frameptr);
+    		        Mod_LoadSpriteGroup(aux, psprite.frames[i].frameptr);
 		        }
 	        }
 

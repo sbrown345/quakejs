@@ -66,14 +66,14 @@ namespace quake
 	        0x6e17,	0x7e36,	0x4e55,	0x5e74,	0x2e93,	0x3eb2,	0x0ed1,	0x1ef0
         };
 
-        public static void CRC_Init(ref ushort crcvalue)
+        public static ushort CRC_Init()
         {
-	        crcvalue = CRC_INIT_VALUE;
+            return CRC_INIT_VALUE;
         }
 
-        public static void CRC_ProcessByte(ref ushort crcvalue, byte data)
+        public static ushort CRC_ProcessByte(ushort crcvalue, byte data)
         {
-	        crcvalue = (ushort)((crcvalue << 8) ^ crctable[(crcvalue >> 8) ^ data]);
+            return (ushort)((crcvalue << 8) ^ crctable[(crcvalue >> 8) ^ data]);
         }
 
         ushort CRC_Value(ushort crcvalue)

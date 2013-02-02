@@ -94,9 +94,9 @@ namespace quake
         Can safely be performed in place.
         ==================
         */
-        static void W_CleanupName (ref string _str)
+        private static string W_CleanupName(string _str)
         {
-            _str = _str.ToLower();
+            return _str.ToLower();
         }
 
         /*
@@ -147,7 +147,7 @@ namespace quake
             for (i = 0; i < wad_numlumps; i++)
             {
                 lump_p = wad_lumps[i];
-                W_CleanupName(ref lump_p.name);
+                lump_p.name = W_CleanupName(lump_p.name);
             }
         }
 
@@ -163,7 +163,7 @@ namespace quake
 	        string	        clean;
 
             clean = name;
-	        W_CleanupName (ref clean);
+            clean = W_CleanupName(clean);
         	
 	        for (i=0 ; i<wad_numlumps ; i++)
 	        {

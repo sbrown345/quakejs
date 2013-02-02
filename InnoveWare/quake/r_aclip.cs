@@ -27,7 +27,7 @@ namespace quake
         static auxvert_t[]          av = new auxvert_t[8];
         static int                  av0, av1;
 
-        delegate void clip (draw.finalvert_t pfv0, draw.finalvert_t pfv1, ref draw.finalvert_t @out);
+        delegate void clip (draw.finalvert_t pfv0, draw.finalvert_t pfv1, draw.finalvert_t @out);
 
         /*
         ================
@@ -36,7 +36,7 @@ namespace quake
         pfv0 is the unclipped vertex, pfv1 is the z-clipped vertex
         ================
         */
-        static void R_Alias_clip_z (draw.finalvert_t pfv0, draw.finalvert_t pfv1, ref draw.finalvert_t @out)
+        static void R_Alias_clip_z (draw.finalvert_t pfv0, draw.finalvert_t pfv1,  draw.finalvert_t @out)
         {
 	        double		scale;
 	        auxvert_t	pav0, pav1, avout = new auxvert_t();
@@ -83,7 +83,7 @@ namespace quake
                 @out.flags |= ALIAS_BOTTOM_CLIP;
         }
 
-        static void R_Alias_clip_left (draw.finalvert_t pfv0, draw.finalvert_t pfv1, ref draw.finalvert_t @out)
+        static void R_Alias_clip_left (draw.finalvert_t pfv0, draw.finalvert_t pfv1, draw.finalvert_t @out)
         {
 	        double		scale;
 	        int			i;
@@ -104,7 +104,7 @@ namespace quake
 	        }
         }
         
-        static void R_Alias_clip_right (draw.finalvert_t pfv0, draw.finalvert_t pfv1, ref draw.finalvert_t @out)
+        static void R_Alias_clip_right (draw.finalvert_t pfv0, draw.finalvert_t pfv1, draw.finalvert_t @out)
         {
 	        double		scale;
 	        int			i;
@@ -125,7 +125,7 @@ namespace quake
 	        }
         }
         
-        static void R_Alias_clip_top (draw.finalvert_t pfv0, draw.finalvert_t pfv1, ref draw.finalvert_t @out)
+        static void R_Alias_clip_top (draw.finalvert_t pfv0, draw.finalvert_t pfv1, draw.finalvert_t @out)
         {
 	        double		scale;
 	        int			i;
@@ -146,7 +146,7 @@ namespace quake
 	        }
         }
 
-        static void R_Alias_clip_bottom (draw.finalvert_t pfv0, draw.finalvert_t pfv1, ref draw.finalvert_t @out)
+        static void R_Alias_clip_bottom (draw.finalvert_t pfv0, draw.finalvert_t pfv1, draw.finalvert_t @out)
         {
 	        double		scale;
 	        int			i;
@@ -187,7 +187,7 @@ namespace quake
 		        {
                     av0 = j;
                     av1 = i;
-                    delegate_clip (@in[j], @in[i], ref @out[k]);
+                    delegate_clip (@in[j], @in[i], @out[k]);
 			        @out[k].flags = 0;
 			        if (@out[k].v[0] < r_refdef.aliasvrect.x)
 				        @out[k].flags |= ALIAS_LEFT_CLIP;

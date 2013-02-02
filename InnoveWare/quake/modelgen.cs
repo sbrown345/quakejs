@@ -167,7 +167,9 @@ namespace quake
                 daliasframe_t daliasframe = new daliasframe_t();
                 daliasframe.bboxmin = (trivertx_t)buf; buf.ofs += sizeof_trivertx_t;
                 daliasframe.bboxmax = (trivertx_t)buf; buf.ofs += sizeof_trivertx_t;
-                daliasframe.name = common.parseString(buf.buffer, ref buf.ofs, 16);
+                var bufOfsTemp = buf.ofs;
+                daliasframe.name = common.parseString(buf.buffer, ref bufOfsTemp, 16);
+                buf.ofs = bufOfsTemp;
                 buf.ofs = ofs;
                 return daliasframe;
             }
@@ -183,7 +185,9 @@ namespace quake
             {
                 int ofs = buf.ofs;
                 daliasgroup_t daliasgroup = new daliasgroup_t();
-                daliasgroup.numframes = common.parseInt(buf.buffer, ref buf.ofs);
+                var bufOfsTemp = buf.ofs;
+                daliasgroup.numframes = common.parseInt(buf.buffer, ref bufOfsTemp);
+                buf.ofs = bufOfsTemp;
                 daliasgroup.bboxmin = (trivertx_t)buf; buf.ofs += sizeof_trivertx_t;
                 daliasgroup.bboxmax = (trivertx_t)buf; buf.ofs += sizeof_trivertx_t;
                 buf.ofs = ofs;

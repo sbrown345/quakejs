@@ -877,7 +877,7 @@ namespace quake
             int                 kk;
             helper.ByteBuffer   bbuf;
 
-	        crc.CRC_Init (ref pr_crc);
+            pr_crc = crc.CRC_Init();
 
 	        buf = common.COM_LoadHunkFile ("progs.dat");
             progs = (dprograms_t)buf;
@@ -886,7 +886,7 @@ namespace quake
 	        console.Con_DPrintf ("Programs occupy " + (common.com_filesize/1024) + "K.\n");
 
 	        for (i=0 ; i<common.com_filesize ; i++)
-		        crc.CRC_ProcessByte (ref pr_crc, buf[i]);
+                pr_crc = crc.CRC_ProcessByte(pr_crc, (byte)buf[i]);
 
             if (progs.version != PROG_VERSION)
                 sys_linux.Sys_Error("progs.dat has wrong version number (" + progs.version + " should be " + PROG_VERSION + ")");

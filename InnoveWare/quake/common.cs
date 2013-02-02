@@ -438,10 +438,11 @@ namespace quake
         COM_FileBase
         ============
         */
-        public static void COM_FileBase (string @in, ref string @out)
+        public static string COM_FileBase (string @in)
         {
 	        int s, s2;
-        	
+            string @out;
+
 	        s = @in.Length - 1;
         	
 	        while (s != 0 && @in[s] != '.')
@@ -457,6 +458,8 @@ namespace quake
 		        s--;
 		        @out = @in.Substring(s2+1, s-s2);
 	        }
+
+            return @out;
         }
 
         /*

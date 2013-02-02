@@ -1577,7 +1577,11 @@ namespace quake
 		        dm = (double)tm;
 		        dn = (double)tn;
 
-		        mathlib.FloorDivMod (dm, dn, ref ubasestep, ref erroradjustup);
+                int ubasestep_temp = ubasestep;
+                int erroradjustup_temp = erroradjustup;
+                mathlib.FloorDivMod(dm, dn, ref ubasestep_temp, ref erroradjustup_temp);
+                ubasestep = ubasestep_temp;
+                erroradjustup = erroradjustup_temp;
 
 		        erroradjustdown = (int)dn;
 	        }

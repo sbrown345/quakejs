@@ -102,8 +102,10 @@ namespace quake
 
                 // get the next message
                 int cursize;
-                Helper.helper.fread(out net.net_message.cursize, 4, 1, cls.demofile);
-		        mathlib.VectorCopy (cl.mviewangles[0], cl.mviewangles[1]);
+                int cursize_temp = net.net_message.cursize;
+                Helper.helper.fread(out cursize_temp, 4, 1, cls.demofile);
+                net.net_message.cursize = cursize_temp;
+                mathlib.VectorCopy(cl.mviewangles[0], cl.mviewangles[1]);
                 for (i = 0; i < 3; i++)
                 {
                     r = Helper.helper.fread(out f, 4, 1, cls.demofile);
@@ -112,7 +114,7 @@ namespace quake
 
                 if (net.net_message.cursize > quakedef.MAX_MSGLEN)
                     sys_linux.Sys_Error("Demo message > MAX_MSGLEN");
-                r = Helper.helper.fread(ref net.net_message.data, net.net_message.cursize, 1, cls.demofile);
+                r = Helper.helper.fread(net.net_message.data, net.net_message.cursize, 1, cls.demofile);
                 if (r != 1)
                 {
                     CL_StopPlayback();
@@ -198,8 +200,10 @@ namespace quake
 	        common.COM_DefaultExtension (ref name, ".dem");
 
 	        console.Con_Printf ("Playing demo from " + name + ".\n");
-            common.COM_FOpenFile(name, ref cls.demofile);
-	        if (cls.demofile == null)
+            Helper.helper.FILE demofile_temp = null;
+            common.COM_FOpenFile(name, ref demofile_temp);
+            cls.demofile = demofile_temp;
+            if (cls.demofile == null)
 	        {
 		        console.Con_Printf ("ERROR: couldn't open.\n");
 		        cls.demonum = -1;		// stop demo loop
