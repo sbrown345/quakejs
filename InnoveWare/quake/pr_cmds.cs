@@ -105,7 +105,7 @@ namespace quake
         */
         static void PF_makevectors ()
         {
-            mathlib.AngleVectors(G_VECTOR(OFS_PARM0), ref pr_global_struct[0].v_forward, ref pr_global_struct[0].v_right, ref pr_global_struct[0].v_up);
+            mathlib.AngleVectors(G_VECTOR(OFS_PARM0), pr_global_struct[0].v_forward, pr_global_struct[0].v_right, pr_global_struct[0].v_up);
         }
 
         /*
@@ -124,7 +124,7 @@ namespace quake
 
             e = G_EDICT(OFS_PARM0);
             org = G_VECTOR(OFS_PARM1);
-            mathlib.VectorCopy(org, ref e.v.origin);
+            mathlib.VectorCopy(org, e.v.origin);
             //SV_LinkEdict(e, false);
         }
 
@@ -149,8 +149,8 @@ namespace quake
 
 	        if (!rotate)
 	        {
-		        mathlib.VectorCopy (min, ref rmin);
-		        mathlib.VectorCopy (max, ref rmax);
+		        mathlib.VectorCopy (min, rmin);
+		        mathlib.VectorCopy (max, rmax);
 	        }
 	        else
 	        {
@@ -164,8 +164,8 @@ namespace quake
 		        yvector[0] = -Math.Sin(a);
 		        yvector[1] = Math.Cos(a);
         		
-		        mathlib.VectorCopy (min, ref bounds[0]);
-                mathlib.VectorCopy (max, ref bounds[1]);
+		        mathlib.VectorCopy (min, bounds[0]);
+                mathlib.VectorCopy (max, bounds[1]);
         		
 		        rmin[0] = rmin[1] = rmin[2] = 9999;
 		        rmax[0] = rmax[1] = rmax[2] = -9999;
@@ -198,9 +198,9 @@ namespace quake
 	        }
         	
         // set derived values
-	        mathlib.VectorCopy (rmin, ref e.v.mins);
-            mathlib.VectorCopy (rmax, ref e.v.maxs);
-            mathlib.VectorSubtract (max, min, ref e.v.size);
+	        mathlib.VectorCopy (rmin, e.v.mins);
+            mathlib.VectorCopy (rmax, e.v.maxs);
+            mathlib.VectorSubtract (max, min, e.v.size);
         	
 	        //SV_LinkEdict (e, false);
         }

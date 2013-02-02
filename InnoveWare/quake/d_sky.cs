@@ -48,7 +48,7 @@ namespace quake
             end[1] = 4096 * render.vpn[1] + wu * render.vright[1] + wv * render.vup[1];
             end[2] = 4096 * render.vpn[2] + wu * render.vright[2] + wv * render.vup[2];
 	        end[2] *= 3;
-	        mathlib.VectorNormalize (ref end);
+	        mathlib.VectorNormalize (end);
 
             temp = render.skytime * render.skyspeed;	// TODO: add D_SetupFrame & set this there
 	        s = (int)((temp + 6*(SKYSIZE/2-1)*end[0]) * 0x10000);

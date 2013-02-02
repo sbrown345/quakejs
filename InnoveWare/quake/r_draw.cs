@@ -87,8 +87,8 @@ namespace quake
 		        world = pv0.position;
         	
 	        // transform and project
-		        mathlib.VectorSubtract (world, modelorg, ref local);
-		        TransformVector (local, ref transformed);
+		        mathlib.VectorSubtract (world, modelorg, local);
+		        TransformVector (local, transformed);
         	
 		        if (transformed[2] < NEAR_CLIP)
 			        transformed[2] = NEAR_CLIP;
@@ -116,8 +116,8 @@ namespace quake
 	        world = pv1.position;
 
         // transform and project
-	        mathlib.VectorSubtract (world, modelorg, ref local);
-	        TransformVector (local, ref transformed);
+	        mathlib.VectorSubtract (world, modelorg, local);
+	        TransformVector (local, transformed);
 
 	        if (transformed[2] < NEAR_CLIP)
 		        transformed[2] = NEAR_CLIP;
@@ -540,7 +540,7 @@ namespace quake
 
             pplane = fa.plane;
             // FIXME: cache this?
-            TransformVector(pplane.normal, ref p_normal);
+            TransformVector(pplane.normal, p_normal);
             // FIXME: cache this?
             distinv = 1.0 / (pplane.dist - mathlib.DotProduct(modelorg, pplane.normal));
 
@@ -654,7 +654,7 @@ namespace quake
 
 	        pplane = psurf.plane;
         // FIXME: cache this?
-	        TransformVector (pplane.normal, ref p_normal);
+	        TransformVector (pplane.normal, p_normal);
         // FIXME: cache this?
 	        distinv = 1.0 / (pplane.dist - mathlib.DotProduct (modelorg, pplane.normal));
 

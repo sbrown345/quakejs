@@ -449,13 +449,13 @@ namespace quake
 			        continue;
 		        }
 
-		        mathlib.VectorCopy (ent.origin, ref oldorg);
+		        mathlib.VectorCopy (ent.origin, oldorg);
 
 		        if (ent.forcelink)
 		        {	// the entity was not updated in the last message
 			        // so move to the final spot
-			        mathlib.VectorCopy (ent.msg_origins[0], ref ent.origin);
-                    mathlib.VectorCopy (ent.msg_angles[0], ref ent.angles);
+			        mathlib.VectorCopy (ent.msg_origins[0], ent.origin);
+                    mathlib.VectorCopy (ent.msg_angles[0], ent.angles);
 		        }
 		        else
 		        {	// if the delta is large, assume a teleport and don't lerp
@@ -493,11 +493,11 @@ namespace quake
                     double[]        fv = new double[3], rv = new double[3], uv = new double[3];
 
 			        dl = CL_AllocDlight (i);
-			        mathlib.VectorCopy (ent.origin,  ref dl.origin);
+			        mathlib.VectorCopy (ent.origin,  dl.origin);
 			        dl.origin[2] += 16;
-                    mathlib.AngleVectors(ent.angles, ref fv, ref rv, ref uv);
+                    mathlib.AngleVectors(ent.angles, fv, rv, uv);
 
-                    mathlib.VectorMA(dl.origin, 18, fv, ref dl.origin);
+                    mathlib.VectorMA(dl.origin, 18, fv, dl.origin);
 			        dl.radius = 200 + (helper.rand()&31);
 			        dl.minlight = 32;
 			        dl.die = cl.time + 0.1;
@@ -505,7 +505,7 @@ namespace quake
 		        if ((ent.effects & server.EF_BRIGHTLIGHT) != 0)
 		        {			
 			        dl = CL_AllocDlight (i);
-                    mathlib.VectorCopy(ent.origin, ref dl.origin);
+                    mathlib.VectorCopy(ent.origin, dl.origin);
 			        dl.origin[2] += 16;
 			        dl.radius = 400 + (helper.rand()&31);
 			        dl.die = cl.time + 0.001;
@@ -513,7 +513,7 @@ namespace quake
                 if ((ent.effects & server.EF_DIMLIGHT) != 0)
 		        {			
 			        dl = CL_AllocDlight (i);
-                    mathlib.VectorCopy(ent.origin, ref dl.origin);
+                    mathlib.VectorCopy(ent.origin, dl.origin);
 			        dl.radius = 200 + (helper.rand()&31);
 			        dl.die = cl.time + 0.001;
 		        }
@@ -530,7 +530,7 @@ namespace quake
 		        {
 			        render.R_RocketTrail (oldorg, ent.origin, 0);
 			        dl = CL_AllocDlight (i);
-			        mathlib.VectorCopy (ent.origin, ref dl.origin);
+			        mathlib.VectorCopy (ent.origin, dl.origin);
 			        dl.radius = 200;
 			        dl.die = cl.time + 0.01;
 		        }

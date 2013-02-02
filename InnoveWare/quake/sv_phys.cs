@@ -237,7 +237,7 @@ namespace quake
 	        case MOVETYPE_NOCLIP:
 		        if (!SV_RunThink (ent))
 			        return;
-		        mathlib.VectorMA (ent.v.origin, host.host_frametime, ent.v.velocity, ref ent.v.origin);
+		        mathlib.VectorMA (ent.v.origin, host.host_frametime, ent.v.velocity, ent.v.origin);
 		        break;
         		
 	        default:
@@ -283,8 +283,8 @@ namespace quake
 	        if (!SV_RunThink (ent))
 		        return;
         	
-	        mathlib.VectorMA (ent.v.angles, host.host_frametime, ent.v.avelocity, ref ent.v.angles);
-            mathlib.VectorMA(ent.v.origin, host.host_frametime, ent.v.velocity, ref ent.v.origin);
+	        mathlib.VectorMA (ent.v.angles, host.host_frametime, ent.v.avelocity, ent.v.angles);
+            mathlib.VectorMA(ent.v.origin, host.host_frametime, ent.v.velocity, ent.v.origin);
 
 	        //SV_LinkEdict (ent, false);
         }
@@ -318,10 +318,10 @@ namespace quake
 		        SV_AddGravity (ent);
 
         // move angles
-	        mathlib.VectorMA (ent.v.angles, host.host_frametime, ent.v.avelocity, ref ent.v.angles);
+	        mathlib.VectorMA (ent.v.angles, host.host_frametime, ent.v.avelocity, ent.v.angles);
 
         // move origin
-	        mathlib.VectorScale (ent.v.velocity, host.host_frametime, ref move);
+	        mathlib.VectorScale (ent.v.velocity, host.host_frametime, move);
 	        /*trace = SV_PushEntity (ent, move);
 	        if (trace.fraction == 1)
 		        return;*/

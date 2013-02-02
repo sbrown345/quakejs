@@ -419,8 +419,8 @@ namespace quake
 		        ent.effects = ent.baseline.effects;
 
         // shift the known values for interpolation
-	        mathlib.VectorCopy (ent.msg_origins[0], ref ent.msg_origins[1]);
-            mathlib.VectorCopy (ent.msg_angles[0], ref ent.msg_angles[1]);
+	        mathlib.VectorCopy (ent.msg_origins[0], ent.msg_origins[1]);
+            mathlib.VectorCopy (ent.msg_angles[0], ent.msg_angles[1]);
 
             if ((bits & net.U_ORIGIN1) != 0)
 		        ent.msg_origins[0][0] = common.MSG_ReadCoord ();
@@ -454,10 +454,10 @@ namespace quake
 
 	        if ( forcelink )
 	        {	// didn't have an update last message
-		        mathlib.VectorCopy (ent.msg_origins[0], ref ent.msg_origins[1]);
-                mathlib.VectorCopy (ent.msg_origins[0], ref ent.origin);
-                mathlib.VectorCopy (ent.msg_angles[0], ref ent.msg_angles[1]);
-                mathlib.VectorCopy (ent.msg_angles[0], ref ent.angles);
+		        mathlib.VectorCopy (ent.msg_origins[0], ent.msg_origins[1]);
+                mathlib.VectorCopy (ent.msg_origins[0], ent.origin);
+                mathlib.VectorCopy (ent.msg_angles[0], ent.msg_angles[1]);
+                mathlib.VectorCopy (ent.msg_angles[0], ent.angles);
 		        ent.forcelink = true;
 	        }
         }
@@ -503,7 +503,7 @@ namespace quake
             else
                 cl.idealpitch = 0;
 
-	        mathlib.VectorCopy (cl.mvelocity[0], ref cl.mvelocity[1]);
+	        mathlib.VectorCopy (cl.mvelocity[0], cl.mvelocity[1]);
             for (i = 0; i < 3; i++)
             {
                 if ((bits & (net.SU_PUNCH1 << i)) != 0)
@@ -662,8 +662,8 @@ namespace quake
 	        ent.skinnum = ent.baseline.skin;
 	        ent.effects = ent.baseline.effects;
 
-	        mathlib.VectorCopy (ent.baseline.origin, ref ent.origin);
-            mathlib.VectorCopy(ent.baseline.angles, ref ent.angles);
+	        mathlib.VectorCopy (ent.baseline.origin, ent.origin);
+            mathlib.VectorCopy(ent.baseline.angles, ent.angles);
             render.R_AddEfrags(ent);
         }
 

@@ -43,9 +43,9 @@ namespace quake
             if (beamlength == 0.0)
                 return;
 
-            mathlib.VectorScale(r_spritedesc.vpn, -beamlength, ref vec);
-            mathlib.VectorAdd(r_entorigin, vec, ref r_entorigin);
-            mathlib.VectorSubtract(modelorg, vec, ref modelorg);
+            mathlib.VectorScale(r_spritedesc.vpn, -beamlength, vec);
+            mathlib.VectorAdd(r_entorigin, vec, r_entorigin);
+            mathlib.VectorSubtract(modelorg, vec, modelorg);
         }
 
         /*
@@ -154,10 +154,10 @@ namespace quake
 		        return;
 
         // build the sprite poster in worldspace
-	        mathlib.VectorScale (r_spritedesc.vright, r_spritedesc.pspriteframe.right, ref right);
-            mathlib.VectorScale (r_spritedesc.vup, r_spritedesc.pspriteframe.up, ref up);
-            mathlib.VectorScale (r_spritedesc.vright, r_spritedesc.pspriteframe.left, ref left);
-            mathlib.VectorScale (r_spritedesc.vup, r_spritedesc.pspriteframe.down, ref down);
+	        mathlib.VectorScale (r_spritedesc.vright, r_spritedesc.pspriteframe.right, right);
+            mathlib.VectorScale (r_spritedesc.vup, r_spritedesc.pspriteframe.up, up);
+            mathlib.VectorScale (r_spritedesc.vright, r_spritedesc.pspriteframe.left, left);
+            mathlib.VectorScale (r_spritedesc.vup, r_spritedesc.pspriteframe.down, down);
 
         	pverts = clip_verts[0];
 
@@ -204,8 +204,8 @@ namespace quake
 	        for (i=0 ; i<nump ; i++)
 	        {
                 pv = clip_verts[clip_current][i];
-		        mathlib.VectorSubtract (pv, r_origin, ref local);
-		        render.TransformVector (local, ref transformed);
+		        mathlib.VectorSubtract (pv, r_origin, local);
+		        render.TransformVector (local, transformed);
 
 		        if (transformed[2] < NEAR_CLIP)
 			        transformed[2] = NEAR_CLIP;
@@ -296,7 +296,7 @@ namespace quake
 		        tvec[0] = -modelorg[0];
 		        tvec[1] = -modelorg[1];
 		        tvec[2] = -modelorg[2];
-		        mathlib.VectorNormalize (ref tvec);
+		        mathlib.VectorNormalize (tvec);
 		        dot = tvec[2];	// same as DotProduct (tvec, r_spritedesc.vup) because
 						        //  r_spritedesc.vup is 0, 0, 1
 		        if ((dot > 0.999848) || (dot < -0.999848))	// cos(1 degree) = 0.999848
@@ -309,7 +309,7 @@ namespace quake
 		        r_spritedesc.vright[1] = -tvec[0];
 								        //              r_spritedesc.vright)
 		        r_spritedesc.vright[2] = 0;
-		        mathlib.VectorNormalize (ref r_spritedesc.vright);
+		        mathlib.VectorNormalize (r_spritedesc.vright);
 		        r_spritedesc.vpn[0] = -r_spritedesc.vright[1];
 		        r_spritedesc.vpn[1] = r_spritedesc.vright[0];
 		        r_spritedesc.vpn[2] = 0;
@@ -347,7 +347,7 @@ namespace quake
 										        // CrossProduct (r_spritedesc.vup, vpn,
 		        r_spritedesc.vright[1] = -vpn[0];	//  r_spritedesc.vright)
 		        r_spritedesc.vright[2] = 0;
-                mathlib.VectorNormalize(ref r_spritedesc.vright);
+                mathlib.VectorNormalize(r_spritedesc.vright);
 		        r_spritedesc.vpn[0] = -r_spritedesc.vright[1];
 		        r_spritedesc.vpn[1] = r_spritedesc.vright[0];
 		        r_spritedesc.vpn[2] = 0;
@@ -357,8 +357,8 @@ namespace quake
             else if (psprite.type == model.SPR_ORIENTED)
 	        {
 	        // generate the sprite's axes, according to the sprite's world orientation
-                mathlib.AngleVectors(currententity.angles, ref r_spritedesc.vpn,
-					          ref r_spritedesc.vright, ref r_spritedesc.vup);
+                mathlib.AngleVectors(currententity.angles, r_spritedesc.vpn,
+					          r_spritedesc.vright, r_spritedesc.vup);
 	        }
             else if (psprite.type == model.SPR_VP_PARALLEL_ORIENTED)
 	        {

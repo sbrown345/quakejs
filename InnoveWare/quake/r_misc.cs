@@ -251,7 +251,7 @@ namespace quake
 		        v2[1] = v[1]*vright[1] + v[2]*vup[1] + v[0]*vpn[1];
 		        v2[2] = v[1]*vright[2] + v[2]*vup[2] + v[0]*vpn[2];
 
-		        mathlib.VectorCopy (v2, ref view_clipplanes[i].normal);
+		        mathlib.VectorCopy (v2, view_clipplanes[i].normal);
 
                 view_clipplanes[i].dist = mathlib.DotProduct(modelorg, v2);
             }
@@ -262,7 +262,7 @@ namespace quake
         TransformVector
         ================
         */
-        public static void TransformVector (double[] @in, ref double[] @out)
+        public static void TransformVector (double[] @in, double[] @out)
         {
 	        @out[0] = mathlib.DotProduct(@in, vright);
             @out[1] = mathlib.DotProduct(@in, vup);
@@ -356,10 +356,10 @@ namespace quake
 	        numbtofpolys = 0;
 
         // build the transformation matrix for the given view angles
-            mathlib.VectorCopy(r_refdef.vieworg, ref modelorg);
-	        mathlib.VectorCopy (r_refdef.vieworg, ref r_origin);
+            mathlib.VectorCopy(r_refdef.vieworg, modelorg);
+	        mathlib.VectorCopy (r_refdef.vieworg, r_origin);
 
-	        mathlib.AngleVectors (r_refdef.viewangles, ref vpn, ref vright, ref vup);
+	        mathlib.AngleVectors (r_refdef.viewangles, vpn, vright, vup);
 
         // current viewleaf
 	        r_oldviewleaf = r_viewleaf;
@@ -427,10 +427,10 @@ namespace quake
 	        R_TransformFrustum ();
 
         // save base values
-	        mathlib.VectorCopy (vpn, ref base_vpn);
-            mathlib.VectorCopy(vright, ref base_vright);
-            mathlib.VectorCopy(vup, ref base_vup);
-            mathlib.VectorCopy(modelorg, ref base_modelorg);
+	        mathlib.VectorCopy (vpn, base_vpn);
+            mathlib.VectorCopy(vright, base_vright);
+            mathlib.VectorCopy(vup, base_vup);
+            mathlib.VectorCopy(modelorg, base_modelorg);
 
             R_SetSkyFrame ();
 

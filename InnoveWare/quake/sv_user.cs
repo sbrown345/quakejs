@@ -188,7 +188,7 @@ namespace quake
             int     i;
             double  addspeed, wishspd, accelspeed, currentspeed;
 
-            wishspd = mathlib.VectorNormalize(ref wishveloc);
+            wishspd = mathlib.VectorNormalize(wishveloc);
             if (wishspd > 30)
                 wishspd = 30;
             currentspeed = mathlib.DotProduct(velocity, wishveloc);
@@ -208,12 +208,12 @@ namespace quake
         {
 	        double	len;
         	
-	        len = mathlib.VectorNormalize (ref sv_player.v.punchangle);
+	        len = mathlib.VectorNormalize (sv_player.v.punchangle);
         	
 	        len -= 10*host.host_frametime;
 	        if (len < 0)
 		        len = 0;
-	        mathlib.VectorScale (sv_player.v.punchangle, len, ref sv_player.v.punchangle);
+	        mathlib.VectorScale (sv_player.v.punchangle, len, sv_player.v.punchangle);
         }
 
         /*
@@ -231,7 +231,7 @@ namespace quake
         //
         // user intentions
         //
-	        mathlib.AngleVectors (sv_player.v.v_angle, ref forward, ref right, ref up);
+	        mathlib.AngleVectors (sv_player.v.v_angle, forward, right, up);
 
 	        for (i=0 ; i<3 ; i++)
 		        wishvel[i] = forward[i]*cmd.forwardmove + right[i]*cmd.sidemove;
@@ -244,7 +244,7 @@ namespace quake
 	        wishspeed = mathlib.Length(wishvel);
 	        if (wishspeed > sv_maxspeed.value)
 	        {
-		        mathlib.VectorScale (wishvel, sv_maxspeed.value/wishspeed, ref wishvel);
+		        mathlib.VectorScale (wishvel, sv_maxspeed.value/wishspeed, wishvel);
 		        wishspeed = sv_maxspeed.value;
 	        }
 	        wishspeed *= 0.7;
@@ -258,7 +258,7 @@ namespace quake
 		        newspeed = speed - host.host_frametime * speed * sv_friction.value;
 		        if (newspeed < 0)
 			        newspeed = 0;	
-		        mathlib.VectorScale (velocity, newspeed/speed, ref velocity);
+		        mathlib.VectorScale (velocity, newspeed/speed, velocity);
 	        }
 	        else
 		        newspeed = 0;
@@ -273,7 +273,7 @@ namespace quake
 	        if (addspeed <= 0)
 		        return;
 
-	        mathlib.VectorNormalize (ref wishvel);
+	        mathlib.VectorNormalize (wishvel);
 	        accelspeed = sv_accelerate.value * wishspeed * host.host_frametime;
 	        if (accelspeed > addspeed)
 		        accelspeed = addspeed;
@@ -306,7 +306,7 @@ namespace quake
 	        double[]	wishvel = new double[3];
 	        double		fmove, smove;
 
-	        mathlib.AngleVectors (sv_player.v.angles, ref forward, ref right, ref up);
+	        mathlib.AngleVectors (sv_player.v.angles, forward, right, up);
 
 	        fmove = cmd.forwardmove;
 	        smove = cmd.sidemove;
@@ -323,17 +323,17 @@ namespace quake
 	        else
 		        wishvel[2] = 0;
 
-	        mathlib.VectorCopy (wishvel, ref wishdir);
-            wishspeed = mathlib.VectorNormalize(ref wishdir);
+	        mathlib.VectorCopy (wishvel, wishdir);
+            wishspeed = mathlib.VectorNormalize(wishdir);
 	        if (wishspeed > sv_maxspeed.value)
 	        {
-                mathlib.VectorScale(wishvel, sv_maxspeed.value / wishspeed, ref wishvel);
+                mathlib.VectorScale(wishvel, sv_maxspeed.value / wishspeed, wishvel);
 		        wishspeed = sv_maxspeed.value;
 	        }
         	
 	        if ( sv_player.v.movetype == MOVETYPE_NOCLIP)
 	        {	// noclip
-                mathlib.VectorCopy(wishvel, ref velocity);
+                mathlib.VectorCopy(wishvel, velocity);
 	        }
 	        else if ( onground )
 	        {
@@ -380,7 +380,7 @@ namespace quake
             cmd = host.host_client.cmd;
             angles = sv_player.v.angles;
 
-            mathlib.VectorAdd(sv_player.v.v_angle, sv_player.v.punchangle, ref v_angle);
+            mathlib.VectorAdd(sv_player.v.v_angle, sv_player.v.punchangle, v_angle);
             angles[quakedef.ROLL] = view.V_CalcRoll(sv_player.v.angles, sv_player.v.velocity) * 4;
             if (sv_player.v.fixangle == 0)
             {
@@ -426,7 +426,7 @@ namespace quake
 	        for (i=0 ; i<3 ; i++)
 		        angle[i] = common.MSG_ReadAngle ();
 
-	        mathlib.VectorCopy (angle, ref host.host_client.edict.v.v_angle);
+	        mathlib.VectorCopy (angle, host.host_client.edict.v.v_angle);
         		
         // read movement
             move.forwardmove = common.MSG_ReadShort();

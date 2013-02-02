@@ -83,7 +83,7 @@ namespace quake
             double  side;
 	        double	value;
         	
-	        mathlib.AngleVectors (angles, ref forward, ref right, ref up);
+	        mathlib.AngleVectors (angles, forward, right, up);
             side = mathlib.DotProduct(velocity, right);
 	        sign = side < 0 ? -1 : 1;
 	        side = Math.Abs(side);
@@ -344,10 +344,10 @@ namespace quake
         //
 	        ent = client.cl_entities[client.cl.viewentity];
         	
-	        mathlib.VectorSubtract (from, ent.origin, ref from);
-            mathlib.VectorNormalize(ref from);
+	        mathlib.VectorSubtract (from, ent.origin, from);
+            mathlib.VectorNormalize(from);
 
-            mathlib.AngleVectors(ent.angles, ref forward, ref right, ref up);
+            mathlib.AngleVectors(ent.angles, forward, right,  up);
 
             side = mathlib.DotProduct(from, right);
 	        v_dmg_roll = count*side*v_kickroll.value;
@@ -686,8 +686,8 @@ namespace quake
         // view is the weapon model (only visible from inside body)
             view = client.cl.viewent;
 
-	        mathlib.VectorCopy (ent.origin, ref render.r_refdef.vieworg);
-            mathlib.VectorCopy(ent.angles, ref render.r_refdef.viewangles);
+	        mathlib.VectorCopy (ent.origin, render.r_refdef.vieworg);
+            mathlib.VectorCopy(ent.angles, render.r_refdef.viewangles);
 	        view.model = null;
 
         // allways idle in intermission
@@ -730,7 +730,7 @@ namespace quake
         	bob = V_CalcBob ();
 
         // refresh position
-            mathlib.VectorCopy(ent.origin, ref render.r_refdef.vieworg);
+            mathlib.VectorCopy(ent.origin, render.r_refdef.vieworg);
 	        render.r_refdef.vieworg[2] += client.cl.viewheight + bob;
 
         // never let it sit exactly on a node line, because a water plane can
@@ -740,7 +740,7 @@ namespace quake
             render.r_refdef.vieworg[1] += 1.0 / 32;
             render.r_refdef.vieworg[2] += 1.0 / 32;
 
-            mathlib.VectorCopy(client.cl.viewangles, ref render.r_refdef.viewangles);
+            mathlib.VectorCopy(client.cl.viewangles, render.r_refdef.viewangles);
             V_CalcViewRoll();
             V_AddIdle();
 
@@ -750,7 +750,7 @@ namespace quake
 	        angles[quakedef.YAW] = ent.angles[quakedef.YAW];
 	        angles[quakedef.ROLL] = ent.angles[quakedef.ROLL];
 
-            mathlib.AngleVectors(angles, ref forward, ref right, ref up);
+            mathlib.AngleVectors(angles, forward, right, up);
 
 	        for (i=0 ; i<3 ; i++)
 		        render.r_refdef.vieworg[i] += scr_ofsx.value*forward[i]
@@ -760,11 +760,11 @@ namespace quake
 	        V_BoundOffsets ();
 
         // set up gun position
-            mathlib.VectorCopy(client.cl.viewangles, ref view.angles);
+            mathlib.VectorCopy(client.cl.viewangles, view.angles);
 
 	        CalcGunAngle ();
 
-            mathlib.VectorCopy(ent.origin, ref view.origin);
+            mathlib.VectorCopy(ent.origin, view.origin);
             view.origin[2] += client.cl.viewheight;
 
 	        for (i=0 ; i<3 ; i++)
@@ -792,7 +792,7 @@ namespace quake
 	        view.colormap = screen.vid.colormap;
 
         // set up the refresh position
-            mathlib.VectorAdd(render.r_refdef.viewangles, client.cl.punchangle, ref render.r_refdef.viewangles);
+            mathlib.VectorAdd(render.r_refdef.viewangles, client.cl.punchangle, render.r_refdef.viewangles);
 
             // smooth out stair step ups
             if (client.cl.onground && ent.origin[2] - oldz > 0)

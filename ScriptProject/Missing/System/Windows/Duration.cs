@@ -4,7 +4,7 @@ using System.Text;
 
 namespace System.Windows
 {
-    public struct Duration
+    public class Duration
     {
         private TimeSpan _timeSpan;
 

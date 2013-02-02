@@ -397,9 +397,9 @@ namespace quake
 				        p.org[1] = org[1] + dir[1];
                         p.org[2] = org[2] + (helper.rand() & 63);
         	
-				        mathlib.VectorNormalize (ref dir);
+				        mathlib.VectorNormalize (dir);
                         vel = 50 + (helper.rand() & 63);
-				        mathlib.VectorScale (dir, vel, ref p.vel);
+				        mathlib.VectorScale (dir, vel, p.vel);
 			        }
         }
 
@@ -439,9 +439,9 @@ namespace quake
                         p.org[1] = org[1] + j + (helper.rand() & 3);
                         p.org[2] = org[2] + k + (helper.rand() & 3);
         	
-				        mathlib.VectorNormalize (ref dir);
+				        mathlib.VectorNormalize (dir);
                         vel = 50 + (helper.rand() & 63);
-				        mathlib.VectorScale (dir, vel, ref p.vel);
+				        mathlib.VectorScale (dir, vel, p.vel);
 			        }
         }
 
@@ -454,8 +454,8 @@ namespace quake
 	        draw.particle_t	p;
 	        int			    dec;
 
-	        mathlib.VectorSubtract (end, start, ref vec);
-            len = mathlib.VectorNormalize(ref vec);
+	        mathlib.VectorSubtract (end, start, vec);
+            len = mathlib.VectorNormalize(vec);
 	        if (type < 128)
 		        dec = 3;
 	        else
@@ -475,7 +475,7 @@ namespace quake
 		        p.next = active_particles;
 		        active_particles = p;
         		
-		        mathlib.VectorCopy (mathlib.vec3_origin, ref p.vel);
+		        mathlib.VectorCopy (mathlib.vec3_origin, p.vel);
 		        p.die = client.cl.time + 2;
 
 		        switch (type)
@@ -514,7 +514,7 @@ namespace quake
         			
 				        tracercount++;
 
-				        mathlib.VectorCopy (start, ref p.org);
+				        mathlib.VectorCopy (start, p.org);
 				        if ((tracercount & 1) != 0)
 				        {
 					        p.vel[0] = 30*vec[1];
@@ -545,7 +545,7 @@ namespace quake
 		        }
         		
 
-		        mathlib.VectorAdd (start, vec, ref start);
+		        mathlib.VectorAdd (start, vec, start);
 	        }
         }
         	
@@ -564,9 +564,9 @@ namespace quake
 	        double			dvel;
 	        double			frametime;
         	
-	        mathlib.VectorScale (vright, xscaleshrink, ref r_pright);
-	        mathlib.VectorScale (vup, yscaleshrink, ref r_pup);
-            mathlib.VectorCopy(vpn, ref r_ppn);
+	        mathlib.VectorScale (vright, xscaleshrink, r_pright);
+	        mathlib.VectorScale (vup, yscaleshrink, r_pup);
+            mathlib.VectorCopy(vpn, r_ppn);
 	        frametime = client.cl.time - client.cl.oldtime;
 	        time3 = frametime * 15;
 	        time2 = frametime * 10; // 15;

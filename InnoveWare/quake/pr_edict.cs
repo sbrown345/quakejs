@@ -126,8 +126,8 @@ namespace quake
 	        ed.v.colormap = 0;
 	        ed.v.skin = 0;
 	        ed.v.frame = 0;
-	        mathlib.VectorCopy (mathlib.vec3_origin, ref ed.v.origin);
-            mathlib.VectorCopy (mathlib.vec3_origin, ref ed.v.angles);
+	        mathlib.VectorCopy (mathlib.vec3_origin, ed.v.origin);
+            mathlib.VectorCopy (mathlib.vec3_origin, ed.v.angles);
 	        ed.v.nextthink = -1;
 	        ed.v.solid = 0;
         	

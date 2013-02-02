@@ -103,7 +103,7 @@ namespace quake
                 // get the next message
                 int cursize;
                 Helper.helper.fread(out net.net_message.cursize, 4, 1, cls.demofile);
-		        mathlib.VectorCopy (cl.mviewangles[0], ref cl.mviewangles[1]);
+		        mathlib.VectorCopy (cl.mviewangles[0], cl.mviewangles[1]);
                 for (i = 0; i < 3; i++)
                 {
                     r = Helper.helper.fread(out f, 4, 1, cls.demofile);

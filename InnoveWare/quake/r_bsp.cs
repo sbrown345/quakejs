@@ -63,11 +63,11 @@ namespace quake
         R_EntityRotate
         ================
         */
-        static void R_EntityRotate (ref double[] vec)
+        static void R_EntityRotate (double[] vec)
         {
 	        double[]	tvec = new double[3];
 
-	        mathlib.VectorCopy (vec, ref tvec);
+	        mathlib.VectorCopy (vec, tvec);
 	        vec[0] = mathlib.DotProduct (entity_rotation[0], tvec);
 	        vec[1] = mathlib.DotProduct (entity_rotation[1], tvec);
 	        vec[2] = mathlib.DotProduct (entity_rotation[2], tvec);
@@ -122,7 +122,7 @@ namespace quake
 	        temp2[2][1] = 0;
 	        temp2[2][2] = c;
 
-	        mathlib.R_ConcatRotations (temp2, temp1, ref temp3);
+	        mathlib.R_ConcatRotations (temp2, temp1, temp3);
 
         // roll
 	        angle = currententity.angles[quakedef.ROLL];		
@@ -140,15 +140,15 @@ namespace quake
 	        temp1[2][1] = -s;
 	        temp1[2][2] = c;
 
-	        mathlib.R_ConcatRotations (temp1, temp3, ref entity_rotation);
+	        mathlib.R_ConcatRotations (temp1, temp3, entity_rotation);
 
         //
         // rotate modelorg and the transformation matrix
         //
-	        R_EntityRotate (ref modelorg);
-	        R_EntityRotate (ref vpn);
-	        R_EntityRotate (ref vright);
-	        R_EntityRotate (ref vup);
+	        R_EntityRotate (modelorg);
+	        R_EntityRotate (vpn);
+	        R_EntityRotate (vright);
+	        R_EntityRotate (vup);
 
 	        R_TransformFrustum ();
         }
@@ -530,7 +530,7 @@ namespace quake
 	        // deal with model fragments in this leaf
 		        if (pleaf.efrags != null)
 		        {
-			        R_StoreEfrags (ref pleaf.efrags);
+			        R_StoreEfrags (pleaf.efrags);
 		        }
 
 		        pleaf.key = r_currentkey;
@@ -671,7 +671,7 @@ namespace quake
             }
 
 	        currententity = client.cl_entities[0];
-	        mathlib.VectorCopy (r_origin, ref modelorg);
+	        mathlib.VectorCopy (r_origin, modelorg);
 	        clmodel = currententity.model;
 	        r_pcurrentvertbase = clmodel.vertexes;
 

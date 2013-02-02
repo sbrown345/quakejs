@@ -349,10 +349,10 @@ namespace quake
             double[]    p_normal = new double[3], p_saxis = new double[3], p_taxis = new double[3], p_temp1 = new double[3];
 	        double		distinv;
 
-	        render.TransformVector (render.r_spritedesc.vpn, ref p_normal);
-            render.TransformVector (render.r_spritedesc.vright, ref p_saxis);
-            render.TransformVector (render.r_spritedesc.vup, ref p_taxis);
-            mathlib.VectorInverse (ref p_taxis);
+	        render.TransformVector (render.r_spritedesc.vpn, p_normal);
+            render.TransformVector (render.r_spritedesc.vright, p_saxis);
+            render.TransformVector (render.r_spritedesc.vup, p_taxis);
+            mathlib.VectorInverse (p_taxis);
 
             distinv = 1.0 / (-mathlib.DotProduct(render.modelorg, render.r_spritedesc.vpn));
 
@@ -372,7 +372,7 @@ namespace quake
             d_ziorigin = p_normal[2] * distinv - render.xcenter * d_zistepu -
                     render.ycenter * d_zistepv;
 
-	        render.TransformVector (render.modelorg, ref p_temp1);
+	        render.TransformVector (render.modelorg, p_temp1);
 
             sadjust = ((int)(mathlib.DotProduct(p_temp1, p_saxis) * 0x10000 + 0.5)) -
 			        (-(cachewidth >> 1) << 16);

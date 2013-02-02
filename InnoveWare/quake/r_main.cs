@@ -437,7 +437,7 @@ namespace quake
             screenedge[3].type = bspfile.PLANE_ANYZ;
 
             for (i = 0; i < 4; i++)
-                mathlib.VectorNormalize(ref screenedge[i].normal);
+                mathlib.VectorNormalize(screenedge[i].normal);
 
             res_scale = Math.Sqrt((double)(r_refdef.vrect.width * r_refdef.vrect.height) /
                               (320.0 * 152.0)) *
@@ -516,16 +516,16 @@ namespace quake
 		        switch (currententity.model.type)
 		        {
 		        case model.modtype_t.mod_sprite:
-			        mathlib.VectorCopy (currententity.origin, ref r_entorigin);
-                    mathlib.VectorSubtract(r_origin, r_entorigin, ref modelorg);
+			        mathlib.VectorCopy (currententity.origin, r_entorigin);
+                    mathlib.VectorSubtract(r_origin, r_entorigin, modelorg);
 			        R_DrawSprite ();
 			        break;
 
                 case model.modtype_t.mod_alias:
                     /*if (currententity.model.name.CompareTo("progs/flame2.mdl") != 0)
                         continue;*/
-                    mathlib.VectorCopy(currententity.origin, ref r_entorigin);
-                    mathlib.VectorSubtract(r_origin, r_entorigin, ref modelorg);
+                    mathlib.VectorCopy(currententity.origin, r_entorigin);
+                    mathlib.VectorSubtract(r_origin, r_entorigin, modelorg);
 
                 // see if the bounding box lets us trivially reject, also sets
                 // trivial accept status
@@ -544,7 +544,7 @@ namespace quake
 					        {
 						        mathlib.VectorSubtract (currententity.origin,
                                                 client.cl_dlights[lnum].origin,
-										        ref dist);
+										        dist);
                                 add = client.cl_dlights[lnum].radius - mathlib.Length(dist);
         	
 						        if (add > 0)
@@ -596,11 +596,11 @@ namespace quake
 	        if (currententity.model == null)
 		        return;
 
-            mathlib.VectorCopy(currententity.origin, ref r_entorigin);
-            mathlib.VectorSubtract(r_origin, r_entorigin, ref modelorg);
+            mathlib.VectorCopy(currententity.origin, r_entorigin);
+            mathlib.VectorSubtract(r_origin, r_entorigin, modelorg);
 
-	        mathlib.VectorCopy (vup, ref viewlightvec);
-            mathlib.VectorInverse(ref viewlightvec);
+	        mathlib.VectorCopy (vup, viewlightvec);
+            mathlib.VectorInverse(viewlightvec);
 
 	        j = R_LightPoint (currententity.origin);
 
@@ -618,7 +618,7 @@ namespace quake
 		        if (dl.die < client.cl.time)
 			        continue;
 
-		        mathlib.VectorSubtract (currententity.origin, dl.origin, ref dist);
+		        mathlib.VectorSubtract (currententity.origin, dl.origin, dist);
 		        add = dl.radius - mathlib.Length(dist);
 		        if (add > 0)
 			        r_viewlighting.ambientlight += (int)add;
@@ -713,7 +713,7 @@ namespace quake
 	        if (r_drawentities.value == 0)
 		        return;
 
-	        mathlib.VectorCopy (modelorg, ref oldorigin);
+	        mathlib.VectorCopy (modelorg, oldorigin);
 	        insubmodel = true;
 	        r_dlightframecount = r_framecount;
 
@@ -741,10 +741,10 @@ namespace quake
 
 			        if (clipflags != BMODEL_FULLY_CLIPPED)
 			        {
-				        mathlib.VectorCopy (currententity.origin, ref r_entorigin);
-                        mathlib.VectorSubtract(r_origin, r_entorigin, ref modelorg);
+				        mathlib.VectorCopy (currententity.origin, r_entorigin);
+                        mathlib.VectorSubtract(r_origin, r_entorigin, modelorg);
 			        // FIXME: is this needed?
-                        mathlib.VectorCopy(modelorg, ref r_worldmodelorg);
+                        mathlib.VectorCopy(modelorg, r_worldmodelorg);
         		
 				        r_pcurrentvertbase = clmodel.vertexes;
         		
@@ -811,11 +811,11 @@ namespace quake
 
 			        // put back world rotation and frustum clipping		
 			        // FIXME: R_RotateBmodel should just work off base_vxx
-                        mathlib.VectorCopy(base_vpn, ref vpn);
-                        mathlib.VectorCopy(base_vup, ref vup);
-                        mathlib.VectorCopy(base_vright, ref vright);
-                        mathlib.VectorCopy(base_modelorg, ref modelorg);
-				        mathlib.VectorCopy (oldorigin, ref modelorg);
+                        mathlib.VectorCopy(base_vpn, vpn);
+                        mathlib.VectorCopy(base_vup, vup);
+                        mathlib.VectorCopy(base_vright, vright);
+                        mathlib.VectorCopy(base_modelorg, modelorg);
+				        mathlib.VectorCopy (oldorigin, modelorg);
 				        R_TransformFrustum ();
 			        }
 			        break;

@@ -1571,8 +1571,8 @@ namespace quake
 		        mod.firstmodelsurface = bm.firstface;
 		        mod.nummodelsurfaces = bm.numfaces;
         		
-		        mathlib.VectorCopy (bm.maxs, ref mod.maxs);
-		        mathlib.VectorCopy (bm.mins, ref mod.mins);
+		        mathlib.VectorCopy (bm.maxs, mod.maxs);
+		        mathlib.VectorCopy (bm.mins, mod.mins);
 		        mod.radius = RadiusFromBounds (mod.mins, mod.maxs);
         		
 		        mod.numleafs = bm.visleafs;

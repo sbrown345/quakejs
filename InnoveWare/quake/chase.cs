@@ -48,7 +48,7 @@ namespace quake
         //	start position 12 units behind head
         }
 
-        static void TraceLine (double[] start, double[] end, ref double[] impact)
+        static void TraceLine (double[] start, double[] end, double[] impact)
         {
 	        //trace_t	trace;
 
@@ -66,7 +66,7 @@ namespace quake
             double[]    dest = new double[3], stop = new double[3];
             
 	        // if can't see player, reset
-	        mathlib.AngleVectors (client.cl.viewangles, ref forward, ref right, ref up);
+	        mathlib.AngleVectors (client.cl.viewangles, forward, right, up);
 
 	        // calc exact destination
 	        for (i=0 ; i<3 ; i++)
@@ -76,7 +76,7 @@ namespace quake
 	        chase_dest[2] = render.r_refdef.vieworg[2] + chase_up.value;
 
 	        // find the spot the player is looking at
-	        mathlib.VectorMA (render.r_refdef.vieworg, 4096, forward, ref dest);
+	        mathlib.VectorMA (render.r_refdef.vieworg, 4096, forward, dest);
 	        //TraceLine (r_refdef.vieworg, dest, stop);
 
 	        // calculate pitch to look at the same spot from camera
@@ -87,7 +87,7 @@ namespace quake
 	        //r_refdef.viewangles[PITCH] = -atan(stop[2] / dist) / M_PI * 180;
 
 	        // move towards destination
-	        mathlib.VectorCopy (chase_dest, ref render.r_refdef.vieworg);
+	        mathlib.VectorCopy (chase_dest, render.r_refdef.vieworg);
         }
     }
 }

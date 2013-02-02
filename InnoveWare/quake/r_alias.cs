@@ -321,7 +321,7 @@ namespace quake
 	        minz = 9999;
 	        for (i=0; i<8 ; i++)
 	        {
-		        R_AliasTransformVector  (basepts[i], ref viewaux[i].fv);
+		        R_AliasTransformVector  (basepts[i], viewaux[i].fv);
 
 		        if (viewaux[i].fv[2] < ALIAS_Z_CLIP_PLANE)
 		        {
@@ -426,7 +426,7 @@ namespace quake
         R_AliasTransformVector
         ================
         */
-        static void R_AliasTransformVector (double[] @in, ref double[] @out)
+        static void R_AliasTransformVector (double[] @in, double[] @out)
         {
 	        @out[0] = mathlib.DotProduct(@in, aliastransform[0]) + aliastransform[0][3];
 	        @out[1] = mathlib.DotProduct(@in, aliastransform[1]) + aliastransform[1][3];
@@ -526,7 +526,7 @@ namespace quake
             angles[quakedef.ROLL] = currententity.angles[quakedef.ROLL];
             angles[quakedef.PITCH] = -currententity.angles[quakedef.PITCH];
             angles[quakedef.YAW] = currententity.angles[quakedef.YAW];
-	        mathlib.AngleVectors (angles, ref alias_forward, ref alias_right, ref alias_up);
+	        mathlib.AngleVectors (angles, alias_forward, alias_right, alias_up);
 
 	        tmatrix[0][0] = pmdl.scale[0];
 	        tmatrix[1][1] = pmdl.scale[1];
@@ -550,13 +550,13 @@ namespace quake
 	        t2matrix[2][3] = -modelorg[2];
 
         // FIXME: can do more efficiently than full concatenation
-	        mathlib.R_ConcatTransforms (t2matrix, tmatrix, ref rotationmatrix);
+	        mathlib.R_ConcatTransforms (t2matrix, tmatrix, rotationmatrix);
 
         // TODO: should be global, set when vright, etc., set
-	        mathlib.VectorCopy (vright, ref viewmatrix[0]);
-            mathlib.VectorCopy(vup, ref viewmatrix[1]);
-            mathlib.VectorInverse(ref viewmatrix[1]);
-            mathlib.VectorCopy(vpn, ref viewmatrix[2]);
+	        mathlib.VectorCopy (vright, viewmatrix[0]);
+            mathlib.VectorCopy(vup, viewmatrix[1]);
+            mathlib.VectorInverse(viewmatrix[1]);
+            mathlib.VectorCopy(vpn, viewmatrix[2]);
 
             /*sys_linux.Sys_Printf("-----------------");
             for (kk = 0; kk < 3; kk++)
@@ -570,7 +570,7 @@ namespace quake
         //	viewmatrix[1][3] = 0;
         //	viewmatrix[2][3] = 0;
 
-	        mathlib.R_ConcatTransforms (viewmatrix, rotationmatrix, ref aliastransform);
+	        mathlib.R_ConcatTransforms (viewmatrix, rotationmatrix, aliastransform);
 
             /*sys_linux.Sys_Printf("trivial_accept = " + trivial_accept);
             for (kk = 0; kk < 4; kk++)

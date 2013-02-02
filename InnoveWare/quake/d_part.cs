@@ -37,7 +37,7 @@ namespace quake
 	        int		    i, izi, pix, count, u, v;
 
         // transform point
-	        mathlib.VectorSubtract (pparticle.org, render.r_origin, ref local);
+	        mathlib.VectorSubtract (pparticle.org, render.r_origin, local);
 
 	        transformed[0] = mathlib.DotProduct(local, render.r_pright);
             transformed[1] = mathlib.DotProduct(local, render.r_pup);

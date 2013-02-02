@@ -38,17 +38,17 @@ namespace quake
             return x[0] * y[0] + x[1] * y[1] + x[2] * y[2];
         }
 
-        public static void VectorSubtract(double[] a, double[] b, ref double[] c)
+        public static void VectorSubtract(double[] a, double[] b, double[] c)
         {
             c[0]=a[0]-b[0];c[1]=a[1]-b[1];c[2]=a[2]-b[2];
         }
         
-        public static void VectorAdd(double[] a, double[] b, ref double[] c)
+        public static void VectorAdd(double[] a, double[] b, double[] c)
         {
             c[0]=a[0]+b[0];c[1]=a[1]+b[1];c[2]=a[2]+b[2];
         }
 
-        public static void VectorCopy(double[] a, ref double[] b)
+        public static void VectorCopy(double[] a, double[] b)
         {
             b[0]=a[0];b[1]=a[1];b[2]=a[2];
         }
@@ -171,7 +171,7 @@ namespace quake
 	        return sides;
         }
 
-        public static void AngleVectors(double[] angles, ref double[] forward, ref double[] right, ref double[] up)
+        public static void AngleVectors(double[] angles, double[] forward, double[] right, double[] up)
         {
             double angle;
             double sr, sp, sy, cr, cp, cy;
@@ -208,14 +208,14 @@ namespace quake
 	        return 1;
         }
 
-        public static void VectorMA (double[] veca, double scale, double[] vecb, ref double[] vecc)
+        public static void VectorMA (double[] veca, double scale, double[] vecb, double[] vecc)
         {
 	        vecc[0] = veca[0] + scale*vecb[0];
 	        vecc[1] = veca[1] + scale*vecb[1];
 	        vecc[2] = veca[2] + scale*vecb[2];
         }
 
-        void CrossProduct (double[] v1, double[] v2, ref double[] cross)
+        void CrossProduct (double[] v1, double[] v2, double[] cross)
         {
 	        cross[0] = v1[1]*v2[2] - v1[2]*v2[1];
 	        cross[1] = v1[2]*v2[0] - v1[0]*v2[2];
@@ -235,7 +235,7 @@ namespace quake
 	        return length;
         }
 
-        public static double VectorNormalize(ref double[] v)
+        public static double VectorNormalize(double[] v)
         {
 	        double	length, ilength;
 
@@ -254,14 +254,14 @@ namespace quake
 
         }
 
-        public static void VectorInverse (ref double[] v)
+        public static void VectorInverse (double[] v)
         {
 	        v[0] = -v[0];
 	        v[1] = -v[1];
 	        v[2] = -v[2];
         }
 
-        public static void VectorScale (double[] @in, double scale, ref double[] @out)
+        public static void VectorScale (double[] @in, double scale, double[] @out)
         {
 	        @out[0] = @in[0]*scale;
 	        @out[1] = @in[1]*scale;
@@ -273,7 +273,7 @@ namespace quake
         R_ConcatRotations
         ================
         */
-        public static void R_ConcatRotations (double[][] in1, double[][] in2, ref double[][] @out)
+        public static void R_ConcatRotations (double[][] in1, double[][] in2, double[][] @out)
         {
 	        @out[0][0] = in1[0][0] * in2[0][0] + in1[0][1] * in2[1][0] +
 				        in1[0][2] * in2[2][0];
@@ -300,7 +300,7 @@ namespace quake
         R_ConcatTransforms
         ================
         */
-        public static void R_ConcatTransforms (double[][] in1, double[][] in2, ref double[][] @out)
+        public static void R_ConcatTransforms (double[][] in1, double[][] in2, double[][] @out)
         {
 	        @out[0][0] = in1[0][0] * in2[0][0] + in1[0][1] * in2[1][0] +
 				        in1[0][2] * in2[2][0];

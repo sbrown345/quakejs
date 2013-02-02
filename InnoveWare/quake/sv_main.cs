@@ -731,8 +731,8 @@ namespace quake
 	        //
 	        // create entity baseline
 	        //
-		        mathlib.VectorCopy (svent.v.origin, ref svent.baseline.origin);
-                mathlib.VectorCopy (svent.v.angles, ref svent.baseline.angles);
+		        mathlib.VectorCopy (svent.v.origin, svent.baseline.origin);
+                mathlib.VectorCopy (svent.v.angles, svent.baseline.angles);
 		        svent.baseline.frame = (int)svent.v.frame;
                 svent.baseline.skin = (int)svent.v.skin;
 		        if (entnum > 0 && entnum <= svs.maxclients)

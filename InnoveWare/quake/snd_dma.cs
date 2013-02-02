@@ -351,9 +351,9 @@ namespace quake
         // calculate stereo seperation and distance attenuation
 
 	        snd = ch.sfx;
-	        mathlib.VectorSubtract(ch.origin, listener_origin, ref source_vec);
+	        mathlib.VectorSubtract(ch.origin, listener_origin, source_vec);
 
-            dist = mathlib.VectorNormalize(ref source_vec) * ch.dist_mult;
+            dist = mathlib.VectorNormalize(source_vec) * ch.dist_mult;
 
             dot = mathlib.DotProduct(listener_right, source_vec);
 
@@ -404,7 +404,7 @@ namespace quake
 		        return;
         		
         // spatialize
-	        mathlib.VectorCopy(origin, ref target_chan.origin);
+	        mathlib.VectorCopy(origin, target_chan.origin);
 	        target_chan.dist_mult = attenuation / sound_nominal_clip_dist;
 	        target_chan.master_vol = vol;
 	        target_chan.entnum = entnum;
@@ -540,7 +540,7 @@ namespace quake
 	        }
         	
 	        ss.sfx = sfx;
-	        mathlib.VectorCopy (origin, ref ss.origin);
+	        mathlib.VectorCopy (origin, ss.origin);
 	        ss.master_vol = (int)vol;
 	        ss.dist_mult = (attenuation/64) / sound_nominal_clip_dist;
         	
@@ -649,10 +649,10 @@ namespace quake
 	        if (sound_started == 0 || (snd_blocked > 0))
 		        return;
 
-	        mathlib.VectorCopy(origin, ref listener_origin);
-            mathlib.VectorCopy(forward, ref listener_forward);
-            mathlib.VectorCopy(right, ref listener_right);
-            mathlib.VectorCopy(up, ref listener_up);
+	        mathlib.VectorCopy(origin, listener_origin);
+            mathlib.VectorCopy(forward, listener_forward);
+            mathlib.VectorCopy(right, listener_right);
+            mathlib.VectorCopy(up, listener_up);
         	
         // update general area ambient sound sources
 	        S_UpdateAmbientSounds ();

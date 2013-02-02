@@ -236,7 +236,7 @@ namespace quake
         // FIXME: a lot of this goes away with edge-based
         ================
         */
-        static void R_StoreEfrags(ref efrag_t ppefrag)
+        static void R_StoreEfrags(efrag_t ppefrag)
         {
 	        entity_t	    pent;
 	        model.model_t	clmodel;

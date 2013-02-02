@@ -123,8 +123,8 @@ namespace quake
 
             mipscale = 1.0 / (double)(1 << miplevel);
 
-            render.TransformVector(pface.texinfo.vecs[0], ref p_saxis);
-            render.TransformVector(pface.texinfo.vecs[1], ref p_taxis);
+            render.TransformVector(pface.texinfo.vecs[0], p_saxis);
+            render.TransformVector(pface.texinfo.vecs[1], p_taxis);
 
             t = render.xscaleinv * mipscale;
             d_sdivzstepu = p_saxis[0] * t;
@@ -139,7 +139,7 @@ namespace quake
             d_tdivzorigin = p_taxis[2] * mipscale - render.xcenter * d_tdivzstepu -
                     render.ycenter * d_tdivzstepv;
 
-            mathlib.VectorScale(transformed_modelorg, mipscale, ref p_temp1);
+            mathlib.VectorScale(transformed_modelorg, mipscale, p_temp1);
 
             t = 0x10000 * mipscale;
             sadjust = ((int)(mathlib.DotProduct(p_temp1, p_saxis) * 0x10000 + 0.5)) -
@@ -170,8 +170,8 @@ namespace quake
 	        double[]		    local_modelorg = new double[3];
 
 	        render.currententity = client.cl_entities[0];
-	        render.TransformVector (render.modelorg, ref transformed_modelorg);
-	        mathlib.VectorCopy (transformed_modelorg, ref world_transformed_modelorg);
+	        render.TransformVector (render.modelorg, transformed_modelorg);
+	        mathlib.VectorCopy (transformed_modelorg, world_transformed_modelorg);
 
         // TODO: could preset a lot of this at mode set time
             if (render.r_drawflat.value != 0)
@@ -244,8 +244,8 @@ namespace quake
                             render.currententity = s.entity;	//FIXME: make this passed in to
                             // R_RotateBmodel ()
                             mathlib.VectorSubtract(render.r_origin, render.currententity.origin,
-                                    ref local_modelorg);
-                            render.TransformVector(local_modelorg, ref transformed_modelorg);
+                                     local_modelorg);
+                            render.TransformVector(local_modelorg, transformed_modelorg);
 
                             render.R_RotateBmodel();	// FIXME: don't mess with the frustum,
                             // make entity passed in
@@ -264,11 +264,11 @@ namespace quake
                             //
                             render.currententity = client.cl_entities[0];
                             mathlib.VectorCopy(world_transformed_modelorg,
-                                        ref transformed_modelorg);
-                            mathlib.VectorCopy(render.base_vpn, ref render.vpn);
-                            mathlib.VectorCopy(render.base_vup, ref render.vup);
-                            mathlib.VectorCopy(render.base_vright, ref render.vright);
-                            mathlib.VectorCopy(render.base_modelorg, ref render.modelorg);
+                                        transformed_modelorg);
+                            mathlib.VectorCopy(render.base_vpn, render.vpn);
+                            mathlib.VectorCopy(render.base_vup, render.vup);
+                            mathlib.VectorCopy(render.base_vright, render.vright);
+                            mathlib.VectorCopy(render.base_modelorg, render.modelorg);
                             render.R_TransformFrustum();
                         }
                     }
@@ -280,8 +280,8 @@ namespace quake
                             // TODO: store once at start of frame
                             render.currententity = s.entity;	//FIXME: make this passed in to
                             // R_RotateBmodel ()
-                            mathlib.VectorSubtract(render.r_origin, render.currententity.origin, ref local_modelorg);
-                            render.TransformVector(local_modelorg, ref transformed_modelorg);
+                            mathlib.VectorSubtract(render.r_origin, render.currententity.origin, local_modelorg);
+                            render.TransformVector(local_modelorg, transformed_modelorg);
 
                             render.R_RotateBmodel();	// FIXME: don't mess with the frustum,
                             // make entity passed in
@@ -312,11 +312,11 @@ namespace quake
                             //
                             render.currententity = client.cl_entities[0];
                             mathlib.VectorCopy(world_transformed_modelorg,
-                                        ref transformed_modelorg);
-                            mathlib.VectorCopy(render.base_vpn, ref render.vpn);
-                            mathlib.VectorCopy(render.base_vup, ref render.vup);
-                            mathlib.VectorCopy(render.base_vright, ref render.vright);
-                            mathlib.VectorCopy(render.base_modelorg, ref render.modelorg);
+                                        transformed_modelorg);
+                            mathlib.VectorCopy(render.base_vpn, render.vpn);
+                            mathlib.VectorCopy(render.base_vup, render.vup);
+                            mathlib.VectorCopy(render.base_vright, render.vright);
+                            mathlib.VectorCopy(render.base_modelorg, render.modelorg);
                             render.R_TransformFrustum();
                         }
                     }

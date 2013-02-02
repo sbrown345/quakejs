@@ -84,8 +84,8 @@ namespace quake
 			        b.entity = ent;
 			        b.model = m;
                     b.endtime = cl.time + 0.2;
-			        mathlib.VectorCopy (start, ref b.start);
-                    mathlib.VectorCopy(end, ref b.end);
+			        mathlib.VectorCopy (start, b.start);
+                    mathlib.VectorCopy(end, b.end);
 			        return;
 		        }
 
@@ -98,8 +98,8 @@ namespace quake
 			        b.entity = ent;
 			        b.model = m;
                     b.endtime = cl.time + 0.2;
-			        mathlib.VectorCopy (start, ref b.start);
-                    mathlib.VectorCopy(end, ref b.end);
+			        mathlib.VectorCopy (start, b.start);
+                    mathlib.VectorCopy(end, b.end);
 			        return;
 		        }
 	        }
@@ -190,7 +190,7 @@ namespace quake
                 pos[2] = common.MSG_ReadCoord();
 		        render.R_ParticleExplosion (pos);
 		        dl = CL_AllocDlight (0);
-		        mathlib.VectorCopy (pos, ref dl.origin);
+		        mathlib.VectorCopy (pos, dl.origin);
 		        dl.radius = 350;
 		        dl.die = cl.time + 0.5;
 		        dl.decay = 300;
@@ -246,7 +246,7 @@ namespace quake
                 colorLength = common.MSG_ReadByte();
 		        render.R_ParticleExplosion2 (pos, colorStart, colorLength);
 		        dl = CL_AllocDlight (0);
-		        mathlib.VectorCopy (pos, ref dl.origin);
+		        mathlib.VectorCopy (pos, dl.origin);
 		        dl.radius = 350;
 		        dl.die = cl.time + 0.5;
 		        dl.decay = 300;
@@ -309,11 +309,11 @@ namespace quake
 	        // if coming from the player, update the start position
 		        if (b.entity == cl.viewentity)
 		        {
-			        mathlib.VectorCopy (cl_entities[cl.viewentity].origin, ref b.start);
+			        mathlib.VectorCopy (cl_entities[cl.viewentity].origin, b.start);
 		        }
 
 	        // calculate pitch and yaw
-		        mathlib.VectorSubtract (b.end, b.start, ref dist);
+		        mathlib.VectorSubtract (b.end, b.start, dist);
 
 		        if (dist[1] == 0 && dist[0] == 0)
 		        {
@@ -336,14 +336,14 @@ namespace quake
 		        }
 
 	        // add new entities for the lightning
-		        mathlib.VectorCopy (b.start, ref org);
-		        d = mathlib.VectorNormalize(ref dist);
+		        mathlib.VectorCopy (b.start, org);
+		        d = mathlib.VectorNormalize(dist);
 		        while (d > 0)
 		        {
 			        ent = CL_NewTempEntity ();
 			        if (ent == null)
 				        return;
-			        mathlib.VectorCopy (org, ref ent.origin);
+			        mathlib.VectorCopy (org, ent.origin);
 			        ent.model = b.model;
 			        ent.angles[0] = pitch;
 			        ent.angles[1] = yaw;
