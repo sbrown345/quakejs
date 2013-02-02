@@ -285,7 +285,7 @@
     <Compile Include="Missing\System\UriKind.cs" />
     <Compile Include="Missing\System\Windows\Application.cs" />
     <Compile Include="Missing\System\Windows\Controls\Canvas.cs" />
-    <Compile Include="Missing\System\Windows\Controls\Copy of Canvas.cs" />
+    <Compile Include="Missing\System\Windows\Controls\Image.cs" />
     <Compile Include="Missing\System\Windows\Controls\MediaElement.cs" />
     <Compile Include="Missing\System\Windows\Duration.cs" />
     <Compile Include="Missing\System\Windows\Media\Imaging\BitmapImage.cs" />
