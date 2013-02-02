@@ -269,7 +269,7 @@
     </Compile>
     <Compile Include="InnoveWare\InnoveWare.cs" />
     <Compile Include="Missing\DateTimeExtensions.cs" />
-    <Compile Include="Missing\System\BinaryReader.cs" />
+    <Compile Include="Missing\System\IO\BinaryReader.cs" />
     <Compile Include="Missing\System\BitConverter.cs" />
     <Compile Include="Missing\System\Buffer.cs" />
     <Compile Include="Missing\System\Convert.cs" />

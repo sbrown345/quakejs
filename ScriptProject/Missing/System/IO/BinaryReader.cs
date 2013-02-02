@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace System
+namespace System.IO
 {
-    class BinaryReader
+    public class BinaryReader
     {
         public BinaryReader(Stream stream)
         {
@@ -21,7 +21,7 @@ namespace System
             throw new NotImplementedException();
         }
 
-        public double ReadSingle()
+        public float ReadSingle()
         {
             throw new NotImplementedException();
         }
