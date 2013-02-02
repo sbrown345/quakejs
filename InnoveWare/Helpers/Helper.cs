@@ -175,7 +175,7 @@ namespace Helper
             return count;
         }
 
-        public static int fread(ref byte[] data, int size, int count, FILE file)
+        public static int fread(byte[] data, int size, int count, FILE file)
         {
             BinaryReader reader = new BinaryReader(file.stream);
             byte[] buf = reader.ReadBytes(size);
