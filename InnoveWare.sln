@@ -25,6 +25,8 @@ Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "InnoveWareWeb", "InnoveWare
 		ProjOutputReferences = "{B78AC384-7DB3-49F9-AE2E-8C6513D66AED}|ClientBin|false;"
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScriptProject", "ScriptProject\ScriptProject.csproj", "{3339BC81-5FCA-4706-AD15-612152D1B968}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|.NET = Debug|.NET
@@ -56,6 +58,16 @@ Global
 		{D7D9F95D-A9A5-47C0-9D4D-B6919FDA90A1}.Release|Any CPU.Build.0 = Debug|Any CPU
 		{D7D9F95D-A9A5-47C0-9D4D-B6919FDA90A1}.Release|Mixed Platforms.ActiveCfg = Debug|Any CPU
 		{D7D9F95D-A9A5-47C0-9D4D-B6919FDA90A1}.Release|Mixed Platforms.Build.0 = Debug|Any CPU
+		{3339BC81-5FCA-4706-AD15-612152D1B968}.Debug|.NET.ActiveCfg = Debug|Any CPU
+		{3339BC81-5FCA-4706-AD15-612152D1B968}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3339BC81-5FCA-4706-AD15-612152D1B968}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3339BC81-5FCA-4706-AD15-612152D1B968}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{3339BC81-5FCA-4706-AD15-612152D1B968}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{3339BC81-5FCA-4706-AD15-612152D1B968}.Release|.NET.ActiveCfg = Release|Any CPU
+		{3339BC81-5FCA-4706-AD15-612152D1B968}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3339BC81-5FCA-4706-AD15-612152D1B968}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3339BC81-5FCA-4706-AD15-612152D1B968}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{3339BC81-5FCA-4706-AD15-612152D1B968}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
