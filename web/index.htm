@@ -1,10 +1,69 @@
 ﻿<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-    <title></title>
+    <title>QuakeJS</title>
 </head>
 <body>
+    <div id="progress"></div>
     <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <script src="scripts/jquery-1.9.0.js"></script>
+    <script src="scripts/IndexedDBShim.min.js"></script>
+    <script src="scripts/jquery.indexeddb.js"></script>
+    <script src="scripts/xhr2lib.js"></script>
+    <script src="scripts/pouchdb-nightly.js"></script>
+    <script>
+        (function () {
+            $xhr.defaultError(function (st, s) {
+                console.log("xhr: ", this); // error handler is bound to the xhr object
+                console.log("status text: ", st); // status text e.g. 'Not Found'
+                console.log("status: ", s); // status e.g.404
+            });
+
+            var url = "id1/pak0.pak";
+            var key = "id1pak0pak";
+            var dbName = 'idb://quakejs';
+            // Pouch.destroy('idb://quakejs')
+
+            Pouch(dbName, function (err, db) {
+                db.get(key, {}, function (err, response) {
+                    console.log("Got db reponse", response);
+                    if (response) {
+                        console.log("Already got file");
+                        loadGame(response.data);
+                    } else {
+                        console.log("Request file via ajax");
+                        loadFile(function (data) {
+                            db.put({ _id: key, data: data });
+                            loadGame(data);
+                        });
+                    }
+                });
+            });
+
+            function loadFile(success) {
+                $xhr.ajax({
+                    url: url,
+                    type: "get",
+                    timeout: 5000,
+                    progress: function (pc) {
+                        document.getElementById("progress").innerHTML = pc;
+                    },
+                    success: function (data) {
+                        if (!data) {
+                            throw new Error("Invalid data");
+                        }
+                        success(data);
+                    },
+                    dataType: "arraybuffer"
+                });
+            }
+
+            function loadGame(arrayBuffer) {
+                console.log("Got data, starting game...");
+                console.log("todo: init game now", arrayBuffer)
+            }
+        })();
+    </script>
     <script src="Scripts/mscorlib.js"></script>
     <script src="Scripts/ScriptProject.js"></script>
 </body>

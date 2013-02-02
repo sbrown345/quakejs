@@ -3,8 +3,6 @@
     using System.IO;
     using System.Windows.Media;
 
-    using quake;
-
     public class MediaElement
     {
         public bool AutoPlay { get; set; }
