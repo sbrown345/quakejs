@@ -159,11 +159,11 @@ namespace quake
         // Sleeps for microseconds
         // =======================================================================
 
-        static volatile int oktogo;
+        //static volatile int oktogo;
 
         void alarm_handler(int x)
         {
-	        oktogo=1;
+            //oktogo=1;
         }
 
         static void Sys_LineRefresh()
@@ -214,36 +214,36 @@ namespace quake
             //cmd.Cbuf_InsertText("menu_main\n");
             return 0;
 
-            oldtime = Sys_FloatTime () - 0.1;
-            while (true)
-            {
-        // find time spent rendering last frame
-                newtime = Sys_FloatTime ();
-                time = newtime - oldtime;
+        //    oldtime = Sys_FloatTime () - 0.1;
+        //    while (true)
+        //    {
+        //// find time spent rendering last frame
+        //        newtime = Sys_FloatTime ();
+        //        time = newtime - oldtime;
 
-                /*if (cls.state == ca_dedicated)
-                {   // play vcrfiles at max speed
-                    if (time < sys_ticrate.value && (vcrFile == -1 || recording) )
-                    {
-				        usleep(1);
-                        continue;       // not time to run a server only tic yet
-                    }
-                    time = sys_ticrate.value;
-                }*/
+        //        /*if (cls.state == ca_dedicated)
+        //        {   // play vcrfiles at max speed
+        //            if (time < sys_ticrate.value && (vcrFile == -1 || recording) )
+        //            {
+        //                usleep(1);
+        //                continue;       // not time to run a server only tic yet
+        //            }
+        //            time = sys_ticrate.value;
+        //        }*/
 
-                /*if (time > sys_ticrate.value*2)
-                    oldtime = newtime;
-                else
-                    oldtime += time;*/
+        //        /*if (time > sys_ticrate.value*2)
+        //            oldtime = newtime;
+        //        else
+        //            oldtime += time;*/
 
-                host.Host_Frame (time);
+        //        host.Host_Frame (time);
 
-        // graphic debugging aids
-                if (sys_linerefresh.value != 0)
-                    Sys_LineRefresh ();
+        //// graphic debugging aids
+        //        if (sys_linerefresh.value != 0)
+        //            Sys_LineRefresh ();
 
-                Thread.Sleep(200);
-            }
+        //        Thread.Sleep(200);
+        //    }
 
         }
 

@@ -267,6 +267,33 @@
     <Compile Include="..\InnoveWare\quake\world.cs">
       <Link>quake\world.cs</Link>
     </Compile>
+    <Compile Include="InnoveWare\InnoveWare.cs" />
+    <Compile Include="Missing\System\BinaryReader.cs" />
+    <Compile Include="Missing\System\BitConverter.cs" />
+    <Compile Include="Missing\System\Buffer.cs" />
+    <Compile Include="Missing\System\Convert.cs" />
+    <Compile Include="Missing\System\FormatException.cs" />
+    <Compile Include="Missing\System\Globalization\CultureInfo.cs" />
+    <Compile Include="Missing\System\Globalization\NumberFormatInfo.cs" />
+    <Compile Include="Missing\System\IO\MemoryStream.cs" />
+    <Compile Include="Missing\System\IO\SeekOrigin.cs" />
+    <Compile Include="Missing\System\NotImplementedException.cs" />
+    <Compile Include="Missing\System\Random.cs" />
+    <Compile Include="Missing\System\Stream.cs" />
+    <Compile Include="Missing\System\TimeSpan.cs" />
+    <Compile Include="Missing\System\Uri.cs" />
+    <Compile Include="Missing\System\UriKind.cs" />
+    <Compile Include="Missing\System\Windows\Application.cs" />
+    <Compile Include="Missing\System\Windows\Controls\Canvas.cs" />
+    <Compile Include="Missing\System\Windows\Controls\Copy of Canvas.cs" />
+    <Compile Include="Missing\System\Windows\Controls\MediaElement.cs" />
+    <Compile Include="Missing\System\Windows\Duration.cs" />
+    <Compile Include="Missing\System\Windows\Media\Imaging\BitmapImage.cs" />
+    <Compile Include="Missing\System\Windows\Media\Imaging\WriteableBitmap.cs" />
+    <Compile Include="Missing\System\Windows\Media\MediaElementState.cs" />
+    <Compile Include="Missing\System\Windows\MessageBox.cs" />
+    <Compile Include="Missing\System\Windows\Resources\StreamResourceInfo.cs" />
+    <Compile Include="Missing\System\Windows\RoutedEventArgs.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

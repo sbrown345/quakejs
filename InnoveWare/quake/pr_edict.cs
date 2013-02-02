@@ -354,6 +354,7 @@ namespace quake
         */
         public static bool ED_ParseEpair (object @base, ddef_t key, string keyname, string s)
         {
+#if SILVERLIGHT
 	        int		                    i;
 	        /*ddef_t	*def;
 	        char	*v, *w;*/
@@ -432,6 +433,9 @@ namespace quake
 		        break;
 	        }
 	        return true;
+#else
+            throw new NotImplementedException();
+#endif
         }
 
         /*
