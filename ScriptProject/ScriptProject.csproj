@@ -33,6 +33,240 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="..\InnoveWare\Helpers\Helper.cs">
+      <Link>Helpers\Helper.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\bspfile.cs">
+      <Link>quake\bspfile.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\chase.cs">
+      <Link>quake\chase.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\client.cs">
+      <Link>quake\client.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\cl_demo.cs">
+      <Link>quake\cl_demo.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\cl_input.cs">
+      <Link>quake\cl_input.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\cl_main.cs">
+      <Link>quake\cl_main.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\cl_parse.cs">
+      <Link>quake\cl_parse.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\cl_tent.cs">
+      <Link>quake\cl_tent.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\cmd.cs">
+      <Link>quake\cmd.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\common.cs">
+      <Link>quake\common.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\console.cs">
+      <Link>quake\console.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\crc.cs">
+      <Link>quake\crc.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\cvar.cs">
+      <Link>quake\cvar.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\draw.cs">
+      <Link>quake\draw.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\d_edge.cs">
+      <Link>quake\d_edge.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\d_iface.cs">
+      <Link>quake\d_iface.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\d_init.cs">
+      <Link>quake\d_init.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\d_local.cs">
+      <Link>quake\d_local.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\d_modech.cs">
+      <Link>quake\d_modech.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\d_part.cs">
+      <Link>quake\d_part.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\d_polyse.cs">
+      <Link>quake\d_polyse.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\d_scan.cs">
+      <Link>quake\d_scan.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\d_sky.cs">
+      <Link>quake\d_sky.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\d_sprite.cs">
+      <Link>quake\d_sprite.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\d_surf.cs">
+      <Link>quake\d_surf.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\d_vars.cs">
+      <Link>quake\d_vars.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\host.cs">
+      <Link>quake\host.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\host_cmd.cs">
+      <Link>quake\host_cmd.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\keys.cs">
+      <Link>quake\keys.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\mathlib.cs">
+      <Link>quake\mathlib.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\menu.cs">
+      <Link>quake\menu.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\model.cs">
+      <Link>quake\model.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\modelgen.cs">
+      <Link>quake\modelgen.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\net.cs">
+      <Link>quake\net.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\net_loop.cs">
+      <Link>quake\net_loop.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\net_main.cs">
+      <Link>quake\net_main.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\net_none.cs">
+      <Link>quake\net_none.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\progdefs.cs">
+      <Link>quake\progdefs.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\progs.cs">
+      <Link>quake\progs.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\protocol.cs">
+      <Link>quake\protocol.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\pr_cmds.cs">
+      <Link>quake\pr_cmds.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\pr_comp.cs">
+      <Link>quake\pr_comp.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\pr_edict.cs">
+      <Link>quake\pr_edict.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\pr_exec.cs">
+      <Link>quake\pr_exec.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\quakedef.cs">
+      <Link>quake\quakedef.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\render.cs">
+      <Link>quake\render.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\r_aclip.cs">
+      <Link>quake\r_aclip.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\r_alias.cs">
+      <Link>quake\r_alias.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\r_bsp.cs">
+      <Link>quake\r_bsp.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\r_draw.cs">
+      <Link>quake\r_draw.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\r_edge.cs">
+      <Link>quake\r_edge.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\r_efrag.cs">
+      <Link>quake\r_efrag.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\r_light.cs">
+      <Link>quake\r_light.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\r_local.cs">
+      <Link>quake\r_local.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\r_main.cs">
+      <Link>quake\r_main.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\r_misc.cs">
+      <Link>quake\r_misc.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\r_part.cs">
+      <Link>quake\r_part.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\r_shared.cs">
+      <Link>quake\r_shared.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\r_sky.cs">
+      <Link>quake\r_sky.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\r_sprite.cs">
+      <Link>quake\r_sprite.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\r_surf.cs">
+      <Link>quake\r_surf.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\r_vars.cs">
+      <Link>quake\r_vars.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\sbar.cs">
+      <Link>quake\sbar.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\screen.cs">
+      <Link>quake\screen.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\server.cs">
+      <Link>quake\server.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\snd_dma.cs">
+      <Link>quake\snd_dma.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\snd_mem.cs">
+      <Link>quake\snd_mem.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\sound.cs">
+      <Link>quake\sound.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\spritegn.cs">
+      <Link>quake\spritegn.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\sv_main.cs">
+      <Link>quake\sv_main.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\sv_phys.cs">
+      <Link>quake\sv_phys.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\sv_user.cs">
+      <Link>quake\sv_user.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\sys_linux.cs">
+      <Link>quake\sys_linux.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\vid.cs">
+      <Link>quake\vid.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\view.cs">
+      <Link>quake\view.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\wad.cs">
+      <Link>quake\wad.cs</Link>
+    </Compile>
+    <Compile Include="..\InnoveWare\quake\world.cs">
+      <Link>quake\world.cs</Link>
+    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -50,9 +284,7 @@
       <HintPath>..\packages\Saltarelle.Web.1.7.1\lib\Script.Web.dll</HintPath>
     </Reference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="quake\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" Condition="!Exists('$(SolutionDir)packages\Saltarelle.Compiler.1.7.1\tools\Saltarelle.Compiler.targets')" />
   <Import Project="$(SolutionDir)packages\Saltarelle.Compiler.1.7.1\tools\Saltarelle.Compiler.targets" Condition="Exists('$(SolutionDir)packages\Saltarelle.Compiler.1.7.1\tools\Saltarelle.Compiler.targets')" />
   <PropertyGroup>
