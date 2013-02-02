@@ -642,20 +642,17 @@ namespace quake
 	        case keys.K_RIGHTARROW:
 		        if (setup_cursor < 2)
 			        return;
-        forward:
-                sound.S_LocalSound("misc/menu3.wav");
-                if (setup_cursor == 2)
-			        setup_top = setup_top + 1;
-		        if (setup_cursor == 3)
-			        setup_bottom = setup_bottom + 1;
-		        break;
+            //forward:
+                forward();
+	            break;
 
 	        case keys.K_ENTER:
 		        if (setup_cursor == 0 || setup_cursor == 1)
 			        return;
 
 		        if (setup_cursor == 2 || setup_cursor == 3)
-			        goto forward;
+                    //goto forward;
+                    forward();
 
 		        m_entersound = true;
 		        M_Menu_MultiPlayer_f ();
@@ -670,6 +667,15 @@ namespace quake
 		        setup_bottom = 0;
 	        if (setup_bottom < 0)
 		        setup_bottom = 13;
+        }
+
+        private static void forward()
+        {
+            sound.S_LocalSound("misc/menu3.wav");
+            if (setup_cursor == 2)
+                setup_top = setup_top + 1;
+            if (setup_cursor == 3)
+                setup_bottom = setup_bottom + 1;
         }
 
         //=============================================================================
