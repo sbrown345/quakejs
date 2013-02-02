@@ -248,7 +248,7 @@ namespace quake
 
         // seperate the printfs so the server message can have a color
 	        console.Con_Printf("\n\n\u001d\u001e\u001e\u001e\u001e\u001e\u001e\u001e\u001e\u001e\u001e\u001e\u001e\u001e\u001e\u001e\u001e\u001e\u001e\u001e\u001e\u001e\u001e\u001e\u001e\u001e\u001e\u001e\u001e\u001e\u001e\u001e\u001e\u001e\u001e\u001e\u001f\n\n");
-	        console.Con_Printf ((char)2 + str + "\n");
+            console.Con_Printf(Convert.ToChar(2).ToString() + str + "\n");
 
         //
         // first we go through and touch all of the precache data that still

@@ -6,5 +6,10 @@
         {
             throw new NotImplementedException();
         }
+
+        public static char ToChar(int value)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

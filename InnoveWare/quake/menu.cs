@@ -607,6 +607,7 @@ namespace quake
 		        M_DrawCharacter (168 + 8*strlen(setup_myname), setup_cursor_table [setup_cursor], 10+((int)(realtime*4)&1));*/
         }
 
+
         static void M_Setup_Key (int k)
         {
 	        int			l;

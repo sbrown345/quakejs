@@ -334,7 +334,7 @@ namespace quake
             }
             f = "";
             for (int kk = 0; kk < buf.Length; kk++)
-                f += (char)buf[kk];
+                f += Convert.ToChar(buf[kk]).ToString();
             console.Con_Printf("execing " + Cmd_Argv(1) + "\n");
 
             Cbuf_InsertText(f);
@@ -540,7 +540,7 @@ namespace quake
                         char ch = text[ofs + kk];
                         if (ch == 0)
                             break;
-                        cmd_args += ch;
+                        cmd_args += ch.ToString();
                     }
                 }
 

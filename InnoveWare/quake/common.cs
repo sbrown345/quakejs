@@ -331,7 +331,7 @@ namespace quake
 		        c = MSG_ReadChar ();
 		        if (c == -1 || c == 0)
 			        break;
-		        @string += (char)c;
+		        @string += Convert.ToChar(c).ToString();
 		        l++;
 	        } while (l < 2048);
         	
@@ -536,7 +536,7 @@ namespace quake
                     c = data[ofs++];
                     if (c == '\"' || c == 0)
                         return;
-                    com_token += (char)c;
+                    com_token += Convert.ToChar(c).ToString();
                     len++;
                 }
             }
@@ -544,7 +544,7 @@ namespace quake
             // parse single characters
             if (c == '{' || c == '}' || c == ')' || c == '(' || c == '\'' || c == ':')
             {
-                com_token += (char)c;
+                com_token += Convert.ToChar(c).ToString();
                 len++;
                 ofs++;
                 return;
@@ -553,7 +553,7 @@ namespace quake
             // parse a regular word
             do
             {
-                com_token += (char)c;
+                com_token += Convert.ToChar(c).ToString();
                 ofs++;
                 len++;
                 c = data[ofs];
@@ -981,7 +981,7 @@ namespace quake
                 char ch = (char)buffer[offset++];
                 if (ch == 0)
                     break;
-                str += ch;
+                str += ch.ToString();
             }
             return str;
         }
@@ -994,7 +994,7 @@ namespace quake
                 char ch = (char) buffer[offset + pos];
                 if (ch == 0)
                     break;
-                str += ch;
+                str += ch.ToString();
             }
             offset += count;
             return str;

@@ -438,11 +438,11 @@ namespace quake
             text = keys.key_lines[keys.edit_line];
         	
         // add the cursor frame
-	        text = text.Substring(0, keys.key_linepos) + (char)(10+((int)(host.realtime*con_cursorspeed)&1));
+	        text = text.Substring(0, keys.key_linepos) + Convert.ToChar(10+((int)(host.realtime*con_cursorspeed)&1)).ToString();
         	
         // fill out remainder with spaces
 	        for (i=keys.key_linepos+1 ; i< con_linewidth ; i++)
-		        text += ' ';
+		        text += " ";
         		
         //	prestep if horizontally scrolling
 	        if (keys.key_linepos >= con_linewidth)

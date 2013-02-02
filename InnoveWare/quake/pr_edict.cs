@@ -333,12 +333,12 @@ namespace quake
 		        {
 			        i++;
 			        if (@string[i] == 'n')
-				        @new += '\n';
+				        @new += "\n";
 			        else
-				        @new += '\\';
+				        @new += "\\";
 		        }
 		        else
-			        @new += @string[i];
+			        @new += @string[i].ToString();
 	        }
         	
 	        return @new;

@@ -287,7 +287,7 @@ namespace quake
 		        {
 			        key_lines[edit_line] = key_lines[edit_line].Substring(0,1) + cmd;
 			        key_linepos = cmd.Length+1;
-			        key_lines[edit_line] += ' ';
+			        key_lines[edit_line] += " ";
 			        key_linepos++;
 			        return;
 		        }
@@ -369,7 +369,7 @@ namespace quake
         		
 	        if (key_linepos < MAXCMDLINE-1)
 	        {
-		        key_lines[edit_line] = key_lines[edit_line].Substring(0, key_linepos) + (char)key;
+		        key_lines[edit_line] = key_lines[edit_line].Substring(0, key_linepos) + Convert.ToChar(key).ToString();
 		        key_linepos++;
 	        }
         }
