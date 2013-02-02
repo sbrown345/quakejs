@@ -136,7 +136,8 @@ namespace quake
                 return dspriteframetype;
             }
         };
-        public const int sizeof_dspriteframetype_t = sizeof(spriteframetype_t);
+
+        public const int sizeof_dspriteframetype_t = 4;//sizeof(spriteframetype_t);
 
         public const int IDSPRITEHEADER = (('P' << 24) + ('S' << 16) + ('D' << 8) + 'I');
 														        // little-endian "IDSP"

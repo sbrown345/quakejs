@@ -220,7 +220,8 @@ namespace quake
                 return daliasframetype;
             }
         };
-        public const int sizeof_daliasframetype_t = sizeof(aliasframetype_t);
+
+        public const int sizeof_daliasframetype_t = 4;//sizeof(aliasframetype_t);
 
         public class daliasskintype_t {
 	        public aliasskintype_t	type;
@@ -233,7 +234,8 @@ namespace quake
                 return daliasskintype;
             }
         };
-        public const int sizeof_daliasskintype_t = sizeof(aliasskintype_t);
+
+        public const int sizeof_daliasskintype_t = 4;//sizeof(aliasskintype_t);
 
         public const int IDPOLYHEADER = (('O' << 24) + ('P' << 16) + ('D' << 8) + 'I');
 														        // little-endian "IDPO"
