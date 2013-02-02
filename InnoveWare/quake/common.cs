@@ -122,7 +122,7 @@ namespace quake
         ============================================================================
         */
 
-        private static NumberFormatInfo _formatNumber = new CultureInfo("en-US").NumberFormat;
+        //private static NumberFormatInfo _formatNumber = new CultureInfo("en-US").NumberFormat;
 
         public static double Q_atof(string str)
         {

@@ -275,7 +275,6 @@
     <Compile Include="Missing\System\Convert.cs" />
     <Compile Include="Missing\System\FormatException.cs" />
     <Compile Include="Missing\System\Globalization\CultureInfo.cs" />
-    <Compile Include="Missing\System\Globalization\NumberFormatInfo.cs" />
     <Compile Include="Missing\System\IO\MemoryStream.cs" />
     <Compile Include="Missing\System\IO\SeekOrigin.cs" />
     <Compile Include="Missing\System\NotImplementedException.cs" />
