@@ -188,4 +188,7 @@
       </FlavorProperties>
     </VisualStudio>
   </ProjectExtensions>
+  <PropertyGroup>
+    <PostBuildEvent>xcopy "$(SolutionDir)$(SolutionName)\id1\*.pak" "$(SolutionDir)\web\id1" /y</PostBuildEvent>
+  </PropertyGroup>
 </Project>
