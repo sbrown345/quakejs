@@ -788,7 +788,7 @@ namespace quake
 		        tx.width = mt.width;
 		        tx.height = mt.height;
 		        for (j=0 ; j<bspfile.MIPLEVELS ; j++)
-			        tx.offsets[j] = mt.offsets[j]/* + sizeof_texture_t*/ - bspfile.sizeof_miptex_t;
+			        tx.offsets[j] = (uint)(mt.offsets[j]/* + sizeof_texture_t*/ - bspfile.sizeof_miptex_t);
 		        // the pixels immediately follow the structures
                 Buffer.BlockCopy(buf.buffer, buf.ofs + bspfile.sizeof_miptex_t, tx.pixels, 0, pixels);
 
