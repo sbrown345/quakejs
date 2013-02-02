@@ -24,7 +24,7 @@ namespace quake
 {
     public partial class prog
     {
-        public struct prstack_t
+        public class prstack_t
         {
 	        public int			s;
 	        public dfunction_t  f;

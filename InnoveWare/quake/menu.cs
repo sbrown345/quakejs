@@ -1127,7 +1127,7 @@ namespace quake
         //=============================================================================
         /* GAME OPTIONS MENU */
 
-        struct level_t
+        class level_t
         {
 	        public string	name;
 	        public string	description;
@@ -1238,7 +1238,7 @@ namespace quake
 	        new level_t("ctf1",     "Division of Change")
         };
 
-        struct episode_t
+        class episode_t
         {
 	        public string	description;
 	        public int		firstLevel;
