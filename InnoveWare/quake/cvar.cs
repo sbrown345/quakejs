@@ -194,7 +194,7 @@ namespace quake
 	        string	val;
 
             val = System.Convert.ToString(value);
-            val = val.Replace(',', '.');
+            val = val.Replace(",", ".");
 	        Cvar_Set (var_name, val);
         }
         

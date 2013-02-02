@@ -128,7 +128,7 @@ namespace quake
         {
             try
             {
-                return Single.Parse(str, _formatNumber);
+                return double.Parse(str/*, _formatNumber*/);
             }
             catch (FormatException)
             {

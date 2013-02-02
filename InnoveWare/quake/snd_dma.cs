@@ -438,7 +438,11 @@ namespace quake
                 target_chan.looping = 1;
             }
             else*/
+#if SILVERLIGHT
                 media.MediaEnded += media_MediaEnded2;
+#else
+            throw new NotImplementedException();
+#endif
             SetVolume(target_chan);
             Page.thePage.parentCanvas.Children.Add(media);
         }
@@ -547,7 +551,11 @@ namespace quake
             media.AutoPlay = true;
             media.SetSource(new MemoryStream(sc.data));
             media.Tag = ss;
+#if SILVERLIGHT
             media.MediaEnded += media_MediaEnded;
+#else
+            throw new NotImplementedException();
+#endif
             SetVolume(ss);
             Page.thePage.parentCanvas.Children.Add(media);
         }
@@ -786,7 +794,7 @@ namespace quake
         public static void S_Play()
         {
 	        int 	i;
-	        string  name = new string(new char[256]);
+	        string  name = StringExtensions.StringOfLength(256);
 	        sfx_t	sfx;
         	
 	        i = 1;

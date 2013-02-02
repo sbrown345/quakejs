@@ -4,8 +4,7 @@
 
     public class Application
     {
-        public static StreamResourceInfo GetResourceStream(
-            StreamResourceInfo zipPackageStreamResourceInfo, Uri uriResource)
+        public static StreamResourceInfo GetResourceStream(Uri uriResource)
         {
             throw new NotImplementedException();
         }

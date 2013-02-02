@@ -21,6 +21,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 namespace quake
 {
+    using System;
+
     public partial class net
     {
         public const int    NET_NAMELEN			= 64;
@@ -55,7 +57,7 @@ namespace quake
             public byte[]       receiveMessage = new byte[NET_MAXMESSAGE];
 
 	        //struct qsockaddr	addr;
-            public string       address = new string(new char[NET_NAMELEN]);
+            public string       address = StringExtensions.StringOfLength(NET_NAMELEN);
         };
 
         public const int	MAX_NET_DRIVERS		= 8;
@@ -126,9 +128,9 @@ namespace quake
 
         public class hostcache_t
         {
-	        public string	name = new string(new char[16]);
-	        public string	map = new string(new char[16]);
-	        public string   cname = new string(new char[32]);
+	        public string	name = StringExtensions.StringOfLength(16);
+	        public string	map = StringExtensions.StringOfLength(16);
+	        public string   cname = StringExtensions.StringOfLength(32);
 	        public int		users;
 	        public int		maxusers;
 	        public int		driver;

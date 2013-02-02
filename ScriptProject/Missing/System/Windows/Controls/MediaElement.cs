@@ -21,13 +21,13 @@
             }
         }
 
-        public object MediaEnded
+        public event /*RoutedEventHandler*/ EventHandler MediaEnded
         {
-            get
+            add
             {
                 throw new NotImplementedException();
             }
-            set
+            remove
             {
                 throw new NotImplementedException();
             }

@@ -20,6 +20,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 namespace quake
 {
+    using System;
+
     public sealed class keys
     {
         //
@@ -464,7 +466,7 @@ namespace quake
         static void Key_Bind_f ()
         {
 	        int			i, c, b;
-	        string		cmd = new string(new char[1024]);
+	        string		cmd = StringExtensions.StringOfLength(1024);
         	
 	        c = quake.cmd.Cmd_Argc();
 
@@ -555,7 +557,7 @@ namespace quake
         public static void Key_Event (int key, bool down)
         {
             string  kb;
-        	string  cmd = new string(new char[1024]);
+        	string  cmd = StringExtensions.StringOfLength(1024);
             
             key_count++;
 	        if (key_count <= 0)

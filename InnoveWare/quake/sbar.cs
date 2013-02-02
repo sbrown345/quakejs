@@ -328,7 +328,7 @@ namespace quake
 	        int				l, frame;
 
 	        //l = Sbar_itoa (num, str);
-            str = "" + num;
+            str = "".ToString() + num;
             l = str.Length;
 	        ptr = 0;
 	        if (l > digits)
@@ -469,7 +469,7 @@ namespace quake
         // ammo counts
 	        for (i=0 ; i<4 ; i++)
 	        {
-		        num = "" + client.cl.stats[quakedef.STAT_SHELLS+i];
+		        num = "".ToString() + client.cl.stats[quakedef.STAT_SHELLS+i];
                 if (num.Length == 1)
                     num = "  " + num;
                 else if (num.Length == 2)

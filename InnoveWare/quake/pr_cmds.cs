@@ -35,7 +35,7 @@ namespace quake
         ===============================================================================
         */
 
-        static string @out = new string(new char[256]);
+        static string @out = StringExtensions.StringOfLength(256);
         static string PF_VarString (int	first)
         {
 	        int		i;

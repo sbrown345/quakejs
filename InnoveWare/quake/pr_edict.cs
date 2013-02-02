@@ -51,7 +51,7 @@ namespace quake
         static cvar_t	saved3 = new cvar_t("saved3", "0", true);
         static cvar_t	saved4 = new cvar_t("saved4", "0", true);
 
-        private static Dictionary<String, int> stringDictionary = new Dictionary<string, int>();
+        private static Dictionary<string, int> stringDictionary = new Dictionary<string, int>();
         private static String[] stringPool = new String[1000];
         private static int strings = 0;
 
@@ -219,7 +219,7 @@ namespace quake
         Returns a string describing *data in a type specific manner
         =============
         */
-        static string line = new string(new char[256]);
+        static string line = StringExtensions.StringOfLength(256);
         static string PR_ValueString(int type, Object val)
         {
 	        ddef_t		def;
@@ -247,7 +247,7 @@ namespace quake
 		        line = "void";
 		        break;
 	        case etype_t.ev_float:
-                line = "" + cast_float(val);
+                line = "".ToString() + cast_float(val);
 		        break;  
 	        case etype_t.ev_vector:
 		        line = "'" + cast_float(val) + "'";
@@ -452,7 +452,7 @@ namespace quake
 	        ddef_t		key;
 	        bool	    anglehack;
 	        bool	    init;
-	        string		keyname = new string(new char[256]);
+	        string		keyname = StringExtensions.StringOfLength(256);
 	        int			n;
 
 	        init = false;
@@ -489,7 +489,7 @@ namespace quake
 		        keyname = common.com_token;
 
 		        // another hack to fix heynames with trailing spaces
-                keyname.TrimEnd(new char[] {' '});
+                keyname.TrimEnd();
 
 	        // parse value	
 		        common.COM_Parse (data, ref ofs);
@@ -515,7 +515,7 @@ namespace quake
 
                 if (anglehack)
                 {
-                    string temp = new string(new char[32]);
+                    string temp = StringExtensions.StringOfLength(32);
                     temp = common.com_token;
                     common.com_token = "0 " + temp + " 0";
                 }

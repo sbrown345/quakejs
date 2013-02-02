@@ -251,7 +251,7 @@ namespace quake
         */
         static void PR_RunError (string error)
         {
-	        string		@string = new string(new char[1024]);
+	        string		@string = StringExtensions.StringOfLength(1024);
 
 	        @string = error;
 

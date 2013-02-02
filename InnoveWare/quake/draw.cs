@@ -402,8 +402,6 @@ namespace quake
         ================
         */
 
-        private static NumberFormatInfo _formatNumber = new CultureInfo("en-US").NumberFormat;
-
         public static void Draw_ConsoleBackground (int lines)
         {
 	        int				x, y, v;
@@ -414,7 +412,7 @@ namespace quake
 
 	        conback = Draw_CachePic ("gfx/conback.lmp");
 
-            ver = String.Format(_formatNumber, "(QuakeLight {0:##.00}) {1:####.00}", quakedef.LINUX_VERSION, quakedef.VERSION);
+            ver = String.Format("(QuakeLight - JS Cross-compile {0:##.00}) {1:####.00}", quakedef.LINUX_VERSION, quakedef.VERSION);
 //	        ver = "(Linux Quake " + quakedef.LINUX_VERSION + ") " + quakedef.VERSION;
 	        dest = 320*186 + 320 - 11 - 8*ver.Length;
 

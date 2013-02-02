@@ -7,6 +7,8 @@ using System.Threading;
 
 namespace quake
 {
+    using Missing;
+
     public sealed class sys_linux
     {
         bool	isDedicated;
@@ -152,7 +154,7 @@ namespace quake
         public static double Sys_FloatTime ()
         {
             DateTime now = DateTime.Now;
-            return (now.Ticks / 10000000.0);
+            return (now.GetTicks() / 10000000.0);
         }
 
         // =======================================================================

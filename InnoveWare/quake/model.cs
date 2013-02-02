@@ -76,7 +76,7 @@ namespace quake
 
         public class texture_t
         {
-            public string	    name = new string(new char[16]);
+            public string	    name = StringExtensions.StringOfLength(16);
             public uint         width, height;
             public int          anim_total;				// total tenths in sequence ( 0 = no)
             public int          anim_min, anim_max;		// time for this frame min <=time< max
@@ -238,7 +238,7 @@ namespace quake
 	        public trivertx_t			    bboxmin = new trivertx_t();
             public trivertx_t               bboxmax = new trivertx_t();
 	        public object				    frame;
-	        public string				    name = new string(new char[16]);
+	        public string				    name = StringExtensions.StringOfLength(16);
         };
 
         public class maliasskindesc_t

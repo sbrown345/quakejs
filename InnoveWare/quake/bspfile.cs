@@ -183,7 +183,7 @@ namespace quake
         public const int	MIPLEVELS	= 4;
         public class miptex_t
         {
-	        public string	name = new string(new char[16]);
+	        public string	name = StringExtensions.StringOfLength(16);
             public uint     width, height;
             public uint[]   offsets = new uint[MIPLEVELS];		// four mip maps stored
 

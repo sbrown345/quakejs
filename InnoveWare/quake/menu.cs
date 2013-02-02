@@ -1311,7 +1311,7 @@ namespace quake
 	        M_Print (160, 40, "begin game");
 
 	        M_Print (0, 56, "      Max players");
-	        M_Print (160, 56, "" + maxplayers );
+            M_Print(160, 56, "".ToString() + maxplayers);
 
 	        M_Print (0, 64, "        Game Type");
 

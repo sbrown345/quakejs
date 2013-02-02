@@ -68,7 +68,7 @@ namespace quake
         class cmdalias_t
         {
 	        public cmdalias_t	next;
-            public string       name = new string(new char[MAX_ALIAS_NAME]);
+            public string       name = StringExtensions.StringOfLength(MAX_ALIAS_NAME);
             public string       value;
         };
 

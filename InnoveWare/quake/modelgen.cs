@@ -159,7 +159,7 @@ namespace quake
         public class daliasframe_t {
 	        public trivertx_t	bboxmin = new trivertx_t();	// lightnormal isn't used
 	        public trivertx_t	bboxmax = new trivertx_t();	// lightnormal isn't used
-	        public string		name = new string(new char[16]);	// frame name from grabbing
+	        public string		name = StringExtensions.StringOfLength(16);	// frame name from grabbing
 
             public static implicit operator daliasframe_t(bspfile.ByteBuffer buf)
             {

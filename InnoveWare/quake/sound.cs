@@ -31,7 +31,7 @@ namespace quake
 
         public class sfx_t
         {
-	        public string       name = new string(new char[quakedef.MAX_QPATH]);
+	        public string       name = StringExtensions.StringOfLength(quakedef.MAX_QPATH);
             public sfxcache_t   cache;
         };
 

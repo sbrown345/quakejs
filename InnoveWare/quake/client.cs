@@ -21,6 +21,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 namespace quake
 {
+    using System;
+
     public partial class client
     {
         public class usercmd_t
@@ -36,7 +38,7 @@ namespace quake
         public class lightstyle_t
         {
 	        public int		length;
-	        public string	map = new string(new char[quakedef.MAX_STYLESTRING]);
+	        public string	map = StringExtensions.StringOfLength(quakedef.MAX_STYLESTRING);
         };
 
         public class scoreboard_t
@@ -210,7 +212,7 @@ namespace quake
         //
 	        public model.model_t[]	model_precache = new model.model_t[quakedef.MAX_MODELS];
         	public sound.sfx_t[]	sound_precache = new sound.sfx_t[quakedef.MAX_SOUNDS];
-	        public string		    levelname = new string(new char[40]);	// for display on solo scoreboard
+	        public string		    levelname = StringExtensions.StringOfLength(40);	// for display on solo scoreboard
 	        public int			    viewentity;		// cl_entitites[cl.viewentity] = player
 	        public int			    maxclients;
 	        public int			    gametype;
