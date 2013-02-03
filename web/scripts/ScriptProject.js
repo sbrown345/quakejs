@@ -8,15 +8,15 @@
 		$1$ResourcesField = value;
 	};
 	global.getResourceStream = function(uriResource) {
-		if (get_resources().containsKey(uriResource.toString())) {
-			return get_resources().get_item(uriResource.toString());
+		if (!get_resources().containsKey(uriResource.toString())) {
+			return null;
 		}
-		return null;
+		var arrayBuffer = get_resources().get_item(uriResource.toString());
+		var stream = new Stream(arrayBuffer);
+		return new $System_Windows_Resources_StreamResourceInfo(stream, null);
 	};
 	global.setResourceStream = function(key, arrayBuffer) {
-		var stream = new Stream(arrayBuffer);
-		var streamResourceInfo = new $System_Windows_Resources_StreamResourceInfo(stream, null);
-		get_resources().set_item('InnoveWare;component/' + key, streamResourceInfo);
+		get_resources().set_item('InnoveWare;component/' + key, arrayBuffer);
 	};
 	////////////////////////////////////////////////////////////////////////////////
 	// ScriptProject.Program
@@ -29,9 +29,6 @@
 	////////////////////////////////////////////////////////////////////////////////
 	// Window
 	var $Window = function() {
-	};
-	$Window.requestAnimationFrame = function(action) {
-		throw new ss.Exception();
 	};
 	////////////////////////////////////////////////////////////////////////////////
 	// Helper.helper
@@ -176,17 +173,15 @@
 	////////////////////////////////////////////////////////////////////////////////
 	// InnoveWare.Page
 	var $InnoveWare_Page = function() {
-		this.$_frames_count = 0;
-		this.$_last_frame = 0;
-		this.$_lastTime = 0;
 		this.$oldtime = 0;
-		this.$count_fps = 0;
-		this.$nb_fps = 0;
 		this.$1$parentCanvasField = null;
 		this.$1$imageField = null;
 		this.set_parentCanvas(new $System_Windows_Controls_Canvas());
 		$InnoveWare_Page.thePage = this;
 		this.set_image(new $System_Windows_Controls_Image());
+		$InnoveWare_Page.stats = new Stats();
+		$InnoveWare_Page.stats.setMode(0);
+		$('body').append($InnoveWare_Page.stats.domElement);
 	};
 	$InnoveWare_Page.prototype = {
 		get_parentCanvas: function() {
@@ -214,15 +209,26 @@
 			this.$page_CompositionTarget_Rendering();
 		},
 		$page_CompositionTarget_Rendering: function() {
-			// Count frame.
-			this.$_frames_count++;
+			$InnoveWare_Page.stats.begin();
 			// Synchronize the Silverlight UI thread to Quake framerate.
 			var newtime = $quake_sys_linux.sys_FloatTime();
 			var time = newtime - this.$oldtime;
 			$quake_host.host_Frame(time);
 			this.$oldtime = newtime;
-			$Window.requestAnimationFrame(Function.mkdel(this, this.$page_CompositionTarget_Rendering));
+			window.requestAnimationFrame(Function.mkdel(this, this.$page_CompositionTarget_Rendering));
+			$InnoveWare_Page.stats.end();
 		}
+	};
+	////////////////////////////////////////////////////////////////////////////////
+	// Missing.ArrayHelpers
+	var $Missing_ArrayHelpers = function() {
+	};
+	$Missing_ArrayHelpers.explcitDoubleArray = function(length) {
+		var arr = new Array(length);
+		for (var i = 0; i < arr.length; i++) {
+			arr[i] = 0;
+		}
+		return arr;
 	};
 	////////////////////////////////////////////////////////////////////////////////
 	// quake.client.kbutton_t
@@ -1468,7 +1474,7 @@
 			$quake_client.cl.velocity[i] = $quake_client.cl.mvelocity[1][i] + frac * ($quake_client.cl.mvelocity[0][i] - $quake_client.cl.mvelocity[1][i]);
 		}
 		if ($quake_client.cls.demoplayback) {
-			// interpolate the angles	
+			// interpolate the angles	  (this is where player looks around)
 			for (j = 0; j < 3; j++) {
 				d = $quake_client.cl.mviewangles[0][j] - $quake_client.cl.mviewangles[1][j];
 				if (d > 180) {
@@ -1498,6 +1504,7 @@
 				continue;
 			}
 			$quake_mathlib.vectorCopy(ent.origin, oldorg);
+			//player position
 			if (ent.forcelink) {
 				// the entity was not updated in the last message
 				// so move to the final spot
@@ -3255,7 +3262,7 @@
 			$quake_common.msg_badread = true;
 			return -1;
 		}
-		c = $quake_net.net_message.data[$quake_common.$msg_readcount];
+		c = ($quake_net.net_message.data[$quake_common.$msg_readcount] >> 7) * -256 + $quake_net.net_message.data[$quake_common.$msg_readcount];
 		$quake_common.$msg_readcount++;
 		return c;
 	};
@@ -3275,7 +3282,7 @@
 			$quake_common.msg_badread = true;
 			return -1;
 		}
-		c = $quake_net.net_message.data[$quake_common.$msg_readcount] + ($quake_net.net_message.data[$quake_common.$msg_readcount + 1] << 8);
+		c = ($quake_net.net_message.data[$quake_common.$msg_readcount + 1] << 8 | $quake_net.net_message.data[$quake_common.$msg_readcount]) << 16 >> 16;
 		$quake_common.$msg_readcount += 2;
 		return c;
 	};
@@ -6012,7 +6019,7 @@
 					ltemp |= izi & 4294901760;
 					izi += izistep;
 					$quake_draw.d_pzbuffer[pdest] = ltemp >>> 16;
-					$quake_draw.d_pzbuffer[pdest + 1] = ltemp;
+					$quake_draw.d_pzbuffer[pdest + 1] = ltemp & 65535;
 					pdest += 2;
 				} while (--doublecount > 0);
 			}
@@ -6877,62 +6884,58 @@
 	};
 	$quake_host.$_Host_Frame = function(time) {
 		var pass1, pass2, pass3;
-		try {
-			// decide the simulation time
-			if (!$quake_host.$host_FilterTime(time)) {
-				return;
-			}
-			// don't run too fast, or packets will flood out
-			// process console commands
-			$quake_cmd.cbuf_Execute();
-			$quake_net.neT_Poll();
-			// if running the server locally, make intentions now
-			if ($quake_server.sv.active) {
-				$quake_client.cL_SendCmd();
-			}
-			//-------------------
-			//
-			// server operations
-			//
-			//-------------------
-			if ($quake_server.sv.active) {
-				$quake_host.$host_ServerFrame();
-			}
-			//-------------------
-			//
-			// client operations
-			//
-			//-------------------
-			// if running the server remotely, send intentions now after
-			// the incoming messages have been read
-			if (!$quake_server.sv.active) {
-				$quake_client.cL_SendCmd();
-			}
-			$quake_host.host_time += $quake_host.host_frametime;
-			// fetch results from server
-			if ($quake_client.cls.state === 2) {
-				$quake_client.cL_ReadFromServer();
-			}
-			$quake_screen.scR_UpdateScreen();
-			// update audio
-			if ($quake_client.cls.signon === $quake_client.SIGNONS) {
-				$quake_sound.s_Update($quake_render.r_origin, $quake_render.vpn, $quake_render.vright, $quake_render.vup);
-				$quake_client.cL_DecayLights();
-			}
-			else {
-				$quake_sound.s_Update($quake_mathlib.vec3_origin, $quake_mathlib.vec3_origin, $quake_mathlib.vec3_origin, $quake_mathlib.vec3_origin);
-			}
-			$quake_host.host_framecount++;
+		//try
+		//{
+		// decide the simulation time
+		if (!$quake_host.$host_FilterTime(time)) {
+			return;
 		}
-		catch ($t1) {
-			$t1 = ss.Exception.wrap($t1);
-			if (Type.isInstanceOfType($t1, $quake_host_abortserver)) {
-				return;
-			}
-			else {
-				throw $t1;
-			}
+		// don't run too fast, or packets will flood out
+		// process console commands
+		$quake_cmd.cbuf_Execute();
+		$quake_net.neT_Poll();
+		// if running the server locally, make intentions now
+		if ($quake_server.sv.active) {
+			$quake_client.cL_SendCmd();
 		}
+		//-------------------
+		//
+		// server operations
+		//
+		//-------------------
+		if ($quake_server.sv.active) {
+			$quake_host.$host_ServerFrame();
+		}
+		//-------------------
+		//
+		// client operations
+		//
+		//-------------------
+		// if running the server remotely, send intentions now after
+		// the incoming messages have been read
+		if (!$quake_server.sv.active) {
+			$quake_client.cL_SendCmd();
+		}
+		$quake_host.host_time += $quake_host.host_frametime;
+		// fetch results from server
+		if ($quake_client.cls.state === 2) {
+			$quake_client.cL_ReadFromServer();
+		}
+		$quake_screen.scR_UpdateScreen();
+		// update audio
+		if ($quake_client.cls.signon === $quake_client.SIGNONS) {
+			$quake_sound.s_Update($quake_render.r_origin, $quake_render.vpn, $quake_render.vright, $quake_render.vup);
+			$quake_client.cL_DecayLights();
+		}
+		else {
+			$quake_sound.s_Update($quake_mathlib.vec3_origin, $quake_mathlib.vec3_origin, $quake_mathlib.vec3_origin, $quake_mathlib.vec3_origin);
+		}
+		$quake_host.host_framecount++;
+		//}
+		//catch (host_abortserver)
+		//{
+		//    return;
+		//}
 	};
 	$quake_host.host_Frame = function(time) {
 		var time1, time2;
@@ -14624,8 +14627,8 @@
 	};
 	$quake_render.$r_AliasSetUpTransform = function(trivial_accept) {
 		var i;
-		var rotationmatrix = [new Array(4), new Array(4), new Array(4)];
-		var t2matrix = [new Array(4), new Array(4), new Array(4)];
+		var rotationmatrix = [$Missing_ArrayHelpers.explcitDoubleArray(4), $Missing_ArrayHelpers.explcitDoubleArray(4), $Missing_ArrayHelpers.explcitDoubleArray(4)];
+		var t2matrix = [$Missing_ArrayHelpers.explcitDoubleArray(4), $Missing_ArrayHelpers.explcitDoubleArray(4), $Missing_ArrayHelpers.explcitDoubleArray(4)];
 		var angles = new Array(3);
 		var kk;
 		// TODO: should really be stored with the entity instead of being reconstructed
@@ -17104,12 +17107,15 @@
 			// don't let sound get messed up if going slow
 		}
 		$quake_render.$r_EdgeDrawing();
+		//draw map 
 		if ($quake_render.$r_dspeeds.value === 0) {
 			$quake_sound.s_ExtraUpdate();
 			// don't let sound get messed up if going slow
 		}
 		$quake_render.$r_DrawEntitiesOnList();
+		//draw zombies etc -  models
 		$quake_render.$r_DrawViewModel();
+		//draw gun
 		$quake_render.$r_DrawParticles();
 		if ($quake_render.r_dowarp) {
 			$quake_draw.d_WarpScreen();
@@ -21317,7 +21323,7 @@
 		var media = new $System_Windows_Controls_MediaElement();
 		target_chan.media = media;
 		media.set_autoPlay(true);
-		media.setSource(new MemoryStream(sc.data));
+		media.setSource(new $System_IO_MemoryStream(sc.data));
 		media.set_tag(target_chan);
 		//if (sc.loopstart != -1)
 		//{
@@ -21325,7 +21331,9 @@
 		//target_chan.looping = 1;
 		//}
 		//else
-		throw new $System_NotImplementedException();
+		media.add_mediaEnded(function() {
+			$quake_sound.$media_MediaEnded2(media, null);
+		});
 		$quake_sound.setVolume(target_chan);
 		$InnoveWare_Page.thePage.get_parentCanvas().get_children().add(media);
 	};
@@ -21403,7 +21411,7 @@
 		var media = new $System_Windows_Controls_MediaElement();
 		ss.media = media;
 		media.set_autoPlay(true);
-		media.setSource(new MemoryStream(sc.data));
+		media.setSource(new $System_IO_MemoryStream(sc.data));
 		media.set_tag(ss);
 		throw new $System_NotImplementedException();
 		$quake_sound.setVolume(ss);
@@ -21942,19 +21950,17 @@
 		var imageData = $quake_vid.$surface.context.getImageData(0, 0, $quake_vid.$surface.canvas.width, $quake_vid.$surface.canvas.height);
 		for (var r = 0; r < rects.height; r++) {
 			for (var col = 0; col < rects.width; col++) {
-				//int c = screenq.vid.buffer[ofs + col];
-				//surface.Pixels[ofs + col] = (vid_current_palette[c * 3 + 0] << 16) | (vid_current_palette[c * 3 + 1] << 8) | vid_current_palette[c * 3 + 2];
 				var c = $quake_screen.vid.buffer[ofs + col];
 				var offset = (ofs + col) * 4;
 				//r
-				imageData.data[offset] = $quake_vid.$vid_current_palette[c * 3 + 0];
+				imageData.data[offset] = $quake_vid.$vid_current_palette[c * 3];
 				//g
 				imageData.data[offset + 1] = $quake_vid.$vid_current_palette[c * 3 + 1];
 				//b
 				imageData.data[offset + 2] = $quake_vid.$vid_current_palette[c * 3 + 2];
 				//a
 				imageData.data[offset + 3] = 255;
-				//DebugHelpers.Debugger();
+				// todo only need to do this once???????
 			}
 			ofs += $quake_vid.$surface.pixelWidth;
 		}
@@ -22433,6 +22439,7 @@
 		$quake_render.r_refdef.vieworg[0] += 0.03125;
 		$quake_render.r_refdef.vieworg[1] += 0.03125;
 		$quake_render.r_refdef.vieworg[2] += 0.03125;
+		//client.cl.viewangles[0] = 0; //stops player looking up!
 		$quake_mathlib.vectorCopy($quake_client.cl.viewangles, $quake_render.r_refdef.viewangles);
 		$quake_view.$v_CalcViewRoll();
 		$quake_view.$v_AddIdle();
@@ -22715,12 +22722,29 @@
 	////////////////////////////////////////////////////////////////////////////////
 	// System.Random
 	var $System_Random = function() {
+		this.$mt = null;
+		var ticks = DateTimeExtensions.getTicks(Date.get_now());
+		this.$mt = new MersenneTwister(ticks);
+		//Environment.TickCount - actual MS Random
 	};
 	$System_Random.prototype = {
+		nextDouble: function() {
+			return this.$mt.genrand_real1();
+		},
 		next: function() {
-			throw new $System_NotImplementedException();
+			var real = this.$mt.genrand_real1();
+			return Math.floor(real * 2147483647);
+		},
+		next$1: function(maxValue) {
+			var real = this.$mt.genrand_real1();
+			return Math.floor(real * maxValue);
 		}
 	};
+	$System_Random.$ctor1 = function(seed) {
+		this.$mt = null;
+		this.$mt = new MersenneTwister(seed);
+	};
+	$System_Random.$ctor1.prototype = $System_Random.prototype;
 	////////////////////////////////////////////////////////////////////////////////
 	// System.StringExtensions
 	var $System_StringExtensions = function() {
@@ -22734,20 +22758,30 @@
 	////////////////////////////////////////////////////////////////////////////////
 	// System.TimeSpan
 	var $System_TimeSpan = function() {
+		this.$_ticks = 0;
 	};
 	$System_TimeSpan.prototype = {
 		get_ticks: function() {
-			throw new $System_NotImplementedException();
+			return this.$_ticks;
 		},
 		subtract: function(ts) {
-			throw new $System_NotImplementedException();
+			var ticks = this.$_ticks - ts.$_ticks;
+			return new $System_TimeSpan.$ctor1(ticks);
 		},
 		compareTo: function(value) {
-			throw new $System_NotImplementedException();
+			if (ss.isNullOrUndefined(value)) {
+				return 1;
+			}
+			var num = value.$_ticks;
+			if (this.$_ticks > num) {
+				return 1;
+			}
+			return ((this.$_ticks < num) ? -1 : 0);
 		}
 	};
 	$System_TimeSpan.$ctor1 = function(ticks) {
-		//this._ticks = ticks;
+		this.$_ticks = 0;
+		this.$_ticks = ticks;
 	};
 	$System_TimeSpan.$ctor1.prototype = $System_TimeSpan.prototype;
 	////////////////////////////////////////////////////////////////////////////////
@@ -22792,6 +22826,11 @@
 		}
 	};
 	////////////////////////////////////////////////////////////////////////////////
+	// System.IO.MemoryStream
+	var $System_IO_MemoryStream = function(data) {
+		Stream.call(this, data.buffer);
+	};
+	////////////////////////////////////////////////////////////////////////////////
 	// System.IO.SeekOrigin
 	var $System_IO_SeekOrigin = function() {
 	};
@@ -22799,8 +22838,9 @@
 	Type.registerEnum(global, 'System.IO.SeekOrigin', $System_IO_SeekOrigin, false);
 	////////////////////////////////////////////////////////////////////////////////
 	// System.Windows.Duration
-	var $System_Windows_Duration = function() {
+	var $System_Windows_Duration = function(timeSpan) {
 		this.$_timeSpan = null;
+		this.$_timeSpan = timeSpan;
 	};
 	$System_Windows_Duration.prototype = {
 		get_timeSpan: function() {
@@ -22819,10 +22859,11 @@
 	////////////////////////////////////////////////////////////////////////////////
 	// System.Windows.Controls.Canvas
 	var $System_Windows_Controls_Canvas = function() {
+		this.$_children = [];
 	};
 	$System_Windows_Controls_Canvas.prototype = {
 		get_children: function() {
-			throw new $System_NotImplementedException();
+			return this.$_children;
 		}
 	};
 	////////////////////////////////////////////////////////////////////////////////
@@ -22838,7 +22879,16 @@
 	////////////////////////////////////////////////////////////////////////////////
 	// System.Windows.Controls.MediaElement
 	var $System_Windows_Controls_MediaElement = function() {
+		this.$_stream = null;
+		this.$_duration = null;
+		this.$_timePlayed = 0;
+		this.$_tag = null;
+		this.$_volume = 0;
+		this.$_balance = 0;
 		this.$1$AutoPlayField = false;
+		this.bufferSource = null;
+		this.audioGain = null;
+		this.$1$MediaEndedField = null;
 	};
 	$System_Windows_Controls_MediaElement.prototype = {
 		get_autoPlay: function() {
@@ -22848,49 +22898,58 @@
 			this.$1$AutoPlayField = value;
 		},
 		get_tag: function() {
-			throw new $System_NotImplementedException();
+			return this.$_tag;
 		},
 		set_tag: function(value) {
-			throw new $System_NotImplementedException();
+			this.$_tag = value;
 		},
 		add_mediaEnded: function(value) {
-			throw new $System_NotImplementedException();
+			this.$1$MediaEndedField = Function.combine(this.$1$MediaEndedField, value);
 		},
 		remove_mediaEnded: function(value) {
-			throw new $System_NotImplementedException();
+			this.$1$MediaEndedField = Function.remove(this.$1$MediaEndedField, value);
 		},
 		get_volume: function() {
-			throw new $System_NotImplementedException();
+			return this.$_volume;
 		},
 		set_volume: function(value) {
-			throw new $System_NotImplementedException();
+			if (ss.isValue(this.audioGain)) {
+				this.audioGain.value = value;
+			}
+			this.$_volume = value;
 		},
 		get_balance: function() {
-			throw new $System_NotImplementedException();
+			return this.$_balance;
 		},
 		set_balance: function(value) {
-			throw new $System_NotImplementedException();
+			this.$_balance = value;
 		},
 		get_position: function() {
-			throw new $System_NotImplementedException();
+			return new $System_TimeSpan.$ctor1(DateTimeExtensions.getTicks(Date.get_now()) - DateTimeExtensions.getTicks(this.$_timePlayed));
 		},
-		set_position: function(value) {
-			throw new $System_NotImplementedException();
+		setNaturalDuration: function(duration) {
+			this.$_duration = new $System_Windows_Duration(new $System_TimeSpan.$ctor1(duration));
 		},
 		get_naturalDuration: function() {
-			throw new $System_NotImplementedException();
+			return this.$_duration;
 		},
 		get_currentState: function() {
-			throw new $System_NotImplementedException();
+			// todo: can get playback state from js
+			return 3;
 		},
 		setSource: function(stream) {
-			throw new $System_NotImplementedException();
+			this.$_stream = stream;
+			if (this.get_autoPlay()) {
+				this.play();
+			}
 		},
 		stop: function() {
 			throw new $System_NotImplementedException();
 		},
 		play: function() {
-			throw new $System_NotImplementedException();
+			this.$_timePlayed = Date.get_now();
+			//.GetTicks();
+			playSound(this.$_stream.dataStream._buffer, this);
 		}
 	};
 	////////////////////////////////////////////////////////////////////////////////
@@ -22936,6 +22995,7 @@
 	Type.registerClass(global, 'Helper.helper$ObjectBuffer', $Helper_helper$ObjectBuffer, Object);
 	Type.registerClass(global, 'Helper.helper$UIntBuffer', $Helper_helper$UIntBuffer, Object);
 	Type.registerClass(global, 'InnoveWare.Page', $InnoveWare_Page, Object);
+	Type.registerClass(global, 'Missing.ArrayHelpers', $Missing_ArrayHelpers, Object);
 	Type.registerClass(null, 'quake.$client$kbutton_t', $quake_$client$kbutton_t, Object);
 	Type.registerClass(null, 'quake.$cmd$cmd_function_t', $quake_$cmd$cmd_function_t, Object);
 	Type.registerClass(null, 'quake.$cmd$cmdalias_t', $quake_$cmd$cmdalias_t, Object);
@@ -23102,6 +23162,7 @@
 	Type.registerClass(global, 'System.Uri', $System_Uri, Object);
 	Type.registerClass(global, 'System.Globalization.CultureInfo', $System_Globalization_CultureInfo, Object);
 	Type.registerClass(global, 'System.IO.BinaryReader', $System_IO_BinaryReader, Object);
+	Type.registerClass(global, 'System.IO.MemoryStream', $System_IO_MemoryStream);
 	Type.registerClass(global, 'System.Windows.Duration', $System_Windows_Duration, Object);
 	Type.registerClass(global, 'System.Windows.MessageBox', $System_Windows_MessageBox, Object);
 	Type.registerClass(global, 'System.Windows.RoutedEventArgs', $System_Windows_RoutedEventArgs, ss.EventArgs);
@@ -23112,7 +23173,7 @@
 	Type.registerClass(global, 'System.Windows.Media.Imaging.WriteableBitmap', $System_Windows_Media_Imaging_WriteableBitmap, Object);
 	Type.registerClass(global, 'System.Windows.Resources.StreamResourceInfo', $System_Windows_Resources_StreamResourceInfo, Object);
 	$1$ResourcesField = null;
-	set_resources(new (Type.makeGenericType(ss.Dictionary$2, [String, $System_Windows_Resources_StreamResourceInfo]))());
+	set_resources(new (Type.makeGenericType(ss.Dictionary$2, [String, Object]))());
 	$Helper_helper.seeK_SET = 0;
 	$Helper_helper.$r = new $System_Random();
 	$quake_quakedef.VERSION = 1.09;
@@ -23294,6 +23355,7 @@
 	$InnoveWare_Page.thePage = null;
 	$InnoveWare_Page.gwidth = 0;
 	$InnoveWare_Page.gheight = 0;
+	$InnoveWare_Page.stats = null;
 	$quake_menu.$m_state = 0;
 	$quake_menu.$m_entersound = false;
 	$quake_menu.$m_recursiveDraw = false;
@@ -23553,8 +23615,8 @@
 	$quake_render.$r_avertexnormals = [[-0.525731, 0, 0.850651], [-0.442863, 0.238856, 0.864188], [-0.295242, 0, 0.955423], [-0.309017, 0.5, 0.809017], [-0.16246, 0.262866, 0.951056], [0, 0, 1], [0, 0.850651, 0.525731], [-0.147621, 0.716567, 0.681718], [0.147621, 0.716567, 0.681718], [0, 0.525731, 0.850651], [0.309017, 0.5, 0.809017], [0.525731, 0, 0.850651], [0.295242, 0, 0.955423], [0.442863, 0.238856, 0.864188], [0.16246, 0.262866, 0.951056], [-0.681718, 0.147621, 0.716567], [-0.809017, 0.309017, 0.5], [-0.587785, 0.425325, 0.688191], [-0.850651, 0.525731, 0], [-0.864188, 0.442863, 0.238856], [-0.716567, 0.681718, 0.147621], [-0.688191, 0.587785, 0.425325], [-0.5, 0.809017, 0.309017], [-0.238856, 0.864188, 0.442863], [-0.425325, 0.688191, 0.587785], [-0.716567, 0.681718, -0.147621], [-0.5, 0.809017, -0.309017], [-0.525731, 0.850651, 0], [0, 0.850651, -0.525731], [-0.238856, 0.864188, -0.442863], [0, 0.955423, -0.295242], [-0.262866, 0.951056, -0.16246], [0, 1, 0], [0, 0.955423, 0.295242], [-0.262866, 0.951056, 0.16246], [0.238856, 0.864188, 0.442863], [0.262866, 0.951056, 0.16246], [0.5, 0.809017, 0.309017], [0.238856, 0.864188, -0.442863], [0.262866, 0.951056, -0.16246], [0.5, 0.809017, -0.309017], [0.850651, 0.525731, 0], [0.716567, 0.681718, 0.147621], [0.716567, 0.681718, -0.147621], [0.525731, 0.850651, 0], [0.425325, 0.688191, 0.587785], [0.864188, 0.442863, 0.238856], [0.688191, 0.587785, 0.425325], [0.809017, 0.309017, 0.5], [0.681718, 0.147621, 0.716567], [0.587785, 0.425325, 0.688191], [0.955423, 0.295242, 0], [1, 0, 0], [0.951056, 0.16246, 0.262866], [0.850651, -0.525731, 0], [0.955423, -0.295242, 0], [0.864188, -0.442863, 0.238856], [0.951056, -0.16246, 0.262866], [0.809017, -0.309017, 0.5], [0.681718, -0.147621, 0.716567], [0.850651, 0, 0.525731], [0.864188, 0.442863, -0.238856], [0.809017, 0.309017, -0.5], [0.951056, 0.16246, -0.262866], [0.525731, 0, -0.850651], [0.681718, 0.147621, -0.716567], [0.681718, -0.147621, -0.716567], [0.850651, 0, -0.525731], [0.809017, -0.309017, -0.5], [0.864188, -0.442863, -0.238856], [0.951056, -0.16246, -0.262866], [0.147621, 0.716567, -0.681718], [0.309017, 0.5, -0.809017], [0.425325, 0.688191, -0.587785], [0.442863, 0.238856, -0.864188], [0.587785, 0.425325, -0.688191], [0.688191, 0.587785, -0.425325], [-0.147621, 0.716567, -0.681718], [-0.309017, 0.5, -0.809017], [0, 0.525731, -0.850651], [-0.525731, 0, -0.850651], [-0.442863, 0.238856, -0.864188], [-0.295242, 0, -0.955423], [-0.16246, 0.262866, -0.951056], [0, 0, -1], [0.295242, 0, -0.955423], [0.16246, 0.262866, -0.951056], [-0.442863, -0.238856, -0.864188], [-0.309017, -0.5, -0.809017], [-0.16246, -0.262866, -0.951056], [0, -0.850651, -0.525731], [-0.147621, -0.716567, -0.681718], [0.147621, -0.716567, -0.681718], [0, -0.525731, -0.850651], [0.309017, -0.5, -0.809017], [0.442863, -0.238856, -0.864188], [0.16246, -0.262866, -0.951056], [0.238856, -0.864188, -0.442863], [0.5, -0.809017, -0.309017], [0.425325, -0.688191, -0.587785], [0.716567, -0.681718, -0.147621], [0.688191, -0.587785, -0.425325], [0.587785, -0.425325, -0.688191], [0, -0.955423, -0.295242], [0, -1, 0], [0.262866, -0.951056, -0.16246], [0, -0.850651, 0.525731], [0, -0.955423, 0.295242], [0.238856, -0.864188, 0.442863], [0.262866, -0.951056, 0.16246], [0.5, -0.809017, 0.309017], [0.716567, -0.681718, 0.147621], [0.525731, -0.850651, 0], [-0.238856, -0.864188, -0.442863], [-0.5, -0.809017, -0.309017], [-0.262866, -0.951056, -0.16246], [-0.850651, -0.525731, 0], [-0.716567, -0.681718, -0.147621], [-0.716567, -0.681718, 0.147621], [-0.525731, -0.850651, 0], [-0.5, -0.809017, 0.309017], [-0.238856, -0.864188, 0.442863], [-0.262866, -0.951056, 0.16246], [-0.864188, -0.442863, 0.238856], [-0.809017, -0.309017, 0.5], [-0.688191, -0.587785, 0.425325], [-0.681718, -0.147621, 0.716567], [-0.442863, -0.238856, 0.864188], [-0.587785, -0.425325, 0.688191], [-0.309017, -0.5, 0.809017], [-0.147621, -0.716567, 0.681718], [-0.425325, -0.688191, 0.587785], [-0.16246, -0.262866, 0.951056], [0.442863, -0.238856, 0.864188], [0.16246, -0.262866, 0.951056], [0.309017, -0.5, 0.809017], [0.147621, -0.716567, 0.681718], [0, -0.525731, 0.850651], [0.425325, -0.688191, 0.587785], [0.587785, -0.425325, 0.688191], [0.688191, -0.587785, 0.425325], [-0.955423, 0.295242, 0], [-0.951056, 0.16246, 0.262866], [-1, 0, 0], [-0.850651, 0, 0.525731], [-0.955423, -0.295242, 0], [-0.951056, -0.16246, 0.262866], [-0.864188, 0.442863, -0.238856], [-0.951056, 0.16246, -0.262866], [-0.809017, 0.309017, -0.5], [-0.864188, -0.442863, -0.238856], [-0.951056, -0.16246, -0.262866], [-0.809017, -0.309017, -0.5], [-0.681718, 0.147621, -0.716567], [-0.681718, -0.147621, -0.716567], [-0.850651, 0, -0.525731], [-0.688191, 0.587785, -0.425325], [-0.587785, 0.425325, -0.688191], [-0.425325, 0.688191, -0.587785], [-0.425325, -0.688191, -0.587785], [-0.587785, -0.425325, -0.688191], [-0.688191, -0.587785, -0.425325]];
 	$quake_render.$finalverts = null;
 	$quake_render.$auxverts = null;
-	$quake_render.$tmatrix = [new Array(4), new Array(4), new Array(4)];
-	$quake_render.$viewmatrix = [new Array(4), new Array(4), new Array(4)];
+	$quake_render.$tmatrix = [$Missing_ArrayHelpers.explcitDoubleArray(4), $Missing_ArrayHelpers.explcitDoubleArray(4), $Missing_ArrayHelpers.explcitDoubleArray(4)];
+	$quake_render.$viewmatrix = [$Missing_ArrayHelpers.explcitDoubleArray(4), $Missing_ArrayHelpers.explcitDoubleArray(4), $Missing_ArrayHelpers.explcitDoubleArray(4)];
 	$quake_render.$insubmodel = false;
 	$quake_render.currententity = null;
 	$quake_render.modelorg = new Array(3);
@@ -23586,8 +23648,8 @@
 	$quake_render.$makeleftedge = false;
 	$quake_render.$makerightedge = false;
 	$quake_render.$r_nearzionly = false;
-	$quake_render.sintable = [];
-	$quake_render.intsintable = [];
+	$quake_render.sintable = new Array($quake_render.siN_BUFFER_SIZE);
+	$quake_render.intsintable = new Array($quake_render.siN_BUFFER_SIZE);
 	$quake_render.$r_leftenter = new $quake_model$mvertex_t();
 	$quake_render.$r_leftexit = new $quake_model$mvertex_t();
 	$quake_render.$r_rightenter = new $quake_model$mvertex_t();
@@ -23757,7 +23819,7 @@
 	$quake_render.MAXHEIGHT = 1024;
 	$quake_render.MAXWIDTH = 1280;
 	$quake_render.MAXDIMENSION = $quake_render.MAXWIDTH;
-	$quake_render.siN_BUFFER_SIZE = ss.Int32.getDefaultValue();
+	$quake_render.siN_BUFFER_SIZE = 1408;
 	$quake_render.infinitE_DISTANCE = 65536;
 	$quake_render.NUMSTACKEDGES = 2400;
 	$quake_render.MINEDGES = $quake_render.NUMSTACKEDGES;
@@ -24023,8 +24085,8 @@
 	$quake_model.sizeof_dtriangle_t = 16;
 	$quake_model.dT_FACES_FRONT = 16;
 	$quake_model.sizeof_trivertx_t = 4;
-	$quake_model.sizeof_daliasframe_t = ss.Int32.getDefaultValue();
-	$quake_model.sizeof_daliasgroup_t = ss.Int32.getDefaultValue();
+	$quake_model.sizeof_daliasframe_t = 24;
+	$quake_model.sizeof_daliasgroup_t = 12;
 	$quake_model.sizeof_daliasskingroup_t = 4;
 	$quake_model.sizeof_daliasframetype_t = 4;
 	$quake_model.sizeof_daliasskintype_t = 4;
