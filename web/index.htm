@@ -29,12 +29,19 @@
                     console.log("Got db reponse", response);
                     if (response) {
                         console.log("Already got file");
-                        loadGame(response.data);
+                        window.setResourceStream(url, response.data);
+                        loadGame();
                     } else {
                         console.log("Request file via ajax");
                         loadFile(function (data) {
-                            db.put({ _id: key, data: data });
-                            loadGame(data);
+                            db.put({
+                                _id: key,
+                                url: url,
+                                data: data
+                            });
+                            
+                            window.setResourceStream(url, data);
+                            loadGame();
                         });
                     }
                 });
@@ -58,13 +65,14 @@
                 });
             }
 
-            function loadGame(arrayBuffer) {
+            function loadGame() {
                 console.log("Got data, starting game...");
-                console.log("todo: init game now", arrayBuffer)
+                global.initGame();
             }
         })();
     </script>
     <script src="Scripts/mscorlib.js"></script>
+    <script src="Scripts/missing/DateTimeExtensions.js"></script>
     <script src="Scripts/ScriptProject.js"></script>
 </body>
 </html>
