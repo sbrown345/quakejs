@@ -83,7 +83,7 @@ namespace quake
         // !!! if this is changed, it must be changed in d_ifacea.h too !!!
         public class affinetridesc_t
         {
-            public byte[]                   pskin;
+            public Uint8Array               pskin;
             public model.maliasskindesc_t   pskindesc;
             public int                      skinwidth;
             public int                      skinheight;
@@ -130,7 +130,7 @@ namespace quake
 
         public class drawsurf_t
         {
-	        public byte[]		    surfdat;	// destination for generated surface
+            public Uint8Array       surfdat;	// destination for generated surface
             public int              surfofs;
 	        public int			    rowbytes;	// destination logical width in bytes
             public model.msurface_t surf;		// description for surface to generate

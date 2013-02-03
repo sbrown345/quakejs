@@ -239,7 +239,7 @@ namespace quake
         static void D_DrawSpans8 (render.espan_t pspan)
         {
 	        int				count, spancount;
-	        byte[]          pbase;
+            Uint8Array      pbase;
             int             pdest;
 	        int		        s, t, snext, tnext, sstep, tstep;
 	        double			sdivz, tdivz, zi, z, du, dv, spancountminus1;

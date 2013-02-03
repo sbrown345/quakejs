@@ -74,7 +74,7 @@ namespace quake
         // create a fragment out of any leftovers
             @new = new surfcache_t();
 	        @new.size = size;
-            @new.data = new byte[size];
+            @new.data = new Uint8Array(size);
 	        @new.width = (uint)width;
 	        @new.owner = null;              // should be set properly after return
 	        return @new;

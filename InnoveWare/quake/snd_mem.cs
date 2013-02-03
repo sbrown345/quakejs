@@ -52,7 +52,7 @@ namespace quake
         public static sfxcache_t S_LoadSound (sfx_t s)
         {
             string	        namebuffer = StringExtensions.StringOfLength(256);
-            byte[]          data;
+            Uint8Array data;
 	        sfxcache_t	    sc;
 
             // see if still in memory

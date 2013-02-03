@@ -28,7 +28,7 @@ namespace quake
 
         public static draw.affinetridesc_t     r_affinetridesc = new draw.affinetridesc_t();
 
-        public static byte[]                   acolormap;	// FIXME: should go away
+        public static Uint8Array                  acolormap;	// FIXME: should go away
 
         static model.trivertx_t[]       r_apverts;
 
@@ -790,7 +790,7 @@ namespace quake
             }
 
             r_affinetridesc.pskindesc = pskindesc;
-            r_affinetridesc.pskin = (byte[])pskindesc.skin;
+            r_affinetridesc.pskin = /*(byte[])*/ (Uint8Array)pskindesc.skin;
             r_affinetridesc.skinwidth = a_skinwidth;
             r_affinetridesc.seamfixupX16 = (a_skinwidth >> 1) << 16;
             r_affinetridesc.skinheight = pmdl.skinheight;

@@ -161,7 +161,7 @@ namespace quake
 
         static int Loop_SendMessage(qsocket_t sock, common.sizebuf_t data)
         {
-            byte[]  buffer;
+            Uint8Array buffer;
             int     ofs;
 	        int     bufferLength;
 
@@ -196,7 +196,7 @@ namespace quake
 
         static int Loop_SendUnreliableMessage(qsocket_t sock, common.sizebuf_t data)
         {
-	        byte[]  buffer;
+            Uint8Array buffer;
             int     ofs;
 	        int     bufferLength;
 

@@ -46,15 +46,15 @@ namespace quake
         public class qpic_t
         {
 	        public int	    width, height;
-	        public byte[]	data;			// variably sized
+            public Uint8Array data;			// variably sized
 
-            public static implicit operator qpic_t(byte[] buf)
+            public static implicit operator qpic_t(Uint8Array buf)
             {
                 int ofs = 0;
                 qpic_t qpic = new qpic_t();
                 qpic.width = common.parseInt(buf, ref ofs);
                 qpic.height = common.parseInt(buf, ref ofs);
-                qpic.data = new byte[buf.Length - ofs];
+                qpic.data = new Uint8Array(buf.Length - ofs);
                 Buffer.BlockCopy(buf, ofs, qpic.data, 0, buf.Length - ofs);
                 return qpic;
             }
@@ -81,7 +81,7 @@ namespace quake
 
         static int	        wad_numlumps;
         static lumpinfo_t[] wad_lumps;
-        static byte[]	    wad_base;
+        static Uint8Array   wad_base;
 
         /*
         ==================
@@ -176,18 +176,18 @@ namespace quake
 	        return null;
         }
 
-        public static byte[] W_GetLumpName (string name)
+        public static Uint8Array W_GetLumpName(string name)
         {
             lumpinfo_t lump;
 
             lump = W_GetLumpinfo(name);
-            byte[] buf = new byte[lump.size];
+            Uint8Array buf = new Uint8Array(lump.size);
             for(int kk = 0; kk < lump.size; kk++)
                 buf[kk] = wad_base[lump.filepos + kk];
             return buf;
         }
 
-        byte[] W_GetLumpNum(int num, ref int offset)
+        Uint8Array W_GetLumpNum(int num, ref int offset)
         {
             lumpinfo_t lump;
 
@@ -196,7 +196,7 @@ namespace quake
 
             lump = wad_lumps[num];
 
-            byte[] buf = new byte[lump.size];
+            var buf = new Uint8Array(lump.size);
             for(int kk = 0; kk < lump.size; kk++)
                 buf[kk] = wad_base[lump.filepos + kk];
             return buf;

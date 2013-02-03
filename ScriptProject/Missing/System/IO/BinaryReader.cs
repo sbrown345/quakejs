@@ -8,27 +8,29 @@ namespace System.IO
     {
         public BinaryReader(Stream stream)
         {
-            throw new NotImplementedException();
+            this.stream = stream;
         }
 
-        public byte[] ReadBytes(int size)
+        private Stream stream;
+
+        public Single ReadSingle()
         {
-            throw new NotImplementedException();
+            return this.stream.ReadFloat32();
         }
 
-        public double ReadDouble()
+        public Double ReadDouble()
         {
-            throw new NotImplementedException();
-        }
-
-        public float ReadSingle()
-        {
-            throw new NotImplementedException();
+            return this.stream.ReadFloat64();
         }
 
         public int ReadInt32()
         {
-            throw new NotImplementedException();
+            return this.stream.ReadInt32();
+        }
+
+        internal Uint8Array ReadBytes(int size)
+        {
+            return this.stream.ReadBytes(size);
         }
     }
 }

@@ -70,6 +70,7 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Missing\Web\Uint8Array.cs" />
     <Compile Include="Missing\DateTimeExtensions.cs" />
     <Compile Include="Missing\StringExtensions.cs" />
     <Compile Include="quake\chase.cs" />

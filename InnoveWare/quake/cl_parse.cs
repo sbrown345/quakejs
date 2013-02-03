@@ -153,7 +153,7 @@ namespace quake
 	        double	            time;
 	        int		            ret;
 	        common.sizebuf_t	old = new common.sizebuf_t();
-	        byte[]		        olddata = new byte[8192];
+            Uint8Array olddata = new Uint8Array(8192);
 
             if (server.sv.active)
                 return;		// no need if server is local

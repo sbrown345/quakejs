@@ -40,7 +40,7 @@ namespace quake
             int         pspan = 0;
 	        int			count, spancount, izistep;
 	        int			izi;
-	        byte[]		pbase;
+            Uint8Array  pbase;
             int         pdest;
 	        int	        s, t, snext, tnext, sstep, tstep;
 	        double		sdivz, tdivz, zi, z, du, dv, spancountminus1;
@@ -430,7 +430,7 @@ namespace quake
 
         	cachewidth = render.r_spritedesc.pspriteframe.width;
 	        sprite_height = render.r_spritedesc.pspriteframe.height;
-            cacheblock = (byte[])render.r_spritedesc.pspriteframe.pixels;
+            cacheblock = /*(byte[])*/render.r_spritedesc.pspriteframe.pixels;
 
         // copy the first vertex to the last vertex, so we don't have to deal with
         // wrapping

@@ -54,7 +54,7 @@ namespace quake
             public uint         receiveSequence;
             public uint         unreliableReceiveSequence;
             public int          receiveMessageLength;
-            public byte[]       receiveMessage = new byte[NET_MAXMESSAGE];
+            public Uint8Array receiveMessage = new Uint8Array(NET_MAXMESSAGE);
 
 	        //struct qsockaddr	addr;
             public string       address = StringExtensions.StringOfLength(NET_NAMELEN);

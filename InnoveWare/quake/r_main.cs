@@ -49,7 +49,7 @@ namespace quake
         static bool         r_surfsonstack;
         static int			r_clipflags;
 
-        public static byte[]    r_warpbuffer;
+        public static Uint8Array r_warpbuffer;
 
         static bool         r_fov_greater_than_90;
 
@@ -161,7 +161,7 @@ namespace quake
 
             // create a simple checkerboard texture for the default
             r_notexture_mip = new model.texture_t();
-            r_notexture_mip.pixels = new byte[16 * 16 + 8 * 8 + 4 * 4 + 2 * 2];
+            r_notexture_mip.pixels = new Uint8Array(16 * 16 + 8 * 8 + 4 * 4 + 2 * 2);
 
             r_notexture_mip.width = r_notexture_mip.height = 16;
             r_notexture_mip.offsets[0] = 0;
@@ -460,7 +460,7 @@ namespace quake
         */
         static void R_MarkLeaves()
         {
-            byte[]                  vis;
+            Uint8Array vis;
             model.node_or_leaf_t    node;
             int                     i;
 
@@ -874,7 +874,7 @@ namespace quake
         */
         static void R_RenderView_ ()
         {
-	        byte[]	warpbuffer = new byte[draw.WARP_WIDTH * draw.WARP_HEIGHT];
+            Uint8Array warpbuffer = new Uint8Array(draw.WARP_WIDTH * draw.WARP_HEIGHT);
 
 	        r_warpbuffer = warpbuffer;
 

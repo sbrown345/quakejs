@@ -210,8 +210,8 @@ namespace quake
 
         void WarpPalette ()
         {
-	        int		i,j;
-	        byte[]	newpalette = new byte[768];
+            int i, j;
+            Uint8Array newpalette = new Uint8Array(768);
 	        int[]	basecolor = new int[3];
         	
 	        basecolor[0] = 130;

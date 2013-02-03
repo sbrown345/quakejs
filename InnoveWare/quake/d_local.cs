@@ -47,7 +47,7 @@ namespace quake
             public uint             height;		// DEBUG only needed for debug
             public double           mipscale;
             public model.texture_t	texture;	// checked for animating textures
-            public byte[]           data;	// width*height elements
+            public Uint8Array       data;	// width*height elements
             public int              ofs;
         };
 

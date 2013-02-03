@@ -61,7 +61,7 @@ namespace quake
             public int          flags;
             public double       size;
 
-            public static implicit operator mdl_t(byte[] buf)
+            public static implicit operator mdl_t(Uint8Array buf)
             {
                 int kk;
                 int ofs = 0;

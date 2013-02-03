@@ -134,7 +134,7 @@ namespace quake
                 return;
             }
 
-            byte[] buf = new byte[text.Length];
+            var buf = new Uint8Array(text.Length);
             for (int kk = 0; kk < text.Length; kk++)
                 buf[kk] = (byte)text[kk];
             common.SZ_Write(cmd_text, buf, text.Length);
@@ -151,14 +151,14 @@ namespace quake
         */
         public static void Cbuf_InsertText (string text)
         {
-            byte[]  temp;
+            Uint8Array temp;
             int     templen;
 
             // copy off any commands still remaining in the exec buffer
             templen = cmd_text.cursize;
             if (templen != 0)
             {
-                temp = new byte[templen];
+                temp = new Uint8Array(templen);
                 Buffer.BlockCopy(cmd_text.data, 0, temp, 0, templen);
                 common.SZ_Clear(cmd_text);
             }
@@ -184,7 +184,7 @@ namespace quake
         public static void Cbuf_Execute ()
         {
 	        int		i;
-	        byte[]	text;
+            Uint8Array text;
 	        char[]	line = new char[1024];
 	        int		quotes;
         	
@@ -326,7 +326,7 @@ namespace quake
                 return;
             }
 
-            byte[] buf = common.COM_LoadHunkFile(Cmd_Argv(1));
+            Uint8Array buf = common.COM_LoadHunkFile(Cmd_Argv(1));
             if (buf == null)
             {
                 console.Con_Printf("couldn't exec " + Cmd_Argv(1) + "\n");

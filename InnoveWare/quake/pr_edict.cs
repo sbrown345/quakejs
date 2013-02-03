@@ -29,8 +29,8 @@ namespace quake
     public partial class prog
     {
         static dprograms_t              progs;
-        public static dfunction_t[]     pr_functions;
-        static byte[]                   pr_strings;
+        public static dfunction_t[] pr_functions;
+        static Uint8Array pr_strings;
         static ddef_t[]                 pr_fielddefs;
         static ddef_t[]                 pr_globaldefs;
         static dstatement_t[]           pr_statements;
@@ -873,7 +873,7 @@ namespace quake
         public static void PR_LoadProgs ()
         {
 	        int		            i;
-            byte[]              buf;
+            Uint8Array          buf;
             int                 kk;
             helper.ByteBuffer   bbuf;
 

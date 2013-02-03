@@ -75,13 +75,13 @@ namespace quake
             draw.Draw_Pic((int)(x + ((screen.vid.width - 320) >> 1)), y, pic);
         }
 
-        static byte[] identityTable = new byte[256];
-        static byte[] translationTable = new byte[256];
+        static Uint8Array identityTable = new Uint8Array(256);
+        static Uint8Array translationTable = new Uint8Array(256);
 
         static void M_BuildTranslationTable(int top, int bottom)
         {
 	        int		j;
-	        byte[]	dest, source;
+            Uint8Array dest, source;
 
 	        for (j = 0; j < 256; j++)
 		        identityTable[j] = (byte)j;

@@ -47,7 +47,7 @@ namespace quake
 	        double	entertime;
 	        public int		frags;
 	        public int		colors;			// two 4 bit fields
-	        public byte[]	translations = new byte[vid.VID_GRADES*256];
+            public Uint8Array translations = new Uint8Array(vid.VID_GRADES * 256);
         };
 
         public class cshift_t

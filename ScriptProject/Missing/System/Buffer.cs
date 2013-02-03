@@ -6,5 +6,10 @@
         {
             throw new NotImplementedException();
         }
+
+        public static void BlockCopy(Uint8Array src, int srcOffset, Uint8Array dst, int dstOffset, int count)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

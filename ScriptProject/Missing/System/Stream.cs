@@ -11,7 +11,7 @@
     {
         public Stream(ArrayBuffer arrayBuffer)
         {
-            //throw new NotImplementedException();
+            throw new NotImplementedException();
         }
 
         public char ReadByte()
@@ -37,7 +37,27 @@
             }
         }
 
-        public int Read(byte[] buffer, int offset, int count)
+        public int Read(Uint8Array buffer, int offset, int count)
+        {
+            throw new NotImplementedException();
+        }
+
+        public int ReadInt32()
+        {
+            throw new NotImplementedException();
+        }
+
+        public float ReadFloat32()
+        {
+            throw new NotImplementedException();
+        }
+
+        public double ReadFloat64()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Uint8Array ReadBytes(int size)
         {
             throw new NotImplementedException();
         }

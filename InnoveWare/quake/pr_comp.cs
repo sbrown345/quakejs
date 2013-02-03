@@ -169,9 +169,9 @@ namespace quake
         	
 	        public int		s_name;
 	        public int		s_file;			// source file defined in
-        	
-	        public int		numparms;
-	        public byte[]	parm_size = new byte[MAX_PARMS];
+
+            public int numparms;
+            public Uint8Array parm_size = new Uint8Array(MAX_PARMS);
 
             public static implicit operator dfunction_t(helper.ByteBuffer buf)
             {
@@ -219,7 +219,7 @@ namespace quake
         	
 	        public int		entityfields;
 
-            public static implicit operator dprograms_t(byte[] buf)
+            public static implicit operator dprograms_t(Uint8Array buf)
             {
                 int ofs = 0;
                 dprograms_t dprograms = new dprograms_t();

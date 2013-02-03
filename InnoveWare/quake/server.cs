@@ -63,13 +63,13 @@ namespace quake
 	        public server_state_t	state = new server_state_t();			// some actions are only valid during load
 
 	        public common.sizebuf_t	datagram = new common.sizebuf_t();
-	        public byte[]		    datagram_buf = new byte[quakedef.MAX_DATAGRAM];
+            public Uint8Array datagram_buf = new Uint8Array(quakedef.MAX_DATAGRAM);
 
 	        public common.sizebuf_t	reliable_datagram = new common.sizebuf_t();	// copied to all clients at end of frame
-            public byte[]           reliable_datagram_buf = new byte[quakedef.MAX_DATAGRAM];
+            public Uint8Array reliable_datagram_buf = new Uint8Array(quakedef.MAX_DATAGRAM);
 
 	        public common.sizebuf_t	signon = new common.sizebuf_t();
-            public byte[]           signon_buf = new byte[8192];
+            public Uint8Array signon_buf = new Uint8Array(8192);
 
             public server_t()
             {
@@ -98,7 +98,7 @@ namespace quake
 
 	        public common.sizebuf_t	message = new common.sizebuf_t();			// can be added to at any time,
 										// copied and clear once per frame
-	        public byte[]			msgbuf = new byte[quakedef.MAX_MSGLEN];
+            public Uint8Array msgbuf = new Uint8Array(quakedef.MAX_MSGLEN);
 	        public prog.edict_t		edict;				// EDICT_NUM(clientnum+1)
 	        public string			name;			// for printing to other people
 	        public int				colors;

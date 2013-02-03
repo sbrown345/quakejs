@@ -463,7 +463,7 @@ namespace quake
 	        int		i, j;
 	        bool	@new;
 	        int	    basepal, newpal;
-	        byte[]	pal = new byte[768];
+            Uint8Array pal = new Uint8Array(768);
 	        int		r,g,b;
 	        bool    force;
 

@@ -29,16 +29,16 @@ namespace quake
 
         public static double	skytime;
 
-        public static byte[]    r_skysource;
+        public static Uint8Array r_skysource;
 
         public static int       r_skymade;
         int r_skydirect;		// not used?
 
         // TODO: clean up these routines
 
-        static byte[]   bottomsky = new byte[128 * 131];
-        static byte[]   bottommask = new byte[128 * 131];
-        static byte[]	newsky = new byte[128*256];	// newsky and topsky both pack in here, 128 bytes
+        static Uint8Array bottomsky = new Uint8Array(128 * 131);
+        static Uint8Array bottommask = new Uint8Array(128 * 131);
+        static Uint8Array newsky = new Uint8Array(128 * 256);	// newsky and topsky both pack in here, 128 bytes
 							        //  of newsky on the left of each scan, 128 bytes
 							        //  of topsky on the right, because the low-level
 							        //  drawers need 256-byte scan widths

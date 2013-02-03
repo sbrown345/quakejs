@@ -56,7 +56,7 @@ namespace quake
 	        public efrag_t			        efrag;			// linked list of efrags
 	        public int						frame;
 	        public double					syncbase;		// for client-side animations
-	        public byte[]				    colormap;
+	        public Uint8Array				    colormap;
 	        public int					    effects;		// light, particals, etc
 	        public int						skinnum;		// for Alias models
 	        public int						visframe;		// last frame this entity was

@@ -42,20 +42,20 @@ namespace quake
 
         public class viddef_t
         {
-	        public byte[]	buffer;		// invisible buffer
-	        public byte[]	colormap;		// 256 * VID_GRADES size
+            public Uint8Array buffer;		// invisible buffer
+            public Uint8Array colormap;		// 256 * VID_GRADES size
 	        ushort[]	    colormap16;	// 256 * VID_GRADES size
 	        public int		fullbright;		// index of first fullbright color
-	        public uint		rowbytes;	// may be > width if displayed in a window
-            public uint     width;
-            public uint     height;
+	        public int		rowbytes;	// may be > width if displayed in a window
+            public int     width;
+            public int     height;
             public double   aspect;		// width / height -- < 0 is taller than wide
 	        public int		numpages;
             public bool     recalc_refdef;	// if true, recalc vid-based stuff
-	        public byte[]	conbuffer;
+            public Uint8Array conbuffer;
             public int      conrowbytes;
-            public uint     conwidth;
-            public uint     conheight;
+            public int     conwidth;
+            public int     conheight;
             public int      maxwarpwidth;
             public int      maxwarpheight;
 	        byte[]			direct;		// direct drawing to framebuffer, if not
@@ -91,7 +91,7 @@ namespace quake
 
         static int	    firstupdate = 1;
 
-        static byte[]	vid_current_palette = new byte[768];	// save for mode changes
+        static Uint8Array vid_current_palette = new Uint8Array(768);	// save for mode changes
         
         static bool	nomodecheck = false;
 
@@ -100,7 +100,7 @@ namespace quake
         VID_Init
         ================
         */
-        public static void    VID_Init (byte[] palette)
+        public static void VID_Init(Uint8Array palette)
         {
 	        vid_testingmode = 0;
 
@@ -128,7 +128,7 @@ namespace quake
         VID_SetMode 
         ================
         */
-        static int VID_SetMode (int modenum, byte[] palette)
+        static int VID_SetMode(int modenum, Uint8Array palette)
         {
 	        int		stat;
 
@@ -146,8 +146,8 @@ namespace quake
 	        }
 
         // initialize the new mode
-            screen.vid.width = (uint)Page.gwidth;
-            screen.vid.height = (uint)Page.gheight;
+            screen.vid.width = Page.gwidth;
+            screen.vid.height = Page.gheight;
             screen.vid.aspect = ((double)screen.vid.height / (double)screen.vid.width) * (320.0 / 240.0);
             screen.vid.rowbytes = screen.vid.width;
             screen.vid.numpages = 1;
@@ -161,7 +161,7 @@ namespace quake
 
             VID_SetPalette(palette);
 
-            screen.vid.buffer = new byte[screen.vid.width * screen.vid.height];
+            screen.vid.buffer = new Uint8Array(screen.vid.width * screen.vid.height);
             //surface = new BitmapData(vid_current_palette, screen.vid.buffer, (int)screen.vid.width, (int)screen.vid.height);
             surface = new WriteableBitmap((int)screen.vid.width, (int)screen.vid.height);
             Page.thePage.image.Source = surface;
@@ -187,7 +187,7 @@ namespace quake
         VID_SetPalette
         ================
         */
-        public static void    VID_SetPalette (byte[] palette)
+        public static void VID_SetPalette(Uint8Array palette)
         {
             if (palette != vid_current_palette)
             {
@@ -202,7 +202,7 @@ namespace quake
         VID_ShiftPalette
         ================
         */
-        public static void    VID_ShiftPalette (byte[] palette)
+        public static void VID_ShiftPalette(Uint8Array palette)
         {
 	        VID_SetPalette (palette);
         }

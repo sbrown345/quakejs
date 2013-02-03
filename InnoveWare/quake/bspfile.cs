@@ -85,10 +85,10 @@ namespace quake
 
         public class ByteBuffer
         {
-            public byte[]   buffer;
+            public Uint8Array   buffer;
             public int      ofs;
 
-            public ByteBuffer(byte[] buffer, int ofs)
+            public ByteBuffer(Uint8Array buffer, int ofs)
             {
                 this.buffer = buffer;
                 this.ofs = ofs;
@@ -146,7 +146,7 @@ namespace quake
                     lumps[kk] = new lump_t();
             }
 
-            public static implicit operator dheader_t(byte[] buf)
+            public static implicit operator dheader_t(Uint8Array buf)
             {
                 int ofs = 0;
                 dheader_t dheader = new dheader_t();

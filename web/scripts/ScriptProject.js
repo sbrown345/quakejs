@@ -40,20 +40,20 @@
 	$Helper_helper.getc = function(file) {
 		return file.stream.readByte();
 	};
-	$Helper_helper.fread$1 = function(data, size, count, file) {
+	$Helper_helper.fread = function(data, size, count, file) {
 		var reader = new $System_IO_BinaryReader(file.stream);
 		data.$ = ((size === 4) ? reader.readSingle() : reader.readDouble());
 		return count;
 	};
-	$Helper_helper.fread$2 = function(data, size, count, file) {
+	$Helper_helper.fread$1 = function(data, size, count, file) {
 		var reader = new $System_IO_BinaryReader(file.stream);
 		data.$ = reader.readInt32();
 		return count;
 	};
-	$Helper_helper.fread = function(data, size, count, file) {
+	$Helper_helper.fread$2 = function(data, size, count, file) {
 		var reader = new $System_IO_BinaryReader(file.stream);
-		var buf = reader.readBytes(size);
-		$System_Buffer.blockCopy(buf, 0, data, 0, size);
+		var buf = reader.$readBytes(size);
+		$System_Buffer.blockCopy$1(buf, 0, data, 0, size);
 		return count;
 	};
 	$Helper_helper.fseek = function(file, position, seek) {
@@ -748,17 +748,17 @@
 			// get the next message
 			var cursize;
 			var cursize_temp = { $: $quake_net.net_message.cursize };
-			$Helper_helper.fread$2(cursize_temp, 4, 1, $quake_client.cls.demofile);
+			$Helper_helper.fread$1(cursize_temp, 4, 1, $quake_client.cls.demofile);
 			$quake_net.net_message.cursize = cursize_temp.$;
 			$quake_mathlib.vectorCopy($quake_client.cl.mviewangles[0], $quake_client.cl.mviewangles[1]);
 			for (i = 0; i < 3; i++) {
-				r = $Helper_helper.fread$1(f, 4, 1, $quake_client.cls.demofile);
+				r = $Helper_helper.fread(f, 4, 1, $quake_client.cls.demofile);
 				$quake_client.cl.mviewangles[0][i] = f.$;
 			}
 			if ($quake_net.net_message.cursize > $quake_quakedef.maX_MSGLEN) {
 				$quake_sys_linux.sys_Error('Demo message > MAX_MSGLEN');
 			}
-			r = $Helper_helper.fread($quake_net.net_message.data, $quake_net.net_message.cursize, 1, $quake_client.cls.demofile);
+			r = $Helper_helper.fread$2($quake_net.net_message.data, $quake_net.net_message.cursize, 1, $quake_client.cls.demofile);
 			if (r !== 1) {
 				$quake_client.cL_StopPlayback();
 				return 0;
@@ -1156,7 +1156,7 @@
 		var i;
 		var bits;
 		var buf = new $quake_common$sizebuf_t();
-		var data = new Array(128);
+		var data = new Uint8Array(128);
 		buf.maxsize = 128;
 		buf.cursize = 0;
 		buf.data = data;
@@ -1723,7 +1723,7 @@
 		var time;
 		var ret;
 		var old = new $quake_common$sizebuf_t();
-		var olddata = new Array(8192);
+		var olddata = new Uint8Array(8192);
 		if ($quake_server.sv.active) {
 			return;
 		}
@@ -1733,7 +1733,7 @@
 		}
 		// read messages from server, should just be nops
 		$quake_common$sizebuf_t.copy($quake_net.net_message, old);
-		$System_Buffer.blockCopy($quake_net.net_message.data, 0, olddata, 0, $quake_net.net_message.cursize);
+		$System_Buffer.blockCopy$1($quake_net.net_message.data, 0, olddata, 0, $quake_net.net_message.cursize);
 		do {
 			ret = $quake_client.$cL_GetMessage();
 			switch (ret) {
@@ -1757,7 +1757,7 @@
 			}
 		} while (ret !== 0);
 		$quake_common$sizebuf_t.copy(old, $quake_net.net_message);
-		$System_Buffer.blockCopy(olddata, 0, $quake_net.net_message.data, 0, $quake_net.net_message.cursize);
+		$System_Buffer.blockCopy$1(olddata, 0, $quake_net.net_message.data, 0, $quake_net.net_message.cursize);
 		// check time
 		time = $quake_sys_linux.sys_FloatTime();
 		if (time - $quake_client.$lastmsg < 5) {
@@ -2123,12 +2123,12 @@
 		}
 		dest = 0;
 		source = 0;
-		$System_Buffer.blockCopy($quake_screen.vid.colormap, 0, $quake_client.cl.scores[slot].translations, 0, $quake_client.cl.scores[slot].translations.length);
+		$System_Buffer.blockCopy$1($quake_screen.vid.colormap, 0, $quake_client.cl.scores[slot].translations, 0, $quake_client.cl.scores[slot].translations.length);
 		top = $quake_client.cl.scores[slot].colors & 240;
 		bottom = ($quake_client.cl.scores[slot].colors & 15) << 4;
 		for (i = 0; i < $quake_vid.viD_GRADES; i++, dest += 256, source += 256) {
 			if (top < 128) {
-				$System_Buffer.blockCopy($quake_screen.vid.colormap, source + top, $quake_client.cl.scores[slot].translations, dest + $quake_render.toP_RANGE, 16);
+				$System_Buffer.blockCopy$1($quake_screen.vid.colormap, source + top, $quake_client.cl.scores[slot].translations, dest + $quake_render.toP_RANGE, 16);
 			}
 			else {
 				for (j = 0; j < 16; j++) {
@@ -2136,7 +2136,7 @@
 				}
 			}
 			if (bottom < 128) {
-				$System_Buffer.blockCopy($quake_screen.vid.colormap, source + bottom, $quake_client.cl.scores[slot].translations, dest + $quake_render.bottoM_RANGE, 16);
+				$System_Buffer.blockCopy$1($quake_screen.vid.colormap, source + bottom, $quake_client.cl.scores[slot].translations, dest + $quake_render.bottoM_RANGE, 16);
 			}
 			else {
 				for (j = 0; j < 16; j++) {
@@ -2752,7 +2752,7 @@
 		this.$entertime = 0;
 		this.frags = 0;
 		this.colors = 0;
-		this.translations = new Array(16384);
+		this.translations = new Uint8Array(16384);
 	};
 	////////////////////////////////////////////////////////////////////////////////
 	// quake.client.usercmd_t
@@ -2787,7 +2787,7 @@
 			$quake_console.con_Printf('Cbuf_AddText: overflow\n');
 			return;
 		}
-		var buf = new Array(text.length);
+		var buf = new Uint8Array(text.length);
 		for (var kk = 0; kk < text.length; kk++) {
 			buf[kk] = text.charCodeAt(kk);
 		}
@@ -2799,8 +2799,8 @@
 		// copy off any commands still remaining in the exec buffer
 		templen = $quake_cmd.$cmd_text.cursize;
 		if (templen !== 0) {
-			temp = new Array(templen);
-			$System_Buffer.blockCopy($quake_cmd.$cmd_text.data, 0, temp, 0, templen);
+			temp = new Uint8Array(templen);
+			$System_Buffer.blockCopy$1($quake_cmd.$cmd_text.data, 0, temp, 0, templen);
 			$quake_common.sZ_Clear($quake_cmd.$cmd_text);
 		}
 		else {
@@ -3226,12 +3226,12 @@
 	$quake_common.msG_WriteString = function(sb, s) {
 		var buf;
 		if (ss.isNullOrUndefined(s)) {
-			buf = new Array(1);
+			buf = new Uint8Array(1);
 			buf[0] = 0;
 			$quake_common.sZ_Write(sb, buf, 1);
 		}
 		else {
-			buf = new Array(s.length + 1);
+			buf = new Uint8Array(s.length + 1);
 			for (var kk = 0; kk < s.length; kk++) {
 				buf[kk] = s.charCodeAt(kk);
 			}
@@ -3319,7 +3319,7 @@
 		if (startsize < 256) {
 			startsize = 256;
 		}
-		buf.data = new Array(startsize);
+		buf.data = new Uint8Array(startsize);
 		buf.maxsize = startsize;
 		buf.cursize = 0;
 	};
@@ -3350,12 +3350,12 @@
 	$quake_common.sZ_Write = function(buf, data, length) {
 		var offset = {};
 		var dst = $quake_common.$sZ_GetSpace(buf, length, offset);
-		$System_Buffer.blockCopy(data, 0, dst, offset.$, length);
+		$System_Buffer.blockCopy$1(data, 0, dst, offset.$, length);
 	};
 	$quake_common.sZ_Write$1 = function(buf, data, dataofs, length) {
 		var offset = {};
 		var dst = $quake_common.$sZ_GetSpace(buf, length, offset);
-		$System_Buffer.blockCopy(data, dataofs, dst, offset.$, length);
+		$System_Buffer.blockCopy$1(data, dataofs, dst, offset.$, length);
 	};
 	$quake_common.sZ_Print = function(buf, data) {
 		var len;
@@ -3512,7 +3512,7 @@
 			//		        Sys_Error ("You must have the registered version to use modified games");
 			return;
 		}
-		buf = new Array(256);
+		buf = new Uint8Array(256);
 		$quake_sys_linux.sys_FileRead(h.$, buf, buf.length);
 		ofs.$ = 0;
 		for (kk = 0; kk < 128; kk++) {
@@ -3645,7 +3645,7 @@
 		}
 		// extract the filename base name for hunk tag
 		//COM_FileBase (path, base);
-		buf = new Array(len + 1);
+		buf = new Uint8Array(len + 1);
 		if (ss.isNullOrUndefined(buf)) {
 			$quake_sys_linux.sys_Error('COM_LoadFile: not enough space for ' + path);
 		}
@@ -3719,7 +3719,7 @@
 		if ($quake_sys_linux.sys_FileOpenRead(packfile, packhandle) === -1) {
 			return null;
 		}
-		buf = new Array($quake_common.$sizeof_dpackheader_t);
+		buf = new Uint8Array($quake_common.$sizeof_dpackheader_t);
 		$quake_sys_linux.sys_FileRead(packhandle.$, buf, buf.length);
 		ofs.$ = 0;
 		header.$id = $quake_common.parseString$1(buf, ofs, 4);
@@ -3741,7 +3741,7 @@
 			newfiles[kk] = new $quake_$common$packfile_t();
 		}
 		$quake_sys_linux.sys_FileSeek(packhandle.$, header.$dirofs);
-		buf = new Array(header.$dirlen);
+		buf = new Uint8Array(header.$dirlen);
 		$quake_sys_linux.sys_FileRead(packhandle.$, buf, header.$dirlen);
 		ofs.$ = 0;
 		for (kk = 0; kk < numpackfiles; kk++) {
@@ -3901,7 +3901,7 @@
 	$quake_console.con_CheckResize = function() {
 		var i, j, width, oldwidth, oldtotallines, numlines, numchars;
 		var tbuf = new Array($quake_console.$coN_TEXTSIZE);
-		width = ($quake_screen.vid.width >>> 3) - 2;
+		width = ($quake_screen.vid.width >> 3) - 2;
 		if (width === $quake_console.$con_linewidth) {
 			return;
 		}
@@ -4421,7 +4421,7 @@
 		var srcofs = 0;
 		var dstofs = y * $quake_screen.vid.rowbytes + x;
 		for (v = 0; v < pic.height; v++) {
-			$System_Buffer.blockCopy(source, srcofs, dest, dstofs, pic.width);
+			$System_Buffer.blockCopy$1(source, srcofs, dest, dstofs, pic.width);
 			dstofs += $quake_screen.vid.rowbytes;
 			srcofs += pic.width;
 		}
@@ -4574,7 +4574,7 @@
 			v = ss.Int32.div(($quake_screen.vid.conheight - lines + y) * 200, $quake_screen.vid.conheight);
 			src = v * 320;
 			if ($quake_screen.vid.conwidth === 320) {
-				$System_Buffer.blockCopy(conback.data, src, $quake_screen.vid.conbuffer, dest, $quake_screen.vid.conwidth);
+				$System_Buffer.blockCopy$1(conback.data, src, $quake_screen.vid.conbuffer, dest, $quake_screen.vid.conwidth);
 			}
 			else {
 				f = 0;
@@ -4615,7 +4615,7 @@
 		}
 		else {
 			for (i = 0; i < prect.height; i++) {
-				$System_Buffer.blockCopy($quake_draw.$r_rectdesc.$ptexbytes, psrc, $quake_screen.vid.buffer, pdest, prect.width);
+				$System_Buffer.blockCopy$1($quake_draw.$r_rectdesc.$ptexbytes, psrc, $quake_screen.vid.buffer, pdest, prect.width);
 				psrc += rowbytes;
 				pdest += $quake_screen.vid.rowbytes;
 			}
@@ -6460,7 +6460,7 @@
 		// create a fragment out of any leftovers
 		new1 = new $quake_draw$surfcache_t();
 		new1.size = size;
-		new1.data = new Array(size);
+		new1.data = new Uint8Array(size);
 		new1.width = width;
 		new1.owner = null;
 		// should be set properly after return
@@ -7411,8 +7411,8 @@
 		}
 		if (key === $quake_keys.k_PGUP || key === $quake_keys.k_MWHEELUP) {
 			$quake_console.con_backscroll += 2;
-			if ($quake_console.con_backscroll > $quake_console.con_totallines - ($quake_screen.vid.height >>> 3) - 1) {
-				$quake_console.con_backscroll = $quake_console.con_totallines - ($quake_screen.vid.height >>> 3) - 1;
+			if ($quake_console.con_backscroll > $quake_console.con_totallines - ($quake_screen.vid.height >> 3) - 1) {
+				$quake_console.con_backscroll = $quake_console.con_totallines - ($quake_screen.vid.height >> 3) - 1;
 			}
 			return;
 		}
@@ -7424,7 +7424,7 @@
 			return;
 		}
 		if (key === $quake_keys.k_HOME) {
-			$quake_console.con_backscroll = $quake_console.con_totallines - ($quake_screen.vid.height >>> 3) - 1;
+			$quake_console.con_backscroll = $quake_console.con_totallines - ($quake_screen.vid.height >> 3) - 1;
 			return;
 		}
 		if (key === $quake_keys.k_END) {
@@ -7965,7 +7965,7 @@
 		}
 	};
 	$quake_menu.$m_DrawCharacter = function(cx, line, num) {
-		$quake_draw.draw_Character(cx + ($quake_screen.vid.width - 320 >>> 1), line, num);
+		$quake_draw.draw_Character(cx + ($quake_screen.vid.width - 320 >> 1), line, num);
 	};
 	$quake_menu.$m_Print = function(cx, cy, str) {
 		for (var i = 0; i < str.length; i++) {
@@ -7980,10 +7980,10 @@
 		}
 	};
 	$quake_menu.$m_DrawTransPic = function(x, y, pic) {
-		$quake_draw.draw_TransPic(x + ($quake_screen.vid.width - 320 >>> 1), y, pic);
+		$quake_draw.draw_TransPic(x + ($quake_screen.vid.width - 320 >> 1), y, pic);
 	};
 	$quake_menu.$m_DrawPic = function(x, y, pic) {
-		$quake_draw.draw_Pic(x + ($quake_screen.vid.width - 320 >>> 1), y, pic);
+		$quake_draw.draw_Pic(x + ($quake_screen.vid.width - 320 >> 1), y, pic);
 	};
 	$quake_menu.$m_BuildTranslationTable = function(top, bottom) {
 		var j;
@@ -7993,9 +7993,9 @@
 		}
 		dest = $quake_menu.$translationTable;
 		source = $quake_menu.$identityTable;
-		$System_Buffer.blockCopy(source, 0, dest, 0, 256);
+		$System_Buffer.blockCopy$1(source, 0, dest, 0, 256);
 		if (top < 128) {
-			$System_Buffer.blockCopy(source, top, dest, $quake_render.toP_RANGE, 16);
+			$System_Buffer.blockCopy$1(source, top, dest, $quake_render.toP_RANGE, 16);
 		}
 		else {
 			for (j = 0; j < 16; j++) {
@@ -8003,7 +8003,7 @@
 			}
 		}
 		if (bottom < 128) {
-			$System_Buffer.blockCopy(source, bottom, dest, $quake_render.bottoM_RANGE, 16);
+			$System_Buffer.blockCopy$1(source, bottom, dest, $quake_render.bottoM_RANGE, 16);
 		}
 		else {
 			for (j = 0; j < 16; j++) {
@@ -8012,7 +8012,7 @@
 		}
 	};
 	$quake_menu.$m_DrawTransPicTranslate = function(x, y, pic) {
-		$quake_draw.draw_TransPicTranslate(x + ($quake_screen.vid.width - 320 >>> 1), y, pic, $quake_menu.$translationTable);
+		$quake_draw.draw_TransPicTranslate(x + ($quake_screen.vid.width - 320 >> 1), y, pic, $quake_menu.$translationTable);
 	};
 	$quake_menu.$m_DrawTextBox = function(x, y, width, lines) {
 		var p;
@@ -9102,7 +9102,7 @@
 	$quake_model.$mod_LoadModel = function(mod, crash) {
 		//unsigned *buf;
 		var buf;
-		var stackbuf = new Array(1024);
+		var stackbuf = new Uint8Array(1024);
 		// avoid dirtying the cache heap
 		if (mod.type === 2) {
 		}
@@ -9185,16 +9185,16 @@
 			}
 			pixels = ss.Int32.div(mt.width * mt.height, 64) * 85;
 			tx = new $quake_model$texture_t();
-			tx.pixels = new Array(pixels);
+			tx.pixels = new Uint8Array(pixels);
 			$quake_model.$loadmodel.textures[i] = tx;
-			tx.name = mt.name;
+			tx.pixels = new Uint8Array(pixels);
 			tx.width = mt.width;
 			tx.height = mt.height;
 			for (j = 0; j < $quake_bspfile.MIPLEVELS; j++) {
 				tx.offsets[j] = mt.offsets[j] - $quake_bspfile.sizeof_miptex_t;
 			}
 			// the pixels immediately follow the structures
-			$System_Buffer.blockCopy(buf.buffer, buf.ofs + $quake_bspfile.sizeof_miptex_t, tx.pixels, 0, pixels);
+			$System_Buffer.blockCopy$1(buf.buffer, buf.ofs + $quake_bspfile.sizeof_miptex_t, tx.pixels, 0, pixels);
 			if (mt.name.startsWith('sky')) {
 				$quake_render.r_InitSky(tx);
 			}
@@ -9298,16 +9298,16 @@
 			$quake_model.$loadmodel.lightdata = null;
 			return;
 		}
-		$quake_model.$loadmodel.lightdata = new Array(l.filelen);
-		$System_Buffer.blockCopy($quake_model.$mod_base, l.fileofs, $quake_model.$loadmodel.lightdata, 0, l.filelen);
+		$quake_model.$loadmodel.lightdata = new Uint8Array(l.filelen);
+		$System_Buffer.blockCopy$1($quake_model.$mod_base, l.fileofs, $quake_model.$loadmodel.lightdata, 0, l.filelen);
 	};
 	$quake_model.$mod_LoadVisibility = function(l) {
 		if (l.filelen === 0) {
 			$quake_model.$loadmodel.visdata = null;
 			return;
 		}
-		$quake_model.$loadmodel.visdata = new Array(l.filelen);
-		$System_Buffer.blockCopy($quake_model.$mod_base, l.fileofs, $quake_model.$loadmodel.visdata, 0, l.filelen);
+		$quake_model.$loadmodel.visdata = new Uint8Array(l.filelen);
+		$System_Buffer.blockCopy$1($quake_model.$mod_base, l.fileofs, $quake_model.$loadmodel.visdata, 0, l.filelen);
 	};
 	$quake_model.$mod_LoadEntities = function(l) {
 		if (l.filelen === 0) {
@@ -9315,8 +9315,8 @@
 			return;
 		}
 		$quake_model.$loadmodel.entities = new Array(l.filelen);
-		var tmp = new Array(l.filelen);
-		$System_Buffer.blockCopy($quake_model.$mod_base, l.fileofs, tmp, 0, l.filelen);
+		var tmp = new Uint8Array(l.filelen);
+		$System_Buffer.blockCopy$1($quake_model.$mod_base, l.fileofs, tmp, 0, l.filelen);
 		for (var kk = 0; kk < l.filelen; kk++) {
 			$quake_model.$loadmodel.entities[kk] = tmp[kk];
 		}
@@ -9851,10 +9851,10 @@
 	$quake_model.$mod_LoadAliasSkin = function(pin, pskinindex, skinsize, pheader) {
 		var i;
 		var pskin;
-		pskin = new Array(skinsize * $quake_render.r_pixbytes);
+		pskin = new Uint8Array(skinsize * $quake_render.r_pixbytes);
 		pskinindex = pskin;
 		if ($quake_render.r_pixbytes === 1) {
-			$System_Buffer.blockCopy(pin.buffer, pin.ofs, pskin, 0, skinsize);
+			$System_Buffer.blockCopy$1(pin.buffer, pin.ofs, pskin, 0, skinsize);
 		}
 		else if ($quake_render.r_pixbytes === 2) {
 		}
@@ -10058,7 +10058,7 @@
 		height = pinframe.height;
 		size = width * height;
 		pspriteframe = new $quake_model$mspriteframe_t();
-		pspriteframe.pixels = new Array(size * $quake_render.r_pixbytes);
+		pspriteframe.pixels = new Uint8Array(size * $quake_render.r_pixbytes);
 		ppframe = pspriteframe;
 		pspriteframe.width = width;
 		pspriteframe.height = height;
@@ -10841,7 +10841,7 @@
 		length = $quake_net.$intAlign(length + 4);
 		sock.receiveMessageLength -= length;
 		if (sock.receiveMessageLength !== 0) {
-			$System_Buffer.blockCopy(sock.receiveMessage, length, sock.receiveMessage, 0, sock.receiveMessageLength);
+			$System_Buffer.blockCopy$1(sock.receiveMessage, length, sock.receiveMessage, 0, sock.receiveMessageLength);
 		}
 		if (ss.isValue(sock.driverdata) && ret === 1) {
 			Type.cast(sock.driverdata, $quake_net$qsocket_t).canSend = true;
@@ -10869,7 +10869,7 @@
 		// align
 		ofs++;
 		// message
-		$System_Buffer.blockCopy(data.data, 0, buffer, ofs, data.cursize);
+		$System_Buffer.blockCopy$1(data.data, 0, buffer, ofs, data.cursize);
 		Type.cast(sock.driverdata, $quake_net$qsocket_t).receiveMessageLength = $quake_net.$intAlign(bufferLength + data.cursize + 4);
 		sock.canSend = false;
 		return 1;
@@ -10895,7 +10895,7 @@
 		// align
 		ofs++;
 		// message
-		$System_Buffer.blockCopy(data.data, 0, buffer, ofs, data.cursize);
+		$System_Buffer.blockCopy$1(data.data, 0, buffer, ofs, data.cursize);
 		Type.cast(sock.driverdata, $quake_net$qsocket_t).receiveMessageLength = $quake_net.$intAlign(bufferLength + data.cursize + 4);
 		return 1;
 	};
@@ -11365,7 +11365,7 @@
 		this.receiveSequence = 0;
 		this.unreliableReceiveSequence = 0;
 		this.receiveMessageLength = 0;
-		this.receiveMessage = new Array($quake_net.neT_MAXMESSAGE);
+		this.receiveMessage = new Uint8Array($quake_net.neT_MAXMESSAGE);
 		this.address = $System_StringExtensions.stringOfLength($quake_net.neT_NAMELEN);
 	};
 	////////////////////////////////////////////////////////////////////////////////
@@ -13614,7 +13614,7 @@
 		this.s_name = 0;
 		this.s_file = 0;
 		this.numparms = 0;
-		this.parm_size = new Array($quake_prog.maX_PARMS);
+		this.parm_size = new Uint8Array($quake_prog.maX_PARMS);
 	};
 	$quake_prog$dfunction_t.op_Implicit = function(buf) {
 		var ofs = buf.ofs;
@@ -14176,7 +14176,7 @@
 		},
 		$warpPalette: function() {
 			var i, j;
-			var newpalette = new Array(768);
+			var newpalette = new Uint8Array(768);
 			var basecolor = new Array(3);
 			basecolor[0] = 130;
 			basecolor[1] = 80;
@@ -14802,7 +14802,7 @@
 			$quake_render.$pskindesc = paliasskingroup.skindescs[i];
 		}
 		$quake_render.r_affinetridesc.pskindesc = $quake_render.$pskindesc;
-		$quake_render.r_affinetridesc.pskin = Type.cast($quake_render.$pskindesc.skin, Array);
+		$quake_render.r_affinetridesc.pskin = $quake_render.$pskindesc.skin;
 		$quake_render.r_affinetridesc.skinwidth = $quake_render.$a_skinwidth;
 		$quake_render.r_affinetridesc.seamfixupX16 = $quake_render.$a_skinwidth >> 1 << 16;
 		$quake_render.r_affinetridesc.skinheight = $quake_render.$pmdl.skinheight;
@@ -16582,7 +16582,7 @@
 		var dest;
 		// create a simple checkerboard texture for the default
 		$quake_render.r_notexture_mip = new $quake_model$texture_t();
-		$quake_render.r_notexture_mip.pixels = new Array(340);
+		$quake_render.r_notexture_mip.pixels = new Uint8Array(340);
 		$quake_render.r_notexture_mip.width = $quake_render.r_notexture_mip.height = 16;
 		$quake_render.r_notexture_mip.offsets[0] = 0;
 		$quake_render.r_notexture_mip.offsets[1] = $quake_render.r_notexture_mip.offsets[0] + 256;
@@ -17087,7 +17087,7 @@
 		}
 	};
 	$quake_render.$r_RenderView_ = function() {
-		var warpbuffer = new Array(64000);
+		var warpbuffer = new Uint8Array(64000);
 		$quake_render.r_warpbuffer = warpbuffer;
 		if ($quake_render.$r_timegraph.value !== 0 || $quake_render.$r_speeds.value !== 0 || $quake_render.$r_dspeeds.value !== 0) {
 			$quake_render.$r_time1 = $quake_sys_linux.sys_FloatTime();
@@ -18637,10 +18637,10 @@
 	$quake_sbar.prototype = {
 		$sbar_DrawString: function(x, y, str) {
 			if ($quake_client.cl.gametype === $quake_net.gamE_DEATHMATCH) {
-				$quake_draw.draw_String(x, y + $quake_screen.vid.height - 24, str);
+				$quake_draw.draw_String(x, y + $quake_screen.vid.height - $quake_sbar.$sbaR_HEIGHT, str);
 			}
 			else {
-				$quake_draw.draw_String(x + ($quake_screen.vid.width - 320 >>> 1), y + $quake_screen.vid.height - 24, str);
+				$quake_draw.draw_String(x + ($quake_screen.vid.width - 320 >> 1), y + $quake_screen.vid.height - $quake_sbar.$sbaR_HEIGHT, str);
 			}
 		},
 		$sbar_itoa: function(num, buf) {
@@ -18784,26 +18784,26 @@
 	};
 	$quake_sbar.$sbar_DrawPic = function(x, y, pic) {
 		if ($quake_client.cl.gametype === $quake_net.gamE_DEATHMATCH) {
-			$quake_draw.draw_Pic(x, y + ($quake_screen.vid.height - 24), pic);
+			$quake_draw.draw_Pic(x, y + ($quake_screen.vid.height - $quake_sbar.$sbaR_HEIGHT), pic);
 		}
 		else {
-			$quake_draw.draw_Pic(x + ($quake_screen.vid.width - 320 >>> 1), y + ($quake_screen.vid.height - 24), pic);
+			$quake_draw.draw_Pic(x + ($quake_screen.vid.width - 320 >> 1), y + ($quake_screen.vid.height - $quake_sbar.$sbaR_HEIGHT), pic);
 		}
 	};
 	$quake_sbar.$sbar_DrawTransPic = function(x, y, pic) {
 		if ($quake_client.cl.gametype === $quake_net.gamE_DEATHMATCH) {
-			$quake_draw.draw_TransPic(x, y + ($quake_screen.vid.height - 24), pic);
+			$quake_draw.draw_TransPic(x, y + ($quake_screen.vid.height - $quake_sbar.$sbaR_HEIGHT), pic);
 		}
 		else {
-			$quake_draw.draw_TransPic(x + ($quake_screen.vid.width - 320 >>> 1), y + ($quake_screen.vid.height - 24), pic);
+			$quake_draw.draw_TransPic(x + ($quake_screen.vid.width - 320 >> 1), y + ($quake_screen.vid.height - $quake_sbar.$sbaR_HEIGHT), pic);
 		}
 	};
 	$quake_sbar.$sbar_DrawCharacter = function(x, y, num) {
 		if ($quake_client.cl.gametype === $quake_net.gamE_DEATHMATCH) {
-			$quake_draw.draw_Character(x + 4, y + $quake_screen.vid.height - 24, num);
+			$quake_draw.draw_Character(x + 4, y + $quake_screen.vid.height - $quake_sbar.$sbaR_HEIGHT, num);
 		}
 		else {
-			$quake_draw.draw_Character(x + ($quake_screen.vid.width - 320 >>> 1) + 4, y + $quake_screen.vid.height - 24, num);
+			$quake_draw.draw_Character(x + ($quake_screen.vid.width - 320 >> 1) + 4, y + $quake_screen.vid.height - $quake_sbar.$sbaR_HEIGHT, num);
 		}
 	};
 	$quake_sbar.$sbar_DrawNum = function(x, y, num, digits, color) {
@@ -19991,7 +19991,7 @@
 		}
 	};
 	$quake_server.$sV_SendClientDatagram = function(client) {
-		var buf = new Array($quake_quakedef.maX_DATAGRAM);
+		var buf = new Uint8Array($quake_quakedef.maX_DATAGRAM);
 		var msg = new $quake_common$sizebuf_t();
 		msg.data = buf;
 		msg.maxsize = buf.length;
@@ -20041,7 +20041,7 @@
 	};
 	$quake_server.$sV_SendNop = function(client) {
 		var msg = new $quake_common$sizebuf_t();
-		var buf = new Array(4);
+		var buf = new Uint8Array(4);
 		msg.data = buf;
 		msg.maxsize = buf.length;
 		msg.cursize = 0;
@@ -20160,7 +20160,7 @@
 		}
 	};
 	$quake_server.$sV_SendReconnect = function() {
-		var data = new Array(128);
+		var data = new Uint8Array(128);
 		var msg = new $quake_common$sizebuf_t();
 		msg.data = data;
 		msg.cursize = 0;
@@ -21016,7 +21016,7 @@
 		this.cmd = new $quake_client$usercmd_t();
 		this.$wishdir = new Array(3);
 		this.message = new $quake_common$sizebuf_t();
-		this.msgbuf = new Array($quake_quakedef.maX_MSGLEN);
+		this.msgbuf = new Uint8Array($quake_quakedef.maX_MSGLEN);
 		this.edict = null;
 		this.name = null;
 		this.colors = 0;
@@ -21062,11 +21062,11 @@
 		this.edicts = null;
 		this.state = 0;
 		this.datagram = new $quake_common$sizebuf_t();
-		this.datagram_buf = new Array($quake_quakedef.maX_DATAGRAM);
+		this.datagram_buf = new Uint8Array($quake_quakedef.maX_DATAGRAM);
 		this.reliable_datagram = new $quake_common$sizebuf_t();
-		this.reliable_datagram_buf = new Array($quake_quakedef.maX_DATAGRAM);
+		this.reliable_datagram_buf = new Uint8Array($quake_quakedef.maX_DATAGRAM);
 		this.signon = new $quake_common$sizebuf_t();
-		this.signon_buf = new Array(8192);
+		this.signon_buf = new Uint8Array(8192);
 		for (var kk = 0; kk < $quake_quakedef.maX_MODELS; kk++) {
 			this.models[kk] = new $quake_model$model_t();
 		}
@@ -21316,7 +21316,7 @@
 		var media = new $System_Windows_Controls_MediaElement();
 		target_chan.media = media;
 		media.set_autoPlay(true);
-		media.setSource(new $System_IO_MemoryStream(sc.data));
+		media.setSource(new MemoryStream(sc.data));
 		media.set_tag(target_chan);
 		//if (sc.loopstart != -1)
 		//{
@@ -21402,7 +21402,7 @@
 		var media = new $System_Windows_Controls_MediaElement();
 		ss.media = media;
 		media.set_autoPlay(true);
-		media.setSource(new $System_IO_MemoryStream(sc.data));
+		media.setSource(new MemoryStream(sc.data));
 		media.set_tag(ss);
 		throw new $System_NotImplementedException();
 		$quake_sound.setVolume(ss);
@@ -21752,7 +21752,7 @@
 	$quake_sys_linux.$sys_Init = function() {
 	};
 	$quake_sys_linux.sys_Error = function(error) {
-		alert('Error: ' + error);
+		console.info('Error: ' + error);
 		//            Debug.WriteLine("Error: " + error);
 		//            Host_Shutdown ();
 		throw new ss.Exception();
@@ -21910,7 +21910,7 @@
 		$quake_screen.vid.maxwarpwidth = $quake_draw.warP_WIDTH;
 		$quake_screen.vid.maxwarpheight = $quake_draw.warP_HEIGHT;
 		$quake_vid.viD_SetPalette(palette);
-		$quake_screen.vid.buffer = new Array($quake_screen.vid.width * $quake_screen.vid.height);
+		$quake_screen.vid.buffer = new Uint8Array($quake_screen.vid.width * $quake_screen.vid.height);
 		//surface = new BitmapData(vid_current_palette, screen.vid.buffer, (int)screen.vid.width, (int)screen.vid.height);
 		$quake_vid.$surface = new $System_Windows_Media_Imaging_WriteableBitmap($quake_screen.vid.width, $quake_screen.vid.height);
 		$InnoveWare_Page.thePage.get_image().set_source($quake_vid.$surface);
@@ -21928,7 +21928,7 @@
 	};
 	$quake_vid.viD_SetPalette = function(palette) {
 		if (!ss.referenceEquals(palette, $quake_vid.$vid_current_palette)) {
-			$System_Buffer.blockCopy(palette, 0, $quake_vid.$vid_current_palette, 0, 768);
+			$System_Buffer.blockCopy$1(palette, 0, $quake_vid.$vid_current_palette, 0, 768);
 			//if (surface != null)
 			//surface.UpdatePalette();
 		}
@@ -22233,7 +22233,7 @@
 		var i, j;
 		var new1;
 		var basepal, newpal;
-		var pal = new Array(768);
+		var pal = new Uint8Array(768);
 		var r, g, b;
 		var force;
 		$quake_view.$v_CalcPowerupCshift();
@@ -22558,7 +22558,7 @@
 				$quake_sys_linux.sys_Error('W_GetLumpNum: bad number: ' + num);
 			}
 			lump = $quake_wad.$wad_lumps[num];
-			var buf = new Array(lump.$size);
+			var buf = new Uint8Array(lump.$size);
 			for (var kk = 0; kk < lump.$size; kk++) {
 				buf[kk] = $quake_wad.$wad_base[lump.$filepos + kk];
 			}
@@ -22624,7 +22624,7 @@
 	$quake_wad.w_GetLumpName = function(name) {
 		var lump;
 		lump = $quake_wad.$w_GetLumpinfo(name);
-		var buf = new Array(lump.$size);
+		var buf = new Uint8Array(lump.$size);
 		for (var kk = 0; kk < lump.$size; kk++) {
 			buf[kk] = $quake_wad.$wad_base[lump.$filepos + kk];
 		}
@@ -22642,8 +22642,8 @@
 		var qpic = new $quake_wad$qpic_t();
 		qpic.width = $quake_common.parseInt(buf, ofs);
 		qpic.height = $quake_common.parseInt(buf, ofs);
-		qpic.data = new Array(buf.length - ofs.$);
-		$System_Buffer.blockCopy(buf, ofs.$, qpic.data, 0, buf.length - ofs.$);
+		qpic.data = new Uint8Array(buf.length - ofs.$);
+		$System_Buffer.blockCopy$1(buf, ofs.$, qpic.data, 0, buf.length - ofs.$);
 		return qpic;
 	};
 	////////////////////////////////////////////////////////////////////////////////
@@ -22672,6 +22672,9 @@
 	var $System_Buffer = function() {
 	};
 	$System_Buffer.blockCopy = function(src, srcOffset, dst, dstOffset, count) {
+		throw new $System_NotImplementedException();
+	};
+	$System_Buffer.blockCopy$1 = function(src, srcOffset, dst, dstOffset, count) {
 		throw new $System_NotImplementedException();
 	};
 	////////////////////////////////////////////////////////////////////////////////
@@ -22756,27 +22759,22 @@
 	////////////////////////////////////////////////////////////////////////////////
 	// System.IO.BinaryReader
 	var $System_IO_BinaryReader = function(stream) {
-		throw new $System_NotImplementedException();
+		this.$stream = null;
+		this.$stream = stream;
 	};
 	$System_IO_BinaryReader.prototype = {
-		readBytes: function(size) {
-			throw new $System_NotImplementedException();
+		readSingle: function() {
+			return this.$stream.readFloat32();
 		},
 		readDouble: function() {
-			throw new $System_NotImplementedException();
-		},
-		readSingle: function() {
-			throw new $System_NotImplementedException();
+			return this.$stream.readFloat64();
 		},
 		readInt32: function() {
-			throw new $System_NotImplementedException();
+			return this.$stream.readInt32();
+		},
+		$readBytes: function(size) {
+			return this.$stream.readBytes(size);
 		}
-	};
-	////////////////////////////////////////////////////////////////////////////////
-	// System.IO.MemoryStream
-	var $System_IO_MemoryStream = function(data) {
-		Stream.call(this, new ArrayBuffer());
-		throw new $System_NotImplementedException();
 	};
 	////////////////////////////////////////////////////////////////////////////////
 	// System.IO.SeekOrigin
@@ -23101,7 +23099,6 @@
 	Type.registerClass(global, 'System.Uri', $System_Uri, Object);
 	Type.registerClass(global, 'System.Globalization.CultureInfo', $System_Globalization_CultureInfo, Object);
 	Type.registerClass(global, 'System.IO.BinaryReader', $System_IO_BinaryReader, Object);
-	Type.registerClass(global, 'System.IO.MemoryStream', $System_IO_MemoryStream);
 	Type.registerClass(global, 'System.Windows.Duration', $System_Windows_Duration, Object);
 	Type.registerClass(global, 'System.Windows.MessageBox', $System_Windows_MessageBox, Object);
 	Type.registerClass(global, 'System.Windows.RoutedEventArgs', $System_Windows_RoutedEventArgs, ss.EventArgs);
@@ -23297,8 +23294,8 @@
 	$quake_menu.$m_state = 0;
 	$quake_menu.$m_entersound = false;
 	$quake_menu.$m_recursiveDraw = false;
-	$quake_menu.$identityTable = new Array(256);
-	$quake_menu.$translationTable = new Array(256);
+	$quake_menu.$identityTable = new Uint8Array(256);
+	$quake_menu.$translationTable = new Uint8Array(256);
 	$quake_menu.$m_main_cursor = 0;
 	$quake_menu.$maiN_ITEMS = 5;
 	$quake_menu.$m_singleplayer_cursor = 0;
@@ -23357,7 +23354,7 @@
 	$quake_vid.$vid_mode = new $quake_cvar_t.$ctor1('vid_mode', '0', false);
 	$quake_vid.$numvidmodes = 1;
 	$quake_vid.$firstupdate = 1;
-	$quake_vid.$vid_current_palette = new Array(768);
+	$quake_vid.$vid_current_palette = new Uint8Array(768);
 	$quake_vid.$nomodecheck = false;
 	$quake_vid.$vid_line = 0;
 	$quake_vid.$vid_wmodes = 0;
@@ -23778,9 +23775,9 @@
 	$quake_render.skytime = 0;
 	$quake_render.r_skysource = null;
 	$quake_render.r_skymade = 0;
-	$quake_render.$bottomsky = new Array(16768);
-	$quake_render.$bottommask = new Array(16768);
-	$quake_render.$newsky = new Array(32768);
+	$quake_render.$bottomsky = new Uint8Array(16768);
+	$quake_render.$bottommask = new Uint8Array(16768);
+	$quake_render.$newsky = new Uint8Array(32768);
 	$quake_render.$xlast = -1;
 	$quake_render.$ylast = -1;
 	$quake_render.$clip_current = 0;
@@ -24006,14 +24003,14 @@
 	$quake_model.eF_TRACER3 = 128;
 	$quake_model.$loadmodel = null;
 	$quake_model.$loadname = null;
-	$quake_model.$mod_novis = new Array(1024);
+	$quake_model.$mod_novis = new Uint8Array(1024);
 	$quake_model.maX_MOD_KNOWN = 256;
 	$quake_model.$mod_known = new Array($quake_model.maX_MOD_KNOWN);
 	$quake_model.$mod_numknown = 0;
 	$quake_model.nL_PRESENT = 0;
 	$quake_model.nL_NEEDS_LOADED = 1;
 	$quake_model.nL_UNREFERENCED = 2;
-	$quake_model.$decompressed = new Array(1024);
+	$quake_model.$decompressed = new Uint8Array(1024);
 	$quake_model.$mod_base = null;
 	$quake_model.$aniM_CYCLE = 2;
 	$quake_model.aliaS_VERSION = 6;

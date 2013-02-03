@@ -62,7 +62,7 @@ namespace quake
 	        public double		beamlength;
             public synctype_t   synctype;
 
-            public static implicit operator dsprite_t(byte[] buf)
+            public static implicit operator dsprite_t(Uint8Array buf)
             {
                 int ofs = 0;
                 dsprite_t dsprite = new dsprite_t();

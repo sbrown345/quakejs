@@ -138,7 +138,7 @@ namespace quake
             sys_handles[handle].Stream.Seek(position, SeekOrigin.Begin);
         }
 
-        public static int Sys_FileRead (int handle, byte[] dest, int count)
+        public static int Sys_FileRead (int handle, Uint8Array dest, int count)
         {
             return sys_handles[handle].Stream.Read(dest, 0, count);
         }

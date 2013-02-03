@@ -56,8 +56,8 @@ namespace quake
 
         public static server.client_t   host_client;			// current client
 
-        public static byte[]	host_basepal;
-        public static byte[]    host_colormap;
+        public static Uint8Array host_basepal;
+        public static Uint8Array host_colormap;
 
         static cvar_t	host_framerate = new cvar_t("host_framerate","0");	// set for slow motion
         static cvar_t   host_speeds = new cvar_t("host_speeds", "0");			// set for running times

@@ -4,7 +4,7 @@
 
     public class MessageBox
     {
-        [InlineCode("alert({messageBoxText});")]
+        [InlineCode("console.info({messageBoxText});")]
         public static /*MessageBoxResult*/ void Show(string messageBoxText)
         {
         }

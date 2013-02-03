@@ -58,10 +58,10 @@ namespace Helper
         #region ByteBuffer
         public class ByteBuffer
         {
-            public byte[] buffer;
+            public Uint8Array buffer;
             public int ofs;
 
-            public ByteBuffer(byte[] buffer)
+            public ByteBuffer(Uint8Array buffer)
                 : this(buffer, 0)
             { }
             public ByteBuffer(ByteBuffer buf)
@@ -70,7 +70,7 @@ namespace Helper
             public ByteBuffer(ByteBuffer buf, int ofs)
                 : this(buf.buffer, buf.ofs + ofs)
             { }
-            public ByteBuffer(byte[] buffer, int ofs)
+            public ByteBuffer(Uint8Array buffer, int ofs)
             {
                 this.buffer = buffer;
                 this.ofs = ofs;
@@ -175,10 +175,10 @@ namespace Helper
             return count;
         }
 
-        public static int fread(byte[] data, int size, int count, FILE file)
+        public static int fread(Uint8Array data, int size, int count, FILE file)
         {
             BinaryReader reader = new BinaryReader(file.stream);
-            byte[] buf = reader.ReadBytes(size);
+            Uint8Array buf = reader.ReadBytes(size);
             Buffer.BlockCopy(buf, 0, data, 0, size);
             return count;
         }

@@ -1183,7 +1183,7 @@ namespace quake
 
         static int[]    skintable = new int[MAX_LBM_HEIGHT];
         static int      skinwidth;
-        static byte[]   skinstart;
+        static Uint8Array skinstart;
 
 	    static spanpackage_t[]	spans;
 

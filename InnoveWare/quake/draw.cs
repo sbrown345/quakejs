@@ -34,13 +34,13 @@ namespace quake
 	        public vid.vrect_t	rect = new vid.vrect_t();
 	        public int          width;
 	        public int		    height;
-	        public byte[]       ptexbytes;
+            public Uint8Array   ptexbytes;
 	        public int		    rowbytes;
         };
 
         static rectdesc_t	r_rectdesc = new rectdesc_t();
 
-        static byte[]       draw_chars;				// 8*8 graphic characters
+        static Uint8Array   draw_chars;				// 8*8 graphic characters
         public static wad.qpic_t   draw_disc;
         static wad.qpic_t   draw_backtile;
 
@@ -223,7 +223,7 @@ namespace quake
         */
         public static void Draw_Pic (int x, int y, wad.qpic_t pic)
         {
-	        byte[]			dest, source;
+            Uint8Array      dest, source;
 	        int				v, u;
 
 	        if ((x < 0) ||
@@ -315,7 +315,7 @@ namespace quake
         Draw_TransPicTranslate
         =============
         */
-        public static void Draw_TransPicTranslate(int x, int y, wad.qpic_t pic, byte[] translation)
+        public static void Draw_TransPicTranslate(int x, int y, wad.qpic_t pic, Uint8Array translation)
         {
 	        int         	dest, source;
             byte            tbyte;
@@ -371,8 +371,8 @@ namespace quake
 		        }
 	        }
         }
-        
-        static void Draw_CharToConback (int num, byte[] dest, int ofs)
+
+        static void Draw_CharToConback(int num, Uint8Array dest, int ofs)
         {
 	        int		row, col;
 	        int	    source;

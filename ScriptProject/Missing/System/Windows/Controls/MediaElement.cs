@@ -83,7 +83,7 @@
             }
         }
 
-        public void SetSource(Stream stream)
+        public void SetSource(MemoryStream stream)
         {
             throw new NotImplementedException();
         }

@@ -39,12 +39,12 @@ namespace quake
 
         static int	    sadjust, tadjust, bbextents, bbextentt;
 
-        static byte[]   cacheblock;
+        static Uint8Array cacheblock;
         static int      cacheofs;
         static int		cachewidth;
-        public static byte[]	d_viewbuffer;
+        public static Uint8Array d_viewbuffer;
         public static short[]	    d_pzbuffer;
-        static uint	    d_zrowbytes;
-        static uint	    d_zwidth;
+        static int	    d_zrowbytes;
+        static int	    d_zwidth;
     }
 }

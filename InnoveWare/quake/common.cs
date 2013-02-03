@@ -33,7 +33,7 @@ namespace quake
         {
 	        public bool	    allowoverflow;	// if false, do a Sys_Error
             public bool     overflowed;		// set to true if the buffer size failed
-	        public byte[]	data;
+            public Uint8Array data;
             public int      maxsize;
             public int      cursize;
 
@@ -151,7 +151,7 @@ namespace quake
 
         public static void MSG_WriteChar (sizebuf_t sb, int c)
         {
-	        byte[]    buf;
+	        Uint8Array    buf;
             int       offset;
 
 	        buf = SZ_GetSpace (sb, 1, out offset);
@@ -160,7 +160,7 @@ namespace quake
 
         public static void MSG_WriteByte (sizebuf_t sb, int c)
         {
-	        byte[]    buf;
+	        Uint8Array    buf;
             int       offset;
 
 	        buf = SZ_GetSpace (sb, 1, out offset);
@@ -169,7 +169,7 @@ namespace quake
 
         public static void MSG_WriteShort (sizebuf_t sb, int c)
         {
-            byte[] buf;
+            Uint8Array buf;
             int offset;
 
             buf = SZ_GetSpace(sb, 2, out offset);
@@ -179,7 +179,7 @@ namespace quake
 
         public static void MSG_WriteLong (sizebuf_t sb, int c)
         {
-            byte[] buf;
+            Uint8Array buf;
             int offset;
 
             buf = SZ_GetSpace(sb, 4, out offset);
@@ -191,7 +191,7 @@ namespace quake
 
         public static void MSG_WriteFloat (sizebuf_t sb, double f)
         {
-            byte[] dat;
+            Uint8Array dat;
 
             dat = BitConverter.GetBytes((float)f);
         	
@@ -200,16 +200,16 @@ namespace quake
 
         public static void MSG_WriteString (sizebuf_t sb, string s)
         {
-            byte[]  buf;
+            Uint8Array  buf;
             if (s == null)
             {
-                buf = new byte[1];
+                buf = new Uint8Array(1);
                 buf[0] = 0;
                 SZ_Write(sb, buf, 1);
             }
             else
             {
-                buf = new byte[s.Length + 1];
+                buf = new Uint8Array(s.Length + 1);
                 for (int kk = 0; kk < s.Length; kk++)
                     buf[kk] = (byte)s[kk];
                 SZ_Write(sb, buf, s.Length + 1);
@@ -354,7 +354,7 @@ namespace quake
         {
 	        if (startsize < 256)
 		        startsize = 256;
-            buf.data = new byte[startsize];
+            buf.data = new Uint8Array(startsize);
 	        buf.maxsize = startsize;
 	        buf.cursize = 0;
         }
@@ -369,9 +369,9 @@ namespace quake
 	        buf.cursize = 0;
         }
 
-        static byte[] SZ_GetSpace (sizebuf_t buf, int length, out int offset)
+        static Uint8Array SZ_GetSpace (sizebuf_t buf, int length, out int offset)
         {
-	        byte[]    data;
+	        Uint8Array    data;
         	
 	        if (buf.cursize + length > buf.maxsize)
 	        {
@@ -393,17 +393,17 @@ namespace quake
 	        return data;
         }
 
-        public static void SZ_Write(sizebuf_t buf, byte[] data, int length)
+        public static void SZ_Write(sizebuf_t buf, Uint8Array data, int length)
         {
             int offset;
-            byte[] dst = SZ_GetSpace(buf, length, out offset);
+            Uint8Array dst = SZ_GetSpace(buf, length, out offset);
             Buffer.BlockCopy(data, 0, dst, offset, length);
         }
 
-        public static void SZ_Write(sizebuf_t buf, byte[] data, int dataofs, int length)
+        public static void SZ_Write(sizebuf_t buf, Uint8Array data, int dataofs, int length)
         {
             int offset;
-            byte[] dst = SZ_GetSpace(buf, length, out offset);
+            Uint8Array dst = SZ_GetSpace(buf, length, out offset);
             Buffer.BlockCopy(data, dataofs, dst, offset, length);
         }
 
@@ -417,14 +417,14 @@ namespace quake
             if (buf.data[buf.cursize - 1] != 0)
             {
                 int offset;
-                byte[] dst = SZ_GetSpace(buf, len, out offset);
+                Uint8Array dst = SZ_GetSpace(buf, len, out offset);
                 for (int kk = 0; kk < data.Length; kk++)
                     dst[offset + kk] = (byte)data[kk]; // no trailing 0
             }
             else
             {
                 int offset;
-                byte[] dst = SZ_GetSpace(buf, len - 1, out offset);
+                Uint8Array dst = SZ_GetSpace(buf, len - 1, out offset);
                 for (int kk = 0; kk < data.Length; kk++)
                     dst[offset - 1 + kk] = (byte)data[kk]; // write over trailing 0
             }
@@ -601,7 +601,7 @@ namespace quake
 	        ushort[]        check = new ushort[128];
 	        int             i;
 
-            byte[] buf;
+            Uint8Array buf;
             int kk;
             int ofs;
 
@@ -616,7 +616,7 @@ namespace quake
 		        return;
 	        }
 
-            buf = new byte[128 * sizeof(ushort)];
+            buf = new Uint8Array(128 * sizeof(ushort));
 	        sys_linux.Sys_FileRead (h, buf, buf.Length);
             ofs = 0;
             for (kk = 0; kk < 128; kk++)
@@ -920,10 +920,10 @@ namespace quake
         Allways appends a 0 byte.
         ============
         */
-        public static byte[] COM_LoadFile (string path, int usehunk)
+        public static Uint8Array COM_LoadFile (string path, int usehunk)
         {
 	        int     h = 0;
-	        byte[]  buf;
+	        Uint8Array  buf;
 	        string  _base;
 	        int     len;
 
@@ -937,7 +937,7 @@ namespace quake
         // extract the filename base name for hunk tag
 	        //COM_FileBase (path, base);
 
-        	buf = new byte[len+1];
+            buf = new Uint8Array(len + 1);
 	        if (buf == null)
 		        sys_linux.Sys_Error ("COM_LoadFile: not enough space for " + path);
         		
@@ -951,20 +951,20 @@ namespace quake
 	        return buf;
         }
 
-        public static byte[] COM_LoadHunkFile (string path)
+        public static Uint8Array COM_LoadHunkFile (string path)
         {
 	        return COM_LoadFile (path, 1);
         }
 
-        byte[] COM_LoadTempFile (string path)
+        Uint8Array COM_LoadTempFile (string path)
         {
 	        return COM_LoadFile (path, 2);
         }
 
         // uses temp hunk if larger than bufsize
-        public static byte[] COM_LoadStackFile(string path, byte[] buffer, int bufsize)
+        public static Uint8Array COM_LoadStackFile(string path, Uint8Array buffer, int bufsize)
         {
-            byte[] buf;
+            Uint8Array buf;
 
             //loadbuf = (byte*)buffer;
             //loadsize = bufsize;
@@ -973,7 +973,7 @@ namespace quake
             return buf;
         }
 
-        public static string parseString(byte[] buffer, int offset)
+        public static string parseString(Uint8Array buffer, int offset)
         {
             string str = "";
             for(;;)
@@ -986,7 +986,7 @@ namespace quake
             return str;
         }
 
-        public static string parseString(byte[] buffer, ref int offset, int count)
+        public static string parseString(Uint8Array buffer, ref int offset, int count)
         {
             string str = "";
             for (int pos = 0; pos < count; pos++)
@@ -1000,21 +1000,21 @@ namespace quake
             return str;
         }
 
-        public static ushort parseUshort(byte[] buffer, ref int offset)
+        public static ushort parseUshort(Uint8Array buffer, ref int offset)
         {
             ushort num = (ushort)((buffer[offset + 1] << 8) | buffer[offset]);
             offset += 2;
             return num;
         }
 
-        public static int parseInt(byte[] buffer, ref int offset)
+        public static int parseInt(Uint8Array buffer, ref int offset)
         {
             int num = (buffer[offset + 3] << 24) | (buffer[offset + 2] << 16) | (buffer[offset + 1] << 8) | buffer[offset];
             offset += 4;
             return num;
         }
 
-        public static char parseChar(byte[] buffer, ref int offset)
+        public static char parseChar(Uint8Array buffer, ref int offset)
         {
             char num = (char)buffer[offset];
             offset += 1;
@@ -1043,12 +1043,12 @@ namespace quake
 	        ushort                  crc;
 
             int     kk;
-            byte[]  buf;
+            Uint8Array  buf;
             int     ofs;
 
 	        if (sys_linux.Sys_FileOpenRead (packfile, ref packhandle) == -1)
-		        return null;
-            buf = new byte[sizeof_dpackheader_t];
+                return null;
+            buf = new Uint8Array(sizeof_dpackheader_t);
             sys_linux.Sys_FileRead(packhandle, buf, buf.Length);
             ofs = 0;
             header.id = parseString(buf, ref ofs, 4);
@@ -1068,8 +1068,8 @@ namespace quake
             newfiles = new packfile_t[numpackfiles];
             for(kk = 0; kk < numpackfiles; kk++) newfiles[kk] = new packfile_t();
 
-            sys_linux.Sys_FileSeek (packhandle, header.dirofs);
-            buf = new byte[header.dirlen];
+            sys_linux.Sys_FileSeek(packhandle, header.dirofs);
+            buf = new Uint8Array(header.dirlen);
             sys_linux.Sys_FileRead (packhandle, buf, header.dirlen);
             ofs = 0;
             for (kk = 0; kk < numpackfiles; kk++)

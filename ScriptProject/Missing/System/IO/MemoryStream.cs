@@ -1,10 +1,13 @@
-﻿namespace System.IO
-{
-    using Missing;
+﻿using System.Runtime.CompilerServices;
 
-    public class MemoryStream : Stream
+namespace System.IO
+{
+    [Imported]
+    [ModuleName(null)]
+    [IgnoreNamespace]
+    public class MemoryStream
     {
-        public MemoryStream(byte[] data) : base(new ArrayBuffer())
+        public MemoryStream(Uint8Array data)
         {
             throw new NotImplementedException();
         }

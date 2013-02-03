@@ -39,7 +39,7 @@ namespace quake
         public class sfxcache_t
         {
             public int          loopstart;
-            public byte[]       data;
+            public Uint8Array   data;
         };
 
         // !!! if this is changed, it much be changed in asm_i386.h too !!!

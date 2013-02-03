@@ -514,7 +514,7 @@ namespace quake
         */
         static bool SV_SendClientDatagram(client_t client)
         {
-	        byte[]		        buf = new byte[quakedef.MAX_DATAGRAM];
+            Uint8Array          buf = new Uint8Array(quakedef.MAX_DATAGRAM);
 	        common.sizebuf_t    msg = new common.sizebuf_t();
         	
 	        msg.data = buf;
@@ -594,7 +594,7 @@ namespace quake
         static void SV_SendNop(client_t client)
         {
 	        common.sizebuf_t	msg = new common.sizebuf_t();
-	        byte[]		        buf = new byte[4];
+            Uint8Array          buf = new Uint8Array(4);
         	
 	        msg.data = buf;
 	        msg.maxsize = buf.Length;
@@ -774,7 +774,7 @@ namespace quake
         */
         static void SV_SendReconnect ()
         {
-            byte[]              data = new byte[128];
+            Uint8Array          data = new Uint8Array(128);
 	        common.sizebuf_t	msg = new common.sizebuf_t();
 
 	        msg.data = data;

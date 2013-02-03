@@ -83,7 +83,7 @@ namespace quake
             public texture_t    anim_next;		// in the animation sequence
             public texture_t    alternate_anims;	// bmodels in frmae 1 use these
             public uint[]       offsets = new uint[bspfile.MIPLEVELS];		// four mip maps stored
-            public byte[]       pixels;
+            public Uint8Array       pixels;
         };
         public const int sizeof_texture_t = 16 + 2 * sizeof(uint) + 5 * sizeof(int) + bspfile.MIPLEVELS * sizeof(uint);
         
@@ -196,7 +196,7 @@ namespace quake
             public int                      height;
 	        //void	*                       pcachespot;			// remove?
 	        public double	                up, down, left, right;
-	        public byte[]	                pixels;
+	        public Uint8Array	                pixels;
         };
 
         public class mspritegroup_t
@@ -360,8 +360,8 @@ namespace quake
 	        public int			        numtextures;
             public texture_t[]          textures;
 
-	        public byte[]		        visdata;
-	        public byte[]		        lightdata;
+	        public Uint8Array		        visdata;
+	        public Uint8Array		        lightdata;
             public char[]               entities;
 
         //
@@ -423,7 +423,7 @@ namespace quake
         static model_t      loadmodel;
         static string	    loadname;	// for hunk tags
 
-        static byte[]	    mod_novis = new byte[bspfile.MAX_MAP_LEAFS/8];
+        static Uint8Array mod_novis = new Uint8Array(bspfile.MAX_MAP_LEAFS / 8);
 
         public const int	MAX_MOD_KNOWN	= 256;
         static model_t[]	mod_known = new model_t[MAX_MOD_KNOWN];
@@ -508,8 +508,8 @@ namespace quake
         Mod_DecompressVis
         ===================
         */
-        static byte[]	decompressed = new byte[bspfile.MAX_MAP_LEAFS/8];
-        static byte[] Mod_DecompressVis (bspfile.ByteBuffer @in, model_t model)
+        static Uint8Array decompressed = new Uint8Array(bspfile.MAX_MAP_LEAFS / 8);
+        static Uint8Array Mod_DecompressVis(bspfile.ByteBuffer @in, model_t model)
         {
 	        int		c;
 	        int	    @out;
@@ -549,7 +549,7 @@ namespace quake
 	        return decompressed;
         }
 
-        public static byte[] Mod_LeafPVS (mleaf_t leaf, model_t model)
+        public static Uint8Array Mod_LeafPVS(mleaf_t leaf, model_t model)
         {
 	        if (leaf == model.leafs[0])
 		        return mod_novis;
@@ -649,9 +649,9 @@ namespace quake
         */
         static model_t Mod_LoadModel (model_t mod, bool crash)
         {
-	        //unsigned *buf;
-            byte[]      buf;
-	        byte[]	    stackbuf = new byte[1024];		// avoid dirtying the cache heap
+            //unsigned *buf;
+            Uint8Array buf;
+            Uint8Array stackbuf = new Uint8Array(1024);		// avoid dirtying the cache heap
 
 	        if (mod.type == modtype_t.mod_alias)
 	        {
@@ -735,7 +735,7 @@ namespace quake
         ===============================================================================
         */
 
-        static byte[] mod_base;
+        static Uint8Array mod_base;
         const int ANIM_CYCLE = 2;
 
         /*
@@ -781,10 +781,10 @@ namespace quake
 			        sys_linux.Sys_Error ("Texture " + mt.name + " is not 16 aligned");
 		        pixels = (int)(mt.width*mt.height/64*85);
 		        tx = new texture_t();
-                tx.pixels = new byte[pixels];
+                tx.pixels = new Uint8Array(pixels);
 		        loadmodel.textures[i] = tx;
 
-		        tx.name = mt.name;
+                tx.pixels = new Uint8Array(pixels);
 		        tx.width = mt.width;
 		        tx.height = mt.height;
 		        for (j=0 ; j<bspfile.MIPLEVELS ; j++)
@@ -901,7 +901,7 @@ namespace quake
                 loadmodel.lightdata = null;
                 return;
             }
-            loadmodel.lightdata = new byte[l.filelen];
+            loadmodel.lightdata = new Uint8Array(l.filelen);
             Buffer.BlockCopy(mod_base, l.fileofs, loadmodel.lightdata, 0, l.filelen);
         }
 
@@ -917,7 +917,7 @@ namespace quake
                 loadmodel.visdata = null;
                 return;
             }
-            loadmodel.visdata = new byte[l.filelen];
+            loadmodel.visdata = new Uint8Array(l.filelen);
             Buffer.BlockCopy(mod_base, l.fileofs, loadmodel.visdata, 0, l.filelen);
         }
 
@@ -934,7 +934,7 @@ namespace quake
                 return;
             }
             loadmodel.entities = new char[l.filelen];
-            byte[] tmp = new byte[l.filelen];
+            var tmp = new Uint8Array(l.filelen);
             Buffer.BlockCopy(mod_base, l.fileofs, tmp, 0, l.filelen);
             for (int kk = 0; kk < l.filelen; kk++)
                 loadmodel.entities[kk] = (char)tmp[kk];
@@ -1514,7 +1514,7 @@ namespace quake
         Mod_LoadBrushModel
         =================
         */
-        static void Mod_LoadBrushModel (model_t mod, byte[] buffer)
+        static void Mod_LoadBrushModel(model_t mod, Uint8Array buffer)
         {
 	        int			        i, j;
 	        bspfile.dheader_t	header;
@@ -1712,10 +1712,10 @@ namespace quake
         */
         static object Mod_LoadAliasSkin(bspfile.ByteBuffer pin, object pskinindex, int skinsize, aliashdr_t pheader)
         {
-	        int		i;
-	        byte[]	pskin;
+            int i;
+            Uint8Array pskin;
 
-            pskin = new byte[skinsize * render.r_pixbytes];
+            pskin = new Uint8Array(skinsize * render.r_pixbytes);
 	        pskinindex = (object)pskin;
 
 	        if (render.r_pixbytes == 1)
@@ -1784,7 +1784,7 @@ namespace quake
         Mod_LoadAliasModel
         =================
         */
-        static void Mod_LoadAliasModel(model_t mod, byte[] buffer)
+        static void Mod_LoadAliasModel(model_t mod, Uint8Array buffer)
         {
 	        int					i;
         	mdl_t				pmodel, pinmodel;
@@ -2012,7 +2012,7 @@ namespace quake
 	        size = width * height;
 
             pspriteframe = new mspriteframe_t();
-            pspriteframe.pixels = new byte[size*render.r_pixbytes];
+            pspriteframe.pixels = new Uint8Array(size * render.r_pixbytes);
 
 	        ppframe = pspriteframe;
 
@@ -2091,7 +2091,7 @@ namespace quake
         Mod_LoadSpriteModel
         =================
         */
-        static void Mod_LoadSpriteModel(model_t mod, byte[] buffer)
+        static void Mod_LoadSpriteModel(model_t mod, Uint8Array buffer)
         {
 	        int					i;
 	        int					version;

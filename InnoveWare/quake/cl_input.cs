@@ -328,7 +328,7 @@ namespace quake
 	        int		i;
 	        int		bits;
 	        common.sizebuf_t	buf = new common.sizebuf_t();
-	        byte[]	data = new byte[128];
+            Uint8Array data = new Uint8Array(128);
         	
 	        buf.maxsize = 128;
 	        buf.cursize = 0;
