@@ -281,8 +281,7 @@ namespace quake
 		        return -1;
 	        }
 
-            c = (short)(net.net_message.data[msg_readcount]
-            + (net.net_message.data[msg_readcount + 1] << 8));
+            c = ((((net.net_message.data[msg_readcount + 1] << 8) | net.net_message.data[msg_readcount]) << 16) >> 16);
         	
 	        msg_readcount += 2;
         	
