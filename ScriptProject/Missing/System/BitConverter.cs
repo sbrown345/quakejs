@@ -32,11 +32,6 @@
             throw new NotImplementedException();
         }
 
-        public static Uint8Array GetBytes(int value)
-        {
-            throw new NotImplementedException();
-        }
-
         public static Uint8Array GetBytes(float value)
         {
             throw new NotImplementedException();
