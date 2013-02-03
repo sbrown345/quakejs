@@ -175,6 +175,7 @@
 	var $InnoveWare_Page = function() {
 		this.$oldtime = 0;
 		this.$1$parentCanvasField = null;
+		this.$1$gameCanvasField = null;
 		this.$1$imageField = null;
 		this.set_parentCanvas(new $System_Windows_Controls_Canvas());
 		$InnoveWare_Page.thePage = this;
@@ -182,6 +183,7 @@
 		$InnoveWare_Page.stats = new Stats();
 		$InnoveWare_Page.stats.setMode(0);
 		$('body').append($InnoveWare_Page.stats.domElement);
+		this.set_gameCanvas($('#gameCanvas')[0]);
 	};
 	$InnoveWare_Page.prototype = {
 		get_parentCanvas: function() {
@@ -190,6 +192,12 @@
 		set_parentCanvas: function(value) {
 			this.$1$parentCanvasField = value;
 		},
+		get_gameCanvas: function() {
+			return this.$1$gameCanvasField;
+		},
+		set_gameCanvas: function(value) {
+			this.$1$gameCanvasField = value;
+		},
 		get_image: function() {
 			return this.$1$imageField;
 		},
@@ -197,11 +205,6 @@
 			this.$1$imageField = value;
 		},
 		page_Loaded: function() {
-			// hardcode for now
-			$InnoveWare_Page.gwidth = 800;
-			//(int)Application.Current.Host.Content.ActualWidth; //if this is bigger it was crashing because it was larger than 1024 and some buffer didn't liek it
-			$InnoveWare_Page.gheight = 600;
-			// (int)Application.Current.Host.Content.ActualHeight;
 			// Initialize Quake.
 			this.$oldtime = $quake_sys_linux.sys_FloatTime();
 			$quake_sys_linux.main(0, null);
@@ -218,6 +221,12 @@
 			window.requestAnimationFrame(Function.mkdel(this, this.$page_CompositionTarget_Rendering));
 			$InnoveWare_Page.stats.end();
 		}
+	};
+	$InnoveWare_Page.get_gwidth = function() {
+		return $InnoveWare_Page.thePage.get_gameCanvas().width;
+	};
+	$InnoveWare_Page.get_gheight = function() {
+		return $InnoveWare_Page.thePage.get_gameCanvas().height;
 	};
 	////////////////////////////////////////////////////////////////////////////////
 	// Missing.ArrayHelpers
@@ -21908,8 +21917,8 @@
 			return 0;
 		}
 		// initialize the new mode
-		$quake_screen.vid.width = $InnoveWare_Page.gwidth;
-		$quake_screen.vid.height = $InnoveWare_Page.gheight;
+		$quake_screen.vid.width = $InnoveWare_Page.get_gwidth();
+		$quake_screen.vid.height = $InnoveWare_Page.get_gheight();
 		$quake_screen.vid.aspect = $quake_screen.vid.height / $quake_screen.vid.width * 1.33333333333333;
 		$quake_screen.vid.rowbytes = $quake_screen.vid.width;
 		$quake_screen.vid.numpages = 1;
@@ -23353,8 +23362,6 @@
 	$quake_crc.$crctable = [0, 4129, 8258, 12387, 16516, 20645, 24774, 28903, 33032, 37161, 41290, 45419, 49548, 53677, 57806, 61935, 4657, 528, 12915, 8786, 21173, 17044, 29431, 25302, 37689, 33560, 45947, 41818, 54205, 50076, 62463, 58334, 9314, 13379, 1056, 5121, 25830, 29895, 17572, 21637, 42346, 46411, 34088, 38153, 58862, 62927, 50604, 54669, 13907, 9842, 5649, 1584, 30423, 26358, 22165, 18100, 46939, 42874, 38681, 34616, 63455, 59390, 55197, 51132, 18628, 22757, 26758, 30887, 2112, 6241, 10242, 14371, 51660, 55789, 59790, 63919, 35144, 39273, 43274, 47403, 23285, 19156, 31415, 27286, 6769, 2640, 14899, 10770, 56317, 52188, 64447, 60318, 39801, 35672, 47931, 43802, 27814, 31879, 19684, 23749, 11298, 15363, 3168, 7233, 60846, 64911, 52716, 56781, 44330, 48395, 36200, 40265, 32407, 28342, 24277, 20212, 15891, 11826, 7761, 3696, 65439, 61374, 57309, 53244, 48923, 44858, 40793, 36728, 37256, 33193, 45514, 41451, 53516, 49453, 61774, 57711, 4224, 161, 12482, 8419, 20484, 16421, 28742, 24679, 33721, 37784, 41979, 46042, 49981, 54044, 58239, 62302, 689, 4752, 8947, 13010, 16949, 21012, 25207, 29270, 46570, 42443, 38312, 34185, 62830, 58703, 54572, 50445, 13538, 9411, 5280, 1153, 29798, 25671, 21540, 17413, 42971, 47098, 34713, 38840, 59231, 63358, 50973, 55100, 9939, 14066, 1681, 5808, 26199, 30326, 17941, 22068, 55628, 51565, 63758, 59695, 39368, 35305, 47498, 43435, 22596, 18533, 30726, 26663, 6336, 2273, 14466, 10403, 52093, 56156, 60223, 64286, 35833, 39896, 43963, 48026, 19061, 23124, 27191, 31254, 2801, 6864, 10931, 14994, 64814, 60687, 56684, 52557, 48554, 44427, 40424, 36297, 31782, 27655, 23652, 19525, 15522, 11395, 7392, 3265, 61215, 65342, 53085, 57212, 44955, 49082, 36825, 40952, 28183, 32310, 20053, 24180, 11923, 16050, 3793, 7920];
 	$InnoveWare_Page.bitmap = new $System_Windows_Media_Imaging_BitmapImage();
 	$InnoveWare_Page.thePage = null;
-	$InnoveWare_Page.gwidth = 0;
-	$InnoveWare_Page.gheight = 0;
 	$InnoveWare_Page.stats = null;
 	$quake_menu.$m_state = 0;
 	$quake_menu.$m_entersound = false;

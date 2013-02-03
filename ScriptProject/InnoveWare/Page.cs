@@ -5,11 +5,14 @@ using System.Windows.Media.Imaging;
 
 namespace InnoveWare
 {
+    using System.Html;
     using System.Windows.Controls;
 
     using Missing.Libs;
 
     using jQueryApi;
+
+    using Window = Window;
 
     public class Page
     {
@@ -17,12 +20,25 @@ namespace InnoveWare
         //private Dictionary<Key, int> dictionaryKeys;
         private double oldtime;
         public static Page thePage;
-        public static int gwidth;
-        public static int gheight;
+        public static int gwidth
+        {
+            get
+            {
+                return thePage.gameCanvas.Width;
+            }
+        }
+        public static int gheight
+        {
+            get
+            {
+                return thePage.gameCanvas.Height;
+            }
+        }
         public static Stats stats;
 
         // faking stuff from xaml
         public Canvas parentCanvas { get; set; }
+        public CanvasElement gameCanvas { get; set; }
         public Image image { get; set; }
 
         public Page()
@@ -33,14 +49,11 @@ namespace InnoveWare
             stats = new Stats();
             stats.SetMode(0);
             jQuery.Select("body").Append(stats.domElement);
+            gameCanvas = (CanvasElement)jQuery.Select("#gameCanvas")[0];
         }
 
         public void Page_Loaded()
         {
-            // hardcode for now
-            gwidth = 800; //(int)Application.Current.Host.Content.ActualWidth; //if this is bigger it was crashing because it was larger than 1024 and some buffer didn't liek it
-            gheight = 600;// (int)Application.Current.Host.Content.ActualHeight;
-
             // Initialize Quake.
             oldtime = quake.sys_linux.Sys_FloatTime();
             quake.sys_linux.main(0, null);
