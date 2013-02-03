@@ -174,7 +174,8 @@ namespace quake
                 return daliasframe;
             }
         };
-        public const int sizeof_daliasframe_t = 2 * sizeof_trivertx_t + 16;
+
+        public const int sizeof_daliasframe_t = 24; //2 * sizeof_trivertx_t + 16;
 
         public class daliasgroup_t {
 	        public int			numframes;
@@ -194,7 +195,8 @@ namespace quake
                 return daliasgroup;
             }
         };
-        public const int sizeof_daliasgroup_t = sizeof(int) + 2 * sizeof_trivertx_t;
+
+        public const int sizeof_daliasgroup_t = 12;//sizeof(int) + 2 * sizeof_trivertx_t;
 
         public class daliasskingroup_t {
 	        public int			numskins;

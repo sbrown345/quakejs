@@ -1666,7 +1666,8 @@ namespace quake
 
 	        paliasgroup = new maliasgroup_t();
             paliasgroup.frames = new maliasgroupframedesc_t[numframes];
-            for (int kk = 0; kk < numframes; kk++) paliasgroup.frames[kk] = new maliasgroupframedesc_t();
+            for (int kk = 0; kk < numframes; kk++) 
+                paliasgroup.frames[kk] = new maliasgroupframedesc_t();
 
 	        paliasgroup.numframes = numframes;
 

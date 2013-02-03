@@ -35,7 +35,7 @@ namespace quake
         public const int	MAXWIDTH		= 1280;
         public const int    MAXDIMENSION	= ((MAXHEIGHT > MAXWIDTH) ? MAXHEIGHT : MAXWIDTH);
 
-        public const int    SIN_BUFFER_SIZE	= (MAXDIMENSION+draw.CYCLE);
+        public const int    SIN_BUFFER_SIZE = 1408;//(MAXDIMENSION+draw.CYCLE);
 
         public const int    INFINITE_DISTANCE	= 0x10000;		// distance that's always guaranteed to
 										        //  be farther away than anything in
