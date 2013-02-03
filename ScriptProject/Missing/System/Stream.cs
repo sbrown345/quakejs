@@ -1,7 +1,19 @@
 ﻿namespace System
 {
+    using Missing;
+
     public class Stream
     {
+        public Stream()
+        {
+            //throw new NotImplementedException();
+        }
+
+        public Stream(ArrayBuffer arrayBuffer)
+        {
+            //throw new NotImplementedException();
+        }
+
         public char ReadByte()
         {
             throw new NotImplementedException();

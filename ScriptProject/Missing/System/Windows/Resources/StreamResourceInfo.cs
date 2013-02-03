@@ -1,16 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace System.Windows.Resources
+﻿namespace System.Windows.Resources
 {
     public class StreamResourceInfo
     {
+        private Stream _stream;
+
+        public StreamResourceInfo(Stream stream, string contentType)
+        {
+            if (stream == null)
+            {
+                throw new Exception("stream");
+            }
+            this._stream = stream;
+        }
+
         public Stream Stream
         {
             get
             {
-                throw new NotImplementedException();
+                return _stream;
             }
         }
     }

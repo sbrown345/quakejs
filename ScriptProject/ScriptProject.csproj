@@ -267,7 +267,9 @@
     <Compile Include="..\InnoveWare\quake\world.cs">
       <Link>quake\world.cs</Link>
     </Compile>
-    <Compile Include="InnoveWare\InnoveWare.cs" />
+    <Compile Include="InnoveWare\Page.cs" />
+    <Compile Include="Missing\Web\ArrayBuffer.cs" />
+    <Compile Include="Missing\Window.cs" />
     <Compile Include="Missing\DateTimeExtensions.cs" />
     <Compile Include="Missing\System\IO\BinaryReader.cs" />
     <Compile Include="Missing\System\BitConverter.cs" />
