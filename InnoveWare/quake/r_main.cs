@@ -893,16 +893,16 @@ namespace quake
                 sound.S_ExtraUpdate();	// don't let sound get messed up if going slow
             }
 
-	        R_EdgeDrawing ();
+	        R_EdgeDrawing (); //draw map 
 
             if (r_dspeeds.value == 0)
             {
                 sound.S_ExtraUpdate();	// don't let sound get messed up if going slow
             }
 
-	        R_DrawEntitiesOnList ();
+	        R_DrawEntitiesOnList (); //draw zombies etc -  models
 
-	        R_DrawViewModel ();
+	        R_DrawViewModel (); //draw gun
 
 	        R_DrawParticles ();
 
