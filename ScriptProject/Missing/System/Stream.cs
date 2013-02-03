@@ -61,5 +61,7 @@
         {
             throw new NotImplementedException();
         }
+
+        public ArrayBuffer Buffer;
     }
 }

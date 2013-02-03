@@ -1,45 +1,47 @@
 ﻿namespace System.Windows.Controls
 {
     using System.IO;
+    using System.Runtime.CompilerServices;
     using System.Windows.Media;
+
+    using Missing;
 
     public class MediaElement
     {
+        private MemoryStream _stream;
+        private Duration _duration;
+        private DateTime _timePlayed;
+        private object _tag;
+        private double _volume;
+        private double _balance;
+        
         public bool AutoPlay { get; set; }
+
+        public AudioBufferSourceNode BufferSource;
 
         public object Tag
         {
             get
             {
-                throw new NotImplementedException();
+                return _tag;
             }
             set
             {
-                throw new NotImplementedException();
+                _tag = value;
             }
         }
 
-        public event /*RoutedEventHandler*/ EventHandler MediaEnded
-        {
-            add
-            {
-                throw new NotImplementedException();
-            }
-            remove
-            {
-                throw new NotImplementedException();
-            }
-        }
+        public event Action MediaEnded;// { get; set; }
 
         public double Volume
         {
             get
             {
-                throw new NotImplementedException();
+                return _volume;
             }
             set
             {
-                throw new NotImplementedException();
+                _volume = value;
             }
         }
 
@@ -47,11 +49,11 @@
         {
             get
             {
-                throw new NotImplementedException();
+                return _balance;
             }
             set
             {
-                throw new NotImplementedException();
+                _balance = value;
             }
         }
 
@@ -59,19 +61,20 @@
         {
             get
             {
-                throw new NotImplementedException();
+                return new TimeSpan(DateTime.Now.GetTicks() - _timePlayed.GetTicks());
             }
-            set
-            {
-                throw new NotImplementedException();
-            }
+        }
+
+        public void SetNaturalDuration(long duration)
+        {
+            _duration = new Duration(new TimeSpan(duration));
         }
 
         public Duration NaturalDuration
         {
             get
             {
-                throw new NotImplementedException();
+                return _duration;
             }
         }
 
@@ -79,13 +82,19 @@
         {
             get
             {
-                throw new NotImplementedException();
+                // todo: can get playback state from js
+                return MediaElementState.Playing;
             }
         }
 
         public void SetSource(MemoryStream stream)
         {
-            throw new NotImplementedException();
+            _stream = stream;
+
+            if (AutoPlay)
+            {
+                Play();
+            }
         }
 
         public void Stop()
@@ -94,6 +103,13 @@
         }
 
         public void Play()
+        {
+            _timePlayed = DateTime.Now;//.GetTicks();
+            Play2();
+        }
+
+        [InlineCode("playSound(this.$_stream.dataStream._buffer, this);")]
+        private void Play2()
         {
             throw new NotImplementedException();
         }

@@ -4,6 +4,8 @@ using System.Text;
 
 using System.Runtime.CompilerServices;
 
+using Missing;
+
 [Imported]
 [ModuleName(null)]
 [IgnoreNamespace]
@@ -47,6 +49,15 @@ public class Uint8Array
 
     [IntrinsicPropertyAttribute]
     public int Length
+    {
+        get
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    [IntrinsicPropertyAttribute]
+    public ArrayBuffer Buffer
     {
         get
         {

@@ -8,6 +8,11 @@ namespace System.Windows
     {
         private TimeSpan _timeSpan;
 
+        public Duration(TimeSpan timeSpan)
+        {
+            this._timeSpan = timeSpan;
+        }
+
         public TimeSpan TimeSpan
         {
             get

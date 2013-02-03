@@ -441,9 +441,9 @@ namespace quake
 #if SILVERLIGHT
                 media.MediaEnded += media_MediaEnded2;
 #else
-            throw new NotImplementedException();
+                media.MediaEnded += () => media_MediaEnded2(media, null);
 #endif
-            SetVolume(target_chan);
+                SetVolume(target_chan);
             Page.thePage.parentCanvas.Children.Add(media);
         }
 
