@@ -1,5 +1,10 @@
 ﻿namespace System
 {
+    using System.Runtime.CompilerServices;
+
+    [Imported]
+    [ModuleName(null)]
+    [IgnoreNamespace]
     public static class BitConverter
     {
         public static float ToSingle(byte[] value, int startIndex)

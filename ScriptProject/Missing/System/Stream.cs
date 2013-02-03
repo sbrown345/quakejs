@@ -1,14 +1,14 @@
 ﻿namespace System
 {
+    using System.Runtime.CompilerServices;
+
     using Missing;
 
+    [Imported]
+    [ModuleName(null)]
+    [IgnoreNamespace]
     public class Stream
     {
-        public Stream()
-        {
-            //throw new NotImplementedException();
-        }
-
         public Stream(ArrayBuffer arrayBuffer)
         {
             //throw new NotImplementedException();

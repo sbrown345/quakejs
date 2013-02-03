@@ -29,7 +29,9 @@
         // JS interaction
         public static void SetResourceStream(string key, ArrayBuffer arrayBuffer)
         {
-            Resources[key] = new StreamResourceInfo(new Stream(arrayBuffer), null);
+            var stream = new Stream(arrayBuffer);
+            var streamResourceInfo = new StreamResourceInfo(stream, null);
+            Resources["InnoveWare;component/" + key] = streamResourceInfo;
         }
     }
 }
