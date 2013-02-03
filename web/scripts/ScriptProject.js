@@ -186,6 +186,7 @@
 		this.$1$imageField = null;
 		this.set_parentCanvas(new $System_Windows_Controls_Canvas());
 		$InnoveWare_Page.thePage = this;
+		this.set_image(new $System_Windows_Controls_Image());
 	};
 	$InnoveWare_Page.prototype = {
 		get_parentCanvas: function() {
@@ -21913,7 +21914,7 @@
 		$quake_screen.vid.buffer = new Uint8Array($quake_screen.vid.width * $quake_screen.vid.height);
 		//surface = new BitmapData(vid_current_palette, screen.vid.buffer, (int)screen.vid.width, (int)screen.vid.height);
 		$quake_vid.$surface = new $System_Windows_Media_Imaging_WriteableBitmap($quake_screen.vid.width, $quake_screen.vid.height);
-		$InnoveWare_Page.thePage.get_image().set_source($quake_vid.$surface);
+		$InnoveWare_Page.thePage.get_image().source = $quake_vid.$surface;
 		//Page.thePage.image2.Source = surface;
 		//Page.thePage.image3.Source = surface;
 		//Page.thePage.image4.Source = surface;
@@ -21937,17 +21938,27 @@
 		$quake_vid.viD_SetPalette(palette);
 	};
 	$quake_vid.viD_Update = function(rects) {
-		//surface.UpdateBitmap(rects.x, rects.y, rects.width, rects.height);
-		//surface.Blit(Page.bitmap);
-		var ofs = $quake_vid.$surface.get_pixelWidth() * rects.y + rects.x;
+		var ofs = $quake_vid.$surface.pixelWidth * rects.y + rects.x;
+		var imageData = $quake_vid.$surface.context.getImageData(0, 0, $quake_vid.$surface.canvas.width, $quake_vid.$surface.canvas.height);
 		for (var r = 0; r < rects.height; r++) {
 			for (var col = 0; col < rects.width; col++) {
+				//int c = screenq.vid.buffer[ofs + col];
+				//surface.Pixels[ofs + col] = (vid_current_palette[c * 3 + 0] << 16) | (vid_current_palette[c * 3 + 1] << 8) | vid_current_palette[c * 3 + 2];
 				var c = $quake_screen.vid.buffer[ofs + col];
-				$quake_vid.$surface.get_pixels()[ofs + col] = $quake_vid.$vid_current_palette[c * 3 + 0] << 16 | $quake_vid.$vid_current_palette[c * 3 + 1] << 8 | $quake_vid.$vid_current_palette[c * 3 + 2];
+				var offset = (ofs + col) * 4;
+				//r
+				imageData.data[offset] = $quake_vid.$vid_current_palette[c * 3 + 0];
+				//g
+				imageData.data[offset + 1] = $quake_vid.$vid_current_palette[c * 3 + 1];
+				//b
+				imageData.data[offset + 2] = $quake_vid.$vid_current_palette[c * 3 + 2];
+				//a
+				imageData.data[offset + 3] = 255;
+				//DebugHelpers.Debugger();
 			}
-			ofs += $quake_vid.$surface.get_pixelWidth();
+			ofs += $quake_vid.$surface.pixelWidth;
 		}
-		$quake_vid.$surface.invalidate();
+		$quake_vid.$surface.context.putImageData(imageData, 0, 0);
 		//Page.thePage.image.Source = surface;
 	};
 	////////////////////////////////////////////////////////////////////////////////
@@ -22672,10 +22683,14 @@
 	var $System_Buffer = function() {
 	};
 	$System_Buffer.blockCopy = function(src, srcOffset, dst, dstOffset, count) {
-		throw new $System_NotImplementedException();
+		for (var i = 0; i < count; i++) {
+			dst[i + dstOffset] = src[i + srcOffset];
+		}
 	};
 	$System_Buffer.blockCopy$1 = function(src, srcOffset, dst, dstOffset, count) {
-		throw new $System_NotImplementedException();
+		for (var i = 0; i < count; i++) {
+			dst[i + dstOffset] = src[i + srcOffset];
+		}
 	};
 	////////////////////////////////////////////////////////////////////////////////
 	// System.Convert
@@ -22813,15 +22828,10 @@
 	////////////////////////////////////////////////////////////////////////////////
 	// System.Windows.Controls.Image
 	var $System_Windows_Controls_Image = function() {
+		this.source = null;
 	};
 	$System_Windows_Controls_Image.prototype = {
 		get_children: function() {
-			throw new $System_NotImplementedException();
-		},
-		get_source: function() {
-			throw new $System_NotImplementedException();
-		},
-		set_source: function(value) {
 			throw new $System_NotImplementedException();
 		}
 	};
@@ -22895,22 +22905,15 @@
 	};
 	////////////////////////////////////////////////////////////////////////////////
 	// System.Windows.Media.Imaging.WriteableBitmap
-	var $System_Windows_Media_Imaging_WriteableBitmap = function(pixelWidth, pixelHeight) {
-		this.$1$PixelWidthField = 0;
-	};
-	$System_Windows_Media_Imaging_WriteableBitmap.prototype = {
-		get_pixelWidth: function() {
-			return this.$1$PixelWidthField;
-		},
-		set_pixelWidth: function(value) {
-			this.$1$PixelWidthField = value;
-		},
-		get_pixels: function() {
-			throw new $System_NotImplementedException();
-		},
-		invalidate: function() {
-			throw new $System_NotImplementedException();
-		}
+	var $System_Windows_Media_Imaging_WriteableBitmap = function(width, height) {
+		this.canvas = null;
+		this.context = null;
+		this.pixelWidth = 0;
+		this.pixelHeight = 0;
+		this.pixelWidth = width;
+		this.pixelHeight = height;
+		this.canvas = document.getElementById('gameCanvas');
+		this.context = this.canvas.getContext('2d');
 	};
 	////////////////////////////////////////////////////////////////////////////////
 	// System.Windows.Resources.StreamResourceInfo

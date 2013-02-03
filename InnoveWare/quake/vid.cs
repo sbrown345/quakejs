@@ -225,10 +225,9 @@ namespace quake
         */
         public static void    VID_Update (vrect_t rects)
         {
-            //surface.UpdateBitmap(rects.x, rects.y, rects.width, rects.height);
-            //surface.Blit(Page.bitmap);
-
             int ofs = surface.PixelWidth * rects.y + rects.x;
+
+#if SILVERLIGHT
             for (int r = 0; r < rects.height; r++)
             {
                 for (int col = 0; col < rects.width; col++)
@@ -240,6 +239,25 @@ namespace quake
             }
 
             surface.Invalidate();
+#else 
+            var imageData = surface.context.GetImageData(0, 0, surface.canvas.Width, surface.canvas.Height);
+            for (int r = 0; r < rects.height; r++)
+            {
+                for (int col = 0; col < rects.width; col++)
+                {
+                    var c = screen.vid.buffer[ofs + col];
+                    var offset = (ofs + col) * 4; //r
+                    imageData.Data[offset] = vid_current_palette[c * 3]; //g
+                    imageData.Data[offset + 1] = vid_current_palette[c * 3 + 1]; //b
+                    imageData.Data[offset + 2] = vid_current_palette[c * 3 + 2]; //a
+                    imageData.Data[offset + 3] = 255; // todo only need to do this once???????
+                }
+                ofs += surface.PixelWidth;
+            }
+
+            surface.context.PutImageData(imageData, 0, 0);
+#endif
+
             //Page.thePage.image.Source = surface;
         }
 

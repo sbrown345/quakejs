@@ -29,6 +29,7 @@ namespace InnoveWare
        {
            parentCanvas = new Canvas();
            thePage = this;
+           image = new Image();
        }
 
        public void Page_Loaded()

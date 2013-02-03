@@ -1,24 +1,24 @@
 ﻿namespace System.Windows.Media.Imaging
 {
+    using System.Html;
+    using System.Html.Media.Graphics;
+
     public class WriteableBitmap
     {
-        public WriteableBitmap(int pixelWidth, int pixelHeight)
+        public WriteableBitmap(int width, int height)
         {
+            this.PixelWidth = width;
+            this.PixelHeight = height;
+            this.canvas = (CanvasElement)Document.GetElementById("gameCanvas");
+            this.context = (CanvasContext2D)this.canvas.GetContext(Rendering.Render2D);
         }
 
-        public int PixelWidth { get; set; }
+        public CanvasElement canvas;
 
-        public int[] Pixels
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
+        public CanvasContext2D context;
 
-        public void Invalidate()
-        {
-            throw new NotImplementedException();
-        }
+        public int PixelWidth;
+
+        public int PixelHeight;
     }
 }

@@ -16,16 +16,6 @@ namespace System.Windows.Controls
             }
         }
 
-        public WriteableBitmap Source
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-            set
-            {
-                throw new NotImplementedException();
-            }
-        }
+        public WriteableBitmap Source;
     }
 }
