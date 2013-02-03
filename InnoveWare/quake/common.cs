@@ -248,8 +248,8 @@ namespace quake
 		        msg_badread = true;
 		        return -1;
 	        }
-        		
-	        c = (sbyte)net.net_message.data[msg_readcount];
+
+            c = ((net.net_message.data[msg_readcount] >> 7) * (-256)) + net.net_message.data[msg_readcount];
 	        msg_readcount++;
         	
 	        return c;
