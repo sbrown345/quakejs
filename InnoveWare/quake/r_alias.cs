@@ -21,6 +21,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 namespace quake
 {
+    using Missing;
+
     public partial class render
     {
         public const int LIGHT_MIN	= 5;		// lowest light value we'll allow, to avoid the
@@ -509,15 +511,16 @@ namespace quake
         R_AliasSetUpTransform
         ================
         */
-        static double[][]	tmatrix = { new double[4], new double[4], new double[4] };
-        static double[][]	viewmatrix = { new double[4], new double[4], new double[4] };
-        static void R_AliasSetUpTransform (int trivial_accept)
+        static double[][] tmatrix = { ArrayHelpers.ExplcitDoubleArray(4), ArrayHelpers.ExplcitDoubleArray(4), ArrayHelpers.ExplcitDoubleArray(4) };
+        static double[][] viewmatrix = { ArrayHelpers.ExplcitDoubleArray(4), ArrayHelpers.ExplcitDoubleArray(4), ArrayHelpers.ExplcitDoubleArray(4) };
+        static void R_AliasSetUpTransform(int trivial_accept)
         {
-	        int				i;
-            double[][]	    rotationmatrix = { new double[4], new double[4], new double[4] };
-            double[][]	    t2matrix = { new double[4], new double[4], new double[4] };
-	        double[]		angles = new double[3];
+            int i;
+            double[][] rotationmatrix = { ArrayHelpers.ExplcitDoubleArray(4), ArrayHelpers.ExplcitDoubleArray(4), ArrayHelpers.ExplcitDoubleArray(4) };
+            double[][] t2matrix = { ArrayHelpers.ExplcitDoubleArray(4), ArrayHelpers.ExplcitDoubleArray(4), ArrayHelpers.ExplcitDoubleArray(4) };
+            double[] angles = new double[3];
             int kk;
+
 
         // TODO: should really be stored with the entity instead of being reconstructed
         // TODO: should use a look-up table
