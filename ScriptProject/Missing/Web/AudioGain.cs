@@ -3,7 +3,7 @@
 [Imported]
 [ModuleName(null)]
 [IgnoreNamespace]
-public class AudioGain
+public class AudioBufferSourceNode
 {
-    public double Value;
+    public long CurrentTime;
 }

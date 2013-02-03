@@ -18,6 +18,7 @@
         public bool AutoPlay { get; set; }
 
         public AudioBufferSourceNode BufferSource;
+        public AudioGain AudioGain;
 
         public object Tag
         {
@@ -41,6 +42,11 @@
             }
             set
             {
+                if (AudioGain != null)
+                {
+                    AudioGain.Value = value;
+                }
+
                 _volume = value;
             }
         }
