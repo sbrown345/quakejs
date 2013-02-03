@@ -417,7 +417,7 @@ namespace quake
 
             if (cls.demoplayback)
             {
-                // interpolate the angles	
+                // interpolate the angles	  (this is where player looks around)
                 for (j = 0; j < 3; j++)
                 {
                     d = cl.mviewangles[0][j] - cl.mviewangles[1][j];
@@ -450,7 +450,8 @@ namespace quake
 		        }
 
 		        mathlib.VectorCopy (ent.origin, oldorg);
-
+                
+                //player position
 		        if (ent.forcelink)
 		        {	// the entity was not updated in the last message
 			        // so move to the final spot

@@ -740,6 +740,7 @@ namespace quake
             render.r_refdef.vieworg[1] += 1.0 / 32;
             render.r_refdef.vieworg[2] += 1.0 / 32;
 
+            //client.cl.viewangles[0] = 0; //stops player looking up!
             mathlib.VectorCopy(client.cl.viewangles, render.r_refdef.viewangles);
             V_CalcViewRoll();
             V_AddIdle();
