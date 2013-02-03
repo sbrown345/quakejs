@@ -11,27 +11,26 @@
     {
         static Application()
         {
-            Resources = new Dictionary<string, StreamResourceInfo>();
+            Resources = new Dictionary<string, ArrayBuffer>();
         }
 
-        public static Dictionary<string, StreamResourceInfo> Resources { get; set; }
+        public static Dictionary<string, ArrayBuffer> Resources { get; set; }
 
         public static StreamResourceInfo GetResourceStream(Uri uriResource)
         {
-            if (Resources.ContainsKey(uriResource.ToString()))
+            if (!Resources.ContainsKey(uriResource.ToString()))
             {
-                return Resources[uriResource.ToString()];
+                return null;
             }
-
-            return null;
+            var arrayBuffer = Resources[uriResource.ToString()];
+            var stream = new Stream(arrayBuffer);
+            return new StreamResourceInfo(stream, null);
         }
 
         // JS interaction
         public static void SetResourceStream(string key, ArrayBuffer arrayBuffer)
         {
-            var stream = new Stream(arrayBuffer);
-            var streamResourceInfo = new StreamResourceInfo(stream, null);
-            Resources["InnoveWare;component/" + key] = streamResourceInfo;
+            Resources["InnoveWare;component/" + key] = arrayBuffer;
         }
     }
 }
