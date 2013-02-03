@@ -415,7 +415,7 @@ namespace quake
                         ltemp |= (uint)(izi & 0xFFFF0000);
                         izi += izistep;
                         d_pzbuffer[pdest] = (short)(ltemp >> 16);
-                        d_pzbuffer[pdest + 1] = (short)ltemp;
+                        d_pzbuffer[pdest + 1] = (short)(ltemp & 0xffff);
                         pdest += 2;
                     } while (--doublecount > 0);
                 }
