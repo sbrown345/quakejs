@@ -1,14 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Missing
+﻿namespace Missing
 {
+    using System;
+    using System.Runtime.CompilerServices;
+
+    [Imported]
+    [ModuleName(null)]
+    [IgnoreNamespace]
     public static class DateTimeExtensions
     {
         public static long GetTicks(this DateTime dateTime)
         {
-            throw new NotImplementedException();
+            return 0;
         }
     }
 }
