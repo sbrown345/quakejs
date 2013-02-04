@@ -16,5 +16,10 @@
             var page = new Page();
             page.Page_Loaded();
         }
+
+        public static void KeyPress(int quake_key)
+        {
+            quake.keys.Key_Event(quake_key, true);
+        }
     }
 }

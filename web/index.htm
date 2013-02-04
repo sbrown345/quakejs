@@ -24,6 +24,7 @@
     <script src="Scripts/missing/Stream.js"></script>
     <script src="Scripts/missing/BitConverter.js"></script>
     <script src="Scripts/fullscreen.js"></script>
+    <script src="Scripts/controls.js"></script>
     <script src="Scripts/ScriptProject.js"></script>
     <script>
         $(function () {
@@ -90,9 +91,10 @@
             function loadGame() {
                 console.log("Got data, starting game...");
                 initFullScreen();
+                initControls();
                 global.initGame();
             }
-        })();
+        });
     </script>
 </body>
 </html>
