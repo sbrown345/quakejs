@@ -105,19 +105,24 @@
 
         public void Stop()
         {
-            throw new NotImplementedException();
+            Stop2();
+        }
+
+        [InlineCode("stopSound(this);")]
+        public void Stop2()
+        {
         }
 
         public void Play()
         {
-            _timePlayed = DateTime.Now;//.GetTicks();
+            _timePlayed = DateTime.Now;
             Play2();
         }
 
         [InlineCode("playSound(this.$_stream.dataStream._buffer, this);")]
         private void Play2()
         {
-            throw new NotImplementedException();
+            throw new ImplementedInJavaScript();
         }
     }
 }

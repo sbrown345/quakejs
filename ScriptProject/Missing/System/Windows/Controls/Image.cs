@@ -12,7 +12,7 @@ namespace System.Windows.Controls
         {
             get
             {
-                throw new NotImplementedException();
+                throw new ImplementedInJavaScript();
             }
         }
 

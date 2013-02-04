@@ -8,7 +8,7 @@ namespace System
     {
         public static char[] ToCharArray(this string str)
         {
-            throw new NotImplementedException();
+            throw new ImplementedInJavaScript();
         }
 
         public static string StringOfLength(int length)

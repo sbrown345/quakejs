@@ -434,7 +434,7 @@ namespace quake
 	        }
 	        return true;
 #else
-            throw new NotImplementedException();
+            throw new NotImplementedException("ED_ParseEpair todo!");
 #endif
         }
 

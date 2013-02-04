@@ -15,7 +15,7 @@ public class Uint8Array
 
     public Uint8Array(int length)
     {
-        throw new NotImplementedException();
+        throw new ImplementedInJavaScript();
     }
 
     //public static implicit operator Uint8Array(byte[] bytes)
@@ -39,11 +39,11 @@ public class Uint8Array
     {
         get
         {
-            throw new NotImplementedException();
+            throw new ImplementedInJavaScript();
         }
         set
         {
-            throw new NotImplementedException();
+            throw new ImplementedInJavaScript();
         }
     }
 
@@ -52,7 +52,7 @@ public class Uint8Array
     {
         get
         {
-            throw new NotImplementedException();
+            throw new ImplementedInJavaScript();
         }
     }
 
@@ -61,7 +61,7 @@ public class Uint8Array
     {
         get
         {
-            throw new NotImplementedException();
+            throw new ImplementedInJavaScript();
         }
     }
 }

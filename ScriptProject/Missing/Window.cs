@@ -6,6 +6,6 @@ public static class Window
     [ScriptAlias("window.requestAnimationFrame")]
     public static void RequestAnimationFrame(Action action)
     {
-        throw new NotImplementedException();
+        throw new ImplementedInJavaScript();
     }
 }

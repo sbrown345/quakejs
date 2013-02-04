@@ -269,6 +269,7 @@
     </Compile>
     <Compile Include="InnoveWare\Page.cs" />
     <Compile Include="Missing\Libs\Stats.cs" />
+    <Compile Include="Missing\NotImplementedException.cs" />
     <Compile Include="Missing\Web\ArrayBuffer.cs" />
     <Compile Include="Missing\Web\ArrayHelpers.cs" />
     <Compile Include="Missing\Web\AudioBufferSourceNode.cs" />
