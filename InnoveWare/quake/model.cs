@@ -82,8 +82,8 @@ namespace quake
             public int          anim_min, anim_max;		// time for this frame min <=time< max
             public texture_t    anim_next;		// in the animation sequence
             public texture_t    alternate_anims;	// bmodels in frmae 1 use these
-            public uint[]       offsets = new uint[bspfile.MIPLEVELS];		// four mip maps stored
-            public Uint8Array       pixels;
+            public int[]       offsets = new int[bspfile.MIPLEVELS];		// four mip maps stored
+            public Uint8Array pixels;
         };
         public const int sizeof_texture_t = 16 + 2 * sizeof(uint) + 5 * sizeof(int) + bspfile.MIPLEVELS * sizeof(uint);
         
@@ -784,11 +784,11 @@ namespace quake
                 tx.pixels = new Uint8Array(pixels);
 		        loadmodel.textures[i] = tx;
 
-                tx.pixels = new Uint8Array(pixels);
+		        tx.name = mt.name;
 		        tx.width = mt.width;
 		        tx.height = mt.height;
 		        for (j=0 ; j<bspfile.MIPLEVELS ; j++)
-			        tx.offsets[j] = (uint)(mt.offsets[j]/* + sizeof_texture_t*/ - bspfile.sizeof_miptex_t);
+			        tx.offsets[j] = mt.offsets[j]/* + sizeof_texture_t*/ - bspfile.sizeof_miptex_t;
 		        // the pixels immediately follow the structures
                 Buffer.BlockCopy(buf.buffer, buf.ofs + bspfile.sizeof_miptex_t, tx.pixels, 0, pixels);
 
@@ -1364,7 +1364,7 @@ namespace quake
 		        @out[i].efrags = null;
         		
 		        for (j=0 ; j<4 ; j++)
-                    @out[i].ambient_sound_level[j] = @in[i].ambient_level[j];
+                    @out[i].ambient_sound_level[j] =(byte) @in[i].ambient_level[j];
 	        }
         }
 

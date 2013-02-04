@@ -185,7 +185,7 @@ namespace quake
         {
 	        public string	name = StringExtensions.StringOfLength(16);
             public uint     width, height;
-            public uint[]   offsets = new uint[MIPLEVELS];		// four mip maps stored
+            public int[]   offsets = new int[MIPLEVELS];		// four mip maps stored
 
             public static implicit operator miptex_t(ByteBuffer buf)
             {
@@ -197,7 +197,7 @@ namespace quake
                 miptex.height = BitConverter.ToUInt32(buf.buffer, ofs); ofs += sizeof(uint);
                 for (i = 0; i < MIPLEVELS; i++)
                 {
-                    miptex.offsets[i] = BitConverter.ToUInt32(buf.buffer, ofs); ofs += sizeof(uint);
+                    miptex.offsets[i] = (int) BitConverter.ToUInt32(buf.buffer, ofs); ofs += sizeof(uint);
                 }
                 return miptex;
             }
@@ -385,7 +385,7 @@ namespace quake
                 dface.firstedge = BitConverter.ToInt32(buf.buffer, ofs); ofs += sizeof(int);
                 dface.numedges = BitConverter.ToInt16(buf.buffer, ofs); ofs += sizeof(short);
                 dface.texinfo = BitConverter.ToInt16(buf.buffer, ofs); ofs += sizeof(short);
-                for (i = 0; i < MAXLIGHTMAPS; i++) dface.styles[i] = buf.buffer[ofs++];
+                for (i = 0; i < MAXLIGHTMAPS; i++) dface.styles[i] = (byte)buf.buffer[ofs++];
                 dface.lightofs = BitConverter.ToInt32(buf.buffer, ofs); ofs += sizeof(int);
                 return dface;
             }
@@ -412,7 +412,7 @@ namespace quake
             public ushort   firstmarksurface;
             public ushort   nummarksurfaces;
 
-            public byte[]   ambient_level = new byte[NUM_AMBIENTS];
+            public int[] ambient_level = new int[NUM_AMBIENTS];
 
             public static implicit operator dleaf_t(ByteBuffer buf)
             {
