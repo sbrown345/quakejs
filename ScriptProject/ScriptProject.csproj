@@ -268,7 +268,11 @@
       <Link>quake\world.cs</Link>
     </Compile>
     <Compile Include="InnoveWare\Page.cs" />
+    <Compile Include="Missing\Libs\Stats.cs" />
     <Compile Include="Missing\Web\ArrayBuffer.cs" />
+    <Compile Include="Missing\Web\ArrayHelpers.cs" />
+    <Compile Include="Missing\Web\AudioBufferSourceNode.cs" />
+    <Compile Include="Missing\Web\AudioGain.cs" />
     <Compile Include="Missing\Web\Uint8Array.cs" />
     <Compile Include="Missing\Window.cs" />
     <Compile Include="Missing\DateTimeExtensions.cs" />
