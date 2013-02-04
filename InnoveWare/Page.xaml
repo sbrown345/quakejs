@@ -3,7 +3,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
     Width="Auto" Height="Auto" Background="Black">
     <ContentControl IsTabStop="True">
-        <Canvas x:Name="parentCanvas" Loaded="Page_Loaded" Width="800" Height="600" Background="Black">
+        <Canvas x:Name="parentCanvas" Loaded="Page_Loaded" Width="640" Height="480" Background="Black">
           <Canvas.Resources>
             <Storyboard x:Name="fps_timer"  Duration="00:00:1" />
           </Canvas.Resources>

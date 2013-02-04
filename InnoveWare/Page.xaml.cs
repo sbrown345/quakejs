@@ -43,8 +43,8 @@ namespace InnoveWare
             this.Focus();
 
             // Auto scale the rendering screen.
-            gwidth = 800; //(int)Application.Current.Host.Content.ActualWidth; //if this is bigger it was crashing because it was larger than 1024 and some buffer didn't liek it
-            gheight = 600;// (int)Application.Current.Host.Content.ActualHeight;
+            gwidth = 640; //(int)Application.Current.Host.Content.ActualWidth; //if this is bigger it was crashing because it was larger than 1024 and some buffer didn't liek it
+            gheight = 480;// (int)Application.Current.Host.Content.ActualHeight;
 
             // Prepare rendering image.
             image.Width = gwidth;
