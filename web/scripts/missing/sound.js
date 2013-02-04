@@ -15,18 +15,18 @@ function playSound(arrayBuffer, mediaElement) {
         mediaElement.setNaturalDuration(999);
         return;
     }
-    
 
-    var source = playSound.context.createBufferSource(); // todo: want to do this when source is set on media element
-    source.connect(playSound.context.destination);
+    if (!mediaElement.source) {
+        mediaElement.source = playSound.context.createBufferSource(); // todo: want to do this when source is set on media element
+    }
+    mediaElement.source.connect(playSound.context.destination);
     
     var gainNode = playSound.context.createGainNode();
-    source.connect(gainNode);
+    mediaElement.source.connect(gainNode);
     var buffer = playSound.context.createBuffer(arrayBuffer, false);
-    source.buffer = buffer;
-    source.noteOn(0);
+    mediaElement.source.buffer = buffer;
+    mediaElement.source.noteOn(0);
 
-    mediaElement.source = source;
     mediaElement.bufferSource = buffer;
     mediaElement.audioGain = gainNode.gain;
     mediaElement.setNaturalDuration(buffer.duration);
