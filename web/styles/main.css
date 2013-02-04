@@ -1,0 +1,52 @@
+﻿html
+{
+    height: 100%;
+}
+
+body
+{
+    margin: 0;
+    padding: 0;
+}
+
+:-webkit-full-screen .hideOnFullScreen
+{
+    display: none;
+}
+
+:-moz-full-screen html,
+:-moz-full-screen body
+{
+    background: #000;
+    color: #fff;
+    height: 100%;
+    overflow: hidden;
+}
+
+:-webkit-full-screen html,
+:-webkit-full-screen body
+{
+    background: #000;
+    color: #fff;
+    height: 100%;
+    overflow: hidden;
+}
+
+#gameArea
+{
+    margin: 0 auto;
+}
+
+#gameCanvas
+{
+    height: 100%;
+    width: 100%;
+    cursor: pointer;
+}
+
+#stats
+{
+    position: absolute;
+    right: 0;
+    top: 0;
+}

@@ -2,93 +2,97 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <title>QuakeJS</title>
+    <link href="styles/main.css" rel="stylesheet" />
 </head>
-    <body>
-        <div id="progress"></div>
+<body>
+    <div id="progress"></div>
+    <div id="gameArea">
         <canvas id="gameCanvas" width="640" height="480"></canvas>
-        <script src="scripts/libs/jquery-1.9.0.js"></script>
-        <script src="scripts/libs/DataStream.js"></script>
-        <script src="scripts/libs/IndexedDBShim.min.js"></script>
-        <script src="scripts/libs/jquery.indexeddb.js"></script>
-        <script src="scripts/libs/xhr2lib.js"></script>
-        <script src="scripts/libs/pouchdb-nightly.js"></script>
-        <script src="Scripts/libs/mscorlib.js"></script>
-        <script src="Scripts/libs/mersenne.js"></script>
-        <script src="Scripts/libs/Stats.js"></script>
-        <script src="Scripts/missing/window.js"></script>
-        <script src="Scripts/missing/sound.js"></script>
-        <script src="Scripts/missing/DateTimeExtensions.js"></script>
-        <script src="Scripts/missing/Stream.js"></script>
-        <!--<script src="Scripts/missing/MemoryStream.js"></script>-->
-        <script src="Scripts/missing/BitConverter.js"></script>
-        <script src="Scripts/ScriptProject.js"></script>
-        <script>
-            (function () {
-                $xhr.defaultError(function (st, s) {
-                    console.log("xhr: ", this); // error handler is bound to the xhr object
-                    console.log("status text: ", st); // status text e.g. 'Not Found'
-                    console.log("status: ", s); // status e.g.404
-                });
+    </div>
+    <script src="scripts/libs/jquery-1.9.0.js"></script>
+    <script src="scripts/libs/DataStream.js"></script>
+    <script src="scripts/libs/IndexedDBShim.min.js"></script>
+    <script src="scripts/libs/jquery.indexeddb.js"></script>
+    <script src="scripts/libs/xhr2lib.js"></script>
+    <script src="scripts/libs/pouchdb-nightly.js"></script>
+    <script src="Scripts/libs/mscorlib.js"></script>
+    <script src="Scripts/libs/mersenne.js"></script>
+    <script src="Scripts/libs/Stats.js"></script>
+    <script src="Scripts/missing/window.js"></script>
+    <script src="Scripts/missing/sound.js"></script>
+    <script src="Scripts/missing/DateTimeExtensions.js"></script>
+    <script src="Scripts/missing/Stream.js"></script>
+    <script src="Scripts/missing/BitConverter.js"></script>
+    <script src="Scripts/fullscreen.js"></script>
+    <script src="Scripts/ScriptProject.js"></script>
+    <script>
+        $(function () {
+            $xhr.defaultError(function (st, s) {
+                console.log("xhr: ", this); // error handler is bound to the xhr object
+                console.log("status text: ", st); // status text e.g. 'Not Found'
+                console.log("status: ", s); // status e.g.404
+            });
 
-                var url = "id1/pak0.pak";
-                var key = "id1pak0pak";
-                var dbName = 'idb://quakejs';
-                // Pouch.destroy('idb://quakejs')
+            var url = "id1/pak0.pak";
+            var key = "id1pak0pak";
+            var dbName = 'idb://quakejs';
+            // Pouch.destroy('idb://quakejs')
 
-                Pouch(dbName, function (err, db) {
-                    db.get(key, {}, function (err, response) {
-                        console.log("Got db reponse", response);
-                        if (response) {
-                            if (new Uint8Array(response.data).length == 0) {
-                                // data is missing
-                                Pouch.destroy('idb://quakejs', function () {
-                                    window.location.href = window.location.href;
-                                });
-                                return;
-                            }
-
-                            console.log("Already got file");
-                            global.setResourceStream(url, response.data);
-                            loadGame();
-                        } else {
-                            console.log("Request file via ajax");
-                            loadFile(function (data) {
-                                db.put({
-                                    _id: key,
-                                    url: url,
-                                    data: data
-                                });
-
-                                global.setResourceStream(url, data);
-                                loadGame();
+            Pouch(dbName, function (err, db) {
+                db.get(key, {}, function (err, response) {
+                    console.log("Got db reponse", response);
+                    if (response) {
+                        if (new Uint8Array(response.data).length == 0) {
+                            // data is missing
+                            Pouch.destroy(dbName, function () {
+                                window.location.href = window.location.href;
                             });
+                            return;
                         }
-                    });
+
+                        console.log("Already got file");
+                        global.setResourceStream(url, response.data);
+                        loadGame();
+                    } else {
+                        console.log("Request file via ajax");
+                        loadFile(function (data) {
+                            db.put({
+                                _id: key,
+                                url: url,
+                                data: data
+                            });
+
+                            global.setResourceStream(url, data);
+                            loadGame();
+                        });
+                    }
                 });
+            });
 
-                function loadFile(success) {
-                    $xhr.ajax({
-                        url: url,
-                        type: "get",
-                        timeout: 5000,
-                        progress: function (pc) {
-                            document.getElementById("progress").innerHTML = pc;
-                        },
-                        success: function (data) {
-                            if (!data) {
-                                throw new Error("Invalid data");
-                            }
-                            success(data);
-                        },
-                        dataType: "arraybuffer"
-                    });
-                }
+            function loadFile(success) {
+                $xhr.ajax({
+                    url: url,
+                    type: "get",
+                    timeout: 5000,
+                    progress: function (pc) {
+                        document.getElementById("progress").innerHTML = pc;
+                    },
+                    success: function (data) {
+                        if (!data) {
+                            throw new Error("Invalid data");
+                        }
+                        success(data);
+                    },
+                    dataType: "arraybuffer"
+                });
+            }
 
-                function loadGame() {
-                    console.log("Got data, starting game...");
-                    global.initGame();
-                }
-            })();
-        </script>
-    </body>
+            function loadGame() {
+                console.log("Got data, starting game...");
+                initFullScreen();
+                global.initGame();
+            }
+        })();
+    </script>
+</body>
 </html>
