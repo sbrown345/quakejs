@@ -245,12 +245,13 @@ namespace quake
             {
                 for (int col = 0; col < rects.width; col++)
                 {
-                    var c = screen.vid.buffer[ofs + col];
-                    var offset = (ofs + col) * 4; //r
-                    imageData.Data[offset] = vid_current_palette[c * 3]; //g
-                    imageData.Data[offset + 1] = vid_current_palette[c * 3 + 1]; //b
-                    imageData.Data[offset + 2] = vid_current_palette[c * 3 + 2]; //a
-                    imageData.Data[offset + 3] = 255; // todo only need to do this once???????
+                    var pixelOffset = ofs + col;
+                    var c = screen.vid.buffer[pixelOffset];
+                    var offset = (pixelOffset) * 4; 
+                    imageData.Data[offset] = vid_current_palette[c * 3]; //r
+                    imageData.Data[offset + 1] = vid_current_palette[c * 3 + 1]; //g
+                    imageData.Data[offset + 2] = vid_current_palette[c * 3 + 2]; //b
+                    imageData.Data[offset + 3] = 255; //a
                 }
                 ofs += surface.PixelWidth;
             }
