@@ -39,6 +39,14 @@
                     db.get(key, {}, function (err, response) {
                         console.log("Got db reponse", response);
                         if (response) {
+                            if (new Uint8Array(response.data).length == 0) {
+                                // data is missing
+                                Pouch.destroy('idb://quakejs', function () {
+                                    window.location.href = window.location.href;
+                                });
+                                return;
+                            }
+
                             console.log("Already got file");
                             global.setResourceStream(url, response.data);
                             loadGame();
