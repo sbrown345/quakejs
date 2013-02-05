@@ -26,6 +26,9 @@
 		var page = new $InnoveWare_Page();
 		page.page_Loaded();
 	};
+	global.keyPress = function(quake_key) {
+		$quake_keys.key_Event(quake_key, true);
+	};
 	////////////////////////////////////////////////////////////////////////////////
 	// Window
 	var $Window = function() {
@@ -6893,58 +6896,62 @@
 	};
 	$quake_host.$_Host_Frame = function(time) {
 		var pass1, pass2, pass3;
-		//try
-		//{
-		// decide the simulation time
-		if (!$quake_host.$host_FilterTime(time)) {
-			return;
+		try {
+			// decide the simulation time
+			if (!$quake_host.$host_FilterTime(time)) {
+				return;
+			}
+			// don't run too fast, or packets will flood out
+			// process console commands
+			$quake_cmd.cbuf_Execute();
+			$quake_net.neT_Poll();
+			// if running the server locally, make intentions now
+			if ($quake_server.sv.active) {
+				$quake_client.cL_SendCmd();
+			}
+			//-------------------
+			//
+			// server operations
+			//
+			//-------------------
+			if ($quake_server.sv.active) {
+				$quake_host.$host_ServerFrame();
+			}
+			//-------------------
+			//
+			// client operations
+			//
+			//-------------------
+			// if running the server remotely, send intentions now after
+			// the incoming messages have been read
+			if (!$quake_server.sv.active) {
+				$quake_client.cL_SendCmd();
+			}
+			$quake_host.host_time += $quake_host.host_frametime;
+			// fetch results from server
+			if ($quake_client.cls.state === 2) {
+				$quake_client.cL_ReadFromServer();
+			}
+			$quake_screen.scR_UpdateScreen();
+			// update audio
+			if ($quake_client.cls.signon === $quake_client.SIGNONS) {
+				$quake_sound.s_Update($quake_render.r_origin, $quake_render.vpn, $quake_render.vright, $quake_render.vup);
+				$quake_client.cL_DecayLights();
+			}
+			else {
+				$quake_sound.s_Update($quake_mathlib.vec3_origin, $quake_mathlib.vec3_origin, $quake_mathlib.vec3_origin, $quake_mathlib.vec3_origin);
+			}
+			$quake_host.host_framecount++;
 		}
-		// don't run too fast, or packets will flood out
-		// process console commands
-		$quake_cmd.cbuf_Execute();
-		$quake_net.neT_Poll();
-		// if running the server locally, make intentions now
-		if ($quake_server.sv.active) {
-			$quake_client.cL_SendCmd();
+		catch ($t1) {
+			$t1 = ss.Exception.wrap($t1);
+			if (Type.isInstanceOfType($t1, $quake_host_abortserver)) {
+				return;
+			}
+			else {
+				throw $t1;
+			}
 		}
-		//-------------------
-		//
-		// server operations
-		//
-		//-------------------
-		if ($quake_server.sv.active) {
-			$quake_host.$host_ServerFrame();
-		}
-		//-------------------
-		//
-		// client operations
-		//
-		//-------------------
-		// if running the server remotely, send intentions now after
-		// the incoming messages have been read
-		if (!$quake_server.sv.active) {
-			$quake_client.cL_SendCmd();
-		}
-		$quake_host.host_time += $quake_host.host_frametime;
-		// fetch results from server
-		if ($quake_client.cls.state === 2) {
-			$quake_client.cL_ReadFromServer();
-		}
-		$quake_screen.scR_UpdateScreen();
-		// update audio
-		if ($quake_client.cls.signon === $quake_client.SIGNONS) {
-			$quake_sound.s_Update($quake_render.r_origin, $quake_render.vpn, $quake_render.vright, $quake_render.vup);
-			$quake_client.cL_DecayLights();
-		}
-		else {
-			$quake_sound.s_Update($quake_mathlib.vec3_origin, $quake_mathlib.vec3_origin, $quake_mathlib.vec3_origin, $quake_mathlib.vec3_origin);
-		}
-		$quake_host.host_framecount++;
-		//}
-		//catch (host_abortserver)
-		//{
-		//    return;
-		//}
 	};
 	$quake_host.host_Frame = function(time) {
 		var time1, time2;
@@ -9200,7 +9207,7 @@
 			tx = new $quake_model$texture_t();
 			tx.pixels = new Uint8Array(pixels);
 			$quake_model.$loadmodel.textures[i] = tx;
-			tx.pixels = new Uint8Array(pixels);
+			tx.name = mt.name;
 			tx.width = mt.width;
 			tx.height = mt.height;
 			for (j = 0; j < $quake_bspfile.MIPLEVELS; j++) {
@@ -11988,7 +11995,7 @@
 		return new1;
 	};
 	$quake_prog.eD_ParseEpair = function(base, key, keyname, s) {
-		throw new $System_NotImplementedException();
+		throw new $System_NotImplementedException.$ctor1('ED_ParseEpair todo!');
 	};
 	$quake_prog.eD_ParseEdict = function(data, ofs, ent) {
 		var key;
@@ -21422,7 +21429,7 @@
 		media.set_autoPlay(true);
 		media.setSource(new $System_IO_MemoryStream(sc.data));
 		media.set_tag(ss);
-		throw new $System_NotImplementedException();
+		throw new $System_NotImplementedException.$ctor1('S_StaticSound todo!');
 		$quake_sound.setVolume(ss);
 		$InnoveWare_Page.thePage.get_parentCanvas().get_children().add(media);
 	};
@@ -21959,17 +21966,17 @@
 		var imageData = $quake_vid.$surface.context.getImageData(0, 0, $quake_vid.$surface.canvas.width, $quake_vid.$surface.canvas.height);
 		for (var r = 0; r < rects.height; r++) {
 			for (var col = 0; col < rects.width; col++) {
-				var c = $quake_screen.vid.buffer[ofs + col];
-				var offset = (ofs + col) * 4;
-				//r
+				var pixelOffset = ofs + col;
+				var c = $quake_screen.vid.buffer[pixelOffset];
+				var offset = pixelOffset * 4;
 				imageData.data[offset] = $quake_vid.$vid_current_palette[c * 3];
-				//g
+				//r
 				imageData.data[offset + 1] = $quake_vid.$vid_current_palette[c * 3 + 1];
-				//b
+				//g
 				imageData.data[offset + 2] = $quake_vid.$vid_current_palette[c * 3 + 2];
-				//a
+				//b
 				imageData.data[offset + 3] = 255;
-				// todo only need to do this once???????
+				//a
 			}
 			ofs += $quake_vid.$surface.pixelWidth;
 		}
@@ -22724,10 +22731,19 @@
 		ss.Exception.call(this);
 	};
 	////////////////////////////////////////////////////////////////////////////////
+	// System.ImplementedInJavaScript
+	var $System_ImplementedInJavaScript = function() {
+		ss.Exception.call(this);
+	};
+	////////////////////////////////////////////////////////////////////////////////
 	// System.NotImplementedException
 	var $System_NotImplementedException = function() {
 		ss.Exception.call(this);
 	};
+	$System_NotImplementedException.$ctor1 = function(message) {
+		ss.Exception.call(this, message);
+	};
+	$System_NotImplementedException.$ctor1.prototype = $System_NotImplementedException.prototype;
 	////////////////////////////////////////////////////////////////////////////////
 	// System.Random
 	var $System_Random = function() {
@@ -22759,7 +22775,7 @@
 	var $System_StringExtensions = function() {
 	};
 	$System_StringExtensions.toCharArray = function(str) {
-		throw new $System_NotImplementedException();
+		throw new $System_ImplementedInJavaScript();
 	};
 	$System_StringExtensions.stringOfLength = function(length) {
 		return String.fromChar(String.fromCharCode(0), length);
@@ -22882,7 +22898,7 @@
 	};
 	$System_Windows_Controls_Image.prototype = {
 		get_children: function() {
-			throw new $System_NotImplementedException();
+			throw new $System_ImplementedInJavaScript();
 		}
 	};
 	////////////////////////////////////////////////////////////////////////////////
@@ -22953,11 +22969,10 @@
 			}
 		},
 		stop: function() {
-			throw new $System_NotImplementedException();
+			stopSound(this);
 		},
 		play: function() {
 			this.$_timePlayed = Date.get_now();
-			//.GetTicks();
 			playSound(this.$_stream.dataStream._buffer, this);
 		}
 	};
@@ -23164,6 +23179,7 @@
 	Type.registerClass(global, 'System.Buffer', $System_Buffer, Object);
 	Type.registerClass(global, 'System.Convert', $System_Convert, Object);
 	Type.registerClass(global, 'System.FormatException', $System_FormatException, ss.Exception);
+	Type.registerClass(global, 'System.ImplementedInJavaScript', $System_ImplementedInJavaScript, ss.Exception);
 	Type.registerClass(global, 'System.NotImplementedException', $System_NotImplementedException, ss.Exception);
 	Type.registerClass(global, 'System.Random', $System_Random, Object);
 	Type.registerClass(global, 'System.StringExtensions', $System_StringExtensions, Object);

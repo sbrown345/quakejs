@@ -4,11 +4,13 @@
     <title>QuakeJS</title>
     <link href="styles/main.css" rel="stylesheet" />
     <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+    <script src="scripts/libs/angular.min.js"></script>
 </head>
 <body ng-app>
     <div id="gameArea" ng-controller="LoadCtrl">
+        pc: {{percent}} {{ percent == 100 }}
         <div class="progress progress-striped active" style="margin-top:30px" ng-show="percent < 100">
-            <div class="bar" ng-style="{width: percent + '%', minWidth: '40px'}">{{percent}}%</div>
+            <div class="bar" ng-style="{width: percent + '%', minMidth: '40px'}">{{percent}}%</div>
         </div>
         <canvas id="gameCanvas" width="640" height="480" ng-show="percent == 100"></canvas>
     </div>
@@ -29,7 +31,6 @@
     <script src="Scripts/fullscreen.js"></script>
     <script src="Scripts/controls.js"></script>
     <script src="Scripts/ScriptProject.js"></script>
-    <script src="scripts/libs/angular.min.js"></script>
     <script>
         $xhr.defaultError(function (st, s) {
             console.log("xhr: ", this); // error handler is bound to the xhr object
@@ -38,7 +39,11 @@
         });
             
         function LoadCtrl($scope) {
+            window.sc = $scope;
             $scope.percent = 0;
+            $scope.setPercent = function(pc) {
+                $scope.percent = pc;
+            };
 
             var url = "id1/pak0.pak";
             var key = "id1pak0pak";
@@ -82,7 +87,7 @@
                     type: "get",
                     timeout: 5000,
                     progress: function (pc) {
-                        $scope.percent = pc;
+                        $scope.setPercent(pc);
                     },
                     success: function (data) {
                         if (!data) {
@@ -96,10 +101,10 @@
 
             function loadGame() {
                 console.log("Got data, starting game...");
+                $scope.setPercent(100);
                 initFullScreen();
                 initControls();
-                $scope.percent = 100;
-                $scope.$digest();
+                console.log("done")
                 global.initGame();
             }
         }
