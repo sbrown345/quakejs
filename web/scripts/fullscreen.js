@@ -8,9 +8,10 @@
         gameCanvas.webkitRequestFullscreen();
     }
 
-    $(gameCanvas).click(toggleFullScreen);
+    $("#fullscreen").click(toggleFullScreen);
 
-    function toggleFullScreen() {
+    function toggleFullScreen(e) {
+        e.preventDefault();
 
         if ((document.fullscreenElement && document.fullscreenElement !== null) || // alternative standard method
             (!document.mozFullScreenElement && !document.webkitFullscreenElement)) { // current working methods
@@ -31,8 +32,6 @@
             }
         }
     }
-
-
 
     window.addEventListener('resize', resizeGame, false);
     window.addEventListener('orientationchange', resizeGame, false);

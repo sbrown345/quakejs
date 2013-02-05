@@ -4,105 +4,143 @@
     <title>QuakeJS</title>
     <link href="styles/main.css" rel="stylesheet" />
     <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="bootstrap/css/bootstrap-responsive.min.css" rel="stylesheet" />
 </head>
-<body ng-app>
-    <div id="gameArea" ng-controller="LoadCtrl">
-        <div class="progress progress-striped active" style="margin-top:30px" ng-show="percent < 100">
-            <div class="bar" ng-style="{width: percent + '%', minWidth: '40px'}">{{percent}}%</div>
+    <body ng-app>
+        
+        <div class="navbar navbar-inverse navbar-fixed-top">
+            <div class="navbar-inner">
+                <div class="container">
+                    <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </a>
+                    <a class="brand">QuakeJS</a>
+                    <div class="nav-collapse collapse">
+                        <ul class="nav">
+                            <li class="active"><a href="#" id="fullscreen">Fullscreen</a></li>
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Links <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    <li><a href="http://www.innoveware.com/quakelight.html">QuakeLight</a></li>
+                                    <li><a href="http://www.saltarelle-compiler.com/">Saltarelle</a></li>
+                                    <li><a href="http://www.idsoftware.com/games/quake/quake">id</a></li>
+                                    <li class="divider"></li>
+                                    <li><a href="https://twitter.com/nworbnomis">twitter @nworbnomis</a></li>
+<!--                                    <li><a href="#">Something else here</a></li>
+                                    <li class="divider"></li>
+                                    <li class="nav-header">Nav header</li>
+                                    <li><a href="#">Separated link</a></li>
+                                    <li><a href="#">One more separated link</a></li>-->
+                                </ul>
+                            </li>
+                        </ul>
+                        <div class="stats pull-right">
+                        </div>
+                    </div><!--/.nav-collapse -->
+                </div>
+            </div>
         </div>
-        <canvas id="gameCanvas" width="640" height="480" ng-show="percent == 100"></canvas>
-    </div>
-    <script src="scripts/libs/jquery-1.9.0.js"></script>
-    <script src="scripts/libs/DataStream.js"></script>
-    <script src="scripts/libs/IndexedDBShim.min.js"></script>
-    <script src="scripts/libs/jquery.indexeddb.js"></script>
-    <script src="scripts/libs/xhr2lib.js"></script>
-    <script src="scripts/libs/pouchdb-nightly.js"></script>
-    <script src="Scripts/libs/mscorlib.js"></script>
-    <script src="Scripts/libs/mersenne.js"></script>
-    <script src="Scripts/libs/Stats.js"></script>
-    <script src="Scripts/missing/window.js"></script>
-    <script src="Scripts/missing/sound.js"></script>
-    <script src="Scripts/missing/DateTimeExtensions.js"></script>
-    <script src="Scripts/missing/Stream.js"></script>
-    <script src="Scripts/missing/BitConverter.js"></script>
-    <script src="Scripts/fullscreen.js"></script>
-    <script src="Scripts/controls.js"></script>
-    <script src="Scripts/ScriptProject.js"></script>
-    <script src="scripts/libs/angular.min.js"></script>
-    <script>
-        $xhr.defaultError(function (st, s) {
-            console.log("xhr: ", this); // error handler is bound to the xhr object
-            console.log("status text: ", st); // status text e.g. 'Not Found'
-            console.log("status: ", s); // status e.g.404
-        });
-            
-        function LoadCtrl($scope) {
-            $scope.percent = 0;
 
-            var url = "id1/pak0.pak";
-            var key = "id1pak0pak";
-            var dbName = 'idb://quakejs';
-            // Pouch.destroy('idb://quakejs')
-
-            Pouch(dbName, function (err, db) {
-                db.get(key, {}, function (err, response) {
-                    console.log("Got db reponse", response);
-                    if (response) {
-                        if (new Uint8Array(response.data).length == 0) {
-                            // data is missing
-                            Pouch.destroy(dbName, function () {
-                                window.location.href = window.location.href;
-                            });
-                            return;
-                        }
-
-                        console.log("Already got file");
-                        global.setResourceStream(url, response.data);
-                        loadGame();
-                    } else {
-                        console.log("Request file via ajax");
-                        loadFile(function (data) {
-                            db.put({
-                                _id: key,
-                                url: url,
-                                data: data
-                            });
-
-                            global.setResourceStream(url, data);
-                            loadGame();
-                        });
-                    }
-                });
+        <div id="gameArea" ng-controller="LoadCtrl">
+            <div class="progress progress-striped active" style="margin-top:30px" ng-show="percent < 100">
+                <div class="bar" ng-style="{width: percent + '%', minWidth: '40px'}">{{percent}}%</div>
+            </div>
+            <canvas id="gameCanvas" width="640" height="480" ng-show="percent == 100"></canvas>
+        </div>
+        <script src="scripts/libs/jquery-1.9.0.js"></script>
+        <script src="bootstrap/js/bootstrap.js"></script>
+        <script src="scripts/libs/DataStream.js"></script>
+        <script src="scripts/libs/IndexedDBShim.min.js"></script>
+        <script src="scripts/libs/jquery.indexeddb.js"></script>
+        <script src="scripts/libs/xhr2lib.js"></script>
+        <script src="scripts/libs/pouchdb-nightly.js"></script>
+        <script src="Scripts/libs/mscorlib.js"></script>
+        <script src="Scripts/libs/mersenne.js"></script>
+        <script src="Scripts/libs/Stats.js"></script>
+        <script src="Scripts/missing/window.js"></script>
+        <script src="Scripts/missing/sound.js"></script>
+        <script src="Scripts/missing/DateTimeExtensions.js"></script>
+        <script src="Scripts/missing/Stream.js"></script>
+        <script src="Scripts/missing/BitConverter.js"></script>
+        <script src="Scripts/fullscreen.js"></script>
+        <script src="Scripts/controls.js"></script>
+        <script src="Scripts/ScriptProject.js"></script>
+        <script src="scripts/libs/angular.min.js"></script>
+        <script>
+            $xhr.defaultError(function (st, s) {
+                console.log("xhr: ", this); // error handler is bound to the xhr object
+                console.log("status text: ", st); // status text e.g. 'Not Found'
+                console.log("status: ", s); // status e.g.404
             });
+            
+            function LoadCtrl($scope) {
+                $scope.percent = 0;
 
-            function loadFile(success) {
-                $xhr.ajax({
-                    url: url,
-                    type: "get",
-                    timeout: 5000,
-                    progress: function (pc) {
-                        $scope.percent = pc;
-                    },
-                    success: function (data) {
-                        if (!data) {
-                            throw new Error("Invalid data");
+                var url = "id1/pak0.pak";
+                var key = "id1pak0pak";
+                var dbName = 'idb://quakejs';
+                // Pouch.destroy('idb://quakejs')
+
+                Pouch(dbName, function (err, db) {
+                    db.get(key, {}, function (err, response) {
+                        console.log("Got db reponse", response);
+                        if (response) {
+                            if (new Uint8Array(response.data).length == 0) {
+                                // data is missing
+                                Pouch.destroy(dbName, function () {
+                                    window.location.href = window.location.href;
+                                });
+                                return;
+                            }
+
+                            console.log("Already got file");
+                            global.setResourceStream(url, response.data);
+                            loadGame();
+                        } else {
+                            console.log("Request file via ajax");
+                            loadFile(function (data) {
+                                db.put({
+                                    _id: key,
+                                    url: url,
+                                    data: data
+                                });
+
+                                global.setResourceStream(url, data);
+                                loadGame();
+                            });
                         }
-                        success(data);
-                    },
-                    dataType: "arraybuffer"
+                    });
                 });
-            }
 
-            function loadGame() {
-                console.log("Got data, starting game...");
-                initFullScreen();
-                initControls();
-                $scope.percent = 100;
-                $scope.$digest();
-                global.initGame();
+                function loadFile(success) {
+                    $xhr.ajax({
+                        url: url,
+                        type: "get",
+                        timeout: 5000,
+                        progress: function (pc) {
+                            $scope.percent = pc;
+                        },
+                        success: function (data) {
+                            if (!data) {
+                                throw new Error("Invalid data");
+                            }
+                            success(data);
+                        },
+                        dataType: "arraybuffer"
+                    });
+                }
+
+                function loadGame() {
+                    console.log("Got data, starting game...");
+                    initFullScreen();
+                    initControls();
+                    $scope.percent = 100;
+                    $scope.$digest();
+                    global.initGame();
+                }
             }
-        }
-    </script>
-</body>
+        </script>
+    </body>
 </html>

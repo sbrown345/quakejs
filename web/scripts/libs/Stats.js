@@ -27,13 +27,13 @@ var Stats = function () {
 
 	var fpsGraph = document.createElement( 'div' );
 	fpsGraph.id = 'fpsGraph';
-	fpsGraph.style.cssText = 'position:relative;width:74px;height:30px;background-color:#0ff';
+	fpsGraph.style.cssText = 'position:relative;width:74px;height:22px;background-color:#0ff';
 	fpsDiv.appendChild( fpsGraph );
 
 	while ( fpsGraph.children.length < 74 ) {
 
 		var bar = document.createElement( 'span' );
-		bar.style.cssText = 'width:1px;height:30px;float:left;background-color:#113';
+		bar.style.cssText = 'width:1px;height:22px;float:left;background-color:#113';
 		fpsGraph.appendChild( bar );
 
 	}
@@ -51,13 +51,13 @@ var Stats = function () {
 
 	var msGraph = document.createElement( 'div' );
 	msGraph.id = 'msGraph';
-	msGraph.style.cssText = 'position:relative;width:74px;height:30px;background-color:#0f0';
+	msGraph.style.cssText = 'position:relative;width:74px;height:22px;background-color:#0f0';
 	msDiv.appendChild( msGraph );
 
 	while ( msGraph.children.length < 74 ) {
 
 		var bar = document.createElement( 'span' );
-		bar.style.cssText = 'width:1px;height:30px;float:left;background-color:#131';
+		bar.style.cssText = 'width:1px;height:22px;float:left;background-color:#131';
 		msGraph.appendChild( bar );
 
 	}

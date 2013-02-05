@@ -48,7 +48,7 @@ namespace InnoveWare
             image = new Image();
             stats = new Stats();
             stats.SetMode(0);
-            jQuery.Select("body").Append(stats.domElement);
+            jQuery.Select(".stats").Append(stats.domElement);
             gameCanvas = (CanvasElement)jQuery.Select("#gameCanvas")[0];
         }
 

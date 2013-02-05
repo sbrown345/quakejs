@@ -185,7 +185,7 @@
 		this.set_image(new $System_Windows_Controls_Image());
 		$InnoveWare_Page.stats = new Stats();
 		$InnoveWare_Page.stats.setMode(0);
-		$('body').append($InnoveWare_Page.stats.domElement);
+		$('.stats').append($InnoveWare_Page.stats.domElement);
 		this.set_gameCanvas($('#gameCanvas')[0]);
 	};
 	$InnoveWare_Page.prototype = {
