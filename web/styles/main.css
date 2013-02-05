@@ -41,7 +41,6 @@ body
 {
     height: 100%;
     width: 100%;
-    cursor: pointer;
 }
 
 #stats
@@ -49,4 +48,37 @@ body
     position: absolute;
     right: 0;
     top: 0;
+}
+
+
+.navbar li, .navbar .brand
+{
+    line-height: 30px;
+}
+
+.navbar .nav .dropdown-toggle .caret
+{
+    margin-top: 14px;
+}
+
+.tooltip
+{
+    line-height: 20px;
+    min-width: 100px;
+}
+
+.navbar
+{
+    opacity: 0.6 !important;
+}
+
+:-webkit-full-screen .navbar,
+:-webkit-full-screen .navbar
+{
+    opacity: 0 !important;
+}
+
+.navbar:hover
+{
+    opacity: 1 !important;
 }

@@ -2,9 +2,9 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <title>QuakeJS</title>
-    <link href="styles/main.css" rel="stylesheet" />
     <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet" />
     <link href="bootstrap/css/bootstrap-responsive.min.css" rel="stylesheet" />
+    <link href="styles/main.css" rel="stylesheet" />
 </head>
     <body ng-app>
         
@@ -23,9 +23,9 @@
                             <li class="dropdown">
                                 <a href="#" class="dropdown-toggle" data-toggle="dropdown">Links <b class="caret"></b></a>
                                 <ul class="dropdown-menu">
-                                    <li><a href="http://www.innoveware.com/quakelight.html">QuakeLight</a></li>
-                                    <li><a href="http://www.saltarelle-compiler.com/">Saltarelle</a></li>
-                                    <li><a href="http://www.idsoftware.com/games/quake/quake">id</a></li>
+                                    <li><a href="http://www.innoveware.com/quakelight.html" rel="tooltip" title="Ported from this Silverlight version">QuakeLight</a></li>
+                                    <li><a href="http://www.saltarelle-compiler.com/"rel="tooltip" title="C# to JavaScript compiler">Saltarelle</a></li>
+                                    <li><a href="http://www.idsoftware.com/games/quake/quake" rel="tooltip" title="Original game">id</a></li>
                                     <li class="divider"></li>
                                     <li><a href="https://twitter.com/nworbnomis">twitter @nworbnomis</a></li>
 <!--                                    <li><a href="#">Something else here</a></li>
@@ -75,6 +75,8 @@
                 console.log("status: ", s); // status e.g.404
             });
             
+            $('[rel=tooltip]').tooltip({placement: "right"})
+
             function LoadCtrl($scope) {
                 $scope.percent = 0;
 
