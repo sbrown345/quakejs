@@ -33,7 +33,7 @@ namespace quake
         // Internal sound data & structures
         // =======================================================================
 
-        static channel_t[]  channels = new channel_t[MAX_CHANNELS];
+        public static channel_t[]  channels = new channel_t[MAX_CHANNELS];
         static int		    total_channels;
 
         static int		    snd_blocked = 0;

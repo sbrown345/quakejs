@@ -32,6 +32,13 @@
 	global.executeCommands = function(text) {
 		$quake_cmd.cbuf_AddText(text);
 	};
+	global.changeVolume = function(volume) {
+		var $t1 = $InnoveWare_Page.thePage.get_parentCanvas().get_children();
+		for (var $t2 = 0; $t2 < $t1.length; $t2++) {
+			var mediaElement = $t1[$t2];
+			mediaElement.set_volume(volume);
+		}
+	};
 	////////////////////////////////////////////////////////////////////////////////
 	// Window
 	var $Window = function() {

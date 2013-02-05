@@ -107,8 +107,9 @@
             $scope.gamma = 100;
 
             $scope.$watch("volume", function (newValue) {
-                var vol = parseInt(newValue, 10) / 100;
-                global.executeCommands("volume " + vol);
+                var volume = parseInt(newValue, 10) / 100;
+                global.executeCommands("volume " + volume);
+                window.masterQuakeVol = volume;
             });
 
             $scope.$watch("gamma", function (newValue) {

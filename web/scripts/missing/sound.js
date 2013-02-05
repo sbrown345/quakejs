@@ -3,33 +3,39 @@
 // https://developers.google.com/chrome/whitepapers/pagevisibility    stop sound on putting page on background (or set volume to 0)
 // http://www.html5rocks.com/en/tutorials/webaudio/positional_audio/
 
+window.masterQuakeVol = 1;
+
 if (typeof AudioContext == "function") {
     playSound.context = new AudioContext();
 } else if (typeof webkitAudioContext == "function") {
     playSound.context = new webkitAudioContext();     ///thorws error
 }
 
-function playSound(arrayBuffer, mediaElement) {
+function playSound(arrayBuffer, mediaEl) {
     if (!playSound.context) {
-        // dodgy temp workaround so non webkit doesn't complain
-        mediaElement.setNaturalDuration(999);
+        // dodgy workaround so non-webkit doesn't complain
+        mediaEl.setNaturalDuration(999);
         return;
     }
 
-    if (!mediaElement.source) {
-        mediaElement.source = playSound.context.createBufferSource(); // todo: want to do this when source is set on media element
+    if (!mediaEl.source) {
+        mediaEl.source = playSound.context.createBufferSource();
     }
-    mediaElement.source.connect(playSound.context.destination);
     
     var gainNode = playSound.context.createGainNode();
-    mediaElement.source.connect(gainNode);
-    var buffer = playSound.context.createBuffer(arrayBuffer, false);
-    mediaElement.source.buffer = buffer;
-    mediaElement.source.noteOn(0);
 
-    mediaElement.bufferSource = buffer;
-    mediaElement.audioGain = gainNode.gain;
-    mediaElement.setNaturalDuration(buffer.duration);
+    var buffer = playSound.context.createBuffer(arrayBuffer, false);
+    mediaEl.source.buffer = buffer;
+    
+    mediaEl.source.connect(gainNode);
+    gainNode.connect(playSound.context.destination);
+    gainNode.gain.value = .05 //WORKING HERE.........................   todo: comiebine this somehoew
+    mediaEl.source.noteOn(0);
+
+    mediaEl.bufferSource = buffer;
+    //mediaEl.audioGain = gainNode.gain;        // THIS MEANS IT IS HOOKED UP TO souind.setVolume (called by s_startsound) and overrides the sound as 1
+    mediaEl.setNaturalDuration(buffer.duration);
+    
 }
 
 function stopSound(mediaElement) {
