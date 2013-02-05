@@ -43,14 +43,6 @@ body
     width: 100%;
 }
 
-#stats
-{
-    position: absolute;
-    right: 0;
-    top: 0;
-}
-
-
 .navbar li, .navbar .brand
 {
     line-height: 30px;
@@ -82,3 +74,4 @@ body
 {
     opacity: 1 !important;
 }
+

@@ -21,5 +21,10 @@
         {
             quake.keys.Key_Event(quake_key, true);
         }
+
+        public static void ExecuteCommands(string text)
+        {
+            quake.cmd.Cbuf_AddText(text);
+        }
     }
 }

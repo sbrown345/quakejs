@@ -29,6 +29,9 @@
 	global.keyPress = function(quake_key) {
 		$quake_keys.key_Event(quake_key, true);
 	};
+	global.executeCommands = function(text) {
+		$quake_cmd.cbuf_AddText(text);
+	};
 	////////////////////////////////////////////////////////////////////////////////
 	// Window
 	var $Window = function() {
