@@ -32,13 +32,6 @@
 	global.executeCommands = function(text) {
 		$quake_cmd.cbuf_AddText(text);
 	};
-	global.changeVolume = function(volume) {
-		var $t1 = $InnoveWare_Page.thePage.get_parentCanvas().get_children();
-		for (var $t2 = 0; $t2 < $t1.length; $t2++) {
-			var mediaElement = $t1[$t2];
-			mediaElement.set_volume(volume);
-		}
-	};
 	////////////////////////////////////////////////////////////////////////////////
 	// Window
 	var $Window = function() {
@@ -231,7 +224,7 @@
 			var time = newtime - this.$oldtime;
 			$quake_host.host_Frame(time);
 			this.$oldtime = newtime;
-			window.requestAnimationFrame(Function.mkdel(this, this.$page_CompositionTarget_Rendering));
+			window.requestAnimationFrame(ss.mkdel(this, this.$page_CompositionTarget_Rendering));
 			$InnoveWare_Page.stats.end();
 		}
 	};
@@ -348,7 +341,7 @@
 	var $quake_$menu$m_state_t = function() {
 	};
 	$quake_$menu$m_state_t.prototype = { $m_none: 0, $m_main: 1, $m_singleplayer: 2, $m_load: 3, $m_save: 4, $m_multiplayer: 5, $m_setup: 6, $m_net: 7, $m_options: 8, $m_video: 9, $m_keys: 10, $m_help: 11, $m_quit: 12, $m_serialconfig: 13, $m_modemconfig: 14, $m_lanconfig: 15, $m_gameoptions: 16, $m_search: 17, $m_slist: 18 };
-	Type.registerEnum(null, 'quake.$menu$m_state_t', $quake_$menu$m_state_t, false);
+	ss.registerEnum(null, 'quake.$menu$m_state_t', $quake_$menu$m_state_t, false);
 	////////////////////////////////////////////////////////////////////////////////
 	// quake.screen.pcx_t
 	var $quake_$screen$pcx_t = function() {
@@ -1367,6 +1360,7 @@
 			}
 			case 4: {
 				$quake_screen.scR_EndLoadingPlaque();
+				// allow normal screen updates
 				break;
 			}
 		}
@@ -2246,6 +2240,7 @@
 					break;
 				}
 				case 1: {
+					//			Con_Printf ("svc_nop\n");
 					break;
 				}
 				case 7: {
@@ -2281,6 +2276,7 @@
 				case 11: {
 					$quake_client.$cL_ParseServerInfo();
 					$quake_screen.vid.recalc_refdef = true;
+					// leave intermission full screen
 					break;
 				}
 				case 10: {
@@ -2340,6 +2336,7 @@
 				}
 				case 22: {
 					i = $quake_common.msG_ReadShort();
+					// must use CL_EntityNum() to force cl.num_entities up
 					$quake_client.$cL_ParseBaseline($quake_client.$cL_EntityNum(i));
 					break;
 				}
@@ -2445,6 +2442,7 @@
 		type = $quake_common.msG_ReadByte();
 		switch (type) {
 			case 7: {
+				// spike hitting wall
 				pos[0] = $quake_common.msG_ReadCoord();
 				pos[1] = $quake_common.msG_ReadCoord();
 				pos[2] = $quake_common.msG_ReadCoord();
@@ -2453,6 +2451,7 @@
 				break;
 			}
 			case 8: {
+				// spike hitting wall
 				pos[0] = $quake_common.msG_ReadCoord();
 				pos[1] = $quake_common.msG_ReadCoord();
 				pos[2] = $quake_common.msG_ReadCoord();
@@ -2461,6 +2460,7 @@
 				break;
 			}
 			case 0: {
+				// spike hitting wall
 				pos[0] = $quake_common.msG_ReadCoord();
 				pos[1] = $quake_common.msG_ReadCoord();
 				pos[2] = $quake_common.msG_ReadCoord();
@@ -2483,6 +2483,7 @@
 				break;
 			}
 			case 1: {
+				// super spike hitting wall
 				pos[0] = $quake_common.msG_ReadCoord();
 				pos[1] = $quake_common.msG_ReadCoord();
 				pos[2] = $quake_common.msG_ReadCoord();
@@ -2505,6 +2506,7 @@
 				break;
 			}
 			case 2: {
+				// bullet hitting wall
 				pos[0] = $quake_common.msG_ReadCoord();
 				pos[1] = $quake_common.msG_ReadCoord();
 				pos[2] = $quake_common.msG_ReadCoord();
@@ -2512,6 +2514,7 @@
 				break;
 			}
 			case 3: {
+				// rocket explosion
 				pos[0] = $quake_common.msG_ReadCoord();
 				pos[1] = $quake_common.msG_ReadCoord();
 				pos[2] = $quake_common.msG_ReadCoord();
@@ -2525,6 +2528,7 @@
 				break;
 			}
 			case 4: {
+				// tarbaby explosion
 				pos[0] = $quake_common.msG_ReadCoord();
 				pos[1] = $quake_common.msG_ReadCoord();
 				pos[2] = $quake_common.msG_ReadCoord();
@@ -2533,18 +2537,22 @@
 				break;
 			}
 			case 5: {
+				// lightning bolts
 				$quake_client.$cL_ParseBeam($quake_model.mod_ForName('progs/bolt.mdl', true));
 				break;
 			}
 			case 6: {
+				// lightning bolts
 				$quake_client.$cL_ParseBeam($quake_model.mod_ForName('progs/bolt2.mdl', true));
 				break;
 			}
 			case 9: {
+				// lightning bolts
 				$quake_client.$cL_ParseBeam($quake_model.mod_ForName('progs/bolt3.mdl', true));
 				break;
 			}
 			case 13: {
+				// grappling hook beam
 				$quake_client.$cL_ParseBeam($quake_model.mod_ForName('progs/beam.mdl', true));
 				break;
 			}
@@ -2563,6 +2571,7 @@
 				break;
 			}
 			case 12: {
+				// color mapped explosion
 				pos[0] = $quake_common.msG_ReadCoord();
 				pos[1] = $quake_common.msG_ReadCoord();
 				pos[2] = $quake_common.msG_ReadCoord();
@@ -2674,7 +2683,7 @@
 	var $quake_client$cactive_t = function() {
 	};
 	$quake_client$cactive_t.prototype = { ca_dedicated: 0, ca_disconnected: 1, ca_connected: 2 };
-	Type.registerEnum(global, 'quake.client$cactive_t', $quake_client$cactive_t, false);
+	ss.registerEnum(global, 'quake.client$cactive_t', $quake_client$cactive_t, false);
 	////////////////////////////////////////////////////////////////////////////////
 	// quake.client.client_state_t
 	var $quake_client$client_state_t = function() {
@@ -2932,7 +2941,7 @@
 				for (j = i; text.charCodeAt(j) !== 43 && text.charCodeAt(j) !== 45 && text.charCodeAt(j) !== 0; j++) {
 					;
 				}
-				build += text.substring(i, j + 1 - i);
+				build += text.substr(i, j + 1 - i);
 				build += '\n';
 				i = j - 1;
 			}
@@ -2988,7 +2997,7 @@
 		}
 		// if the alias allready exists, reuse it
 		for (a = $quake_cmd.$cmd_alias; ss.isValue(a); a = a.$next) {
-			if (s.compareTo(a.$name) === 0) {
+			if (ss.compare(s, a.$name) === 0) {
 				a.$value = null;
 				break;
 			}
@@ -3089,7 +3098,7 @@
 		}
 		// fail if the command already exists
 		for (cmd = $quake_cmd.$cmd_functions; ss.isValue(cmd); cmd = cmd.$next) {
-			if (cmd_name.compareTo(cmd.$name) === 0) {
+			if (ss.compare(cmd_name, cmd.$name) === 0) {
 				$quake_console.con_Printf('Cmd_AddCommand: ' + cmd_name + ' already defined\n');
 				return;
 			}
@@ -3103,7 +3112,7 @@
 	$quake_cmd.cmd_Exists = function(cmd_name) {
 		var cmd;
 		for (cmd = $quake_cmd.$cmd_functions; ss.isValue(cmd); cmd = cmd.$next) {
-			if (cmd_name.compareTo(cmd.$name) === 0) {
+			if (ss.compare(cmd_name, cmd.$name) === 0) {
 				return true;
 			}
 		}
@@ -3118,7 +3127,7 @@
 		}
 		// check functions
 		for (cmd = $quake_cmd.$cmd_functions; ss.isValue(cmd); cmd = cmd.$next) {
-			if (partial.compareTo(cmd.$name.substring(0, len)) === 0) {
+			if (ss.compare(partial, cmd.$name.substr(0, len)) === 0) {
 				return cmd.$name;
 			}
 		}
@@ -3136,14 +3145,14 @@
 		// no tokens
 		// check functions
 		for (cmd = $quake_cmd.$cmd_functions; ss.isValue(cmd); cmd = cmd.$next) {
-			if ($quake_cmd.$cmd_argv[0].compareTo(cmd.$name) === 0) {
+			if (ss.compare($quake_cmd.$cmd_argv[0], cmd.$name) === 0) {
 				cmd.$function();
 				return;
 			}
 		}
 		// check alias
 		for (a = $quake_cmd.$cmd_alias; ss.isValue(a); a = a.$next) {
-			if ($quake_cmd.$cmd_argv[0].compareTo(a.$name) === 0) {
+			if (ss.compare($quake_cmd.$cmd_argv[0], a.$name) === 0) {
 				$quake_cmd.cbuf_InsertText(a.$value);
 				return;
 			}
@@ -3163,7 +3172,7 @@
 		}
 		// not really connected
 		$quake_common.msG_WriteByte($quake_client.cls.message, $quake_net.clc_stringcmd);
-		if ($quake_cmd.cmd_Argv(0).compareTo('cmd') !== 0) {
+		if (ss.compare($quake_cmd.cmd_Argv(0), 'cmd') !== 0) {
 			$quake_common.sZ_Print($quake_client.cls.message, $quake_cmd.cmd_Argv(0));
 			$quake_common.sZ_Print($quake_client.cls.message, ' ');
 		}
@@ -3179,7 +3188,7 @@
 	var $quake_cmd$cmd_source_t = function() {
 	};
 	$quake_cmd$cmd_source_t.prototype = { src_client: 0, src_command: 1 };
-	Type.registerEnum(global, 'quake.cmd$cmd_source_t', $quake_cmd$cmd_source_t, false);
+	ss.registerEnum(global, 'quake.cmd$cmd_source_t', $quake_cmd$cmd_source_t, false);
 	////////////////////////////////////////////////////////////////////////////////
 	// quake.common
 	var $quake_common = function() {
@@ -3212,7 +3221,7 @@
 		}
 		catch ($t1) {
 			$t1 = ss.Exception.wrap($t1);
-			if (Type.isInstanceOfType($t1, $System_FormatException)) {
+			if (ss.isInstanceOfType($t1, $System_FormatException)) {
 				return 0;
 			}
 			else {
@@ -3423,7 +3432,7 @@
 		}
 		else {
 			s--;
-			out = in1.substring(s2 + 1, s - s2);
+			out = in1.substr(s2 + 1, s - s2);
 		}
 		return out;
 	};
@@ -3521,7 +3530,7 @@
 				continue;
 			}
 			// NEXTSTEP sometimes clears appkit vars.
-			if (parm.compareTo($quake_common.com_argv[i]) === 0) {
+			if (ss.compare(parm, $quake_common.com_argv[i]) === 0) {
 				return i;
 			}
 		}
@@ -3595,7 +3604,7 @@
 		search = $quake_common.$com_searchpaths;
 		if ($quake_common.$proghack) {
 			// gross hack to use quake 1 progs with quake 2 maps
-			if (filename.compareTo('progs.dat') === 0) {
+			if (ss.compare(filename, 'progs.dat') === 0) {
 				search = search.$next;
 			}
 		}
@@ -3605,7 +3614,7 @@
 				// look through all the pak file elements
 				pak = search.$pack;
 				for (i = 0; i < pak.$numfiles; i++) {
-					if (pak.$files[i].$name.compareTo(filename) === 0) {
+					if (ss.compare(pak.$files[i].$name, filename) === 0) {
 						// found it!
 						$quake_sys_linux.sys_Printf('PackFile: ' + pak.$filename + ' : ' + filename + '\n');
 						if (handle.$ !== -1) {
@@ -3615,7 +3624,7 @@
 						else {
 							// open a new file on the pakfile
 							var pf = pak.$filename;
-							if (pf.startsWith('./')) {
+							if (ss.startsWithString(pf, './')) {
 								pf = pf.substring(2);
 							}
 							var si = getResourceStream(new $System_Uri('InnoveWare;component/' + pf, 2));
@@ -3895,7 +3904,7 @@
 		if ($quake_keys.key_dest === 1) {
 			if ($quake_client.cls.state === 2) {
 				$quake_keys.key_dest = 0;
-				$quake_keys.key_lines[$quake_keys.edit_line] = $quake_keys.key_lines[$quake_keys.edit_line].substring(0, 1);
+				$quake_keys.key_lines[$quake_keys.edit_line] = $quake_keys.key_lines[$quake_keys.edit_line].substr(0, 1);
 				// clear any typing
 				$quake_keys.key_linepos = 1;
 			}
@@ -4055,6 +4064,7 @@
 					break;
 				}
 				default: {
+					// display character and advance
 					y = $quake_console.$con_current % $quake_console.con_totallines;
 					$quake_console.$con_text[y * $quake_console.$con_linewidth + $quake_console.$con_x] = c | mask;
 					$quake_console.$con_x++;
@@ -4117,7 +4127,7 @@
 		// don't draw anything
 		text = $quake_keys.key_lines[$quake_keys.edit_line];
 		// add the cursor frame
-		text = text.substring(0, $quake_keys.key_linepos) + String.fromCharCode($System_Convert.toChar(10 + (ss.Int32.trunc($quake_host.realtime * $quake_console.$con_cursorspeed) & 1)));
+		text = text.substr(0, $quake_keys.key_linepos) + String.fromCharCode($System_Convert.toChar(10 + (ss.Int32.trunc($quake_host.realtime * $quake_console.$con_cursorspeed) & 1)));
 		// fill out remainder with spaces
 		for (i = $quake_keys.key_linepos + 1; i < $quake_console.$con_linewidth; i++) {
 			text += ' ';
@@ -4233,7 +4243,7 @@
 	$quake_cvar_t.$cvar_FindVar = function(var_name) {
 		var var1;
 		for (var1 = $quake_cvar_t.$cvar_vars; ss.isValue(var1); var1 = var1.$next) {
-			if (var_name.compareTo(var1.$name) === 0) {
+			if (ss.compare(var_name, var1.$name) === 0) {
 				return var1;
 			}
 		}
@@ -4264,7 +4274,7 @@
 		}
 		// check functions
 		for (cvar = $quake_cvar_t.$cvar_vars; ss.isValue(cvar); cvar = cvar.$next) {
-			if (partial.compareTo(cvar.$name.substring(0, len)) === 0) {
+			if (ss.compare(partial, cvar.$name.substr(0, len)) === 0) {
 				return cvar.$name;
 			}
 		}
@@ -4279,7 +4289,7 @@
 			$quake_console.con_Printf('Cvar_Set: variable ' + var_name + ' not found\n');
 			return;
 		}
-		changed = var1._string.compareTo(value) !== 0;
+		changed = ss.compare(var1._string, value) !== 0;
 		var1._string = null;
 		// free the old value string
 		var1._string = value;
@@ -4289,8 +4299,8 @@
 	};
 	$quake_cvar_t.cvar_SetValue = function(var_name, value) {
 		var val;
-		val = $System_Convert.toString$1(value);
-		val = val.replaceAll(',', '.');
+		val = $System_Convert.toString(value);
+		val = ss.replaceAllString(val, ',', '.');
 		$quake_cvar_t.cvar_Set(var_name, val);
 	};
 	$quake_cvar_t.cvar_RegisterVariable = function(variable) {
@@ -4348,7 +4358,7 @@
 		var i;
 		var dat;
 		for (pic = $quake_draw.$menu_cachepics[0], i = 0; i < $quake_draw.$menu_numcachepics; i++, pic = $quake_draw.$menu_cachepics[i]) {
-			if (path.compareTo(pic.name) === 0) {
+			if (ss.compare(path, pic.name) === 0) {
 				break;
 			}
 		}
@@ -4592,7 +4602,7 @@
 		var conback;
 		var ver;
 		conback = $quake_draw.draw_CachePic('gfx/conback.lmp');
-		ver = String.format('(QuakeLight - JS Cross-compile {0:##.00}) {1:####.00}', $quake_quakedef.linuX_VERSION, $quake_quakedef.VERSION);
+		ver = ss.formatString('(QuakeLight - JS Cross-compile {0:##.00}) {1:####.00}', $quake_quakedef.linuX_VERSION, $quake_quakedef.VERSION);
 		//	        ver = "(Linux Quake " + quakedef.LINUX_VERSION + ") " + quakedef.VERSION;
 		dest = 59829 - 8 * ver.length;
 		for (x = 0; x < ver.length; x++) {
@@ -4819,7 +4829,7 @@
 				$quake_draw.$d_ziorigin = s.d_ziorigin;
 				var color = 0;
 				if (ss.isValue(s.data)) {
-					color = Type.cast(s.data, $quake_model$msurface_t).color;
+					color = ss.cast(s.data, $quake_model$msurface_t).color;
 				}
 				$quake_draw.$d_DrawSolidSurface(s, color & 255);
 				$quake_draw.$d_DrawZSpans(s.spans);
@@ -4853,7 +4863,7 @@
 					$quake_draw.$d_DrawZSpans(s.spans);
 				}
 				else if ((s.flags & $quake_model.surF_DRAWTURB) !== 0) {
-					pface = Type.cast(s.data, $quake_model$msurface_t);
+					pface = ss.cast(s.data, $quake_model$msurface_t);
 					$quake_draw.$miplevel = 0;
 					$quake_draw.$cacheblock = pface.texinfo.texture.pixels;
 					$quake_draw.$cacheofs = pface.texinfo.texture.offsets[0];
@@ -4901,7 +4911,7 @@
 						// FIXME: don't mess with the frustum,
 						// make entity passed in
 					}
-					pface = Type.cast(s.data, $quake_model$msurface_t);
+					pface = ss.cast(s.data, $quake_model$msurface_t);
 					$quake_draw.$miplevel = $quake_draw.$d_MipLevelForScale(s.nearzi * $quake_draw.$scale_for_mip * pface.texinfo.mipadjust);
 					// FIXME: make this passed in to D_CacheSurface
 					pcurrentcache = $quake_draw.$d_CacheSurface(pface, $quake_draw.$miplevel);
@@ -6667,7 +6677,7 @@
 	var $quake_draw$ptype_t = function() {
 	};
 	$quake_draw$ptype_t.prototype = { pt_static: 0, pt_grav: 1, pt_slowgrav: 2, pt_fire: 3, pt_explode: 4, pt_explode2: 5, pt_blob: 6, pt_blob2: 7 };
-	Type.registerEnum(global, 'quake.draw$ptype_t', $quake_draw$ptype_t, false);
+	ss.registerEnum(global, 'quake.draw$ptype_t', $quake_draw$ptype_t, false);
 	////////////////////////////////////////////////////////////////////////////////
 	// quake.draw.screenpart_t
 	var $quake_draw$screenpart_t = function() {
@@ -6955,7 +6965,7 @@
 		}
 		catch ($t1) {
 			$t1 = ss.Exception.wrap($t1);
-			if (Type.isInstanceOfType($t1, $quake_host_abortserver)) {
+			if (ss.isInstanceOfType($t1, $quake_host_abortserver)) {
 				return;
 			}
 			else {
@@ -7116,7 +7126,7 @@
 			newName = $quake_cmd.cmd_Args();
 		}
 		if ($quake_cmd.cmd_source === 1) {
-			if ($quake_client.cl_name._string.compareTo(newName) === 0) {
+			if (ss.compare($quake_client.cl_name._string, newName) === 0) {
 				return;
 			}
 			$quake_cvar_t.cvar_Set('_cl_name', newName);
@@ -7125,8 +7135,8 @@
 			}
 			return;
 		}
-		if ($quake_host.host_client.name.length !== 0 && $quake_host.host_client.name.compareTo('unconnected') !== 0) {
-			if ($quake_host.host_client.name.compareTo(newName) !== 0) {
+		if ($quake_host.host_client.name.length !== 0 && ss.compare($quake_host.host_client.name, 'unconnected') !== 0) {
+			if (ss.compare($quake_host.host_client.name, newName) !== 0) {
 				$quake_console.con_Printf($quake_host.host_client.name + ' renamed to ' + newName + '\n');
 			}
 		}
@@ -7398,7 +7408,7 @@
 				cmd = $quake_cvar_t.cvar_CompleteVariable($quake_keys.key_lines[$quake_keys.edit_line] + 1);
 			}
 			if (ss.isValue(cmd)) {
-				$quake_keys.key_lines[$quake_keys.edit_line] = $quake_keys.key_lines[$quake_keys.edit_line].substring(0, 1) + cmd;
+				$quake_keys.key_lines[$quake_keys.edit_line] = $quake_keys.key_lines[$quake_keys.edit_line].substr(0, 1) + cmd;
 				$quake_keys.key_linepos = cmd.length + 1;
 				$quake_keys.key_lines[$quake_keys.edit_line] += ' ';
 				$quake_keys.key_linepos++;
@@ -7466,7 +7476,7 @@
 		}
 		// non printable
 		if ($quake_keys.key_linepos < 255) {
-			$quake_keys.key_lines[$quake_keys.edit_line] = $quake_keys.key_lines[$quake_keys.edit_line].substring(0, $quake_keys.key_linepos) + String.fromCharCode($System_Convert.toChar(key));
+			$quake_keys.key_lines[$quake_keys.edit_line] = $quake_keys.key_lines[$quake_keys.edit_line].substr(0, $quake_keys.key_linepos) + String.fromCharCode($System_Convert.toChar(key));
 			$quake_keys.key_linepos++;
 		}
 	};
@@ -7481,7 +7491,7 @@
 			return str.charCodeAt(0);
 		}
 		for (kn = 0; ss.isValue($quake_keys.$keynames[kn].$name); kn++) {
-			if (str.compareTo($quake_keys.$keynames[kn].$name) === 0) {
+			if (ss.compare(str, $quake_keys.$keynames[kn].$name) === 0) {
 				return $quake_keys.$keynames[kn].$keynum;
 			}
 		}
@@ -7677,7 +7687,7 @@
 	var $quake_keys$keydest_t = function() {
 	};
 	$quake_keys$keydest_t.prototype = { key_game: 0, key_console: 1, key_message: 2, key_menu: 3 };
-	Type.registerEnum(global, 'quake.keys$keydest_t', $quake_keys$keydest_t, false);
+	ss.registerEnum(global, 'quake.keys$keydest_t', $quake_keys$keydest_t, false);
 	////////////////////////////////////////////////////////////////////////////////
 	// quake.mathlib
 	var $quake_mathlib = function() {
@@ -7787,6 +7797,7 @@
 			}
 			default: {
 				dist1 = dist2 = 0;
+				// shut up compiler
 				$quake_mathlib.$bopS_Error();
 				break;
 			}
@@ -8130,6 +8141,7 @@
 			case 27: {
 				$quake_keys.key_dest = 0;
 				$quake_menu.$m_state = 0;
+				//cls.demonum = m_save_demonum;
 				if ($quake_client.cls.demonum !== -1 && !$quake_client.cls.demoplayback && $quake_client.cls.state !== 2) {
 					$quake_client.cL_NextDemo();
 				}
@@ -8286,7 +8298,10 @@
 				}
 				$quake_menu.$m_state = 0;
 				$quake_keys.key_dest = 0;
+				// Host_Loadgame_f can't bring up the loading plaque because too much
+				// stack space has been used, so do it now
 				$quake_screen.scR_BeginLoadingPlaque();
+				// issue the load command
 				$quake_cmd.cbuf_AddText('load s' + $quake_menu.$load_cursor + '\n');
 				return;
 			}
@@ -8462,6 +8477,7 @@
 				if ($quake_menu.$setup_cursor < 2) {
 					return;
 				}
+				//forward:
 				$quake_menu.$forward();
 				break;
 			}
@@ -8511,6 +8527,7 @@
 	$quake_menu.$m_AdjustSliders = function(dir) {
 		switch ($quake_menu.$options_cursor) {
 			case 3: {
+				// screen size
 				$quake_screen.scr_viewsize.value += dir * 10;
 				if ($quake_screen.scr_viewsize.value < 30) {
 					$quake_screen.scr_viewsize.value = 30;
@@ -8522,6 +8539,7 @@
 				break;
 			}
 			case 4: {
+				// gamma
 				$quake_view.v_gamma.value -= dir * 0.05;
 				if ($quake_view.v_gamma.value < 0.5) {
 					$quake_view.v_gamma.value = 0.5;
@@ -9023,9 +9041,9 @@
 		node = model.nodes[0];
 		while (true) {
 			if (node.contents < 0) {
-				return Type.cast(node, $quake_model$mleaf_t);
+				return ss.cast(node, $quake_model$mleaf_t);
 			}
-			var _node = Type.cast(node, $quake_model$mnode_t);
+			var _node = ss.cast(node, $quake_model$mnode_t);
 			plane = _node.plane;
 			d = $quake_mathlib.dotProduct$1(p, plane.normal) - plane.dist;
 			if (d > 0) {
@@ -9097,7 +9115,7 @@
 		// search the currently loaded models
 		//
 		for (i = 0, mod = $quake_model.$mod_known[i]; i < $quake_model.$mod_numknown; i++, mod = $quake_model.$mod_known[i]) {
-			if (ss.isValue(mod.name) && mod.name.compareTo(name) === 0) {
+			if (ss.isValue(mod.name) && ss.compare(mod.name, name) === 0) {
 				break;
 			}
 			if (mod.needload === $quake_model.nL_UNREFERENCED) {
@@ -9225,7 +9243,7 @@
 			}
 			// the pixels immediately follow the structures
 			$System_Buffer.blockCopy$1(buf.buffer, buf.ofs + $quake_bspfile.sizeof_miptex_t, tx.pixels, 0, pixels);
-			if (mt.name.startsWith('sky')) {
+			if (ss.startsWithString(mt.name, 'sky')) {
 				$quake_render.r_InitSky(tx);
 			}
 		}
@@ -9269,7 +9287,7 @@
 				if (ss.isNullOrUndefined(tx2) || tx2.name.charCodeAt(0) !== 43) {
 					continue;
 				}
-				if (tx2.name.substring(2).compareTo(tx.name.substring(2)) !== 0) {
+				if (ss.compare(tx2.name.substring(2), tx.name.substring(2)) !== 0) {
 					continue;
 				}
 				num = tx2.name.charCodeAt(1);
@@ -9566,11 +9584,11 @@
 				out[surfnum].samples = new $quake_bspfile$ByteBuffer($quake_model.$loadmodel.lightdata, i);
 			}
 			// set the drawing flags flag
-			if (out[surfnum].texinfo.texture.name.startsWith('sky')) {
+			if (ss.startsWithString(out[surfnum].texinfo.texture.name, 'sky')) {
 				out[surfnum].flags |= 36;
 				continue;
 			}
-			if (out[surfnum].texinfo.texture.name.startsWith('*')) {
+			if (ss.startsWithString(out[surfnum].texinfo.texture.name, '*')) {
 				out[surfnum].flags |= 48;
 				for (i = 0; i < 2; i++) {
 					out[surfnum].extents[i] = 16384;
@@ -9585,7 +9603,7 @@
 		if (node.contents < 0) {
 			return;
 		}
-		var _node = Type.cast(node, $quake_model$mnode_t);
+		var _node = ss.cast(node, $quake_model$mnode_t);
 		$quake_model.$mod_SetParent(_node.children[0], _node);
 		$quake_model.$mod_SetParent(_node.children[1], _node);
 	};
@@ -10203,7 +10221,7 @@
 		for (i = 0; i < $quake_model.$mod_numknown; i++) {
 			mod = $quake_model.$mod_known[i];
 			if (ss.isValue(mod.cache)) {
-				$quake_console.con_Printf(String.format('CAC4ED{0:00} : {1}', cached++, mod.name));
+				$quake_console.con_Printf(ss.formatString('CAC4ED{0:00} : {1}', cached++, mod.name));
 			}
 			else {
 				$quake_console.con_Printf('00000000 : ' + mod.name);
@@ -10222,7 +10240,7 @@
 	var $quake_model$aliasframetype_t = function() {
 	};
 	$quake_model$aliasframetype_t.prototype = { aliaS_SINGLE: 0, aliaS_GROUP: 1 };
-	Type.registerEnum(global, 'quake.model$aliasframetype_t', $quake_model$aliasframetype_t, false);
+	ss.registerEnum(global, 'quake.model$aliasframetype_t', $quake_model$aliasframetype_t, false);
 	////////////////////////////////////////////////////////////////////////////////
 	// quake.model.aliashdr_t
 	var $quake_model$aliashdr_t = function() {
@@ -10237,7 +10255,7 @@
 	var $quake_model$aliasskintype_t = function() {
 	};
 	$quake_model$aliasskintype_t.prototype = { aliaS_SKIN_SINGLE: 0, aliaS_SKIN_GROUP: 1 };
-	Type.registerEnum(global, 'quake.model$aliasskintype_t', $quake_model$aliasskintype_t, false);
+	ss.registerEnum(global, 'quake.model$aliasskintype_t', $quake_model$aliasskintype_t, false);
 	////////////////////////////////////////////////////////////////////////////////
 	// quake.model.daliasframe_t
 	var $quake_model$daliasframe_t = function() {
@@ -10575,8 +10593,8 @@
 			this.type = model.type;
 			this.numframes = model.numframes;
 			this.flags = model.flags;
-			this.mins = model.mins.clone();
-			this.maxs = model.maxs.clone();
+			this.mins = ss.arrayClone(model.mins);
+			this.maxs = ss.arrayClone(model.maxs);
 			this.radius = model.radius;
 			this.firstmodelsurface = model.firstmodelsurface;
 			this.nummodelsurfaces = model.nummodelsurfaces;
@@ -10615,7 +10633,7 @@
 	var $quake_model$modtype_t = function() {
 	};
 	$quake_model$modtype_t.prototype = { mod_brush: 0, mod_sprite: 1, mod_alias: 2 };
-	Type.registerEnum(global, 'quake.model$modtype_t', $quake_model$modtype_t, false);
+	ss.registerEnum(global, 'quake.model$modtype_t', $quake_model$modtype_t, false);
 	////////////////////////////////////////////////////////////////////////////////
 	// quake.model.mplane_t
 	var $quake_model$mplane_t = function() {
@@ -10709,7 +10727,7 @@
 	var $quake_model$spriteframetype_t = function() {
 	};
 	$quake_model$spriteframetype_t.prototype = { spR_SINGLE: 0, spR_GROUP: 1 };
-	Type.registerEnum(global, 'quake.model$spriteframetype_t', $quake_model$spriteframetype_t, false);
+	ss.registerEnum(global, 'quake.model$spriteframetype_t', $quake_model$spriteframetype_t, false);
 	////////////////////////////////////////////////////////////////////////////////
 	// quake.model.stvert_t
 	var $quake_model$stvert_t = function() {
@@ -10730,7 +10748,7 @@
 	var $quake_model$synctype_t = function() {
 	};
 	$quake_model$synctype_t.prototype = { sT_SYNC: 0, sT_RAND: 1 };
-	Type.registerEnum(global, 'quake.model$synctype_t', $quake_model$synctype_t, false);
+	ss.registerEnum(global, 'quake.model$synctype_t', $quake_model$synctype_t, false);
 	////////////////////////////////////////////////////////////////////////////////
 	// quake.model.texture_t
 	var $quake_model$texture_t = function() {
@@ -10800,7 +10818,7 @@
 			return;
 		}
 		$quake_net.$hostCacheCount = 1;
-		if ($quake_net.hostname._string.compareTo('UNNAMED') === 0) {
+		if (ss.compare($quake_net.hostname._string, 'UNNAMED') === 0) {
 			$quake_net.$hostcache[0].name = 'local';
 		}
 		else {
@@ -10813,7 +10831,7 @@
 		$quake_net.$hostcache[0].cname = 'local';
 	};
 	$quake_net.$loop_Connect = function(host) {
-		if (host.compareTo('local') !== 0) {
+		if (ss.compare(host, 'local') !== 0) {
 			return null;
 		}
 		$quake_net.$localconnectpending = true;
@@ -10874,7 +10892,7 @@
 			$System_Buffer.blockCopy$1(sock.receiveMessage, length, sock.receiveMessage, 0, sock.receiveMessageLength);
 		}
 		if (ss.isValue(sock.driverdata) && ret === 1) {
-			Type.cast(sock.driverdata, $quake_net$qsocket_t).canSend = true;
+			ss.cast(sock.driverdata, $quake_net$qsocket_t).canSend = true;
 		}
 		return ret;
 	};
@@ -10885,11 +10903,11 @@
 		if (ss.isNullOrUndefined(sock.driverdata)) {
 			return -1;
 		}
-		bufferLength = Type.cast(sock.driverdata, $quake_net$qsocket_t).receiveMessageLength;
+		bufferLength = ss.cast(sock.driverdata, $quake_net$qsocket_t).receiveMessageLength;
 		if (bufferLength + data.cursize + 4 > $quake_net.neT_MAXMESSAGE) {
 			$quake_sys_linux.sys_Error('Loop_SendMessage: overflow\n');
 		}
-		buffer = Type.cast(sock.driverdata, $quake_net$qsocket_t).receiveMessage;
+		buffer = ss.cast(sock.driverdata, $quake_net$qsocket_t).receiveMessage;
 		ofs = bufferLength;
 		// message type
 		buffer[ofs++] = 1;
@@ -10900,7 +10918,7 @@
 		ofs++;
 		// message
 		$System_Buffer.blockCopy$1(data.data, 0, buffer, ofs, data.cursize);
-		Type.cast(sock.driverdata, $quake_net$qsocket_t).receiveMessageLength = $quake_net.$intAlign(bufferLength + data.cursize + 4);
+		ss.cast(sock.driverdata, $quake_net$qsocket_t).receiveMessageLength = $quake_net.$intAlign(bufferLength + data.cursize + 4);
 		sock.canSend = false;
 		return 1;
 	};
@@ -10911,11 +10929,11 @@
 		if (ss.isNullOrUndefined(sock.driverdata)) {
 			return -1;
 		}
-		bufferLength = Type.cast(sock.driverdata, $quake_net$qsocket_t).receiveMessageLength;
+		bufferLength = ss.cast(sock.driverdata, $quake_net$qsocket_t).receiveMessageLength;
 		if (bufferLength + data.cursize + 1 + 2 > $quake_net.neT_MAXMESSAGE) {
 			return 0;
 		}
-		buffer = Type.cast(sock.driverdata, $quake_net$qsocket_t).receiveMessage;
+		buffer = ss.cast(sock.driverdata, $quake_net$qsocket_t).receiveMessage;
 		ofs = bufferLength;
 		// message type
 		buffer[ofs++] = 2;
@@ -10926,7 +10944,7 @@
 		ofs++;
 		// message
 		$System_Buffer.blockCopy$1(data.data, 0, buffer, ofs, data.cursize);
-		Type.cast(sock.driverdata, $quake_net$qsocket_t).receiveMessageLength = $quake_net.$intAlign(bufferLength + data.cursize + 4);
+		ss.cast(sock.driverdata, $quake_net$qsocket_t).receiveMessageLength = $quake_net.$intAlign(bufferLength + data.cursize + 4);
 		return 1;
 	};
 	$quake_net.$loop_CanSendMessage = function(sock) {
@@ -10940,7 +10958,7 @@
 	};
 	$quake_net.$loop_Close = function(sock) {
 		if (ss.isValue(sock.driverdata)) {
-			Type.cast(sock.driverdata, $quake_net$qsocket_t).driverdata = null;
+			ss.cast(sock.driverdata, $quake_net$qsocket_t).driverdata = null;
 		}
 		sock.receiveMessageLength = 0;
 		sock.sendMessageLength = 0;
@@ -11071,14 +11089,14 @@
 						host = null;
 					}
 					if (ss.isValue(host)) {
-						if (host.compareTo('local') === 0) {
+						if (ss.compare(host, 'local') === 0) {
 							numdrivers = 1;
 							$state = 1;
 							continue $sm1;
 						}
 						if ($quake_net.$hostCacheCount !== 0) {
 							for (n = 0; n < $quake_net.$hostCacheCount; n++) {
-								if (host.compareTo($quake_net.$hostcache[n].name) === 0) {
+								if (ss.compare(host, $quake_net.$hostcache[n].name) === 0) {
 									host = $quake_net.$hostcache[n].cname;
 									break;
 								}
@@ -11415,7 +11433,7 @@
 		return $quake_prog.cast_int($quake_prog.pr_globals_read(o));
 	};
 	$quake_prog.$g_EDICT = function(o) {
-		return $quake_server.sv.edicts[ss.Int32.div(ss.Nullable.unbox(Type.cast($quake_prog.pr_globals_read(o), ss.Int32)), $quake_prog.pr_edict_size)];
+		return $quake_server.sv.edicts[ss.Int32.div(ss.Nullable.unbox(ss.cast($quake_prog.pr_globals_read(o), ss.Int32)), $quake_prog.pr_edict_size)];
 	};
 	$quake_prog.$g_EDICTNUM = function(o) {
 		return $quake_prog.nuM_FOR_EDICT($quake_prog.$g_EDICT(o));
@@ -11428,7 +11446,7 @@
 		return res;
 	};
 	$quake_prog.$g_STRING = function(o) {
-		return $quake_prog.pr_string(ss.Nullable.unbox(Type.cast($quake_prog.pr_globals_read(o), ss.Int32)));
+		return $quake_prog.pr_string(ss.Nullable.unbox(ss.cast($quake_prog.pr_globals_read(o), ss.Int32)));
 	};
 	$quake_prog.$e_STRING = function(e, o) {
 		return $quake_prog.pr_string($quake_prog.cast_int($quake_prog.$readentvar(e.v, o)));
@@ -11554,7 +11572,7 @@
 		// check to see if model was properly precached
 		for (i = 0, check = $quake_server.sv.model_precache[i]; ss.isValue(check); i++) {
 			check = $quake_server.sv.model_precache[i];
-			if (check.compareTo(m) === 0) {
+			if (ss.compare(check, m) === 0) {
 				break;
 			}
 		}
@@ -11662,7 +11680,7 @@
 			if (ss.isNullOrUndefined(t)) {
 				continue;
 			}
-			if (t.compareTo(s) === 0) {
+			if (ss.compare(t, s) === 0) {
 				$quake_prog.$returN_EDICT(ed);
 				return;
 			}
@@ -11690,7 +11708,7 @@
 				$quake_server.sv.sound_precache[i] = s;
 				return;
 			}
-			if ($quake_server.sv.sound_precache[i].compareTo(s) === 0) {
+			if (ss.compare($quake_server.sv.sound_precache[i], s) === 0) {
 				return;
 			}
 		}
@@ -11711,7 +11729,7 @@
 				$quake_server.sv.models[i] = $quake_model.mod_ForName(s, true);
 				return;
 			}
-			if ($quake_server.sv.model_precache[i].compareTo(s) === 0) {
+			if (ss.compare($quake_server.sv.model_precache[i], s) === 0) {
 				return;
 			}
 		}
@@ -11861,7 +11879,7 @@
 		var i;
 		for (i = 0; i < $quake_prog.$progs.numfielddefs; i++) {
 			def = $quake_prog.$pr_fielddefs[i];
-			if ($quake_prog.pr_string(def.s_name).compareTo(name) === 0) {
+			if (ss.compare($quake_prog.pr_string(def.s_name), name) === 0) {
 				return def;
 			}
 		}
@@ -11872,7 +11890,7 @@
 		var i;
 		for (i = 0; i < $quake_prog.$progs.numfunctions; i++) {
 			func = $quake_prog.pr_functions[i];
-			if ($quake_prog.pr_string(func.s_name).compareTo(name) === 0) {
+			if (ss.compare($quake_prog.pr_string(func.s_name), name) === 0) {
 				return func;
 			}
 		}
@@ -12031,7 +12049,7 @@
 			}
 			// anglehack is to allow QuakeEd to write single scalar angles
 			// and allow them to be turned into vectors. (FIXME...)
-			if ($quake_common.com_token.compareTo('angle') === 0) {
+			if (ss.compare($quake_common.com_token, 'angle') === 0) {
 				$quake_common.com_token = 'angles';
 				anglehack = true;
 			}
@@ -12039,13 +12057,13 @@
 				anglehack = false;
 			}
 			// FIXME: change light to _light to get rid of this hack
-			if ($quake_common.com_token.compareTo('light') === 0) {
+			if (ss.compare($quake_common.com_token, 'light') === 0) {
 				$quake_common.com_token = 'light_lev';
 			}
 			// hack for single light def
 			keyname = $quake_common.com_token;
 			// another hack to fix heynames with trailing spaces
-			keyname.trimEnd();
+			ss.trimEndString(keyname);
 			// parse value	
 			$quake_common.coM_Parse(data, ofs);
 			if (ofs.$ === -1) {
@@ -12675,22 +12693,22 @@
 		if (ss.isNullOrUndefined(value)) {
 			return 0;
 		}
-		if (ss.referenceEquals(Type.getInstanceType(value), ss.Int32)) {
-			return BitConverter.toSingle(BitConverter.getBytes(ss.Nullable.unbox(Type.cast(value, ss.Int32))), 0);
+		if (ss.referenceEquals(ss.getInstanceType(value), ss.Int32)) {
+			return BitConverter.toSingle(BitConverter.getBytes(ss.Nullable.unbox(ss.cast(value, ss.Int32))), 0);
 		}
 		else {
-			return ss.Nullable.unbox(Type.cast(value, Number));
+			return ss.Nullable.unbox(ss.cast(value, Number));
 		}
 	};
 	$quake_prog.cast_int = function(value) {
 		if (ss.isNullOrUndefined(value)) {
 			return 0;
 		}
-		if (ss.referenceEquals(Type.getInstanceType(value), Number)) {
-			return BitConverter.toInt32(BitConverter.getBytes(ss.Nullable.unbox(Type.cast(value, Number))), 0);
+		if (ss.referenceEquals(ss.getInstanceType(value), Number)) {
+			return BitConverter.toInt32(BitConverter.getBytes(ss.Nullable.unbox(ss.cast(value, Number))), 0);
 		}
 		else {
-			return ss.Nullable.unbox(Type.cast(value, ss.Int32));
+			return ss.Nullable.unbox(ss.cast(value, ss.Int32));
 		}
 	};
 	$quake_prog.getStringIndex = function(str) {
@@ -13212,7 +13230,7 @@
 				break;
 			}
 			case 43: {
-				entvars.use = $quake_prog.cast_int(value);
+				entvars.use$1 = $quake_prog.cast_int(value);
 				break;
 			}
 			case 44: {
@@ -13394,103 +13412,138 @@
 			var eval;
 			switch (st.op) {
 				case 6: {
+					//c->_float = a->_float + b->_float;
 					$quake_prog.pr_globals_write(st.c, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) + $quake_prog.cast_float($quake_prog.pr_globals_read(st.b)));
 					break;
 				}
 				case 7: {
+					//c->vector[0] = a->vector[0] + b->vector[0];
+					//c->vector[1] = a->vector[1] + b->vector[1];
+					//c->vector[2] = a->vector[2] + b->vector[2];
 					$quake_prog.pr_globals_write(st.c, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) + $quake_prog.cast_float($quake_prog.pr_globals_read(st.b)));
 					$quake_prog.pr_globals_write(st.c + 1, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 1)) + $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 1)));
 					$quake_prog.pr_globals_write(st.c + 2, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 2)) + $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 2)));
 					break;
 				}
 				case 8: {
+					//c->_float = a->_float - b->_float;
 					$quake_prog.pr_globals_write(st.c, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) - $quake_prog.cast_float($quake_prog.pr_globals_read(st.b)));
 					break;
 				}
 				case 9: {
+					//c->vector[0] = a->vector[0] - b->vector[0];
+					//c->vector[1] = a->vector[1] - b->vector[1];
+					//c->vector[2] = a->vector[2] - b->vector[2];
 					$quake_prog.pr_globals_write(st.c, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) - $quake_prog.cast_float($quake_prog.pr_globals_read(st.b)));
 					$quake_prog.pr_globals_write(st.c + 1, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 1)) - $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 1)));
 					$quake_prog.pr_globals_write(st.c + 2, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 2)) - $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 2)));
 					break;
 				}
 				case 1: {
+					//c->_float = a->_float * b->_float;
 					$quake_prog.pr_globals_write(st.c, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) * $quake_prog.cast_float($quake_prog.pr_globals_read(st.b)));
 					break;
 				}
 				case 2: {
+					//c->_float = a->vector[0] * b->vector[0]
+					//+ a->vector[1] * b->vector[1]
+					//+ a->vector[2] * b->vector[2];
 					var res = $quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) * $quake_prog.cast_float($quake_prog.pr_globals_read(st.b)) + $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 1)) * $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 1)) + $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 2)) * $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 2));
 					$quake_prog.pr_globals_write(st.c, res);
 					break;
 				}
 				case 4: {
+					//c->vector[0] = b->_float * a->vector[0];
+					//c->vector[1] = b->_float * a->vector[1];
+					//c->vector[2] = b->_float * a->vector[2];
 					$quake_prog.pr_globals_write(st.c, $quake_prog.cast_float($quake_prog.pr_globals_read(st.b)) * $quake_prog.cast_float($quake_prog.pr_globals_read(st.a)));
 					$quake_prog.pr_globals_write(st.c + 1, $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 1)) * $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 1)));
 					$quake_prog.pr_globals_write(st.c + 2, $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 2)) * $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 2)));
 					break;
 				}
 				case 64: {
+					//c->_float = (int)a->_float & (int)b->_float;
 					$quake_prog.pr_globals_write(st.c, ss.Int32.trunc($quake_prog.cast_float($quake_prog.pr_globals_read(st.a))) & ss.Int32.trunc($quake_prog.cast_float($quake_prog.pr_globals_read(st.b))));
 					break;
 				}
 				case 65: {
+					//c->_float = (int)a->_float | (int)b->_float;
 					$quake_prog.pr_globals_write(st.c, ss.Int32.trunc($quake_prog.cast_float($quake_prog.pr_globals_read(st.a))) | ss.Int32.trunc($quake_prog.cast_float($quake_prog.pr_globals_read(st.b))));
 					break;
 				}
 				case 21: {
+					//c->_float = a->_float >= b->_float;
 					$quake_prog.pr_globals_write(st.c, (($quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) >= $quake_prog.cast_float($quake_prog.pr_globals_read(st.b))) ? 1 : 0));
 					break;
 				}
 				case 20: {
+					//c->_float = a->_float <= b->_float;
 					$quake_prog.pr_globals_write(st.c, (($quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) <= $quake_prog.cast_float($quake_prog.pr_globals_read(st.b))) ? 1 : 0));
 					break;
 				}
 				case 23: {
+					//c->_float = a->_float > b->_float;
 					$quake_prog.pr_globals_write(st.c, (($quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) > $quake_prog.cast_float($quake_prog.pr_globals_read(st.b))) ? 1 : 0));
 					break;
 				}
 				case 22: {
+					//c->_float = a->_float < b->_float;
 					$quake_prog.pr_globals_write(st.c, (($quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) < $quake_prog.cast_float($quake_prog.pr_globals_read(st.b))) ? 1 : 0));
 					break;
 				}
 				case 62: {
+					//c->_float = a->_float && b->_float;
 					$quake_prog.pr_globals_write(st.c, (($quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) !== 0 && $quake_prog.cast_float($quake_prog.pr_globals_read(st.b)) !== 0) ? 1 : 0));
 					break;
 				}
 				case 63: {
+					//c->_float = a->_float || b->_float;
 					$quake_prog.pr_globals_write(st.c, (($quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) !== 0 || $quake_prog.cast_float($quake_prog.pr_globals_read(st.b)) !== 0) ? 1 : 0));
 					break;
 				}
 				case 44: {
+					//c->_float = !a->_float;
 					$quake_prog.pr_globals_write(st.c, (($quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) === 0) ? 1 : 0));
 					break;
 				}
 				case 46: {
+					//c->_float = !a->string || !pr_strings[a->string];
 					var astring = $quake_prog.cast_int($quake_prog.pr_globals_read(st.a));
 					$quake_prog.pr_globals_write(st.c, ((astring === 0 || ss.isNullOrUndefined($quake_prog.pr_string(astring))) ? 1 : 0));
 					break;
 				}
 				case 48: {
+					//c->_float = !a->function;
 					$quake_prog.pr_globals_write(st.c, (($quake_prog.cast_int($quake_prog.pr_globals_read(st.a)) === 0) ? 1 : 0));
 					break;
 				}
 				case 47: {
+					//c->_float = (PROG_TO_EDICT(a->edict) == sv.edicts);
 					$quake_prog.pr_globals_write(st.c, (ss.referenceEquals($quake_prog.proG_TO_EDICT($quake_prog.cast_int($quake_prog.pr_globals_read(st.a))), $quake_server.sv.edicts[0]) ? 1 : 0));
 					break;
 				}
 				case 10: {
+					//c->_float = a->_float == b->_float;
 					$quake_prog.pr_globals_write(st.c, (($quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) === $quake_prog.cast_float($quake_prog.pr_globals_read(st.b))) ? 1 : 0));
 					break;
 				}
 				case 11: {
+					//c->_float = (a->vector[0] == b->vector[0]) &&
+					//(a->vector[1] == b->vector[1]) &&
+					//(a->vector[2] == b->vector[2]);
 					eval = $quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) === $quake_prog.cast_float($quake_prog.pr_globals_read(st.b)) && $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 1)) === $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 1)) && $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 2)) === $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 2));
 					$quake_prog.pr_globals_write(st.c, (eval ? 1 : 0));
 					break;
 				}
 				case 12: {
-					$quake_prog.pr_globals_write(st.c, (($quake_prog.pr_string($quake_prog.cast_int($quake_prog.pr_globals_read(st.a))).compareTo($quake_prog.pr_string($quake_prog.cast_int($quake_prog.pr_globals_read(st.b)))) === 0) ? 1 : 0));
+					//c->_float = !strcmp(pr_strings+a->string,pr_strings+b->string);
+					$quake_prog.pr_globals_write(st.c, ((ss.compare($quake_prog.pr_string($quake_prog.cast_int($quake_prog.pr_globals_read(st.a))), $quake_prog.pr_string($quake_prog.cast_int($quake_prog.pr_globals_read(st.b)))) === 0) ? 1 : 0));
 					break;
 				}
 				case 16: {
+					//c->_float = (a->vector[0] != b->vector[0]) ||
+					//(a->vector[1] != b->vector[1]) ||
+					//(a->vector[2] != b->vector[2]);
 					eval = $quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) !== $quake_prog.cast_float($quake_prog.pr_globals_read(st.b)) || $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 1)) !== $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 1)) || $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 2)) !== $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 2));
 					$quake_prog.pr_globals_write(st.c, (eval ? 1 : 0));
 					break;
@@ -13500,10 +13553,15 @@
 				case 35:
 				case 33:
 				case 36: {
+					// integers
+					// pointers
 					$quake_prog.pr_globals_write(st.b, $quake_prog.pr_globals_read(st.a));
 					break;
 				}
 				case 32: {
+					//b->vector[0] = a->vector[0];
+					//b->vector[1] = a->vector[1];
+					//b->vector[2] = a->vector[2];
 					$quake_prog.pr_globals_write(st.b, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a)));
 					$quake_prog.pr_globals_write(st.b + 1, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 1)));
 					$quake_prog.pr_globals_write(st.b + 2, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 2)));
@@ -13514,10 +13572,18 @@
 				case 41:
 				case 39:
 				case 42: {
+					// integers
+					// pointers
+					//ptr = (eval_t*)((byte*)sv.edicts + b->_int);
+					//ptr->_int = a->_int;
 					$quake_prog.$writeptr($quake_prog.cast_int($quake_prog.pr_globals_read(st.b)), $quake_prog.cast_int($quake_prog.pr_globals_read(st.a)));
 					break;
 				}
 				case 38: {
+					//ptr = (eval_t*)((byte*)sv.edicts + b->_int);
+					//ptr->vector[0] = a->vector[0];
+					//ptr->vector[1] = a->vector[1];
+					//ptr->vector[2] = a->vector[2];
 					$quake_prog.$writeptr($quake_prog.cast_int($quake_prog.pr_globals_read(st.b)), $quake_prog.cast_int($quake_prog.pr_globals_read(st.a)));
 					$quake_prog.$writeptr($quake_prog.cast_int($quake_prog.pr_globals_read(st.b)) + 1, $quake_prog.cast_int($quake_prog.pr_globals_read(st.a + 1)));
 					$quake_prog.$writeptr($quake_prog.cast_int($quake_prog.pr_globals_read(st.b)) + 2, $quake_prog.cast_int($quake_prog.pr_globals_read(st.a + 2)));
@@ -13528,6 +13594,7 @@
 					if (ss.referenceEquals(ed, $quake_server.sv.edicts[0]) && $quake_server.sv.state === 1) {
 						$quake_prog.$pR_RunError('assignment to world entity');
 					}
+					//c->_int = (byte *)((int *)&ed->v + b->_int) - (byte *)sv.edicts;
 					$quake_prog.pr_globals_write(st.c, ed.index * $quake_prog.pr_edict_size + 96 + $quake_prog.cast_int($quake_prog.pr_globals_read(st.b)) * 4);
 					break;
 				}
@@ -13537,11 +13604,17 @@
 				case 26:
 				case 29: {
 					ed = $quake_prog.proG_TO_EDICT($quake_prog.cast_int($quake_prog.pr_globals_read(st.a)));
+					//a = (eval_t *)((int *)&ed->v + b->_int);
+					//c->_int = a->_int;
 					$quake_prog.pr_globals_write(st.c, $quake_prog.cast_int($quake_prog.$readptr(ed.index * $quake_prog.pr_edict_size + 96 + $quake_prog.cast_int($quake_prog.pr_globals_read(st.b)) * 4)));
 					break;
 				}
 				case 25: {
 					ed = $quake_prog.proG_TO_EDICT($quake_prog.cast_int($quake_prog.pr_globals_read(st.a)));
+					//a = (eval_t *)((int *)&ed->v + b->_int);
+					//c->vector[0] = a->vector[0];
+					//c->vector[1] = a->vector[1];
+					//c->vector[2] = a->vector[2];
 					$quake_prog.pr_globals_write(st.c, $quake_prog.cast_float($quake_prog.$readptr(ed.index * $quake_prog.pr_edict_size + 96 + $quake_prog.cast_int($quake_prog.pr_globals_read(st.b)) * 4)));
 					$quake_prog.pr_globals_write(st.c + 1, $quake_prog.cast_float($quake_prog.$readptr(ed.index * $quake_prog.pr_edict_size + 96 + ($quake_prog.cast_int($quake_prog.pr_globals_read(st.b)) + 1) * 4)));
 					$quake_prog.pr_globals_write(st.c + 2, $quake_prog.cast_float($quake_prog.$readptr(ed.index * $quake_prog.pr_edict_size + 96 + ($quake_prog.cast_int($quake_prog.pr_globals_read(st.b)) + 2) * 4)));
@@ -13551,16 +13624,19 @@
 					if ($quake_prog.cast_int($quake_prog.pr_globals_read(st.a)) === 0) {
 						s += st.b - 1;
 					}
+					// offset the s++
 					break;
 				}
 				case 49: {
 					if ($quake_prog.cast_int($quake_prog.pr_globals_read(st.a)) !== 0) {
 						s += st.b - 1;
 					}
+					// offset the s++
 					break;
 				}
 				case 61: {
 					s += st.a - 1;
+					// offset the s++
 					break;
 				}
 				case 51:
@@ -13599,6 +13675,7 @@
 					if ($quake_prog.$pr_depth === exitdepth) {
 						return;
 					}
+					// all done
 					break;
 				}
 				case 60: {
@@ -13779,7 +13856,7 @@
 		this.maxs = new Array(3);
 		this.size = new Array(3);
 		this.touch = 0;
-		this.use = 0;
+		this.use$1 = 0;
 		this.think = 0;
 		this.blocked = 0;
 		this.nextthink = 0;
@@ -13850,7 +13927,7 @@
 			this.skin = 0;
 			this.effects = 0;
 			this.touch = 0;
-			this.use = 0;
+			this.use$1 = 0;
 			this.think = 0;
 			this.blocked = 0;
 			this.nextthink = 0;
@@ -13929,7 +14006,7 @@
 	var $quake_prog$etype_t = function() {
 	};
 	$quake_prog$etype_t.prototype = { ev_void: 0, ev_string: 1, ev_float: 2, ev_vector: 3, ev_entity: 4, ev_field: 5, ev_function: 6, ev_pointer: 7 };
-	Type.registerEnum(global, 'quake.prog$etype_t', $quake_prog$etype_t, false);
+	ss.registerEnum(global, 'quake.prog$etype_t', $quake_prog$etype_t, false);
 	////////////////////////////////////////////////////////////////////////////////
 	// quake.prog.eval_t
 	var $quake_prog$eval_t = function() {
@@ -14132,7 +14209,7 @@
 	var $quake_prog$opcode_t = function() {
 	};
 	$quake_prog$opcode_t.prototype = { oP_DONE: 0, oP_MUL_F: 1, oP_MUL_V: 2, oP_MUL_FV: 3, oP_MUL_VF: 4, oP_DIV_F: 5, oP_ADD_F: 6, oP_ADD_V: 7, oP_SUB_F: 8, oP_SUB_V: 9, oP_EQ_F: 10, oP_EQ_V: 11, oP_EQ_S: 12, oP_EQ_E: 13, oP_EQ_FNC: 14, oP_NE_F: 15, oP_NE_V: 16, oP_NE_S: 17, oP_NE_E: 18, oP_NE_FNC: 19, oP_LE: 20, oP_GE: 21, oP_LT: 22, oP_GT: 23, oP_LOAD_F: 24, oP_LOAD_V: 25, oP_LOAD_S: 26, oP_LOAD_ENT: 27, oP_LOAD_FLD: 28, oP_LOAD_FNC: 29, oP_ADDRESS: 30, oP_STORE_F: 31, oP_STORE_V: 32, oP_STORE_S: 33, oP_STORE_ENT: 34, oP_STORE_FLD: 35, oP_STORE_FNC: 36, oP_STOREP_F: 37, oP_STOREP_V: 38, oP_STOREP_S: 39, oP_STOREP_ENT: 40, oP_STOREP_FLD: 41, oP_STOREP_FNC: 42, oP_RETURN: 43, oP_NOT_F: 44, oP_NOT_V: 45, oP_NOT_S: 46, oP_NOT_ENT: 47, oP_NOT_FNC: 48, oP_IF: 49, oP_IFNOT: 50, oP_CALL0: 51, oP_CALL1: 52, oP_CALL2: 53, oP_CALL3: 54, oP_CALL4: 55, oP_CALL5: 56, oP_CALL6: 57, oP_CALL7: 58, oP_CALL8: 59, oP_STATE: 60, oP_GOTO: 61, oP_AND: 62, oP_OR: 63, oP_BITAND: 64, oP_BITOR: 65 };
-	Type.registerEnum(global, 'quake.prog$opcode_t', $quake_prog$opcode_t, false);
+	ss.registerEnum(global, 'quake.prog$opcode_t', $quake_prog$opcode_t, false);
 	////////////////////////////////////////////////////////////////////////////////
 	// quake.prog.prstack_t
 	var $quake_prog$prstack_t = function() {
@@ -14485,7 +14562,7 @@
 		// expand, rotate, and translate points into worldspace
 		$quake_render.currententity.trivial_accept = 0;
 		$quake_render.$pmodel = $quake_render.currententity.model;
-		pahdr = Type.cast($quake_model.mod_Extradata($quake_render.$pmodel), $quake_model$aliashdr_t);
+		pahdr = ss.cast($quake_model.mod_Extradata($quake_render.$pmodel), $quake_model$aliashdr_t);
 		$quake_render.$pmdl = pahdr.model;
 		$quake_render.$r_AliasSetUpTransform(0);
 		// construct the base bounding box for this frame
@@ -14816,7 +14893,7 @@
 		$quake_render.$pskindesc = $quake_render.$paliashdr.skindesc[skinnum];
 		$quake_render.$a_skinwidth = $quake_render.$pmdl.skinwidth;
 		if ($quake_render.$pskindesc.type === 1) {
-			paliasskingroup = Type.cast($quake_render.$pskindesc.skin, $quake_model$maliasskingroup_t);
+			paliasskingroup = ss.cast($quake_render.$pskindesc.skin, $quake_model$maliasskingroup_t);
 			pskinintervals = paliasskingroup.intervals;
 			numskins = paliasskingroup.numskins;
 			fullskininterval = pskinintervals[numskins - 1];
@@ -14870,10 +14947,10 @@
 			frame = 0;
 		}
 		if ($quake_render.$paliashdr.frames[frame].type === 0) {
-			$quake_render.$r_apverts = Type.cast($quake_render.$paliashdr.frames[frame].frame, Array);
+			$quake_render.$r_apverts = ss.cast($quake_render.$paliashdr.frames[frame].frame, Array);
 			return;
 		}
-		paliasgroup = Type.cast($quake_render.$paliashdr.frames[frame].frame, $quake_model$maliasgroup_t);
+		paliasgroup = ss.cast($quake_render.$paliashdr.frames[frame].frame, $quake_model$maliasgroup_t);
 		pintervals = paliasgroup.intervals;
 		numframes = paliasgroup.numframes;
 		fullinterval = pintervals[numframes - 1];
@@ -14888,14 +14965,14 @@
 				break;
 			}
 		}
-		$quake_render.$r_apverts = Type.cast(paliasgroup.frames[i].frame, Array);
+		$quake_render.$r_apverts = ss.cast(paliasgroup.frames[i].frame, Array);
 	};
 	$quake_render.$r_AliasDrawModel = function(plighting) {
 		$quake_render.$r_amodels_drawn++;
 		// cache align
 		$quake_render.$pfinalverts = $quake_render.$finalverts;
 		$quake_render.$pauxverts = $quake_render.$auxverts;
-		$quake_render.$paliashdr = Type.cast($quake_model.mod_Extradata($quake_render.currententity.model), $quake_model$aliashdr_t);
+		$quake_render.$paliashdr = ss.cast($quake_model.mod_Extradata($quake_render.currententity.model), $quake_model$aliashdr_t);
 		$quake_render.$pmdl = $quake_render.$paliashdr.model;
 		$quake_render.$r_AliasSetupSkin();
 		$quake_render.$r_AliasSetUpTransform($quake_render.currententity.trivial_accept);
@@ -15106,12 +15183,12 @@
 				if (pn.visframe === $quake_render.$r_visframecount) {
 					if (pn.contents < 0) {
 						if (pn.contents !== $quake_bspfile.contentS_SOLID) {
-							$quake_render.$r_currentbkey = Type.cast(pn, $quake_model$mleaf_t).key;
+							$quake_render.$r_currentbkey = ss.cast(pn, $quake_model$mleaf_t).key;
 							$quake_render.$r_RenderBmodelFace(psideedges[i], psurf);
 						}
 					}
 					else {
-						$quake_render.$r_RecursiveClipBPoly(psideedges[i], Type.cast(pnode.children[i], $quake_model$mnode_t), psurf);
+						$quake_render.$r_RecursiveClipBPoly(psideedges[i], ss.cast(pnode.children[i], $quake_model$mnode_t), psurf);
 					}
 				}
 			}
@@ -15173,7 +15250,7 @@
 					}
 					bedges[pbedge + j - 1].pnext = null;
 					// mark end of edges
-					$quake_render.$r_RecursiveClipBPoly(bedges[pbedge], Type.cast($quake_render.currententity.topnode, $quake_model$mnode_t), psurf);
+					$quake_render.$r_RecursiveClipBPoly(bedges[pbedge], ss.cast($quake_render.currententity.topnode, $quake_model$mnode_t), psurf);
 				}
 				else {
 					$quake_sys_linux.sys_Error('no edges in bmodel');
@@ -15196,7 +15273,7 @@
 			dot = $quake_mathlib.dotProduct$1($quake_render.modelorg, pplane.normal) - pplane.dist;
 			// draw the polygon
 			if ((psurf.flags & $quake_model.surF_PLANEBACK) !== 0 && dot < -0.01 || (psurf.flags & $quake_model.surF_PLANEBACK) === 0 && dot > $quake_render.backfacE_EPSILON) {
-				$quake_render.$r_currentkey = Type.cast($quake_render.currententity.topnode, $quake_model$mleaf_t).key;
+				$quake_render.$r_currentkey = ss.cast($quake_render.currententity.topnode, $quake_model$mleaf_t).key;
 				// FIXME: use bounding-box-based frustum clipping info?
 				$quake_render.$r_RenderFace(psurf, clipflags);
 			}
@@ -15251,15 +15328,15 @@
 		}
 		// if a leaf node, draw stuff
 		if (node.contents < 0) {
-			pleaf = Type.cast(node, $quake_model$mleaf_t);
+			pleaf = ss.cast(node, $quake_model$mleaf_t);
 			var _mark = pleaf.firstmarksurface;
 			var ofs = _mark.ofs;
-			mark = Type.cast(_mark.buffer[ofs], $quake_model$msurface_t);
+			mark = ss.cast(_mark.buffer[ofs], $quake_model$msurface_t);
 			c = pleaf.nummarksurfaces;
 			if (c !== 0) {
 				do {
 					mark.visframe = $quake_render.r_framecount;
-					mark = Type.cast(_mark.buffer[++ofs], $quake_model$msurface_t);
+					mark = ss.cast(_mark.buffer[++ofs], $quake_model$msurface_t);
 				} while (--c !== 0);
 			}
 			// deal with model fragments in this leaf
@@ -15271,7 +15348,7 @@
 			// all bmodels in a leaf share the same key
 		}
 		else {
-			var _node = Type.cast(node, $quake_model$mnode_t);
+			var _node = ss.cast(node, $quake_model$mnode_t);
 			// node is just a decision point, so go down the apropriate sides
 			// find which side of the node we are on
 			plane = _node.plane;
@@ -16325,7 +16402,7 @@
 			if (ss.isNullOrUndefined($quake_render.$r_pefragtopnode)) {
 				$quake_render.$r_pefragtopnode = node;
 			}
-			leaf = Type.cast(node, $quake_model$mleaf_t);
+			leaf = ss.cast(node, $quake_model$mleaf_t);
 			// grab an efrag off the free list
 			ef = $quake_client.cl.free_efrags;
 			if (ss.isNullOrUndefined(ef)) {
@@ -16351,7 +16428,7 @@
 			return;
 		}
 		// NODE_MIXED
-		var _node = Type.cast(node, $quake_model$mnode_t);
+		var _node = ss.cast(node, $quake_model$mnode_t);
 		splitplane = _node.plane;
 		sides = $quake_mathlib.boX_ON_PLANE_SIDE($quake_render.$r_emins, $quake_render.$r_emaxs, splitplane);
 		if (sides === 3) {
@@ -16383,7 +16460,7 @@
 			//  visible and not BSP clipped
 			return;
 		}
-		var _node = Type.cast(node, $quake_model$mnode_t);
+		var _node = ss.cast(node, $quake_model$mnode_t);
 		splitplane = _node.plane;
 		sides = $quake_mathlib.boX_ON_PLANE_SIDE($quake_render.$r_emins, $quake_render.$r_emaxs, splitplane);
 		if (sides === 3) {
@@ -16472,7 +16549,7 @@
 		if (_node.contents < 0) {
 			return;
 		}
-		var node = Type.cast(_node, $quake_model$mnode_t);
+		var node = ss.cast(_node, $quake_model$mnode_t);
 		splitplane = node.plane;
 		dist = $quake_mathlib.dotProduct$1(light.origin, splitplane.normal) - splitplane.dist;
 		if (dist > light.radius) {
@@ -16526,7 +16603,7 @@
 			return -1;
 		}
 		// didn't hit anything
-		var node = Type.cast(_node, $quake_model$mnode_t);
+		var node = ss.cast(_node, $quake_model$mnode_t);
 		// calculate mid point
 		// FIXME: optimize for axial
 		plane = node.plane;
@@ -16875,8 +16952,12 @@
 					break;
 				}
 				case 2: {
+					//if (currententity.model.name.CompareTo("progs/flame2.mdl") != 0)
+					//continue;
 					$quake_mathlib.vectorCopy($quake_render.currententity.origin, $quake_render.$r_entorigin);
 					$quake_mathlib.vectorSubtract($quake_render.r_origin, $quake_render.$r_entorigin, $quake_render.modelorg);
+					// see if the bounding box lets us trivially reject, also sets
+					// trivial accept status
 					if ($quake_render.$r_AliasCheckBBox()) {
 						j = $quake_render.$r_LightPoint($quake_render.currententity.origin);
 						lighting.ambientlight = j;
@@ -17024,6 +17105,8 @@
 			switch ($quake_render.currententity.model.type) {
 				case 0: {
 					clmodel = $quake_render.currententity.model;
+					// see if the bounding box lets us trivially reject, also sets
+					// trivial accept status
 					for (j = 0; j < 3; j++) {
 						minmaxs[j] = $quake_render.currententity.origin[j] + clmodel.mins[j];
 						minmaxs[3 + j] = $quake_render.currententity.origin[j] + clmodel.maxs[j];
@@ -17401,19 +17484,19 @@
 		var dist;
 		dist = 64;
 		count = 50;
-		if ($quake_render.$avelocities.get(0, 0) === 0) {
+		if (ss.arrayGet($quake_render.$avelocities, 0, 0) === 0) {
 			for (i = 0; i < 486; i++) {
-				$quake_render.$avelocities.set(0, i, ($Helper_helper.rand() & 255) * 0.01);
+				ss.arraySet($quake_render.$avelocities, 0, i, ($Helper_helper.rand() & 255) * 0.01);
 			}
 		}
 		for (i = 0; i < $quake_render.NUMVERTEXNORMALS; i++) {
-			angle = $quake_client.cl.time * $quake_render.$avelocities.get(i, 0);
+			angle = $quake_client.cl.time * ss.arrayGet($quake_render.$avelocities, i, 0);
 			sy = Math.sin(angle);
 			cy = Math.cos(angle);
-			angle = $quake_client.cl.time * $quake_render.$avelocities.get(i, 1);
+			angle = $quake_client.cl.time * ss.arrayGet($quake_render.$avelocities, i, 1);
 			sp = Math.sin(angle);
 			cp = Math.cos(angle);
-			angle = $quake_client.cl.time * $quake_render.$avelocities.get(i, 2);
+			angle = $quake_client.cl.time * ss.arrayGet($quake_render.$avelocities, i, 2);
 			sr = Math.sin(angle);
 			cr = Math.cos(angle);
 			forward[0] = cp * cy;
@@ -17679,6 +17762,7 @@
 			p.die = $quake_client.cl.time + 2;
 			switch (type) {
 				case 0: {
+					// rocket trail
 					p.ramp = $Helper_helper.rand() & 3;
 					p.color = $quake_render.$ramp3[ss.Int32.trunc(p.ramp)];
 					p.type = 3;
@@ -17688,6 +17772,7 @@
 					break;
 				}
 				case 1: {
+					// smoke smoke
 					p.ramp = ($Helper_helper.rand() & 3) + 2;
 					p.color = $quake_render.$ramp3[ss.Int32.trunc(p.ramp)];
 					p.type = 3;
@@ -17697,6 +17782,7 @@
 					break;
 				}
 				case 2: {
+					// blood
 					p.type = 1;
 					p.color = 67 + ($Helper_helper.rand() & 3);
 					for (j = 0; j < 3; j++) {
@@ -17706,6 +17792,7 @@
 				}
 				case 3:
 				case 5: {
+					// tracer
 					p.die = $quake_client.cl.time + 0.5;
 					p.type = 0;
 					if (type === 3) {
@@ -17727,6 +17814,7 @@
 					break;
 				}
 				case 4: {
+					// slight blood
 					p.type = 1;
 					p.color = 67 + ($Helper_helper.rand() & 3);
 					for (j = 0; j < 3; j++) {
@@ -17736,6 +17824,7 @@
 					break;
 				}
 				case 6: {
+					// voor trail
 					p.color = 152 + ($Helper_helper.rand() & 3);
 					p.type = 0;
 					p.die = $quake_client.cl.time + 0.3;
@@ -18075,7 +18164,7 @@
 			frame = 0;
 		}
 		if (psprite.frames[frame].type === 0) {
-			pspriteframe = Type.cast(psprite.frames[frame].frameptr, $quake_model$mspriteframe_t);
+			pspriteframe = ss.cast(psprite.frames[frame].frameptr, $quake_model$mspriteframe_t);
 		}
 		else {
 			pspriteframe = null;
@@ -18087,7 +18176,7 @@
 		var psprite;
 		var tvec = new Array(3);
 		var dot, angle, sr, cr;
-		psprite = Type.cast($quake_render.currententity.model.cache, $quake_model$msprite_t);
+		psprite = ss.cast($quake_render.currententity.model.cache, $quake_model$msprite_t);
 		$quake_render.r_spritedesc.pspriteframe = $quake_render.$r_GetSpriteframe(psprite);
 		if (ss.isNullOrUndefined($quake_render.r_spritedesc.pspriteframe)) {
 			return;
@@ -18637,7 +18726,7 @@
 	var $quake_render$solidstate_t = function() {
 	};
 	$quake_render$solidstate_t.prototype = { touchessolid: 0, drawnode: 1, nodrawnode: 2 };
-	Type.registerEnum(global, 'quake.render$solidstate_t', $quake_render$solidstate_t, false);
+	ss.registerEnum(global, 'quake.render$solidstate_t', $quake_render$solidstate_t, false);
 	////////////////////////////////////////////////////////////////////////////////
 	// quake.render.surf_t
 	var $quake_render$surf_t = function() {
@@ -18709,35 +18798,35 @@
 	$quake_sbar.sbar_Init = function() {
 		var i;
 		for (i = 0; i < 10; i++) {
-			$quake_sbar.$sb_nums.set(0, i, $quake_draw.draw_PicFromWad('num_' + i));
-			$quake_sbar.$sb_nums.set(1, i, $quake_draw.draw_PicFromWad('anum_' + i));
+			ss.arraySet($quake_sbar.$sb_nums, 0, i, $quake_draw.draw_PicFromWad('num_' + i));
+			ss.arraySet($quake_sbar.$sb_nums, 1, i, $quake_draw.draw_PicFromWad('anum_' + i));
 		}
-		$quake_sbar.$sb_nums.set(0, 10, $quake_draw.draw_PicFromWad('num_minus'));
-		$quake_sbar.$sb_nums.set(1, 10, $quake_draw.draw_PicFromWad('anum_minus'));
+		ss.arraySet($quake_sbar.$sb_nums, 0, 10, $quake_draw.draw_PicFromWad('num_minus'));
+		ss.arraySet($quake_sbar.$sb_nums, 1, 10, $quake_draw.draw_PicFromWad('anum_minus'));
 		$quake_sbar.$sb_colon = $quake_draw.draw_PicFromWad('num_colon');
 		$quake_sbar.$sb_slash = $quake_draw.draw_PicFromWad('num_slash');
-		$quake_sbar.$sb_weapons.set(0, 0, $quake_draw.draw_PicFromWad('inv_shotgun'));
-		$quake_sbar.$sb_weapons.set(0, 1, $quake_draw.draw_PicFromWad('inv_sshotgun'));
-		$quake_sbar.$sb_weapons.set(0, 2, $quake_draw.draw_PicFromWad('inv_nailgun'));
-		$quake_sbar.$sb_weapons.set(0, 3, $quake_draw.draw_PicFromWad('inv_snailgun'));
-		$quake_sbar.$sb_weapons.set(0, 4, $quake_draw.draw_PicFromWad('inv_rlaunch'));
-		$quake_sbar.$sb_weapons.set(0, 5, $quake_draw.draw_PicFromWad('inv_srlaunch'));
-		$quake_sbar.$sb_weapons.set(0, 6, $quake_draw.draw_PicFromWad('inv_lightng'));
-		$quake_sbar.$sb_weapons.set(1, 0, $quake_draw.draw_PicFromWad('inv2_shotgun'));
-		$quake_sbar.$sb_weapons.set(1, 1, $quake_draw.draw_PicFromWad('inv2_sshotgun'));
-		$quake_sbar.$sb_weapons.set(1, 2, $quake_draw.draw_PicFromWad('inv2_nailgun'));
-		$quake_sbar.$sb_weapons.set(1, 3, $quake_draw.draw_PicFromWad('inv2_snailgun'));
-		$quake_sbar.$sb_weapons.set(1, 4, $quake_draw.draw_PicFromWad('inv2_rlaunch'));
-		$quake_sbar.$sb_weapons.set(1, 5, $quake_draw.draw_PicFromWad('inv2_srlaunch'));
-		$quake_sbar.$sb_weapons.set(1, 6, $quake_draw.draw_PicFromWad('inv2_lightng'));
+		ss.arraySet($quake_sbar.$sb_weapons, 0, 0, $quake_draw.draw_PicFromWad('inv_shotgun'));
+		ss.arraySet($quake_sbar.$sb_weapons, 0, 1, $quake_draw.draw_PicFromWad('inv_sshotgun'));
+		ss.arraySet($quake_sbar.$sb_weapons, 0, 2, $quake_draw.draw_PicFromWad('inv_nailgun'));
+		ss.arraySet($quake_sbar.$sb_weapons, 0, 3, $quake_draw.draw_PicFromWad('inv_snailgun'));
+		ss.arraySet($quake_sbar.$sb_weapons, 0, 4, $quake_draw.draw_PicFromWad('inv_rlaunch'));
+		ss.arraySet($quake_sbar.$sb_weapons, 0, 5, $quake_draw.draw_PicFromWad('inv_srlaunch'));
+		ss.arraySet($quake_sbar.$sb_weapons, 0, 6, $quake_draw.draw_PicFromWad('inv_lightng'));
+		ss.arraySet($quake_sbar.$sb_weapons, 1, 0, $quake_draw.draw_PicFromWad('inv2_shotgun'));
+		ss.arraySet($quake_sbar.$sb_weapons, 1, 1, $quake_draw.draw_PicFromWad('inv2_sshotgun'));
+		ss.arraySet($quake_sbar.$sb_weapons, 1, 2, $quake_draw.draw_PicFromWad('inv2_nailgun'));
+		ss.arraySet($quake_sbar.$sb_weapons, 1, 3, $quake_draw.draw_PicFromWad('inv2_snailgun'));
+		ss.arraySet($quake_sbar.$sb_weapons, 1, 4, $quake_draw.draw_PicFromWad('inv2_rlaunch'));
+		ss.arraySet($quake_sbar.$sb_weapons, 1, 5, $quake_draw.draw_PicFromWad('inv2_srlaunch'));
+		ss.arraySet($quake_sbar.$sb_weapons, 1, 6, $quake_draw.draw_PicFromWad('inv2_lightng'));
 		for (i = 0; i < 5; i++) {
-			$quake_sbar.$sb_weapons.set(2 + i, 0, $quake_draw.draw_PicFromWad('inva' + (i + 1) + '_shotgun'));
-			$quake_sbar.$sb_weapons.set(2 + i, 1, $quake_draw.draw_PicFromWad('inva' + (i + 1) + '_sshotgun'));
-			$quake_sbar.$sb_weapons.set(2 + i, 2, $quake_draw.draw_PicFromWad('inva' + (i + 1) + '_nailgun'));
-			$quake_sbar.$sb_weapons.set(2 + i, 3, $quake_draw.draw_PicFromWad('inva' + (i + 1) + '_snailgun'));
-			$quake_sbar.$sb_weapons.set(2 + i, 4, $quake_draw.draw_PicFromWad('inva' + (i + 1) + '_rlaunch'));
-			$quake_sbar.$sb_weapons.set(2 + i, 5, $quake_draw.draw_PicFromWad('inva' + (i + 1) + '_srlaunch'));
-			$quake_sbar.$sb_weapons.set(2 + i, 6, $quake_draw.draw_PicFromWad('inva' + (i + 1) + '_lightng'));
+			ss.arraySet($quake_sbar.$sb_weapons, 2 + i, 0, $quake_draw.draw_PicFromWad('inva' + (i + 1) + '_shotgun'));
+			ss.arraySet($quake_sbar.$sb_weapons, 2 + i, 1, $quake_draw.draw_PicFromWad('inva' + (i + 1) + '_sshotgun'));
+			ss.arraySet($quake_sbar.$sb_weapons, 2 + i, 2, $quake_draw.draw_PicFromWad('inva' + (i + 1) + '_nailgun'));
+			ss.arraySet($quake_sbar.$sb_weapons, 2 + i, 3, $quake_draw.draw_PicFromWad('inva' + (i + 1) + '_snailgun'));
+			ss.arraySet($quake_sbar.$sb_weapons, 2 + i, 4, $quake_draw.draw_PicFromWad('inva' + (i + 1) + '_rlaunch'));
+			ss.arraySet($quake_sbar.$sb_weapons, 2 + i, 5, $quake_draw.draw_PicFromWad('inva' + (i + 1) + '_srlaunch'));
+			ss.arraySet($quake_sbar.$sb_weapons, 2 + i, 6, $quake_draw.draw_PicFromWad('inva' + (i + 1) + '_lightng'));
 		}
 		$quake_sbar.$sb_ammo[0] = $quake_draw.draw_PicFromWad('sb_shells');
 		$quake_sbar.$sb_ammo[1] = $quake_draw.draw_PicFromWad('sb_nails');
@@ -18756,16 +18845,16 @@
 		$quake_sbar.$sb_sigil[1] = $quake_draw.draw_PicFromWad('sb_sigil2');
 		$quake_sbar.$sb_sigil[2] = $quake_draw.draw_PicFromWad('sb_sigil3');
 		$quake_sbar.$sb_sigil[3] = $quake_draw.draw_PicFromWad('sb_sigil4');
-		$quake_sbar.$sb_faces.set(4, 0, $quake_draw.draw_PicFromWad('face1'));
-		$quake_sbar.$sb_faces.set(4, 1, $quake_draw.draw_PicFromWad('face_p1'));
-		$quake_sbar.$sb_faces.set(3, 0, $quake_draw.draw_PicFromWad('face2'));
-		$quake_sbar.$sb_faces.set(3, 1, $quake_draw.draw_PicFromWad('face_p2'));
-		$quake_sbar.$sb_faces.set(2, 0, $quake_draw.draw_PicFromWad('face3'));
-		$quake_sbar.$sb_faces.set(2, 1, $quake_draw.draw_PicFromWad('face_p3'));
-		$quake_sbar.$sb_faces.set(1, 0, $quake_draw.draw_PicFromWad('face4'));
-		$quake_sbar.$sb_faces.set(1, 1, $quake_draw.draw_PicFromWad('face_p4'));
-		$quake_sbar.$sb_faces.set(0, 0, $quake_draw.draw_PicFromWad('face5'));
-		$quake_sbar.$sb_faces.set(0, 1, $quake_draw.draw_PicFromWad('face_p5'));
+		ss.arraySet($quake_sbar.$sb_faces, 4, 0, $quake_draw.draw_PicFromWad('face1'));
+		ss.arraySet($quake_sbar.$sb_faces, 4, 1, $quake_draw.draw_PicFromWad('face_p1'));
+		ss.arraySet($quake_sbar.$sb_faces, 3, 0, $quake_draw.draw_PicFromWad('face2'));
+		ss.arraySet($quake_sbar.$sb_faces, 3, 1, $quake_draw.draw_PicFromWad('face_p2'));
+		ss.arraySet($quake_sbar.$sb_faces, 2, 0, $quake_draw.draw_PicFromWad('face3'));
+		ss.arraySet($quake_sbar.$sb_faces, 2, 1, $quake_draw.draw_PicFromWad('face_p3'));
+		ss.arraySet($quake_sbar.$sb_faces, 1, 0, $quake_draw.draw_PicFromWad('face4'));
+		ss.arraySet($quake_sbar.$sb_faces, 1, 1, $quake_draw.draw_PicFromWad('face_p4'));
+		ss.arraySet($quake_sbar.$sb_faces, 0, 0, $quake_draw.draw_PicFromWad('face5'));
+		ss.arraySet($quake_sbar.$sb_faces, 0, 1, $quake_draw.draw_PicFromWad('face_p5'));
 		$quake_sbar.$sb_face_invis = $quake_draw.draw_PicFromWad('face_invis');
 		$quake_sbar.$sb_face_invuln = $quake_draw.draw_PicFromWad('face_invul2');
 		$quake_sbar.$sb_face_invis_invuln = $quake_draw.draw_PicFromWad('face_inv2');
@@ -18777,22 +18866,22 @@
 		$quake_sbar.$sb_scorebar = $quake_draw.draw_PicFromWad('scorebar');
 		//MED 01/04/97 added new hipnotic weapons
 		if ($quake_common.hipnotic) {
-			$quake_sbar.$hsb_weapons.set(0, 0, $quake_draw.draw_PicFromWad('inv_laser'));
-			$quake_sbar.$hsb_weapons.set(0, 1, $quake_draw.draw_PicFromWad('inv_mjolnir'));
-			$quake_sbar.$hsb_weapons.set(0, 2, $quake_draw.draw_PicFromWad('inv_gren_prox'));
-			$quake_sbar.$hsb_weapons.set(0, 3, $quake_draw.draw_PicFromWad('inv_prox_gren'));
-			$quake_sbar.$hsb_weapons.set(0, 4, $quake_draw.draw_PicFromWad('inv_prox'));
-			$quake_sbar.$hsb_weapons.set(1, 0, $quake_draw.draw_PicFromWad('inv2_laser'));
-			$quake_sbar.$hsb_weapons.set(1, 1, $quake_draw.draw_PicFromWad('inv2_mjolnir'));
-			$quake_sbar.$hsb_weapons.set(1, 2, $quake_draw.draw_PicFromWad('inv2_gren_prox'));
-			$quake_sbar.$hsb_weapons.set(1, 3, $quake_draw.draw_PicFromWad('inv2_prox_gren'));
-			$quake_sbar.$hsb_weapons.set(1, 4, $quake_draw.draw_PicFromWad('inv2_prox'));
+			ss.arraySet($quake_sbar.$hsb_weapons, 0, 0, $quake_draw.draw_PicFromWad('inv_laser'));
+			ss.arraySet($quake_sbar.$hsb_weapons, 0, 1, $quake_draw.draw_PicFromWad('inv_mjolnir'));
+			ss.arraySet($quake_sbar.$hsb_weapons, 0, 2, $quake_draw.draw_PicFromWad('inv_gren_prox'));
+			ss.arraySet($quake_sbar.$hsb_weapons, 0, 3, $quake_draw.draw_PicFromWad('inv_prox_gren'));
+			ss.arraySet($quake_sbar.$hsb_weapons, 0, 4, $quake_draw.draw_PicFromWad('inv_prox'));
+			ss.arraySet($quake_sbar.$hsb_weapons, 1, 0, $quake_draw.draw_PicFromWad('inv2_laser'));
+			ss.arraySet($quake_sbar.$hsb_weapons, 1, 1, $quake_draw.draw_PicFromWad('inv2_mjolnir'));
+			ss.arraySet($quake_sbar.$hsb_weapons, 1, 2, $quake_draw.draw_PicFromWad('inv2_gren_prox'));
+			ss.arraySet($quake_sbar.$hsb_weapons, 1, 3, $quake_draw.draw_PicFromWad('inv2_prox_gren'));
+			ss.arraySet($quake_sbar.$hsb_weapons, 1, 4, $quake_draw.draw_PicFromWad('inv2_prox'));
 			for (i = 0; i < 5; i++) {
-				$quake_sbar.$hsb_weapons.set(2 + i, 0, $quake_draw.draw_PicFromWad('inva' + (i + 1) + '_laser'));
-				$quake_sbar.$hsb_weapons.set(2 + i, 1, $quake_draw.draw_PicFromWad('inva' + (i + 1) + '_mjolnir'));
-				$quake_sbar.$hsb_weapons.set(2 + i, 2, $quake_draw.draw_PicFromWad('inva' + (i + 1) + '_gren_prox'));
-				$quake_sbar.$hsb_weapons.set(2 + i, 3, $quake_draw.draw_PicFromWad('inva' + (i + 1) + '_prox_gren'));
-				$quake_sbar.$hsb_weapons.set(2 + i, 4, $quake_draw.draw_PicFromWad('inva' + (i + 1) + '_prox'));
+				ss.arraySet($quake_sbar.$hsb_weapons, 2 + i, 0, $quake_draw.draw_PicFromWad('inva' + (i + 1) + '_laser'));
+				ss.arraySet($quake_sbar.$hsb_weapons, 2 + i, 1, $quake_draw.draw_PicFromWad('inva' + (i + 1) + '_mjolnir'));
+				ss.arraySet($quake_sbar.$hsb_weapons, 2 + i, 2, $quake_draw.draw_PicFromWad('inva' + (i + 1) + '_gren_prox'));
+				ss.arraySet($quake_sbar.$hsb_weapons, 2 + i, 3, $quake_draw.draw_PicFromWad('inva' + (i + 1) + '_prox_gren'));
+				ss.arraySet($quake_sbar.$hsb_weapons, 2 + i, 4, $quake_draw.draw_PicFromWad('inva' + (i + 1) + '_prox'));
 			}
 			$quake_sbar.$hsb_items[0] = $quake_draw.draw_PicFromWad('sb_wsuit');
 			$quake_sbar.$hsb_items[1] = $quake_draw.draw_PicFromWad('sb_eshld');
@@ -18860,7 +18949,7 @@
 			else {
 				frame = str.charCodeAt(ptr) - 48;
 			}
-			$quake_sbar.$sbar_DrawTransPic(x, y, $quake_sbar.$sb_nums.get(color, frame));
+			$quake_sbar.$sbar_DrawTransPic(x, y, ss.arrayGet($quake_sbar.$sb_nums, color, frame));
 			x += 24;
 			ptr++;
 		}
@@ -18902,7 +18991,7 @@
 				else {
 					flashon = flashon % 5 + 2;
 				}
-				$quake_sbar.$sbar_DrawPic(i * 24, -16, $quake_sbar.$sb_weapons.get(flashon, i));
+				$quake_sbar.$sbar_DrawPic(i * 24, -16, ss.arrayGet($quake_sbar.$sb_weapons, flashon, i));
 				if (flashon > 1) {
 					$quake_sbar.$sb_updates = 0;
 				}
@@ -19048,7 +19137,7 @@
 		else {
 			anim = 0;
 		}
-		$quake_sbar.$sbar_DrawPic(112, 0, $quake_sbar.$sb_faces.get(f, anim));
+		$quake_sbar.$sbar_DrawPic(112, 0, ss.arrayGet($quake_sbar.$sb_faces, f, anim));
 	};
 	$quake_sbar.sbar_Draw = function() {
 		if ($quake_screen.scr_con_current === $quake_screen.vid.height) {
@@ -20140,7 +20229,7 @@
 			return 0;
 		}
 		for (i = 0; i < $quake_quakedef.maX_MODELS && ss.isValue($quake_server.sv.model_precache[i]); i++) {
-			if ($quake_server.sv.model_precache[i].compareTo(name) === 0) {
+			if (ss.compare($quake_server.sv.model_precache[i], name) === 0) {
 				return i;
 			}
 		}
@@ -20437,16 +20526,22 @@
 				if (!$quake_server.$sV_RunThink(ent)) {
 					return;
 				}
+				//if (!SV_CheckWater (ent) && ! ((int)ent.v.flags & FL_WATERJUMP) )
+				//SV_AddGravity (ent);
+				//SV_CheckStuck (ent);
+				//SV_WalkMove (ent);
 				break;
 			}
 			case 6:
 			case 10: {
+				//SV_Physics_Toss (ent);
 				break;
 			}
 			case 5: {
 				if (!$quake_server.$sV_RunThink(ent)) {
 					return;
 				}
+				//SV_FlyMove (ent, host.host_frametime, null);
 				break;
 			}
 			case 8: {
@@ -20913,6 +21008,7 @@
 								return false;
 							}
 							case 1: {
+								//				Sys_Printf ("clc_nop\n");
 								break;
 							}
 							case 4: {
@@ -20923,61 +21019,61 @@
 								else {
 									ret = 0;
 								}
-								if (s.startsWith('status')) {
+								if (ss.startsWithString(s, 'status')) {
 									ret = 1;
 								}
-								else if (s.startsWith('god')) {
+								else if (ss.startsWithString(s, 'god')) {
 									ret = 1;
 								}
-								else if (s.startsWith('notarget')) {
+								else if (ss.startsWithString(s, 'notarget')) {
 									ret = 1;
 								}
-								else if (s.startsWith('fly')) {
+								else if (ss.startsWithString(s, 'fly')) {
 									ret = 1;
 								}
-								else if (s.startsWith('name')) {
+								else if (ss.startsWithString(s, 'name')) {
 									ret = 1;
 								}
-								else if (s.startsWith('noclip')) {
+								else if (ss.startsWithString(s, 'noclip')) {
 									ret = 1;
 								}
-								else if (s.startsWith('say')) {
+								else if (ss.startsWithString(s, 'say')) {
 									ret = 1;
 								}
-								else if (s.startsWith('say_team')) {
+								else if (ss.startsWithString(s, 'say_team')) {
 									ret = 1;
 								}
-								else if (s.startsWith('tell')) {
+								else if (ss.startsWithString(s, 'tell')) {
 									ret = 1;
 								}
-								else if (s.startsWith('color')) {
+								else if (ss.startsWithString(s, 'color')) {
 									ret = 1;
 								}
-								else if (s.startsWith('kill')) {
+								else if (ss.startsWithString(s, 'kill')) {
 									ret = 1;
 								}
-								else if (s.startsWith('pause')) {
+								else if (ss.startsWithString(s, 'pause')) {
 									ret = 1;
 								}
-								else if (s.startsWith('spawn')) {
+								else if (ss.startsWithString(s, 'spawn')) {
 									ret = 1;
 								}
-								else if (s.startsWith('begin')) {
+								else if (ss.startsWithString(s, 'begin')) {
 									ret = 1;
 								}
-								else if (s.startsWith('prespawn')) {
+								else if (ss.startsWithString(s, 'prespawn')) {
 									ret = 1;
 								}
-								else if (s.startsWith('kick')) {
+								else if (ss.startsWithString(s, 'kick')) {
 									ret = 1;
 								}
-								else if (s.startsWith('ping')) {
+								else if (ss.startsWithString(s, 'ping')) {
 									ret = 1;
 								}
-								else if (s.startsWith('give')) {
+								else if (ss.startsWithString(s, 'give')) {
 									ret = 1;
 								}
-								else if (s.startsWith('ban')) {
+								else if (ss.startsWithString(s, 'ban')) {
 									ret = 1;
 								}
 								if (ret === 2) {
@@ -20992,6 +21088,7 @@
 								break;
 							}
 							case 2: {
+								//				Sys_Printf ("SV_ReadClientMessage: client disconnected\n");
 								return false;
 							}
 							case 3: {
@@ -21064,7 +21161,7 @@
 	var $quake_server$server_state_t = function() {
 	};
 	$quake_server$server_state_t.prototype = { ss_loading: 0, ss_active: 1 };
-	Type.registerEnum(global, 'quake.server$server_state_t', $quake_server$server_state_t, false);
+	ss.registerEnum(global, 'quake.server$server_state_t', $quake_server$server_state_t, false);
 	////////////////////////////////////////////////////////////////////////////////
 	// quake.server.server_static_t
 	var $quake_server$server_static_t = function() {
@@ -21126,7 +21223,7 @@
 	$quake_sound.s_Init = function() {
 		var kk;
 		for (kk = 0; kk < $quake_sound.maX_CHANNELS; kk++) {
-			$quake_sound.$channels[kk] = new $quake_sound$channel_t();
+			$quake_sound.channels[kk] = new $quake_sound$channel_t();
 		}
 		$quake_console.con_Printf('\nSound Initialization\n');
 		if ($quake_common.coM_CheckParm('-nosound') !== 0) {
@@ -21187,7 +21284,7 @@
 		}
 		// see if already loaded
 		for (i = 0; i < $quake_sound.$num_sfx; i++) {
-			if ($quake_sound.$known_sfx[i].name.compareTo(name) === 0) {
+			if (ss.compare($quake_sound.$known_sfx[i].name, name) === 0) {
 				return $quake_sound.$known_sfx[i];
 			}
 		}
@@ -21226,21 +21323,21 @@
 		first_to_die = -1;
 		life_left = new $System_TimeSpan.$ctor1($System_TimeSpan.maxValue.get_ticks());
 		for (ch_idx = $quake_bspfile.nuM_AMBIENTS; ch_idx < 12; ch_idx++) {
-			if (entchannel !== 0 && $quake_sound.$channels[ch_idx].entnum === entnum && ($quake_sound.$channels[ch_idx].entchannel === entchannel || entchannel === -1)) {
+			if (entchannel !== 0 && $quake_sound.channels[ch_idx].entnum === entnum && ($quake_sound.channels[ch_idx].entchannel === entchannel || entchannel === -1)) {
 				// allways override sound from same entity
 				if (entnum === 195) {
-					$quake_console.con_Printf('REPLACE ' + $quake_sound.$channels[ch_idx].sfx.name + '\n');
+					$quake_console.con_Printf('REPLACE ' + $quake_sound.channels[ch_idx].sfx.name + '\n');
 				}
 				first_to_die = ch_idx;
 				break;
 			}
 			// don't let monster sounds override player sounds
-			if ($quake_sound.$channels[ch_idx].entnum === $quake_client.cl.viewentity && entnum !== $quake_client.cl.viewentity && ss.isValue($quake_sound.$channels[ch_idx].sfx)) {
+			if ($quake_sound.channels[ch_idx].entnum === $quake_client.cl.viewentity && entnum !== $quake_client.cl.viewentity && ss.isValue($quake_sound.channels[ch_idx].sfx)) {
 				continue;
 			}
-			if (ss.isValue($quake_sound.$channels[ch_idx].media)) {
+			if (ss.isValue($quake_sound.channels[ch_idx].media)) {
 				// compute left time
-				var end = $quake_sound.$channels[ch_idx].media.get_naturalDuration().get_timeSpan().subtract($quake_sound.$channels[ch_idx].media.get_position());
+				var end = $quake_sound.channels[ch_idx].media.get_naturalDuration().get_timeSpan().subtract($quake_sound.channels[ch_idx].media.get_position());
 				if (end.compareTo(life_left) < 0) {
 					life_left = end;
 					first_to_die = ch_idx;
@@ -21259,17 +21356,17 @@
 		if (first_to_die === -1) {
 			return null;
 		}
-		if (ss.isValue($quake_sound.$channels[first_to_die].sfx)) {
-			if (ss.isValue($quake_sound.$channels[first_to_die].media) && $quake_sound.$channels[first_to_die].media.get_currentState() !== 3) {
+		if (ss.isValue($quake_sound.channels[first_to_die].sfx)) {
+			if (ss.isValue($quake_sound.channels[first_to_die].media) && $quake_sound.channels[first_to_die].media.get_currentState() !== 3) {
 				//if (channels[first_to_die].looping == 1)
 				//channels[first_to_die].media.MediaEnded -= media_MediaEnded;
-				$quake_sound.$channels[first_to_die].media.stop();
-				$InnoveWare_Page.thePage.get_parentCanvas().get_children().remove($quake_sound.$channels[first_to_die].media);
-				$quake_sound.$channels[first_to_die].media = null;
+				$quake_sound.channels[first_to_die].media.stop();
+				ss.remove($InnoveWare_Page.thePage.get_parentCanvas().get_children(), $quake_sound.channels[first_to_die].media);
+				$quake_sound.channels[first_to_die].media = null;
 			}
-			$quake_sound.$channels[first_to_die].sfx = null;
+			$quake_sound.channels[first_to_die].sfx = null;
 		}
-		return $quake_sound.$channels[first_to_die];
+		return $quake_sound.channels[first_to_die];
 	};
 	$quake_sound.snD_Spatialize = function(ch) {
 		var dot;
@@ -21361,17 +21458,17 @@
 			$quake_sound.$media_MediaEnded2(media, null);
 		});
 		$quake_sound.setVolume(target_chan);
-		$InnoveWare_Page.thePage.get_parentCanvas().get_children().add(media);
+		ss.add($InnoveWare_Page.thePage.get_parentCanvas().get_children(), media);
 	};
 	$quake_sound.s_StopSound = function(entnum, entchannel) {
 		var i;
 		for (i = 0; i < $quake_sound.maX_DYNAMIC_CHANNELS; i++) {
-			if ($quake_sound.$channels[i].entnum === entnum && $quake_sound.$channels[i].entchannel === entchannel) {
-				if (ss.isValue($quake_sound.$channels[i].media)) {
-					$quake_sound.$channels[i].media.stop();
-					$InnoveWare_Page.thePage.get_parentCanvas().get_children().remove($quake_sound.$channels[i].media);
+			if ($quake_sound.channels[i].entnum === entnum && $quake_sound.channels[i].entchannel === entchannel) {
+				if (ss.isValue($quake_sound.channels[i].media)) {
+					$quake_sound.channels[i].media.stop();
+					ss.remove($InnoveWare_Page.thePage.get_parentCanvas().get_children(), $quake_sound.channels[i].media);
 				}
-				$quake_sound.$channels[i].sfx = null;
+				$quake_sound.channels[i].sfx = null;
 				return;
 			}
 		}
@@ -21384,12 +21481,12 @@
 		$quake_sound.$total_channels = 12;
 		// no statics
 		for (i = 0; i < $quake_sound.maX_CHANNELS; i++) {
-			if (ss.isValue($quake_sound.$channels[i].sfx)) {
-				if (ss.isValue($quake_sound.$channels[i].media)) {
-					$quake_sound.$channels[i].media.stop();
-					$InnoveWare_Page.thePage.get_parentCanvas().get_children().remove($quake_sound.$channels[i].media);
+			if (ss.isValue($quake_sound.channels[i].sfx)) {
+				if (ss.isValue($quake_sound.channels[i].media)) {
+					$quake_sound.channels[i].media.stop();
+					ss.remove($InnoveWare_Page.thePage.get_parentCanvas().get_children(), $quake_sound.channels[i].media);
 				}
-				$quake_sound.$channels[i].sfx = null;
+				$quake_sound.channels[i].sfx = null;
 			}
 		}
 	};
@@ -21419,7 +21516,7 @@
 			$quake_console.con_Printf('total_channels == MAX_CHANNELS\n');
 			return;
 		}
-		ss = $quake_sound.$channels[$quake_sound.$total_channels];
+		ss = $quake_sound.channels[$quake_sound.$total_channels];
 		$quake_sound.$total_channels++;
 		sc = $quake_sound.s_LoadSound(sfx);
 		if (ss.isNullOrUndefined(sc)) {
@@ -21441,18 +21538,18 @@
 		media.set_tag(ss);
 		throw new $System_NotImplementedException.$ctor1('S_StaticSound todo!');
 		$quake_sound.setVolume(ss);
-		$InnoveWare_Page.thePage.get_parentCanvas().get_children().add(media);
+		ss.add($InnoveWare_Page.thePage.get_parentCanvas().get_children(), media);
 	};
 	$quake_sound.$media_MediaEnded = function(sender, e) {
-		var media = Type.cast(sender, $System_Windows_Controls_MediaElement);
+		var media = ss.cast(sender, $System_Windows_Controls_MediaElement);
 		media.stop();
 		media.play();
 	};
 	$quake_sound.$media_MediaEnded2 = function(sender, e) {
-		var media = Type.cast(sender, $System_Windows_Controls_MediaElement);
+		var media = ss.cast(sender, $System_Windows_Controls_MediaElement);
 		media.stop();
-		var ch = Type.cast(media.get_tag(), $quake_sound$channel_t);
-		$InnoveWare_Page.thePage.get_parentCanvas().get_children().remove(media);
+		var ch = ss.cast(media.get_tag(), $quake_sound$channel_t);
+		ss.remove($InnoveWare_Page.thePage.get_parentCanvas().get_children(), media);
 		ch.sfx = null;
 	};
 	$quake_sound.s_UpdateAmbientSounds = function() {
@@ -21470,12 +21567,12 @@
 		l = $quake_model.mod_PointInLeaf($quake_sound.$listener_origin, $quake_client.cl.worldmodel);
 		if (ss.isNullOrUndefined(l) || $quake_sound.$ambient_level.value === 0) {
 			for (ambient_channel = 0; ambient_channel < $quake_bspfile.nuM_AMBIENTS; ambient_channel++) {
-				$quake_sound.$channels[ambient_channel].sfx = null;
+				$quake_sound.channels[ambient_channel].sfx = null;
 			}
 			return;
 		}
 		for (ambient_channel = 0; ambient_channel < $quake_bspfile.nuM_AMBIENTS; ambient_channel++) {
-			chan = $quake_sound.$channels[ambient_channel];
+			chan = $quake_sound.channels[ambient_channel];
 			chan.sfx = $quake_sound.$ambient_sfx[ambient_channel];
 			vol = $quake_sound.$ambient_level.value * l.ambient_sound_level[ambient_channel];
 			if (vol < 8) {
@@ -21514,7 +21611,7 @@
 		combine = null;
 		// update spatialization for static and dynamic sounds	
 		for (i = $quake_bspfile.nuM_AMBIENTS; i < $quake_sound.$total_channels; i++) {
-			ch = $quake_sound.$channels[i];
+			ch = $quake_sound.channels[i];
 			if (ss.isNullOrUndefined(ch.sfx)) {
 				continue;
 			}
@@ -21534,9 +21631,9 @@
 					continue;
 				}
 				// search for one
-				combine = $quake_sound.$channels[12];
+				combine = $quake_sound.channels[12];
 				for (j = 12; j < i; j++) {
-					combine = $quake_sound.$channels[j];
+					combine = $quake_sound.channels[j];
 					if (ss.referenceEquals(combine.sfx, ch.sfx)) {
 						break;
 					}
@@ -21560,7 +21657,7 @@
 		if ($quake_sound.$snd_show.value !== 0) {
 			total = 0;
 			for (i = 0; i < $quake_sound.$total_channels; i++) {
-				ch = $quake_sound.$channels[i];
+				ch = $quake_sound.channels[i];
 				if (ss.isValue(ch.sfx) && (ch.leftvol !== 0 || ch.rightvol !== 0)) {
 					//Con_Printf ("%3i %3i %s\n", ch.leftvol, ch.rightvol, ch.sfx.name);
 					total++;
@@ -21583,7 +21680,7 @@
 		var ch;
 		// paint in the channels.
 		for (i = 0; i < $quake_sound.$total_channels; i++) {
-			ch = $quake_sound.$channels[i];
+			ch = $quake_sound.channels[i];
 			if (ss.isNullOrUndefined(ch.sfx) || ss.isNullOrUndefined(ch.media)) {
 				continue;
 			}
@@ -21704,7 +21801,7 @@
 		}
 		sc.loopstart = -1;
 		for (var kk = 0; kk < $quake_sound.$loops.length; kk++) {
-			if (s.name.compareTo($quake_sound.$loops[kk]) === 0) {
+			if (ss.compare(s.name, $quake_sound.$loops[kk]) === 0) {
 				sc.loopstart = 1;
 				break;
 			}
@@ -21778,7 +21875,7 @@
 	$quake_sys_linux.sys_Printf = function(text) {
 		$quake_sys_linux.$printbuffer += text;
 		if ($quake_sys_linux.$printbuffer.charCodeAt($quake_sys_linux.$printbuffer.length - 1) === 10) {
-			ss.Debug.writeln($quake_sys_linux.$printbuffer.substring(0, $quake_sys_linux.$printbuffer.length - 1));
+			ss.Debug.writeln($quake_sys_linux.$printbuffer.substr(0, $quake_sys_linux.$printbuffer.length - 1));
 			$quake_sys_linux.$printbuffer = '';
 		}
 	};
@@ -21803,7 +21900,7 @@
 		return -1;
 	};
 	$quake_sys_linux.sys_FileOpenRead = function(path, handle) {
-		if (path.startsWith('./')) {
+		if (ss.startsWithString(path, './')) {
 			path = path.substring(2);
 		}
 		var si = getResourceStream(new $System_Uri('InnoveWare;component/' + path, 2));
@@ -21832,7 +21929,7 @@
 		return $quake_sys_linux.sys_handles[handle].get_stream().read(dest, 0, count);
 	};
 	$quake_sys_linux.sys_FloatTime = function() {
-		var now = Date.get_now();
+		var now = new Date();
 		return DateTimeExtensions.getTicks(now) / 10000000;
 	};
 	$quake_sys_linux.$sys_LineRefresh = function() {
@@ -22658,7 +22755,7 @@
 		clean = $quake_wad.$w_CleanupName(clean);
 		for (i = 0; i < $quake_wad.$wad_numlumps; i++) {
 			lump_p = $quake_wad.$wad_lumps[i];
-			if (clean.compareTo(lump_p.$name) === 0) {
+			if (ss.compare(clean, lump_p.$name) === 0) {
 				return lump_p;
 			}
 		}
@@ -22729,7 +22826,7 @@
 	// System.Convert
 	var $System_Convert = function() {
 	};
-	$System_Convert.toString$1 = function(value) {
+	$System_Convert.toString = function(value) {
 		return value.toString();
 	};
 	$System_Convert.toChar = function(value) {
@@ -22758,7 +22855,7 @@
 	// System.Random
 	var $System_Random = function() {
 		this.$mt = null;
-		var ticks = DateTimeExtensions.getTicks(Date.get_now());
+		var ticks = DateTimeExtensions.getTicks(new Date());
 		this.$mt = new MersenneTwister(ticks);
 		//Environment.TickCount - actual MS Random
 	};
@@ -22768,7 +22865,7 @@
 		},
 		next: function() {
 			var real = this.$mt.genrand_real1();
-			return Math.floor(real * 2147483647);
+			return Math.floor(real * 2147483648);
 		},
 		next$1: function(maxValue) {
 			var real = this.$mt.genrand_real1();
@@ -22788,7 +22885,7 @@
 		throw new $System_ImplementedInJavaScript();
 	};
 	$System_StringExtensions.stringOfLength = function(length) {
-		return String.fromChar(String.fromCharCode(0), length);
+		return ss.stringFromChar(String.fromCharCode(0), length);
 	};
 	////////////////////////////////////////////////////////////////////////////////
 	// System.TimeSpan
@@ -22835,7 +22932,7 @@
 	var $System_UriKind = function() {
 	};
 	$System_UriKind.prototype = { relativeOrAbsolute: 0, absolute: 1, relative: 2 };
-	Type.registerEnum(global, 'System.UriKind', $System_UriKind, false);
+	ss.registerEnum(global, 'System.UriKind', $System_UriKind, false);
 	////////////////////////////////////////////////////////////////////////////////
 	// System.Globalization.CultureInfo
 	var $System_Globalization_CultureInfo = function(enUs) {
@@ -22870,7 +22967,7 @@
 	var $System_IO_SeekOrigin = function() {
 	};
 	$System_IO_SeekOrigin.prototype = { begin: 0, current: 1, end: 2 };
-	Type.registerEnum(global, 'System.IO.SeekOrigin', $System_IO_SeekOrigin, false);
+	ss.registerEnum(global, 'System.IO.SeekOrigin', $System_IO_SeekOrigin, false);
 	////////////////////////////////////////////////////////////////////////////////
 	// System.Windows.Duration
 	var $System_Windows_Duration = function(timeSpan) {
@@ -22916,7 +23013,7 @@
 	var $System_Windows_Controls_MediaElement = function() {
 		this.$_stream = null;
 		this.$_duration = null;
-		this.$_timePlayed = 0;
+		this.$_timePlayed = new Date(0);
 		this.$_tag = null;
 		this.$_volume = 0;
 		this.$_balance = 0;
@@ -22939,10 +23036,10 @@
 			this.$_tag = value;
 		},
 		add_mediaEnded: function(value) {
-			this.$1$MediaEndedField = Function.combine(this.$1$MediaEndedField, value);
+			this.$1$MediaEndedField = ss.delegateCombine(this.$1$MediaEndedField, value);
 		},
 		remove_mediaEnded: function(value) {
-			this.$1$MediaEndedField = Function.remove(this.$1$MediaEndedField, value);
+			this.$1$MediaEndedField = ss.delegateRemove(this.$1$MediaEndedField, value);
 		},
 		get_volume: function() {
 			return this.$_volume;
@@ -22960,7 +23057,7 @@
 			this.$_balance = value;
 		},
 		get_position: function() {
-			return new $System_TimeSpan.$ctor1(DateTimeExtensions.getTicks(Date.get_now()) - DateTimeExtensions.getTicks(this.$_timePlayed));
+			return new $System_TimeSpan.$ctor1(DateTimeExtensions.getTicks(new Date()) - DateTimeExtensions.getTicks(this.$_timePlayed));
 		},
 		setNaturalDuration: function(duration) {
 			this.$_duration = new $System_Windows_Duration(new $System_TimeSpan.$ctor1(duration));
@@ -22982,7 +23079,7 @@
 			stopSound(this);
 		},
 		play: function() {
-			this.$_timePlayed = Date.get_now();
+			this.$_timePlayed = new Date();
 			playSound(this.$_stream.dataStream._buffer, this);
 		}
 	};
@@ -22991,7 +23088,7 @@
 	var $System_Windows_Media_MediaElementState = function() {
 	};
 	$System_Windows_Media_MediaElementState.prototype = { closed: 0, opening: 1, buffering: 2, playing: 3, paused: 4, stopped: 5, individualizing: 6, acquiringLicense: 7 };
-	Type.registerEnum(global, 'System.Windows.Media.MediaElementState', $System_Windows_Media_MediaElementState, false);
+	ss.registerEnum(global, 'System.Windows.Media.MediaElementState', $System_Windows_Media_MediaElementState, false);
 	////////////////////////////////////////////////////////////////////////////////
 	// System.Windows.Media.Imaging.BitmapImage
 	var $System_Windows_Media_Imaging_BitmapImage = function() {
@@ -23022,193 +23119,193 @@
 			return this.$_stream;
 		}
 	};
-	Type.registerClass(global, 'Window', $Window, Object);
-	Type.registerClass(global, 'Helper.helper', $Helper_helper, Object);
-	Type.registerClass(global, 'Helper.helper$ByteBuffer', $Helper_helper$ByteBuffer, Object);
-	Type.registerClass(global, 'Helper.helper$FILE', $Helper_helper$FILE, Object);
-	Type.registerClass(global, 'Helper.helper$ObjectBuffer', $Helper_helper$ObjectBuffer, Object);
-	Type.registerClass(global, 'Helper.helper$UIntBuffer', $Helper_helper$UIntBuffer, Object);
-	Type.registerClass(global, 'InnoveWare.Page', $InnoveWare_Page, Object);
-	Type.registerClass(global, 'Missing.ArrayHelpers', $Missing_ArrayHelpers, Object);
-	Type.registerClass(null, 'quake.$client$kbutton_t', $quake_$client$kbutton_t, Object);
-	Type.registerClass(null, 'quake.$cmd$cmd_function_t', $quake_$cmd$cmd_function_t, Object);
-	Type.registerClass(null, 'quake.$cmd$cmdalias_t', $quake_$cmd$cmdalias_t, Object);
-	Type.registerClass(null, 'quake.$common$dpackfile_t', $quake_$common$dpackfile_t, Object);
-	Type.registerClass(null, 'quake.$common$dpackheader_t', $quake_$common$dpackheader_t, Object);
-	Type.registerClass(null, 'quake.$common$pack_t', $quake_$common$pack_t, Object);
-	Type.registerClass(null, 'quake.$common$packfile_t', $quake_$common$packfile_t, Object);
-	Type.registerClass(null, 'quake.$common$searchpath_t', $quake_$common$searchpath_t, Object);
-	Type.registerClass(null, 'quake.$draw$rectdesc_t', $quake_$draw$rectdesc_t, Object);
-	Type.registerClass(null, 'quake.$keys$keyname_t', $quake_$keys$keyname_t, Object);
-	Type.registerClass(null, 'quake.$menu$episode_t', $quake_$menu$episode_t, Object);
-	Type.registerClass(null, 'quake.$menu$level_t', $quake_$menu$level_t, Object);
-	Type.registerClass(null, 'quake.$screen$pcx_t', $quake_$screen$pcx_t, Object);
-	Type.registerClass(null, 'quake.$vrect_s', $quake_$vrect_s, Object);
-	Type.registerClass(null, 'quake.$wad$lumpinfo_t', $quake_$wad$lumpinfo_t, Object);
-	Type.registerClass(null, 'quake.$wad$wadinfo_t', $quake_$wad$wadinfo_t, Object);
-	Type.registerClass(global, 'quake.bspfile', $quake_bspfile, Object);
-	Type.registerClass(global, 'quake.bspfile$ByteBuffer', $quake_bspfile$ByteBuffer, Object);
-	Type.registerClass(global, 'quake.bspfile$dclipnode_t', $quake_bspfile$dclipnode_t, Object);
-	Type.registerClass(global, 'quake.bspfile$dedge_t', $quake_bspfile$dedge_t, Object);
-	Type.registerClass(global, 'quake.bspfile$dface_t', $quake_bspfile$dface_t, Object);
-	Type.registerClass(global, 'quake.bspfile$dheader_t', $quake_bspfile$dheader_t, Object);
-	Type.registerClass(global, 'quake.bspfile$dleaf_t', $quake_bspfile$dleaf_t, Object);
-	Type.registerClass(global, 'quake.bspfile$dmiptexlump_t', $quake_bspfile$dmiptexlump_t, Object);
-	Type.registerClass(global, 'quake.bspfile$dmodel_t', $quake_bspfile$dmodel_t, Object);
-	Type.registerClass(global, 'quake.bspfile$dnode_t', $quake_bspfile$dnode_t, Object);
-	Type.registerClass(global, 'quake.bspfile$dplane_t', $quake_bspfile$dplane_t, Object);
-	Type.registerClass(global, 'quake.bspfile$dvertex_t', $quake_bspfile$dvertex_t, Object);
-	Type.registerClass(global, 'quake.bspfile$lump_t', $quake_bspfile$lump_t, Object);
-	Type.registerClass(global, 'quake.bspfile$miptex_t', $quake_bspfile$miptex_t, Object);
-	Type.registerClass(global, 'quake.bspfile$texinfo_t', $quake_bspfile$texinfo_t, Object);
-	Type.registerClass(global, 'quake.chase', $quake_chase, Object);
-	Type.registerClass(global, 'quake.client', $quake_client, Object);
-	Type.registerClass(global, 'quake.client$beam_t', $quake_client$beam_t, Object);
-	Type.registerClass(global, 'quake.client$client_state_t', $quake_client$client_state_t, Object);
-	Type.registerClass(global, 'quake.client$client_static_t', $quake_client$client_static_t, Object);
-	Type.registerClass(global, 'quake.client$cshift_t', $quake_client$cshift_t, Object);
-	Type.registerClass(global, 'quake.client$dlight_t', $quake_client$dlight_t, Object);
-	Type.registerClass(global, 'quake.client$lightstyle_t', $quake_client$lightstyle_t, Object);
-	Type.registerClass(global, 'quake.client$scoreboard_t', $quake_client$scoreboard_t, Object);
-	Type.registerClass(global, 'quake.client$usercmd_t', $quake_client$usercmd_t, Object);
-	Type.registerClass(global, 'quake.cmd', $quake_cmd, Object);
-	Type.registerClass(global, 'quake.common', $quake_common, Object);
-	Type.registerClass(global, 'quake.common$sizebuf_t', $quake_common$sizebuf_t, Object);
-	Type.registerClass(global, 'quake.console', $quake_console, Object);
-	Type.registerClass(global, 'quake.crc', $quake_crc, Object);
-	Type.registerClass(global, 'quake.cvar_t', $quake_cvar_t, Object);
-	Type.registerClass(global, 'quake.draw', $quake_draw, Object);
-	Type.registerClass(global, 'quake.draw$adivtab_t', $quake_draw$adivtab_t, Object);
-	Type.registerClass(global, 'quake.draw$affinetridesc_t', $quake_draw$affinetridesc_t, Object);
-	Type.registerClass(global, 'quake.draw$cachepic_t', $quake_draw$cachepic_t, Object);
-	Type.registerClass(global, 'quake.draw$drawsurf_t', $quake_draw$drawsurf_t, Object);
-	Type.registerClass(global, 'quake.draw$edgetable', $quake_draw$edgetable, Object);
-	Type.registerClass(global, 'quake.draw$emitpoint_t', $quake_draw$emitpoint_t, Object);
-	Type.registerClass(global, 'quake.draw$finalvert_t', $quake_draw$finalvert_t, Object);
-	Type.registerClass(global, 'quake.draw$particle_t', $quake_draw$particle_t, Object);
-	Type.registerClass(global, 'quake.draw$polydesc_t', $quake_draw$polydesc_t, Object);
-	Type.registerClass(global, 'quake.draw$polyvert_t', $quake_draw$polyvert_t, Object);
-	Type.registerClass(global, 'quake.draw$screenpart_t', $quake_draw$screenpart_t, Object);
-	Type.registerClass(global, 'quake.draw$spanpackage_t', $quake_draw$spanpackage_t, Object);
-	Type.registerClass(global, 'quake.draw$spritedesc_t', $quake_draw$spritedesc_t, Object);
-	Type.registerClass(global, 'quake.draw$sspan_t', $quake_draw$sspan_t, Object);
-	Type.registerClass(global, 'quake.draw$surfcache_t', $quake_draw$surfcache_t, Object);
-	Type.registerClass(global, 'quake.draw$zpointdesc_t', $quake_draw$zpointdesc_t, Object);
-	Type.registerClass(global, 'quake.host', $quake_host, Object);
-	Type.registerClass(global, 'quake.host_abortserver', $quake_host_abortserver, ss.Exception);
-	Type.registerClass(global, 'quake.keys', $quake_keys, Object);
-	Type.registerClass(global, 'quake.mathlib', $quake_mathlib, Object);
-	Type.registerClass(global, 'quake.menu', $quake_menu, Object);
-	Type.registerClass(global, 'quake.model', $quake_model, Object);
-	Type.registerClass(global, 'quake.model$aliashdr_t', $quake_model$aliashdr_t, Object);
-	Type.registerClass(global, 'quake.model$daliasframe_t', $quake_model$daliasframe_t, Object);
-	Type.registerClass(global, 'quake.model$daliasframetype_t', $quake_model$daliasframetype_t, Object);
-	Type.registerClass(global, 'quake.model$daliasgroup_t', $quake_model$daliasgroup_t, Object);
-	Type.registerClass(global, 'quake.model$daliasskingroup_t', $quake_model$daliasskingroup_t, Object);
-	Type.registerClass(global, 'quake.model$daliasskintype_t', $quake_model$daliasskintype_t, Object);
-	Type.registerClass(global, 'quake.model$dsprite_t', $quake_model$dsprite_t, Object);
-	Type.registerClass(global, 'quake.model$dspriteframe_t', $quake_model$dspriteframe_t, Object);
-	Type.registerClass(global, 'quake.model$dspriteframetype_t', $quake_model$dspriteframetype_t, Object);
-	Type.registerClass(global, 'quake.model$dspritegroup_t', $quake_model$dspritegroup_t, Object);
-	Type.registerClass(global, 'quake.model$dspriteinterval_t', $quake_model$dspriteinterval_t, Object);
-	Type.registerClass(global, 'quake.model$dtriangle_t', $quake_model$dtriangle_t, Object);
-	Type.registerClass(global, 'quake.model$hull_t', $quake_model$hull_t, Object);
-	Type.registerClass(global, 'quake.model$maliasframedesc_t', $quake_model$maliasframedesc_t, Object);
-	Type.registerClass(global, 'quake.model$maliasgroup_t', $quake_model$maliasgroup_t, Object);
-	Type.registerClass(global, 'quake.model$maliasgroupframedesc_t', $quake_model$maliasgroupframedesc_t, Object);
-	Type.registerClass(global, 'quake.model$maliasskindesc_t', $quake_model$maliasskindesc_t, Object);
-	Type.registerClass(global, 'quake.model$maliasskingroup_t', $quake_model$maliasskingroup_t, Object);
-	Type.registerClass(global, 'quake.model$mdl_t', $quake_model$mdl_t, Object);
-	Type.registerClass(global, 'quake.model$medge_t', $quake_model$medge_t, Object);
-	Type.registerClass(global, 'quake.model$node_or_leaf_t', $quake_model$node_or_leaf_t, Object);
-	Type.registerClass(global, 'quake.model$mleaf_t', $quake_model$mleaf_t, $quake_model$node_or_leaf_t);
-	Type.registerClass(global, 'quake.model$mnode_t', $quake_model$mnode_t, $quake_model$node_or_leaf_t);
-	Type.registerClass(global, 'quake.model$model_t', $quake_model$model_t, Object);
-	Type.registerClass(global, 'quake.model$mplane_t', $quake_model$mplane_t, Object);
-	Type.registerClass(global, 'quake.model$msprite_t', $quake_model$msprite_t, Object);
-	Type.registerClass(global, 'quake.model$mspriteframe_t', $quake_model$mspriteframe_t, Object);
-	Type.registerClass(global, 'quake.model$mspriteframedesc_t', $quake_model$mspriteframedesc_t, Object);
-	Type.registerClass(global, 'quake.model$mspritegroup_t', $quake_model$mspritegroup_t, Object);
-	Type.registerClass(global, 'quake.model$msurface_t', $quake_model$msurface_t, Object);
-	Type.registerClass(global, 'quake.model$mtexinfo_t', $quake_model$mtexinfo_t, Object);
-	Type.registerClass(global, 'quake.model$mtriangle_t', $quake_model$mtriangle_t, Object);
-	Type.registerClass(global, 'quake.model$mvertex_t', $quake_model$mvertex_t, Object);
-	Type.registerClass(global, 'quake.model$stvert_t', $quake_model$stvert_t, Object);
-	Type.registerClass(global, 'quake.model$texture_t', $quake_model$texture_t, Object);
-	Type.registerClass(global, 'quake.model$trivertx_t', $quake_model$trivertx_t, Object);
-	Type.registerClass(global, 'quake.net', $quake_net, Object);
-	Type.registerClass(global, 'quake.net$hostcache_t', $quake_net$hostcache_t, Object);
-	Type.registerClass(global, 'quake.net$net_driver_t', $quake_net$net_driver_t, Object);
-	Type.registerClass(global, 'quake.net$qsocket_t', $quake_net$qsocket_t, Object);
-	Type.registerClass(global, 'quake.prog', $quake_prog, Object);
-	Type.registerClass(global, 'quake.prog$ddef_t', $quake_prog$ddef_t, Object);
-	Type.registerClass(global, 'quake.prog$dfunction_t', $quake_prog$dfunction_t, Object);
-	Type.registerClass(global, 'quake.prog$dprograms_t', $quake_prog$dprograms_t, Object);
-	Type.registerClass(global, 'quake.prog$dstatement_t', $quake_prog$dstatement_t, Object);
-	Type.registerClass(global, 'quake.prog$edict_t', $quake_prog$edict_t, Object);
-	Type.registerClass(global, 'quake.prog$entvars_t', $quake_prog$entvars_t, Object);
-	Type.registerClass(global, 'quake.prog$eval_t', $quake_prog$eval_t, Object);
-	Type.registerClass(global, 'quake.prog$globalvars_t', $quake_prog$globalvars_t, Object);
-	Type.registerClass(global, 'quake.prog$prstack_t', $quake_prog$prstack_t, Object);
-	Type.registerClass(global, 'quake.quakedef', $quake_quakedef, Object);
-	Type.registerClass(global, 'quake.quakedef$entity_state_t', $quake_quakedef$entity_state_t, Object);
-	Type.registerClass(global, 'quake.quakedef$quakeparms_t', $quake_quakedef$quakeparms_t, Object);
-	Type.registerClass(global, 'quake.render', $quake_render, Object);
-	Type.registerClass(global, 'quake.render$aedge_t', $quake_render$aedge_t, Object);
-	Type.registerClass(global, 'quake.render$alight_t', $quake_render$alight_t, Object);
-	Type.registerClass(global, 'quake.render$auxvert_t', $quake_render$auxvert_t, Object);
-	Type.registerClass(global, 'quake.render$bedge_t', $quake_render$bedge_t, Object);
-	Type.registerClass(global, 'quake.render$btofpoly_t', $quake_render$btofpoly_t, Object);
-	Type.registerClass(global, 'quake.render$clipplane_t', $quake_render$clipplane_t, Object);
-	Type.registerClass(global, 'quake.render$edge_t', $quake_render$edge_t, Object);
-	Type.registerClass(global, 'quake.render$efrag_t', $quake_render$efrag_t, Object);
-	Type.registerClass(global, 'quake.render$entity_t', $quake_render$entity_t, Object);
-	Type.registerClass(global, 'quake.render$espan_t', $quake_render$espan_t, Object);
-	Type.registerClass(global, 'quake.render$refdef_t', $quake_render$refdef_t, Object);
-	Type.registerClass(global, 'quake.render$surf_t', $quake_render$surf_t, Object);
-	Type.registerClass(global, 'quake.sbar', $quake_sbar, Object);
-	Type.registerClass(global, 'quake.screen', $quake_screen, Object);
-	Type.registerClass(global, 'quake.server', $quake_server, Object);
-	Type.registerClass(global, 'quake.server$client_t', $quake_server$client_t, Object);
-	Type.registerClass(global, 'quake.server$server_static_t', $quake_server$server_static_t, Object);
-	Type.registerClass(global, 'quake.server$server_t', $quake_server$server_t, Object);
-	Type.registerClass(global, 'quake.sound', $quake_sound, Object);
-	Type.registerClass(global, 'quake.sound$channel_t', $quake_sound$channel_t, Object);
-	Type.registerClass(global, 'quake.sound$sfx_t', $quake_sound$sfx_t, Object);
-	Type.registerClass(global, 'quake.sound$sfxcache_t', $quake_sound$sfxcache_t, Object);
-	Type.registerClass(global, 'quake.sys_linux', $quake_sys_linux, Object);
-	Type.registerClass(global, 'quake.vid', $quake_vid, Object);
-	Type.registerClass(global, 'quake.vid$viddef_t', $quake_vid$viddef_t, Object);
-	Type.registerClass(global, 'quake.vid$vrect_t', $quake_vid$vrect_t, Object);
-	Type.registerClass(global, 'quake.view', $quake_view, Object);
-	Type.registerClass(global, 'quake.wad', $quake_wad, Object);
-	Type.registerClass(global, 'quake.wad$qpic_t', $quake_wad$qpic_t, Object);
-	Type.registerClass(global, 'quake.world', $quake_world, Object);
-	Type.registerClass(global, 'quake.world$plane_t', $quake_world$plane_t, Object);
-	Type.registerClass(global, 'quake.world$trace_t', $quake_world$trace_t, Object);
-	Type.registerClass(global, 'System.Buffer', $System_Buffer, Object);
-	Type.registerClass(global, 'System.Convert', $System_Convert, Object);
-	Type.registerClass(global, 'System.FormatException', $System_FormatException, ss.Exception);
-	Type.registerClass(global, 'System.ImplementedInJavaScript', $System_ImplementedInJavaScript, ss.Exception);
-	Type.registerClass(global, 'System.NotImplementedException', $System_NotImplementedException, ss.Exception);
-	Type.registerClass(global, 'System.Random', $System_Random, Object);
-	Type.registerClass(global, 'System.StringExtensions', $System_StringExtensions, Object);
-	Type.registerClass(global, 'System.TimeSpan', $System_TimeSpan, Object);
-	Type.registerClass(global, 'System.Uri', $System_Uri, Object);
-	Type.registerClass(global, 'System.Globalization.CultureInfo', $System_Globalization_CultureInfo, Object);
-	Type.registerClass(global, 'System.IO.BinaryReader', $System_IO_BinaryReader, Object);
-	Type.registerClass(global, 'System.IO.MemoryStream', $System_IO_MemoryStream);
-	Type.registerClass(global, 'System.Windows.Duration', $System_Windows_Duration, Object);
-	Type.registerClass(global, 'System.Windows.MessageBox', $System_Windows_MessageBox, Object);
-	Type.registerClass(global, 'System.Windows.RoutedEventArgs', $System_Windows_RoutedEventArgs, ss.EventArgs);
-	Type.registerClass(global, 'System.Windows.Controls.Canvas', $System_Windows_Controls_Canvas, Object);
-	Type.registerClass(global, 'System.Windows.Controls.Image', $System_Windows_Controls_Image, Object);
-	Type.registerClass(global, 'System.Windows.Controls.MediaElement', $System_Windows_Controls_MediaElement, Object);
-	Type.registerClass(global, 'System.Windows.Media.Imaging.BitmapImage', $System_Windows_Media_Imaging_BitmapImage, Object);
-	Type.registerClass(global, 'System.Windows.Media.Imaging.WriteableBitmap', $System_Windows_Media_Imaging_WriteableBitmap, Object);
-	Type.registerClass(global, 'System.Windows.Resources.StreamResourceInfo', $System_Windows_Resources_StreamResourceInfo, Object);
+	ss.registerClass(global, 'Window', $Window);
+	ss.registerClass(global, 'Helper.helper', $Helper_helper);
+	ss.registerClass(global, 'Helper.helper$ByteBuffer', $Helper_helper$ByteBuffer);
+	ss.registerClass(global, 'Helper.helper$FILE', $Helper_helper$FILE);
+	ss.registerClass(global, 'Helper.helper$ObjectBuffer', $Helper_helper$ObjectBuffer);
+	ss.registerClass(global, 'Helper.helper$UIntBuffer', $Helper_helper$UIntBuffer);
+	ss.registerClass(global, 'InnoveWare.Page', $InnoveWare_Page);
+	ss.registerClass(global, 'Missing.ArrayHelpers', $Missing_ArrayHelpers);
+	ss.registerClass(null, 'quake.$client$kbutton_t', $quake_$client$kbutton_t);
+	ss.registerClass(null, 'quake.$cmd$cmd_function_t', $quake_$cmd$cmd_function_t);
+	ss.registerClass(null, 'quake.$cmd$cmdalias_t', $quake_$cmd$cmdalias_t);
+	ss.registerClass(null, 'quake.$common$dpackfile_t', $quake_$common$dpackfile_t);
+	ss.registerClass(null, 'quake.$common$dpackheader_t', $quake_$common$dpackheader_t);
+	ss.registerClass(null, 'quake.$common$pack_t', $quake_$common$pack_t);
+	ss.registerClass(null, 'quake.$common$packfile_t', $quake_$common$packfile_t);
+	ss.registerClass(null, 'quake.$common$searchpath_t', $quake_$common$searchpath_t);
+	ss.registerClass(null, 'quake.$draw$rectdesc_t', $quake_$draw$rectdesc_t);
+	ss.registerClass(null, 'quake.$keys$keyname_t', $quake_$keys$keyname_t);
+	ss.registerClass(null, 'quake.$menu$episode_t', $quake_$menu$episode_t);
+	ss.registerClass(null, 'quake.$menu$level_t', $quake_$menu$level_t);
+	ss.registerClass(null, 'quake.$screen$pcx_t', $quake_$screen$pcx_t);
+	ss.registerClass(null, 'quake.$vrect_s', $quake_$vrect_s);
+	ss.registerClass(null, 'quake.$wad$lumpinfo_t', $quake_$wad$lumpinfo_t);
+	ss.registerClass(null, 'quake.$wad$wadinfo_t', $quake_$wad$wadinfo_t);
+	ss.registerClass(global, 'quake.bspfile', $quake_bspfile);
+	ss.registerClass(global, 'quake.bspfile$ByteBuffer', $quake_bspfile$ByteBuffer);
+	ss.registerClass(global, 'quake.bspfile$dclipnode_t', $quake_bspfile$dclipnode_t);
+	ss.registerClass(global, 'quake.bspfile$dedge_t', $quake_bspfile$dedge_t);
+	ss.registerClass(global, 'quake.bspfile$dface_t', $quake_bspfile$dface_t);
+	ss.registerClass(global, 'quake.bspfile$dheader_t', $quake_bspfile$dheader_t);
+	ss.registerClass(global, 'quake.bspfile$dleaf_t', $quake_bspfile$dleaf_t);
+	ss.registerClass(global, 'quake.bspfile$dmiptexlump_t', $quake_bspfile$dmiptexlump_t);
+	ss.registerClass(global, 'quake.bspfile$dmodel_t', $quake_bspfile$dmodel_t);
+	ss.registerClass(global, 'quake.bspfile$dnode_t', $quake_bspfile$dnode_t);
+	ss.registerClass(global, 'quake.bspfile$dplane_t', $quake_bspfile$dplane_t);
+	ss.registerClass(global, 'quake.bspfile$dvertex_t', $quake_bspfile$dvertex_t);
+	ss.registerClass(global, 'quake.bspfile$lump_t', $quake_bspfile$lump_t);
+	ss.registerClass(global, 'quake.bspfile$miptex_t', $quake_bspfile$miptex_t);
+	ss.registerClass(global, 'quake.bspfile$texinfo_t', $quake_bspfile$texinfo_t);
+	ss.registerClass(global, 'quake.chase', $quake_chase);
+	ss.registerClass(global, 'quake.client', $quake_client);
+	ss.registerClass(global, 'quake.client$beam_t', $quake_client$beam_t);
+	ss.registerClass(global, 'quake.client$client_state_t', $quake_client$client_state_t);
+	ss.registerClass(global, 'quake.client$client_static_t', $quake_client$client_static_t);
+	ss.registerClass(global, 'quake.client$cshift_t', $quake_client$cshift_t);
+	ss.registerClass(global, 'quake.client$dlight_t', $quake_client$dlight_t);
+	ss.registerClass(global, 'quake.client$lightstyle_t', $quake_client$lightstyle_t);
+	ss.registerClass(global, 'quake.client$scoreboard_t', $quake_client$scoreboard_t);
+	ss.registerClass(global, 'quake.client$usercmd_t', $quake_client$usercmd_t);
+	ss.registerClass(global, 'quake.cmd', $quake_cmd);
+	ss.registerClass(global, 'quake.common', $quake_common);
+	ss.registerClass(global, 'quake.common$sizebuf_t', $quake_common$sizebuf_t);
+	ss.registerClass(global, 'quake.console', $quake_console);
+	ss.registerClass(global, 'quake.crc', $quake_crc);
+	ss.registerClass(global, 'quake.cvar_t', $quake_cvar_t);
+	ss.registerClass(global, 'quake.draw', $quake_draw);
+	ss.registerClass(global, 'quake.draw$adivtab_t', $quake_draw$adivtab_t);
+	ss.registerClass(global, 'quake.draw$affinetridesc_t', $quake_draw$affinetridesc_t);
+	ss.registerClass(global, 'quake.draw$cachepic_t', $quake_draw$cachepic_t);
+	ss.registerClass(global, 'quake.draw$drawsurf_t', $quake_draw$drawsurf_t);
+	ss.registerClass(global, 'quake.draw$edgetable', $quake_draw$edgetable);
+	ss.registerClass(global, 'quake.draw$emitpoint_t', $quake_draw$emitpoint_t);
+	ss.registerClass(global, 'quake.draw$finalvert_t', $quake_draw$finalvert_t);
+	ss.registerClass(global, 'quake.draw$particle_t', $quake_draw$particle_t);
+	ss.registerClass(global, 'quake.draw$polydesc_t', $quake_draw$polydesc_t);
+	ss.registerClass(global, 'quake.draw$polyvert_t', $quake_draw$polyvert_t);
+	ss.registerClass(global, 'quake.draw$screenpart_t', $quake_draw$screenpart_t);
+	ss.registerClass(global, 'quake.draw$spanpackage_t', $quake_draw$spanpackage_t);
+	ss.registerClass(global, 'quake.draw$spritedesc_t', $quake_draw$spritedesc_t);
+	ss.registerClass(global, 'quake.draw$sspan_t', $quake_draw$sspan_t);
+	ss.registerClass(global, 'quake.draw$surfcache_t', $quake_draw$surfcache_t);
+	ss.registerClass(global, 'quake.draw$zpointdesc_t', $quake_draw$zpointdesc_t);
+	ss.registerClass(global, 'quake.host', $quake_host);
+	ss.registerClass(global, 'quake.host_abortserver', $quake_host_abortserver, ss.Exception);
+	ss.registerClass(global, 'quake.keys', $quake_keys);
+	ss.registerClass(global, 'quake.mathlib', $quake_mathlib);
+	ss.registerClass(global, 'quake.menu', $quake_menu);
+	ss.registerClass(global, 'quake.model', $quake_model);
+	ss.registerClass(global, 'quake.model$aliashdr_t', $quake_model$aliashdr_t);
+	ss.registerClass(global, 'quake.model$daliasframe_t', $quake_model$daliasframe_t);
+	ss.registerClass(global, 'quake.model$daliasframetype_t', $quake_model$daliasframetype_t);
+	ss.registerClass(global, 'quake.model$daliasgroup_t', $quake_model$daliasgroup_t);
+	ss.registerClass(global, 'quake.model$daliasskingroup_t', $quake_model$daliasskingroup_t);
+	ss.registerClass(global, 'quake.model$daliasskintype_t', $quake_model$daliasskintype_t);
+	ss.registerClass(global, 'quake.model$dsprite_t', $quake_model$dsprite_t);
+	ss.registerClass(global, 'quake.model$dspriteframe_t', $quake_model$dspriteframe_t);
+	ss.registerClass(global, 'quake.model$dspriteframetype_t', $quake_model$dspriteframetype_t);
+	ss.registerClass(global, 'quake.model$dspritegroup_t', $quake_model$dspritegroup_t);
+	ss.registerClass(global, 'quake.model$dspriteinterval_t', $quake_model$dspriteinterval_t);
+	ss.registerClass(global, 'quake.model$dtriangle_t', $quake_model$dtriangle_t);
+	ss.registerClass(global, 'quake.model$hull_t', $quake_model$hull_t);
+	ss.registerClass(global, 'quake.model$maliasframedesc_t', $quake_model$maliasframedesc_t);
+	ss.registerClass(global, 'quake.model$maliasgroup_t', $quake_model$maliasgroup_t);
+	ss.registerClass(global, 'quake.model$maliasgroupframedesc_t', $quake_model$maliasgroupframedesc_t);
+	ss.registerClass(global, 'quake.model$maliasskindesc_t', $quake_model$maliasskindesc_t);
+	ss.registerClass(global, 'quake.model$maliasskingroup_t', $quake_model$maliasskingroup_t);
+	ss.registerClass(global, 'quake.model$mdl_t', $quake_model$mdl_t);
+	ss.registerClass(global, 'quake.model$medge_t', $quake_model$medge_t);
+	ss.registerClass(global, 'quake.model$node_or_leaf_t', $quake_model$node_or_leaf_t);
+	ss.registerClass(global, 'quake.model$mleaf_t', $quake_model$mleaf_t, $quake_model$node_or_leaf_t);
+	ss.registerClass(global, 'quake.model$mnode_t', $quake_model$mnode_t, $quake_model$node_or_leaf_t);
+	ss.registerClass(global, 'quake.model$model_t', $quake_model$model_t);
+	ss.registerClass(global, 'quake.model$mplane_t', $quake_model$mplane_t);
+	ss.registerClass(global, 'quake.model$msprite_t', $quake_model$msprite_t);
+	ss.registerClass(global, 'quake.model$mspriteframe_t', $quake_model$mspriteframe_t);
+	ss.registerClass(global, 'quake.model$mspriteframedesc_t', $quake_model$mspriteframedesc_t);
+	ss.registerClass(global, 'quake.model$mspritegroup_t', $quake_model$mspritegroup_t);
+	ss.registerClass(global, 'quake.model$msurface_t', $quake_model$msurface_t);
+	ss.registerClass(global, 'quake.model$mtexinfo_t', $quake_model$mtexinfo_t);
+	ss.registerClass(global, 'quake.model$mtriangle_t', $quake_model$mtriangle_t);
+	ss.registerClass(global, 'quake.model$mvertex_t', $quake_model$mvertex_t);
+	ss.registerClass(global, 'quake.model$stvert_t', $quake_model$stvert_t);
+	ss.registerClass(global, 'quake.model$texture_t', $quake_model$texture_t);
+	ss.registerClass(global, 'quake.model$trivertx_t', $quake_model$trivertx_t);
+	ss.registerClass(global, 'quake.net', $quake_net);
+	ss.registerClass(global, 'quake.net$hostcache_t', $quake_net$hostcache_t);
+	ss.registerClass(global, 'quake.net$net_driver_t', $quake_net$net_driver_t);
+	ss.registerClass(global, 'quake.net$qsocket_t', $quake_net$qsocket_t);
+	ss.registerClass(global, 'quake.prog', $quake_prog);
+	ss.registerClass(global, 'quake.prog$ddef_t', $quake_prog$ddef_t);
+	ss.registerClass(global, 'quake.prog$dfunction_t', $quake_prog$dfunction_t);
+	ss.registerClass(global, 'quake.prog$dprograms_t', $quake_prog$dprograms_t);
+	ss.registerClass(global, 'quake.prog$dstatement_t', $quake_prog$dstatement_t);
+	ss.registerClass(global, 'quake.prog$edict_t', $quake_prog$edict_t);
+	ss.registerClass(global, 'quake.prog$entvars_t', $quake_prog$entvars_t);
+	ss.registerClass(global, 'quake.prog$eval_t', $quake_prog$eval_t);
+	ss.registerClass(global, 'quake.prog$globalvars_t', $quake_prog$globalvars_t);
+	ss.registerClass(global, 'quake.prog$prstack_t', $quake_prog$prstack_t);
+	ss.registerClass(global, 'quake.quakedef', $quake_quakedef);
+	ss.registerClass(global, 'quake.quakedef$entity_state_t', $quake_quakedef$entity_state_t);
+	ss.registerClass(global, 'quake.quakedef$quakeparms_t', $quake_quakedef$quakeparms_t);
+	ss.registerClass(global, 'quake.render', $quake_render);
+	ss.registerClass(global, 'quake.render$aedge_t', $quake_render$aedge_t);
+	ss.registerClass(global, 'quake.render$alight_t', $quake_render$alight_t);
+	ss.registerClass(global, 'quake.render$auxvert_t', $quake_render$auxvert_t);
+	ss.registerClass(global, 'quake.render$bedge_t', $quake_render$bedge_t);
+	ss.registerClass(global, 'quake.render$btofpoly_t', $quake_render$btofpoly_t);
+	ss.registerClass(global, 'quake.render$clipplane_t', $quake_render$clipplane_t);
+	ss.registerClass(global, 'quake.render$edge_t', $quake_render$edge_t);
+	ss.registerClass(global, 'quake.render$efrag_t', $quake_render$efrag_t);
+	ss.registerClass(global, 'quake.render$entity_t', $quake_render$entity_t);
+	ss.registerClass(global, 'quake.render$espan_t', $quake_render$espan_t);
+	ss.registerClass(global, 'quake.render$refdef_t', $quake_render$refdef_t);
+	ss.registerClass(global, 'quake.render$surf_t', $quake_render$surf_t);
+	ss.registerClass(global, 'quake.sbar', $quake_sbar);
+	ss.registerClass(global, 'quake.screen', $quake_screen);
+	ss.registerClass(global, 'quake.server', $quake_server);
+	ss.registerClass(global, 'quake.server$client_t', $quake_server$client_t);
+	ss.registerClass(global, 'quake.server$server_static_t', $quake_server$server_static_t);
+	ss.registerClass(global, 'quake.server$server_t', $quake_server$server_t);
+	ss.registerClass(global, 'quake.sound', $quake_sound);
+	ss.registerClass(global, 'quake.sound$channel_t', $quake_sound$channel_t);
+	ss.registerClass(global, 'quake.sound$sfx_t', $quake_sound$sfx_t);
+	ss.registerClass(global, 'quake.sound$sfxcache_t', $quake_sound$sfxcache_t);
+	ss.registerClass(global, 'quake.sys_linux', $quake_sys_linux);
+	ss.registerClass(global, 'quake.vid', $quake_vid);
+	ss.registerClass(global, 'quake.vid$viddef_t', $quake_vid$viddef_t);
+	ss.registerClass(global, 'quake.vid$vrect_t', $quake_vid$vrect_t);
+	ss.registerClass(global, 'quake.view', $quake_view);
+	ss.registerClass(global, 'quake.wad', $quake_wad);
+	ss.registerClass(global, 'quake.wad$qpic_t', $quake_wad$qpic_t);
+	ss.registerClass(global, 'quake.world', $quake_world);
+	ss.registerClass(global, 'quake.world$plane_t', $quake_world$plane_t);
+	ss.registerClass(global, 'quake.world$trace_t', $quake_world$trace_t);
+	ss.registerClass(global, 'System.Buffer', $System_Buffer);
+	ss.registerClass(global, 'System.Convert', $System_Convert);
+	ss.registerClass(global, 'System.FormatException', $System_FormatException, ss.Exception);
+	ss.registerClass(global, 'System.ImplementedInJavaScript', $System_ImplementedInJavaScript, ss.Exception);
+	ss.registerClass(global, 'System.NotImplementedException', $System_NotImplementedException, ss.Exception);
+	ss.registerClass(global, 'System.Random', $System_Random);
+	ss.registerClass(global, 'System.StringExtensions', $System_StringExtensions);
+	ss.registerClass(global, 'System.TimeSpan', $System_TimeSpan);
+	ss.registerClass(global, 'System.Uri', $System_Uri);
+	ss.registerClass(global, 'System.Globalization.CultureInfo', $System_Globalization_CultureInfo);
+	ss.registerClass(global, 'System.IO.BinaryReader', $System_IO_BinaryReader);
+	ss.registerClass(global, 'System.IO.MemoryStream', $System_IO_MemoryStream, null);
+	ss.registerClass(global, 'System.Windows.Duration', $System_Windows_Duration);
+	ss.registerClass(global, 'System.Windows.MessageBox', $System_Windows_MessageBox);
+	ss.registerClass(global, 'System.Windows.RoutedEventArgs', $System_Windows_RoutedEventArgs, ss.EventArgs);
+	ss.registerClass(global, 'System.Windows.Controls.Canvas', $System_Windows_Controls_Canvas);
+	ss.registerClass(global, 'System.Windows.Controls.Image', $System_Windows_Controls_Image);
+	ss.registerClass(global, 'System.Windows.Controls.MediaElement', $System_Windows_Controls_MediaElement);
+	ss.registerClass(global, 'System.Windows.Media.Imaging.BitmapImage', $System_Windows_Media_Imaging_BitmapImage);
+	ss.registerClass(global, 'System.Windows.Media.Imaging.WriteableBitmap', $System_Windows_Media_Imaging_WriteableBitmap);
+	ss.registerClass(global, 'System.Windows.Resources.StreamResourceInfo', $System_Windows_Resources_StreamResourceInfo);
 	$1$ResourcesField = null;
-	set_resources(new (Type.makeGenericType(ss.Dictionary$2, [String, Object]))());
+	set_resources(new (ss.makeGenericType(ss.Dictionary$2, [String, Object]))());
 	$Helper_helper.seeK_SET = 0;
 	$Helper_helper.$r = new $System_Random();
 	$quake_quakedef.VERSION = 1.09;
@@ -23500,7 +23597,7 @@
 	$quake_view.$oldyaw = 0;
 	$quake_view.$oldpitch = 0;
 	$quake_view.$oldz = 0;
-	$quake_sound.$channels = new Array($quake_sound.maX_CHANNELS);
+	$quake_sound.channels = new Array($quake_sound.maX_CHANNELS);
 	$quake_sound.$total_channels = 0;
 	$quake_sound.$snd_blocked = 0;
 	$quake_sound.$snd_ambient = true;
@@ -23537,18 +23634,18 @@
 	$quake_sbar.$sbaR_HEIGHT = 24;
 	$quake_sbar.$sb_updates = 0;
 	$quake_sbar.$staT_MINUS = 10;
-	$quake_sbar.$sb_nums = Array.multidim($quake_wad$qpic_t.getDefaultValue(), 2, 11);
+	$quake_sbar.$sb_nums = ss.multidimArray(null, 2, 11);
 	$quake_sbar.$sb_colon = null;
 	$quake_sbar.$sb_slash = null;
 	$quake_sbar.$sb_ibar = null;
 	$quake_sbar.$sb_sbar = null;
 	$quake_sbar.$sb_scorebar = null;
-	$quake_sbar.$sb_weapons = Array.multidim($quake_wad$qpic_t.getDefaultValue(), 7, 8);
+	$quake_sbar.$sb_weapons = ss.multidimArray(null, 7, 8);
 	$quake_sbar.$sb_ammo = new Array(4);
 	$quake_sbar.$sb_sigil = new Array(4);
 	$quake_sbar.$sb_armor = new Array(3);
 	$quake_sbar.$sb_items = new Array(32);
-	$quake_sbar.$sb_faces = Array.multidim($quake_wad$qpic_t.getDefaultValue(), 7, 2);
+	$quake_sbar.$sb_faces = ss.multidimArray(null, 7, 2);
 	$quake_sbar.$sb_face_invis = null;
 	$quake_sbar.$sb_face_quad = null;
 	$quake_sbar.$sb_face_invuln = null;
@@ -23560,7 +23657,7 @@
 	$quake_sbar.$rsb_items = new Array(2);
 	$quake_sbar.$rsb_ammo = new Array(3);
 	$quake_sbar.$rsb_teambord = null;
-	$quake_sbar.$hsb_weapons = Array.multidim($quake_wad$qpic_t.getDefaultValue(), 7, 5);
+	$quake_sbar.$hsb_weapons = ss.multidimArray(null, 7, 5);
 	$quake_sbar.$hsb_items = new Array(2);
 	$quake_screen.scr_copytop = false;
 	$quake_screen.scr_copyeverything = false;
@@ -23844,7 +23941,7 @@
 	$quake_render.r_pright = new Array(3);
 	$quake_render.r_pup = new Array(3);
 	$quake_render.r_ppn = new Array(3);
-	$quake_render.$avelocities = Array.multidim(Number.getDefaultValue(), $quake_render.NUMVERTEXNORMALS, 3);
+	$quake_render.$avelocities = ss.multidimArray(0, $quake_render.NUMVERTEXNORMALS, 3);
 	$quake_render.$beamlength = 16;
 	$quake_render.$tracercount = 0;
 	$quake_render.MAXVERTS = 16;
@@ -24192,7 +24289,7 @@
 	$quake_prog.$saved2 = new $quake_cvar_t.$ctor1('saved2', '0', true);
 	$quake_prog.$saved3 = new $quake_cvar_t.$ctor1('saved3', '0', true);
 	$quake_prog.$saved4 = new $quake_cvar_t.$ctor1('saved4', '0', true);
-	$quake_prog.$stringDictionary = new (Type.makeGenericType(ss.Dictionary$2, [String, ss.Int32]))();
+	$quake_prog.$stringDictionary = new (ss.makeGenericType(ss.Dictionary$2, [String, ss.Int32]))();
 	$quake_prog.$stringPool = new Array(1000);
 	$quake_prog.$strings = 0;
 	$quake_prog.$line = $System_StringExtensions.stringOfLength(256);
