@@ -21450,7 +21450,7 @@
 		var media = new $System_Windows_Controls_MediaElement();
 		target_chan.media = media;
 		media.set_autoPlay(true);
-		media.setSource(new $System_IO_MemoryStream(sc.data));
+		media.setSource(new MemoryStream(sc.data));
 		media.set_tag(target_chan);
 		//if (sc.loopstart != -1)
 		//{
@@ -21540,7 +21540,7 @@
 		var media = new $System_Windows_Controls_MediaElement();
 		ss.media = media;
 		media.set_autoPlay(true);
-		media.setSource(new $System_IO_MemoryStream(sc.data));
+		media.setSource(new MemoryStream(sc.data));
 		media.set_tag(ss);
 		throw new $System_NotImplementedException.$ctor1('S_StaticSound todo!');
 		$quake_sound.setVolume(ss);
@@ -22815,6 +22815,12 @@
 		this.$plane = null;
 	};
 	////////////////////////////////////////////////////////////////////////////////
+	// ScriptProject.Missing.Web.AudioBufferSourceNodePlayBackState
+	var $ScriptProject_Missing_Web_AudioBufferSourceNodePlayBackState = function() {
+	};
+	$ScriptProject_Missing_Web_AudioBufferSourceNodePlayBackState.prototype = { unscheduleD_STATE: 0, scheduleD_STATE: 1, playinG_STATE: 2, finisheD_STATE: 3 };
+	ss.registerEnum(global, 'ScriptProject.Missing.Web.AudioBufferSourceNodePlayBackState', $ScriptProject_Missing_Web_AudioBufferSourceNodePlayBackState, false);
+	////////////////////////////////////////////////////////////////////////////////
 	// System.Buffer
 	var $System_Buffer = function() {
 	};
@@ -22964,11 +22970,6 @@
 		}
 	};
 	////////////////////////////////////////////////////////////////////////////////
-	// System.IO.MemoryStream
-	var $System_IO_MemoryStream = function(data) {
-		Stream.call(this, data.buffer);
-	};
-	////////////////////////////////////////////////////////////////////////////////
 	// System.IO.SeekOrigin
 	var $System_IO_SeekOrigin = function() {
 	};
@@ -23022,9 +23023,8 @@
 		this.$_timePlayed = new Date(0);
 		this.$_volume = 0;
 		this.$1$AutoPlayField = false;
-		this.bufferSource = null;
+		this.source = null;
 		this.audioGain = null;
-		this.$maxVolume = 0;
 		this.$1$BalanceField = 0;
 		this.$1$TagField = null;
 		this.$1$MediaEndedField = null;
@@ -23073,8 +23073,21 @@
 			return this.$_duration;
 		},
 		get_currentState: function() {
-			// todo: can get playback state from js
 			return 3;
+			// Doesn't seem to match up, sounds get cut off too early:
+			//switch (Source.PlayBackState)
+			//{
+			//    case AudioBufferSourceNodePlayBackState.UNSCHEDULED_STATE:
+			//        return MediaElementState.Closed;
+			//    case AudioBufferSourceNodePlayBackState.SCHEDULED_STATE:
+			//        return MediaElementState.Opening;
+			//    case AudioBufferSourceNodePlayBackState.PLAYING_STATE:
+			//        return MediaElementState.Playing;
+			//    case AudioBufferSourceNodePlayBackState.FINISHED_STATE:
+			//        return MediaElementState.Stopped;
+			//    default:
+			//        return MediaElementState.Closed;
+			//}
 		},
 		setSource: function(stream) {
 			this.$_stream = stream;
@@ -23083,11 +23096,29 @@
 			}
 		},
 		stop: function() {
-			stopSound(this);
+			if (ss.isNullOrUndefined(this.source)) {
+				return;
+			}
+			this.source.noteOff(0);
 		},
 		play: function() {
 			this.$_timePlayed = new Date();
-			playSound(this.$_stream.dataStream._buffer, this);
+			if (ss.isNullOrUndefined($System_Windows_Controls_MediaElement.$_context)) {
+				// dodgy workaround so non-webkit doesn't complain
+				this.setNaturalDuration(999);
+				return;
+			}
+			if (ss.isNullOrUndefined(this.source)) {
+				this.source = $System_Windows_Controls_MediaElement.$_context.createBufferSource();
+			}
+			var gainNode = $System_Windows_Controls_MediaElement.$_context.createGainNode();
+			var buffer = $System_Windows_Controls_MediaElement.$_context.createBuffer(this.$_stream.get_buffer(), false);
+			this.source.buffer = buffer;
+			this.source.connect(gainNode);
+			gainNode.connect($System_Windows_Controls_MediaElement.$_context.destination);
+			this.source.noteOn(0);
+			this.audioGain = gainNode.gain;
+			this.setNaturalDuration(this.source.buffer.duration);
 		}
 	};
 	////////////////////////////////////////////////////////////////////////////////
@@ -23301,7 +23332,6 @@
 	ss.registerClass(global, 'System.Uri', $System_Uri);
 	ss.registerClass(global, 'System.Globalization.CultureInfo', $System_Globalization_CultureInfo);
 	ss.registerClass(global, 'System.IO.BinaryReader', $System_IO_BinaryReader);
-	ss.registerClass(global, 'System.IO.MemoryStream', $System_IO_MemoryStream, null);
 	ss.registerClass(global, 'System.Windows.Duration', $System_Windows_Duration);
 	ss.registerClass(global, 'System.Windows.MessageBox', $System_Windows_MessageBox);
 	ss.registerClass(global, 'System.Windows.RoutedEventArgs', $System_Windows_RoutedEventArgs, ss.EventArgs);
@@ -23492,7 +23522,12 @@
 		$System_Windows_Controls_MediaElement.$_context = new AudioContext();
 	}
 	catch ($t1) {
-		$System_Windows_Controls_MediaElement.$_context = new webkitAudioContext();
+		try {
+			$System_Windows_Controls_MediaElement.$_context = new webkitAudioContext();
+		}
+		catch ($t2) {
+			// does not support
+		}
 	}
 	$quake_crc.crC_INIT_VALUE = 65535;
 	$quake_crc.crC_XOR_VALUE = 0;

@@ -62,6 +62,6 @@
             throw new ImplementedInJavaScript();
         }
 
-        public ArrayBuffer Buffer;
+        public ArrayBuffer Buffer { get; set; }
     }
 }

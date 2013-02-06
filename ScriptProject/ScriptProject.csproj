@@ -272,6 +272,7 @@
     <Compile Include="Missing\NotImplementedException.cs" />
     <Compile Include="Missing\Web\ArrayBuffer.cs" />
     <Compile Include="Missing\Web\ArrayHelpers.cs" />
+    <Compile Include="Missing\Web\AudioBuffer.cs" />
     <Compile Include="Missing\Web\AudioBufferSourceNode.cs" />
     <Compile Include="Missing\Web\AudioGain.cs" />
     <Compile Include="Missing\Web\AudioContext.cs" />

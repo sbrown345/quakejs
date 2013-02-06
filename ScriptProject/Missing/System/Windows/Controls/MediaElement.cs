@@ -1,14 +1,16 @@
 ﻿namespace System.Windows.Controls
 {
     using System.IO;
-    using System.Runtime.CompilerServices;
     using System.Windows.Media;
 
     using Missing;
 
+    using ScriptProject.Missing.Web;
+
     public class MediaElement
     {
-        private static AudioContext _context;
+        // would like to use  AudioContext, not object
+        private static readonly AudioContext _context;
 
         private MemoryStream _stream;
 
@@ -26,25 +28,29 @@
             }
             catch
             {
-                _context = new webkitAudioContext();
+                try
+                {
+                    _context = new webkitAudioContext();
+                }
+                catch
+                {
+                    // does not support
+                }
             }
         }
 
-
         public bool AutoPlay { get; set; }
 
-        public AudioBufferSourceNode BufferSource;
+        public AudioBufferSourceNode Source;
 
         public AudioGain AudioGain;
-
-        private double maxVolume;
 
         public double Balance { get; set; }
 
         public object Tag { get; set; }
 
         public event Action MediaEnded;
-        
+
         public double Volume
         {
             get
@@ -87,8 +93,22 @@
         {
             get
             {
-                // todo: can get playback state from js
                 return MediaElementState.Playing;
+
+                // Doesn't seem to match up, sounds get cut off too early:
+                //switch (Source.PlayBackState)
+                //{
+                //    case AudioBufferSourceNodePlayBackState.UNSCHEDULED_STATE:
+                //        return MediaElementState.Closed;
+                //    case AudioBufferSourceNodePlayBackState.SCHEDULED_STATE:
+                //        return MediaElementState.Opening;
+                //    case AudioBufferSourceNodePlayBackState.PLAYING_STATE:
+                //        return MediaElementState.Playing;
+                //    case AudioBufferSourceNodePlayBackState.FINISHED_STATE:
+                //        return MediaElementState.Stopped;
+                //    default:
+                //        return MediaElementState.Closed;
+                //}
             }
         }
 
@@ -104,24 +124,40 @@
 
         public void Stop()
         {
-            this.Stop2();
-        }
-
-        [InlineCode("stopSound(this);")]
-        public void Stop2()
-        {
+            if (this.Source == null)
+            {
+                return;
+            }
+            this.Source.NoteOff(0);
         }
 
         public void Play()
         {
             this._timePlayed = DateTime.Now;
-            this.Play2();
-        }
 
-        [InlineCode("playSound(this.$_stream.dataStream._buffer, this);")]
-        private void Play2()
-        {
-            throw new ImplementedInJavaScript();
+            if (_context == null)
+            {
+                // dodgy workaround so non-webkit doesn't complain
+                this.SetNaturalDuration(999);
+                return;
+            }
+
+            if (this.Source == null)
+            {
+                this.Source = _context.CreateBufferSource();
+            }
+
+            GainNode gainNode = _context.CreateGainNode();
+
+            var buffer = _context.CreateBuffer(this._stream.Buffer, false);
+            this.Source.Buffer = buffer;
+
+            this.Source.Connect(gainNode);
+            gainNode.Connect(_context.Destination);
+            this.Source.NoteOn(0);
+
+            this.AudioGain = gainNode.Gain;
+            this.SetNaturalDuration(this.Source.Buffer.Duration);
         }
     }
 }

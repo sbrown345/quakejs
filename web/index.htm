@@ -25,7 +25,7 @@
                                 </a>
                                 <ul class="dropdown-menu">
                                     <li><a>
-                                            <input class="pull-right" ng-model="volume" type="range" min="0.0" step=".01" max=".5" title="{{volume}}">
+                                            <input class="pull-right" ng-model="volume" type="range" min="0.0" step=".01" max=".15" title="{{volume}}">
                                             Volume&nbsp; </a>
                                     </li>
                                     <li><a>
@@ -86,7 +86,6 @@
         <script src="Scripts/libs/mersenne.js"> </script>
         <script src="Scripts/libs/Stats.js"> </script>
         <script src="Scripts/missing/window.js"> </script>
-        <script src="Scripts/missing/sound.js"> </script>
         <script src="Scripts/missing/DateTimeExtensions.js"> </script>
         <script src="Scripts/missing/Stream.js"> </script>
         <script src="Scripts/missing/BitConverter.js"> </script>
@@ -181,8 +180,12 @@
                     $scope.volume = 1;
                     
                     global.executeCommands("volume 0.02");
-                    $scope.volume = global.getVariableValue("volume");
-                    $scope.gamma = global.getVariableValue("gamma");
+                    setTimeout(function () {
+                        // wait some frames after
+                        $scope.volume = global.getVariableValue("volume");
+                        $scope.gamma = global.getVariableValue("gamma");
+                        $scope.$digest();
+                    }, 500);
                 }
             }
         </script>
