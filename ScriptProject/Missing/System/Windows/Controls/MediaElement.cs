@@ -8,58 +8,57 @@
 
     public class MediaElement
     {
+        private static AudioContext _context;
+
         private MemoryStream _stream;
+
         private Duration _duration;
+
         private DateTime _timePlayed;
-        private object _tag;
+
         private double _volume;
-        private double _balance;
-        
-        public bool AutoPlay { get; set; }
 
-        public AudioBufferSourceNode BufferSource;
-        public AudioGain AudioGain;
-
-        public object Tag
+        static MediaElement()
         {
-            get
+            try
             {
-                return _tag;
+                _context = new AudioContext();
             }
-            set
+            catch
             {
-                _tag = value;
+                _context = new webkitAudioContext();
             }
         }
 
-        public event Action MediaEnded;// { get; set; }
 
+        public bool AutoPlay { get; set; }
+
+        public AudioBufferSourceNode BufferSource;
+
+        public AudioGain AudioGain;
+
+        private double maxVolume;
+
+        public double Balance { get; set; }
+
+        public object Tag { get; set; }
+
+        public event Action MediaEnded;
+        
         public double Volume
         {
             get
             {
-                return _volume;
+                return this._volume;
             }
             set
             {
-                if (AudioGain != null)
+                if (this.AudioGain != null)
                 {
-                    AudioGain.Value = value;
+                    this.AudioGain.Value = value;
                 }
 
-                _volume = value;
-            }
-        }
-
-        public double Balance
-        {
-            get
-            {
-                return _balance;
-            }
-            set
-            {
-                _balance = value;
+                this._volume = value;
             }
         }
 
@@ -67,20 +66,20 @@
         {
             get
             {
-                return new TimeSpan(DateTime.Now.GetTicks() - _timePlayed.GetTicks());
+                return new TimeSpan(DateTime.Now.GetTicks() - this._timePlayed.GetTicks());
             }
         }
 
         public void SetNaturalDuration(long duration)
         {
-            _duration = new Duration(new TimeSpan(duration));
+            this._duration = new Duration(new TimeSpan(duration));
         }
 
         public Duration NaturalDuration
         {
             get
             {
-                return _duration;
+                return this._duration;
             }
         }
 
@@ -95,17 +94,17 @@
 
         public void SetSource(MemoryStream stream)
         {
-            _stream = stream;
+            this._stream = stream;
 
-            if (AutoPlay)
+            if (this.AutoPlay)
             {
-                Play();
+                this.Play();
             }
         }
 
         public void Stop()
         {
-            Stop2();
+            this.Stop2();
         }
 
         [InlineCode("stopSound(this);")]
@@ -115,8 +114,8 @@
 
         public void Play()
         {
-            _timePlayed = DateTime.Now;
-            Play2();
+            this._timePlayed = DateTime.Now;
+            this.Play2();
         }
 
         [InlineCode("playSound(this.$_stream.dataStream._buffer, this);")]

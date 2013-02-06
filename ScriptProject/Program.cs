@@ -29,22 +29,10 @@
             cmd.Cbuf_AddText(text);
         }
 
-        ///// <summary>
-        ///// Volume from 0 - 255
-        ///// </summary>
-        //public static void ChangeVolume(int volume)
-        //{
-        //    // all channels
-        //    foreach (var channel in sound.channels)
-        //    {
-        //        channel.master_vol = volume;
-        //    }
-
-        //    // sounds currently playing
-        //    foreach (var mediaElement in Page.thePage.parentCanvas.Children)
-        //    {
-        //        mediaElement.Volume = volume;
-        //    }
-        //}
+        public static double GetVariableValue(string name)
+        {
+            var value = cvar_t.Cvar_VariableValue(name);
+            return value;
+        }
     }
 }

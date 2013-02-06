@@ -505,6 +505,9 @@ namespace quake
                 ch.media.Volume = ch.master_vol / 255.0;
                 ch.media.Balance = (ch.rightvol - ch.leftvol) / max;
             }
+
+            var configVolume = cvar_t.Cvar_VariableValue("volume");
+            ch.media.Volume = configVolume;
         }
         
         /*
