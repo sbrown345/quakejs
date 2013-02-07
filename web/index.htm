@@ -56,6 +56,9 @@
                                     <li>
                                         <a href="https://twitter.com/nworbnomis">twitter @nworbnomis</a>
                                     </li>
+                                    <li>
+                                        <a href="https://github.com/sbrown345/quakejs">Github</a>
+                                    </li>
                                 </ul>
                             </li>
                         </ul>
@@ -104,17 +107,6 @@
 
             function LoadCtrl($scope) {
                 $scope.percent = 0;
-                
-                $scope.$watch("volume", function(newValue) {
-                    global.executeCommands("volume " + newValue);
-                    console.log(newValue)
-                });
-
-                $scope.$watch("gamma", function(newValue) {
-                    global.executeCommands("gamma " + newValue);
-                    console.log(newValue)
-                });
-                
 
                 var url = "id1/pak0.pak";
                 var key = "id1pak0pak";
@@ -180,11 +172,22 @@
                     $scope.volume = 1;
                     
                     global.executeCommands("volume 0.02");
+                    
                     setTimeout(function () {
                         // wait some frames after
                         $scope.volume = global.getVariableValue("volume");
                         $scope.gamma = global.getVariableValue("gamma");
                         $scope.$digest();
+                        
+                        $scope.$watch("volume", function (newValue) {
+                            global.executeCommands("volume " + newValue);
+                            console.log(newValue);
+                        });
+
+                        $scope.$watch("gamma", function (newValue) {
+                            global.executeCommands("gamma " + newValue);
+                            console.log(newValue);
+                        });
                     }, 500);
                 }
             }
