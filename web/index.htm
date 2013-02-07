@@ -1,196 +1,219 @@
 ﻿<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
-    <head>
-        <title>QuakeJS</title>
-        <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet" />
-        <link href="bootstrap/css/bootstrap-responsive.min.css" rel="stylesheet" />
-        <link href="styles/main.css" rel="stylesheet" />
-    </head>
-    <body ng-app ng-controller="LoadCtrl">
-        <div class="navbar navbar-inverse navbar-fixed-top">
-            <div class="navbar-inner">
-                <div class="container">
-                    <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                    </a>
-                    <a class="brand">QuakeJS</a>
-                    <div class="nav-collapse collapse">
-                        <ul class="nav">
-                            <li class="active"><a href="#" id="fullscreen">Fullscreen</a></li>
-                            <li class="dropdown">
-                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Settings <b class="caret">
-                                                                                                    </b>
-                                </a>
-                                <ul class="dropdown-menu">
-                                    <li><a>
-                                            <input class="pull-right" ng-model="volume" type="range" min="0.0" step=".01" max=".15" title="{{volume}}">
-                                            Volume&nbsp; </a>
-                                    </li>
-                                    <li><a>
-                                            <input class="pull-right" id="gamma" ng-model="gamma" type="range" min="0.5" step=".01" max="1"  title="{{gamma}}">
-                                            Gamma&nbsp; </a>
-                                    </li>
-                                </ul>
+<head>
+    <title>QuakeJS</title>
+    <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="bootstrap/css/bootstrap-responsive.min.css" rel="stylesheet" />
+    <link href="styles/main.css" rel="stylesheet" />
+</head>
+<body ng-app ng-controller="LoadCtrl">
+    <div class="navbar navbar-inverse navbar-fixed-top">
+        <div class="navbar-inner">
+            <div class="container">
+                <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </a>
+                <a class="brand">QuakeJS</a>
+                <div class="nav-collapse collapse">
+                    <ul class="nav">
+                        <li class="active"><a href="#" id="fullscreen">Fullscreen</a></li>
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">Settings <b class="caret">
+                            </b>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a>
+                                    <input class="pull-right" ng-model="volume" type="range" min="0.0" step=".01" max=".15"
+                                        title="{{volume}}">
+                                    Volume&nbsp; </a>
+                                </li>
+                                <li><a>
+                                    <input class="pull-right" id="gamma" ng-model="gamma" type="range" min="0.5" step=".01"
+                                        max="1" title="{{gamma}}">
+                                    Gamma&nbsp; </a>
+                                </li>
+                            </ul>
 
-                            </li>
-                            <li class="dropdown">
-                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Links
+                        </li>
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">Resolution
                                     <b class="caret"></b>
-                                </a>
-                                <ul class="dropdown-menu">
-                                    <li>
-                                        <a href="http://www.innoveware.com/quakelight.html" rel="tooltip" title="Ported from this Silverlight version">
-                                            QuakeLight</a>
-                                    </li>
-                                    <li>
-                                        <a href="http://www.saltarelle-compiler.com/" rel="tooltip" title="C# to JavaScript compiler">
-                                            Saltarelle</a>
-                                    </li>
-                                    <li>
-                                        <a href="http://www.idsoftware.com/games/quake/quake" rel="tooltip" title="Original game">
-                                            id software</a>
-                                    </li>
-                                    <li class="divider"></li>
-                                    <li>
-                                        <a href="https://twitter.com/nworbnomis">twitter @nworbnomis</a>
-                                    </li>
-                                    <li>
-                                        <a href="https://github.com/sbrown345/quakejs">Github</a>
-                                    </li>
-                                </ul>
-                            </li>
-                        </ul>
-                        <div class="stats pull-right">
-                        </div>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li ng-class="{active: resolution ==  res}" ng-repeat="res in resolutions">
+                                    <a ng-click="setResolution(res)">{{res.name}}</a>
+                                </li>
+                            </ul>
+                        </li>
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">Links
+                                    <b class="caret"></b>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a href="http://www.innoveware.com/quakelight.html" rel="tooltip" title="Ported from this Silverlight version">
+                                        QuakeLight</a>
+                                </li>
+                                <li>
+                                    <a href="http://www.saltarelle-compiler.com/" rel="tooltip" title="C# to JavaScript compiler">
+                                        Saltarelle</a>
+                                </li>
+                                <li>
+                                    <a href="http://www.idsoftware.com/games/quake/quake" rel="tooltip" title="Original game">
+                                        id software</a>
+                                </li>
+                                <li class="divider"></li>
+                                <li>
+                                    <a href="https://twitter.com/nworbnomis">twitter @nworbnomis</a>
+                                </li>
+                                <li>
+                                    <a href="https://github.com/sbrown345/quakejs">Github</a>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                    <div class="stats pull-right">
                     </div>
-                    <!--/.nav-collapse -->
                 </div>
+                <!--/.nav-collapse -->
             </div>
         </div>
+    </div>
+    <div id="gameArea">
+        <div class="progress progress-striped active" style="margin: 130px 20px;" ng-show="percent < 100">
+            <div class="bar" ng-style="{width: percent + '%', minWidth: '40px'}">
+                {{percent}}%
+            </div>
+        </div>
+        <canvas id="gameCanvas" width="320" height="240" ng-show="percent == 100"></canvas>
+    </div>
+    <script src="scripts/libs/jquery-1.9.0.js"> </script>
+    <script src="bootstrap/js/bootstrap.js"> </script>
+    <script src="scripts/libs/DataStream.js"> </script>
+    <script src="scripts/libs/IndexedDBShim.min.js"> </script>
+    <script src="scripts/libs/jquery.indexeddb.js"> </script>
+    <script src="scripts/libs/xhr2lib.js"> </script>
+    <script src="scripts/libs/pouchdb-nightly.js"> </script>
+    <script src="Scripts/libs/mscorlib.js"> </script>
+    <script src="Scripts/libs/mersenne.js"> </script>
+    <script src="Scripts/libs/Stats.js"> </script>
+    <script src="Scripts/missing/window.js"> </script>
+    <script src="Scripts/missing/DateTimeExtensions.js"> </script>
+    <script src="Scripts/missing/Stream.js"> </script>
+    <script src="Scripts/missing/BitConverter.js"> </script>
+    <script src="Scripts/fullscreen.js"> </script>
+    <script src="Scripts/controls.js"> </script>
+    <script src="Scripts/ScriptProject.js"> </script>
+    <script src="scripts/libs/angular.min.js"> </script>
+    <script>
+        $xhr.defaultError(function (st, s) {
+            console.log("xhr: ", this); // error handler is bound to the xhr object
+            console.log("status text: ", st); // status text e.g. 'Not Found'
+            console.log("status: ", s); // status e.g.404
+        });
 
-        <div id="gameArea">
-            <div class="progress progress-striped active" style="margin: 130px 20px;" ng-show="percent < 100">
-                <div class="bar" ng-style="{width: percent + '%', minWidth: '40px'}">
-                    {{percent}}%
-                </div>
-            </div>
-            <canvas id="gameCanvas" width="640" height="480" ng-show="percent == 100"></canvas>
-        </div>
-        <script src="scripts/libs/jquery-1.9.0.js"> </script>
-        <script src="bootstrap/js/bootstrap.js"> </script>
-        <script src="scripts/libs/DataStream.js"> </script>
-        <script src="scripts/libs/IndexedDBShim.min.js"> </script>
-        <script src="scripts/libs/jquery.indexeddb.js"> </script>
-        <script src="scripts/libs/xhr2lib.js"> </script>
-        <script src="scripts/libs/pouchdb-nightly.js"> </script>
-        <script src="Scripts/libs/mscorlib.js"> </script>
-        <script src="Scripts/libs/mersenne.js"> </script>
-        <script src="Scripts/libs/Stats.js"> </script>
-        <script src="Scripts/missing/window.js"> </script>
-        <script src="Scripts/missing/DateTimeExtensions.js"> </script>
-        <script src="Scripts/missing/Stream.js"> </script>
-        <script src="Scripts/missing/BitConverter.js"> </script>
-        <script src="Scripts/fullscreen.js"> </script>
-        <script src="Scripts/controls.js"> </script>
-        <script src="Scripts/ScriptProject.js"> </script>
-        <script src="scripts/libs/angular.min.js"> </script>
-        <script>
-            $xhr.defaultError(function(st, s) {
-                console.log("xhr: ", this); // error handler is bound to the xhr object
-                console.log("status text: ", st); // status text e.g. 'Not Found'
-                console.log("status: ", s); // status e.g.404
+        $('[rel=tooltip]').tooltip({ placement: "right" });
+
+        function LoadCtrl($scope) {
+            $scope.percent = 0;
+
+            $scope.resolutions = [
+                { name: "320x240", w: 320, h: 240 },
+                { name: "640x480", w: 640, h: 480 },
+                { name: "854x480 (16:9)", w: 854, h: 480 },
+                { name: "1280x800 (16:10)", w: 1280, h: 800 }
+            ];
+            $scope.resolution = $scope.resolutions[0];
+            $scope.setResolution = function (newRes) {
+                $scope.resolution = newRes;
+                global.vidMode(newRes.w, newRes.h);
+            };
+
+            var url = "id1/pak0.pak";
+            var key = "id1pak0pak";
+            var dbName = 'idb://quakejs';
+            // Pouch.destroy('idb://quakejs')
+
+            Pouch(dbName, function (err, db) {
+                db.get(key, {}, function (err, response) {
+                    console.log("Got db reponse", response);
+                    if (response) {
+                        if (new Uint8Array(response.data).length == 0) {
+                            // data is missing
+                            Pouch.destroy(dbName, function () {
+                                window.location.href = window.location.href;
+                            });
+                            return;
+                        }
+
+                        console.log("Already got file");
+                        global.setResourceStream(url, response.data);
+                        loadGame();
+                    } else {
+                        console.log("Request file via ajax");
+                        loadFile(function (data) {
+                            db.put({
+                                _id: key,
+                                url: url,
+                                data: data
+                            });
+
+                            global.setResourceStream(url, data);
+                            loadGame();
+                        });
+                    }
+                });
             });
 
-            $('[rel=tooltip]').tooltip({ placement: "right" });
-
-            function LoadCtrl($scope) {
-                $scope.percent = 0;
-
-                var url = "id1/pak0.pak";
-                var key = "id1pak0pak";
-                var dbName = 'idb://quakejs';
-                // Pouch.destroy('idb://quakejs')
-
-                Pouch(dbName, function(err, db) {
-                    db.get(key, {}, function(err, response) {
-                        console.log("Got db reponse", response);
-                        if (response) {
-                            if (new Uint8Array(response.data).length == 0) {
-                                // data is missing
-                                Pouch.destroy(dbName, function() {
-                                    window.location.href = window.location.href;
-                                });
-                                return;
-                            }
-
-                            console.log("Already got file");
-                            global.setResourceStream(url, response.data);
-                            loadGame();
-                        } else {
-                            console.log("Request file via ajax");
-                            loadFile(function(data) {
-                                db.put({
-                                    _id: key,
-                                    url: url,
-                                    data: data
-                                });
-
-                                global.setResourceStream(url, data);
-                                loadGame();
-                            });
+            function loadFile(success) {
+                $xhr.ajax({
+                    url: url,
+                    type: "get",
+                    timeout: 5000,
+                    progress: function (pc) {
+                        $scope.percent = pc;
+                    },
+                    success: function (data) {
+                        if (!data) {
+                            throw new Error("Invalid data");
                         }
-                    });
+                        success(data);
+                    },
+                    dataType: "arraybuffer"
                 });
-
-                function loadFile(success) {
-                    $xhr.ajax({
-                        url: url,
-                        type: "get",
-                        timeout: 5000,
-                        progress: function(pc) {
-                            $scope.percent = pc;
-                        },
-                        success: function(data) {
-                            if (!data) {
-                                throw new Error("Invalid data");
-                            }
-                            success(data);
-                        },
-                        dataType: "arraybuffer"
-                    });
-                }
-
-                function loadGame() {
-                    $scope.percent = 100;
-                    console.log("Got data, starting game...");
-                    initFullScreen();
-                    initControls();
-                    $scope.$digest();
-                    global.initGame();
-                    $scope.volume = 1;
-                    
-                    global.executeCommands("volume 0.02");
-                    
-                    setTimeout(function () {
-                        // wait some frames after
-                        $scope.volume = global.getVariableValue("volume");
-                        $scope.gamma = global.getVariableValue("gamma");
-                        $scope.$digest();
-                        
-                        $scope.$watch("volume", function (newValue) {
-                            global.executeCommands("volume " + newValue);
-                            console.log(newValue);
-                        });
-
-                        $scope.$watch("gamma", function (newValue) {
-                            global.executeCommands("gamma " + newValue);
-                            console.log(newValue);
-                        });
-                    }, 500);
-                }
             }
-        </script>
-    </body>
+
+            function loadGame() {
+                $scope.percent = 100;
+                console.log("Got data, starting game...");
+                initFullScreen();
+                initControls();
+                $scope.$digest();
+                global.initGame();
+                $scope.volume = 1;
+
+                global.executeCommands("volume 0.02");
+
+                setTimeout(function () {
+                    // wait some frames after
+                    $scope.volume = global.getVariableValue("volume");
+                    $scope.gamma = global.getVariableValue("gamma");
+                    $scope.$digest();
+
+                    $scope.$watch("volume", function (newValue) {
+                        global.executeCommands("volume " + newValue);
+                        console.log(newValue);
+                    });
+
+                    $scope.$watch("gamma", function (newValue) {
+                        global.executeCommands("gamma " + newValue);
+                        console.log(newValue);
+                    });
+                }, 500);
+            }
+        }
+    </script>
+</body>
 </html>

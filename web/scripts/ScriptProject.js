@@ -36,6 +36,15 @@
 		var value = $quake_cvar_t.cvar_VariableValue(name);
 		return value;
 	};
+	global.vidMode = function(width, height) {
+		$InnoveWare_Page.thePage.get_gameCanvas().width = width;
+		$InnoveWare_Page.thePage.get_gameCanvas().height = height;
+		$quake_vid.viD_Init($quake_host.host_basepal);
+		//vidrestart?
+		//quake_spasm - vid_restart
+		//ExecuteCommands("vid_config_x " + width);
+		//ExecuteCommands("vid_config_y " + height);
+	};
 	////////////////////////////////////////////////////////////////////////////////
 	// Window
 	var $Window = function() {
@@ -21987,20 +21996,6 @@
 	// quake.vid
 	var $quake_vid = function() {
 		this.$vid_testendtime = 0;
-		this.$vid_wait = new $quake_cvar_t('vid_wait', '0');
-		this.$vid_nopageflip = new $quake_cvar_t.$ctor1('vid_nopageflip', '0', true);
-		this.$_vid_wait_override = new $quake_cvar_t.$ctor1('_vid_wait_override', '0', true);
-		this.$_vid_default_mode = new $quake_cvar_t.$ctor1('_vid_default_mode', '0', true);
-		this.$_vid_default_mode_win = new $quake_cvar_t.$ctor1('_vid_default_mode_win', '1', true);
-		this.$vid_config_x = new $quake_cvar_t.$ctor1('vid_config_x', '800', true);
-		this.$vid_config_y = new $quake_cvar_t.$ctor1('vid_config_y', '600', true);
-		this.$vid_stretch_by_2 = new $quake_cvar_t.$ctor1('vid_stretch_by_2', '1', true);
-		this.$_windowed_mouse = new $quake_cvar_t.$ctor1('_windowed_mouse', '0', true);
-		this.$vid_fullscreen_mode = new $quake_cvar_t.$ctor1('vid_fullscreen_mode', '3', true);
-		this.$vid_windowed_mode = new $quake_cvar_t.$ctor1('vid_windowed_mode', '0', true);
-		this.$block_switch = new $quake_cvar_t.$ctor1('block_switch', '0', true);
-		this.$vid_window_x = new $quake_cvar_t.$ctor1('vid_window_x', '0', true);
-		this.$vid_window_y = new $quake_cvar_t.$ctor1('vid_window_y', '0', true);
 		this.$d_con_indirect = 0;
 	};
 	$quake_vid.prototype = {
@@ -22018,6 +22013,9 @@
 		}
 	};
 	$quake_vid.viD_Init = function(palette) {
+		$quake_cvar_t.cvar_RegisterVariable($quake_vid.$vid_mode);
+		$quake_cvar_t.cvar_RegisterVariable($quake_vid.$vid_config_x);
+		$quake_cvar_t.cvar_RegisterVariable($quake_vid.$vid_config_y);
 		$quake_vid.$vid_testingmode = 0;
 		$quake_vid.$vid_modenum = ss.Int32.trunc($quake_vid.$vid_mode.value);
 		$quake_vid.$viD_SetMode($quake_vid.$vid_modenum, palette);
@@ -23596,6 +23594,20 @@
 	$quake_vid.$vid_testingmode = 0;
 	$quake_vid.$vid_realmode = 0;
 	$quake_vid.$vid_mode = new $quake_cvar_t.$ctor1('vid_mode', '0', false);
+	$quake_vid.$vid_wait = new $quake_cvar_t('vid_wait', '0');
+	$quake_vid.$vid_nopageflip = new $quake_cvar_t.$ctor1('vid_nopageflip', '0', true);
+	$quake_vid.$_vid_wait_override = new $quake_cvar_t.$ctor1('_vid_wait_override', '0', true);
+	$quake_vid.$_vid_default_mode = new $quake_cvar_t.$ctor1('_vid_default_mode', '0', true);
+	$quake_vid.$_vid_default_mode_win = new $quake_cvar_t.$ctor1('_vid_default_mode_win', '1', true);
+	$quake_vid.$vid_config_x = new $quake_cvar_t.$ctor1('vid_config_x', '800', true);
+	$quake_vid.$vid_config_y = new $quake_cvar_t.$ctor1('vid_config_y', '600', true);
+	$quake_vid.$vid_stretch_by_2 = new $quake_cvar_t.$ctor1('vid_stretch_by_2', '1', true);
+	$quake_vid.$_windowed_mouse = new $quake_cvar_t.$ctor1('_windowed_mouse', '0', true);
+	$quake_vid.$vid_fullscreen_mode = new $quake_cvar_t.$ctor1('vid_fullscreen_mode', '3', true);
+	$quake_vid.$vid_windowed_mode = new $quake_cvar_t.$ctor1('vid_windowed_mode', '0', true);
+	$quake_vid.$block_switch = new $quake_cvar_t.$ctor1('block_switch', '0', true);
+	$quake_vid.$vid_window_x = new $quake_cvar_t.$ctor1('vid_window_x', '0', true);
+	$quake_vid.$vid_window_y = new $quake_cvar_t.$ctor1('vid_window_y', '0', true);
 	$quake_vid.$numvidmodes = 1;
 	$quake_vid.$firstupdate = 1;
 	$quake_vid.$vid_current_palette = new Uint8Array(768);

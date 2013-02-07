@@ -34,5 +34,12 @@
             var value = cvar_t.Cvar_VariableValue(name);
             return value;
         }
+
+        public static void VidMode(int width, int height)
+        {
+            Page.thePage.gameCanvas.Width = width;
+            Page.thePage.gameCanvas.Height = height;
+            vid.VID_Init(host.host_basepal);
+        }
     }
 }

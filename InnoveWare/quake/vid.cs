@@ -69,21 +69,21 @@ namespace quake
         static int			vid_testingmode, vid_realmode;
         double		vid_testendtime;
 
-        static cvar_t		vid_mode = new cvar_t("vid_mode","0", false);
-        cvar_t		vid_wait = new cvar_t("vid_wait","0");
-        cvar_t		vid_nopageflip = new cvar_t("vid_nopageflip","0", true);
-        cvar_t		_vid_wait_override = new cvar_t("_vid_wait_override", "0", true);
-        cvar_t		_vid_default_mode = new cvar_t("_vid_default_mode","0", true);
-        cvar_t		_vid_default_mode_win = new cvar_t("_vid_default_mode_win","1", true);
-        cvar_t		vid_config_x = new cvar_t("vid_config_x","800", true);
-        cvar_t		vid_config_y = new cvar_t("vid_config_y","600", true);
-        cvar_t		vid_stretch_by_2 = new cvar_t("vid_stretch_by_2","1", true);
-        cvar_t		_windowed_mouse = new cvar_t("_windowed_mouse","0", true);
-        cvar_t		vid_fullscreen_mode = new cvar_t("vid_fullscreen_mode","3", true);
-        cvar_t		vid_windowed_mode = new cvar_t("vid_windowed_mode","0", true);
-        cvar_t		block_switch = new cvar_t("block_switch","0", true);
-        cvar_t		vid_window_x = new cvar_t("vid_window_x", "0", true);
-        cvar_t		vid_window_y = new cvar_t("vid_window_y", "0", true);
+        static cvar_t vid_mode = new cvar_t("vid_mode","0", false);
+        static cvar_t vid_wait = new cvar_t("vid_wait", "0");
+        static cvar_t vid_nopageflip = new cvar_t("vid_nopageflip", "0", true);
+        static cvar_t _vid_wait_override = new cvar_t("_vid_wait_override", "0", true);
+        static cvar_t _vid_default_mode = new cvar_t("_vid_default_mode", "0", true);
+        static cvar_t _vid_default_mode_win = new cvar_t("_vid_default_mode_win", "1", true);
+        static cvar_t vid_config_x = new cvar_t("vid_config_x", "800", true);
+        static cvar_t vid_config_y = new cvar_t("vid_config_y", "600", true);
+        static cvar_t vid_stretch_by_2 = new cvar_t("vid_stretch_by_2", "1", true);
+        static cvar_t _windowed_mouse = new cvar_t("_windowed_mouse", "0", true);
+        static cvar_t vid_fullscreen_mode = new cvar_t("vid_fullscreen_mode", "3", true);
+        static cvar_t vid_windowed_mode = new cvar_t("vid_windowed_mode", "0", true);
+        static cvar_t block_switch = new cvar_t("block_switch", "0", true);
+        static cvar_t vid_window_x = new cvar_t("vid_window_x", "0", true);
+        static cvar_t vid_window_y = new cvar_t("vid_window_y", "0", true);
 
         int	d_con_indirect = 0;
 
@@ -102,6 +102,8 @@ namespace quake
         */
         public static void VID_Init(Uint8Array palette)
         {
+            cvar_t.Cvar_RegisterVariable(vid_mode);
+
 	        vid_testingmode = 0;
 
 	        vid_modenum = (int)vid_mode.value;
