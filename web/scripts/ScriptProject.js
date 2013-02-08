@@ -40,10 +40,6 @@
 		$InnoveWare_Page.thePage.get_gameCanvas().width = width;
 		$InnoveWare_Page.thePage.get_gameCanvas().height = height;
 		$quake_vid.viD_Init($quake_host.host_basepal);
-		//vidrestart?
-		//quake_spasm - vid_restart
-		//ExecuteCommands("vid_config_x " + width);
-		//ExecuteCommands("vid_config_y " + height);
 	};
 	////////////////////////////////////////////////////////////////////////////////
 	// Window
@@ -6772,7 +6768,6 @@
 		},
 		$host_Shutdown: function() {
 			if ($quake_host.$isdown) {
-				ss.Debug.writeln('recursive shutdown');
 				return;
 			}
 			$quake_host.$isdown = true;
@@ -21861,7 +21856,6 @@
 		$sys_DebugNumber: function(y, val) {
 		},
 		$sys_Warn: function(warning) {
-			ss.Debug.writeln('Warning: ' + warning);
 		},
 		$sys_FileTime: function(path) {
 			return -1;
@@ -21890,7 +21884,6 @@
 	$quake_sys_linux.sys_Printf = function(text) {
 		$quake_sys_linux.$printbuffer += text;
 		if ($quake_sys_linux.$printbuffer.charCodeAt($quake_sys_linux.$printbuffer.length - 1) === 10) {
-			ss.Debug.writeln($quake_sys_linux.$printbuffer.substr(0, $quake_sys_linux.$printbuffer.length - 1));
 			$quake_sys_linux.$printbuffer = '';
 		}
 	};
@@ -21964,7 +21957,6 @@
 			$quake_sys_linux.$nostdout = 1;
 		}
 		else {
-			ss.Debug.writeln('Linux Quake -- Version ' + $quake_quakedef.linuX_VERSION);
 		}
 		//cmd.Cbuf_InsertText("menu_main\n");
 		return 0;
@@ -22014,8 +22006,6 @@
 	};
 	$quake_vid.viD_Init = function(palette) {
 		$quake_cvar_t.cvar_RegisterVariable($quake_vid.$vid_mode);
-		$quake_cvar_t.cvar_RegisterVariable($quake_vid.$vid_config_x);
-		$quake_cvar_t.cvar_RegisterVariable($quake_vid.$vid_config_y);
 		$quake_vid.$vid_testingmode = 0;
 		$quake_vid.$vid_modenum = ss.Int32.trunc($quake_vid.$vid_mode.value);
 		$quake_vid.$viD_SetMode($quake_vid.$vid_modenum, palette);

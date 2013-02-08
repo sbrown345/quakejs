@@ -15,7 +15,7 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </a>
-                <a class="brand">QuakeJS</a>
+                <a class="brand">QuakeJS - Requires Chrome</a>
                 <div class="nav-collapse collapse">
                     <ul class="nav">
                         <li class="active"><a href="#" id="fullscreen">Fullscreen</a></li>
@@ -95,7 +95,7 @@
     <script src="scripts/libs/IndexedDBShim.min.js"> </script>
     <script src="scripts/libs/jquery.indexeddb.js"> </script>
     <script src="scripts/libs/xhr2lib.js"> </script>
-    <script src="scripts/libs/pouchdb-nightly.js"> </script>
+    <script src="scripts/libs/db.js"> </script>
     <script src="scripts/libs/mscorlib.js"> </script>
     <script src="scripts/libs/mersenne.js"> </script>
     <script src="scripts/libs/Stats.js"> </script>
@@ -130,59 +130,70 @@
                 $scope.resolution = newRes;
                 global.vidMode(newRes.w, newRes.h);
             };
+            // Load files before starting app
+            var dbServer;
+            console.log('Loading');
+            
+            // open indexed db
+            db.open({
+                server: 'quakejs',
+                version: 1,
+                schema: {
+                    files: {
+                        key: { keyPath: 'id', autoIncrement: true }
+                    },
+                    indexes: {
+                        url: {},
+                        answer: { unique: true }
+                    }
+                }
+            }).done(function (s) {
+                dbServer = s;
+                loadStream("id1/pak0.pak", loadGame);
+            });
 
-            var url = "id1/pak0.pak";
-            var key = "id1pak0pak";
-            var dbName = 'idb://quakejs';
-            // Pouch.destroy('idb://quakejs')
+            // try load stream from db
+            function loadStream(url, successCallback) {
+                if (!dbServer.files) {
+                    // firefox doesn't seem to have .files
+                    downloadFiles(url, successCallback);
+                    return;
+                }
 
-            Pouch(dbName, function (err, db) {
-                db.get(key, {}, function (err, response) {
-                    console.log("Got db reponse", response);
-                    if (response) {
-                        if (new Uint8Array(response.data).length == 0) {
-                            // data is missing
-                            Pouch.destroy(dbName, function () {
-                                window.location.href = window.location.href;
-                            });
+                // if file stored add that to the resources and callback, else download the files
+                dbServer.files.query()
+                    .filter('url', url)
+                    .execute()
+                    .done(function (results) {
+                        console.log(results); // Get file from Indexed DB if its been stored already
+                        if (results.length) {
+                            global.setResourceStream(url, results[0].data);
+                            successCallback();
                             return;
                         }
 
-                        console.log("Already got file");
-                        global.setResourceStream(url, response.data);
-                        loadGame();
-                    } else {
-                        console.log("Request file via ajax");
-                        loadFile(function (data) {
-                            db.put({
-                                _id: key,
-                                url: url,
-                                data: data
-                            });
+                        downloadFiles(url, successCallback);
+                    });
+            }
 
-                            global.setResourceStream(url, data);
-                            loadGame();
-                        });
-                    }
-                });
-            });
-
-            function loadFile(success) {
-                $xhr.ajax({
-                    url: url,
-                    type: "get",
-                    timeout: 5000,
-                    progress: function (pc) {
-                        $scope.percent = pc;
-                    },
-                    success: function (data) {
-                        if (!data) {
-                            throw new Error("Invalid data");
+            function downloadFiles(url, successCallback) {
+                // Else load via ajax and store in Indexed DB
+                var xhr = new XMLHttpRequest();
+                xhr.open("GET", url, true);
+                xhr.responseType = "arraybuffer";
+                xhr.onprogress = function (e) {
+                    $scope.percent = ((e.loaded / e.total) * 100).toFixed(1);
+                };
+                xhr.onload = function () {
+                    if (this.status == 200) {
+                        if (dbServer.files) {
+                            dbServer.files.add({ url: url, data: xhr.response });
                         }
-                        success(data);
-                    },
-                    dataType: "arraybuffer"
-                });
+                        global.setResourceStream(url, xhr.response);
+                        successCallback();
+                    }
+                };
+                xhr.send();
             }
 
             function loadGame() {
