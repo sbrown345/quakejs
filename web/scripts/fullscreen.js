@@ -35,7 +35,7 @@
 
     window.addEventListener('resize', resizeGame, false);
     window.addEventListener('orientationchange', resizeGame, false);
-    setTimeout(resizeGame, 250); // todo! useful when vid mode changed
+    setInterval(resizeGame, 250); // todo! useful when vid mode changed
     resizeGame();
 
     function resizeGame() {
