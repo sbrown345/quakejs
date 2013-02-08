@@ -94,7 +94,6 @@
     <script src="scripts/libs/DataStream.js"> </script>
     <script src="scripts/libs/IndexedDBShim.min.js"> </script>
     <script src="scripts/libs/jquery.indexeddb.js"> </script>
-    <script src="scripts/libs/xhr2lib.js"> </script>
     <script src="scripts/libs/db.js"> </script>
     <script src="scripts/libs/mscorlib.js"> </script>
     <script src="scripts/libs/mersenne.js"> </script>
@@ -108,12 +107,6 @@
     <script src="scripts/ScriptProject.js"> </script>
     <script src="scripts/libs/angular.min.js"> </script>
     <script>
-        $xhr.defaultError(function (st, s) {
-            console.log("xhr: ", this); // error handler is bound to the xhr object
-            console.log("status text: ", st); // status text e.g. 'Not Found'
-            console.log("status: ", s); // status e.g.404
-        });
-
         $('[rel=tooltip]').tooltip({ placement: "right" });
 
         function LoadCtrl($scope) {
@@ -182,7 +175,8 @@
                 xhr.open("GET", url, true);
                 xhr.responseType = "arraybuffer";
                 xhr.onprogress = function (e) {
-                    $scope.percent = ((e.loaded / e.total) * 100).toFixed(1);
+                    $scope.percent = parseInt((e.loaded / e.total) * 100);
+                    $scope.$digest();
                 };
                 xhr.onload = function () {
                     if (this.status == 200) {
