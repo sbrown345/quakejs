@@ -23,6 +23,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 namespace quake
 {
+    using System.Diagnostics;
+
     public partial class prog
     {
         static void RETURN_EDICT(edict_t e) { pr_globals_write(OFS_RETURN, EDICT_TO_PROG(e)); }
@@ -125,6 +127,7 @@ namespace quake
             e = G_EDICT(OFS_PARM0);
             org = G_VECTOR(OFS_PARM1);
             mathlib.VectorCopy(org, e.v.origin);
+            //Debug.WriteLine("PF_setorigin {0} {1} {2}", org[0], org[1], org[2]);
             //SV_LinkEdict(e, false);
         }
 
@@ -258,7 +261,11 @@ namespace quake
 
 	        mod = server.sv.models[ (int)e.v.modelindex];  // Mod_ForName (m, true);
         	
-/*	        if (mod != null)
+	        if (mod != null)
+		        SetMinMaxSize (e, mod.mins, mod.maxs, true);
+	        else
+                SetMinMaxSize(e, mathlib.vec3_origin, mathlib.vec3_origin, true);
+	        /*if (mod != null)
 		        SetMinMaxSize (e, mod->mins, mod->maxs, true);
 	        else
 		        SetMinMaxSize (e, vec3_origin, vec3_origin, true);*/
