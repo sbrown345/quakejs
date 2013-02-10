@@ -22,6 +22,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 namespace quake
 {
+    using System.Diagnostics;
+
     public partial class prog
     {
         public
@@ -146,39 +148,43 @@ namespace quake
         PR_PrintStatement
         =================
         */
-        static void PR_PrintStatement(dstatement_t s)
+
+        private static int prNum = 0;
+
+        private static void PR_PrintStatement(dstatement_t s)
         {
-	        int		i;
-        	
-	        if (s.op < pr_opnames.Length)
-	        {
-		        console.Con_Printf (pr_opnames[s.op] + " ");
-		        i = pr_opnames[s.op].Length;
-		        for ( ; i<10 ; i++)
-			        console.Con_Printf (" ");
-	        }
-        		
-	        if (s.op == (ushort)opcode_t.OP_IF || s.op == (ushort)opcode_t.OP_IFNOT)
-		        console.Con_Printf (PR_GlobalString(s.a) + "branch " + s.b);
-	        else if (s.op == (ushort)opcode_t.OP_GOTO)
-	        {
-		        console.Con_Printf ("branch " + s.a);
-	        }
-	        else if ( (uint)(s.op - (ushort)opcode_t.OP_STORE_F) < 6)
-	        {
-		        console.Con_Printf (PR_GlobalString(s.a));
-                console.Con_Printf(PR_GlobalStringNoContents(s.b));
-	        }
-	        else
-	        {
-		        if (s.a != 0)
+            int i;
+            if (prNum >= 640)
+            {
+                PR_StackTraceStr();
+                console.Con_Printf((prNum) + " ");
+
+                if (s.op < pr_opnames.Length)
+                {
+                    console.Con_Printf(pr_opnames[s.op] + " ");
+                    i = pr_opnames[s.op].Length;
+                    for (; i < 10; i++) console.Con_Printf(" ");
+                }
+
+                if (s.op == (ushort)opcode_t.OP_IF || s.op == (ushort)opcode_t.OP_IFNOT) 
+                    console.Con_Printf(PR_GlobalString(s.a) + "branch " + s.b);
+                else if (s.op == (ushort)opcode_t.OP_GOTO)
+                {
+                    console.Con_Printf("branch " + s.a);
+                }
+                else if ((uint)(s.op - (ushort)opcode_t.OP_STORE_F) < 6)
+                {
                     console.Con_Printf(PR_GlobalString(s.a));
-		        if (s.b != 0)
-                    console.Con_Printf(PR_GlobalString(s.b));
-		        if (s.c != 0)
-                    console.Con_Printf(PR_GlobalStringNoContents(s.c));
-	        }
-	        console.Con_Printf ("\n");
+                    console.Con_Printf(PR_GlobalStringNoContents(s.b));
+                }
+                else
+                {
+                    if (s.a != 0) console.Con_Printf(PR_GlobalString(s.a));
+                    if (s.b != 0) console.Con_Printf(PR_GlobalString(s.b));
+                    if (s.c != 0) console.Con_Printf(PR_GlobalStringNoContents(s.c));
+                }
+                console.Con_Printf("\n");
+            }
         }
 
         /*
@@ -209,6 +215,31 @@ namespace quake
 		        else
                     console.Con_Printf(pr_string(f.s_file) + " : " + pr_string(f.s_name) + "\n");
 	        }
+        }
+
+        private static void PR_StackTraceStr()
+        {
+            dfunction_t f;
+            int i;
+            if (pr_depth == 0)
+            {
+                console.Con_Printf("<NO STACK>");
+                Debug.WriteLine("<NO STACK>");
+            }
+
+            pr_stack[pr_depth].f = pr_xfunction;
+            for (i = pr_depth; i >= 0; i--)
+            {
+                f = pr_stack[i].f;
+
+                if (f == null)
+                {
+                    Debug.WriteLine("<NO FUNCTION>");
+                }
+                else 
+                    Debug.WriteLine(pr_string(f.s_file) + " : " + pr_string(f.s_name));
+            }
+            return;
         }
 
         /*
@@ -499,197 +530,250 @@ namespace quake
         PR_ExecuteProgram
         ====================
         */
-        public static void PR_ExecuteProgram (dfunction_t fnum)
+
+        public static void PR_ExecuteProgram(dfunction_t fnum)
         {
-/*	        eval_t	*a, *b, *c;*/
-	        int			    s;
-	        dstatement_t    st;
-            dfunction_t     newf;
-	        /*dfunction_t	*f;*/
-	        int		        runaway;
-	        int		        i;
-	        edict_t	        ed;
-	        int		        exitdepth;
-	        //eval_t	*ptr;
+            /*	        eval_t	*a, *b, *c;*/
+            int s;
+            dstatement_t st;
+            dfunction_t newf;
+            /*dfunction_t	*f;*/
+            int runaway;
+            int i;
+            edict_t ed;
+            int exitdepth;
+            //eval_t	*ptr;
 
-	        /*if (!fnum || fnum >= progs.numfunctions)
-	        {
-		        if (pr_global_struct.self)
-			        ED_Print (PROG_TO_EDICT(pr_global_struct.self));
-		        Host_Error ("PR_ExecuteProgram: NULL function");
-	        }
+            /*if (!fnum || fnum >= progs.numfunctions)
+            {
+                if (pr_global_struct.self)
+                    ED_Print (PROG_TO_EDICT(pr_global_struct.self));
+                Host_Error ("PR_ExecuteProgram: NULL function");
+            }
         	
-	        f = &pr_functions[fnum];*/
+            f = &pr_functions[fnum];*/
 
-	        runaway = 100000;
-	        pr_trace = false;
+            runaway = 100000;
+            pr_trace = true;
 
-        // make a stack frame
-	        exitdepth = pr_depth;
+            // make a stack frame
+            exitdepth = pr_depth;
 
-	        s = PR_EnterFunction (fnum);
-        	
+            s = PR_EnterFunction(fnum);
+
             while (true)
             {
-	            s++;	// next statement
+                s++; // next statement
+                prNum++;
 
-	            st = pr_statements[s];
+                st = pr_statements[s];
 
-                if (--runaway == 0)
-                    PR_RunError("runaway loop error");
+                if (--runaway == 0) PR_RunError("runaway loop error");
 
                 pr_xfunction.profile++;
                 pr_xstatement = s;
 
                 if (pr_trace)
+                {
                     PR_PrintStatement(st);
+                    //Debug.WriteLine(string.Format("a {0}: {1} {2} {3}", st.a, pr_globals_read(st.a), pr_globals_read(st.a + 1), pr_globals_read(st.a + 2)));
+                    //Debug.WriteLine(string.Format("b {0}: {1} {2} {3}", st.b, pr_globals_read(st.b), pr_globals_read(st.b + 1), pr_globals_read(st.b + 2)));
+                    //Debug.WriteLine(string.Format("c {0}: {1} {2} {3}", st.c, pr_globals_read(st.c), pr_globals_read(st.c + 1), pr_globals_read(st.c + 2)));
+                    //PR_StackTraceStr();
+                }
 
-                if (st.c == 7505)
+
+                if (st.c == 7505) 
                     st.c = st.c;
 
                 bool eval;
-	            switch ((opcode_t)st.op)
-	            {
+                switch ((opcode_t)st.op)
+                {
                     case opcode_t.OP_ADD_F:
                         //c->_float = a->_float + b->_float;
-                        pr_globals_write(st.c, (double)(cast_float(pr_globals_read(st.a)) + cast_float(pr_globals_read(st.b))));
+                        pr_globals_write(
+                            st.c, (double)(cast_float(pr_globals_read(st.a)) + cast_float(pr_globals_read(st.b))));
                         break;
                     case opcode_t.OP_ADD_V:
                         /*c->vector[0] = a->vector[0] + b->vector[0];
                         c->vector[1] = a->vector[1] + b->vector[1];
                         c->vector[2] = a->vector[2] + b->vector[2];*/
-                        pr_globals_write(st.c, (double)(cast_float(pr_globals_read(st.a)) + cast_float(pr_globals_read(st.b))));
-                        pr_globals_write(st.c + 1, (double)(cast_float(pr_globals_read(st.a + 1)) + cast_float(pr_globals_read(st.b + 1))));
-                        pr_globals_write(st.c + 2, (double)(cast_float(pr_globals_read(st.a + 2)) + cast_float(pr_globals_read(st.b + 2))));
+                        pr_globals_write(
+                            st.c, (double)(cast_float(pr_globals_read(st.a)) + cast_float(pr_globals_read(st.b))));
+                        pr_globals_write(
+                            st.c + 1,
+                            (double)(cast_float(pr_globals_read(st.a + 1)) + cast_float(pr_globals_read(st.b + 1))));
+                        pr_globals_write(
+                            st.c + 2,
+                            (double)(cast_float(pr_globals_read(st.a + 2)) + cast_float(pr_globals_read(st.b + 2))));
                         break;
 
                     case opcode_t.OP_SUB_F:
                         //c->_float = a->_float - b->_float;
-                        pr_globals_write(st.c, (double)(cast_float(pr_globals_read(st.a)) - cast_float(pr_globals_read(st.b))));
+                        pr_globals_write(
+                            st.c, (double)(cast_float(pr_globals_read(st.a)) - cast_float(pr_globals_read(st.b))));
                         break;
                     case opcode_t.OP_SUB_V:
                         /*c->vector[0] = a->vector[0] - b->vector[0];
                         c->vector[1] = a->vector[1] - b->vector[1];
                         c->vector[2] = a->vector[2] - b->vector[2];*/
-                        pr_globals_write(st.c, (double)(cast_float(pr_globals_read(st.a)) - cast_float(pr_globals_read(st.b))));
-                        pr_globals_write(st.c + 1, (double)(cast_float(pr_globals_read(st.a + 1)) - cast_float(pr_globals_read(st.b + 1))));
-                        pr_globals_write(st.c + 2, (double)(cast_float(pr_globals_read(st.a + 2)) - cast_float(pr_globals_read(st.b + 2))));
+                        pr_globals_write(
+                            st.c, (double)(cast_float(pr_globals_read(st.a)) - cast_float(pr_globals_read(st.b))));
+                        pr_globals_write(
+                            st.c + 1,
+                            (double)(cast_float(pr_globals_read(st.a + 1)) - cast_float(pr_globals_read(st.b + 1))));
+                        pr_globals_write(
+                            st.c + 2,
+                            (double)(cast_float(pr_globals_read(st.a + 2)) - cast_float(pr_globals_read(st.b + 2))));
                         break;
 
                     case opcode_t.OP_MUL_F:
                         //c->_float = a->_float * b->_float;
-                        pr_globals_write(st.c, (double)(cast_float(pr_globals_read(st.a)) * cast_float(pr_globals_read(st.b))));
+                        pr_globals_write(
+                            st.c, (double)(cast_float(pr_globals_read(st.a)) * cast_float(pr_globals_read(st.b))));
                         break;
                     case opcode_t.OP_MUL_V:
                         /*c->_float = a->vector[0] * b->vector[0]
                                 + a->vector[1] * b->vector[1]
                                 + a->vector[2] * b->vector[2];*/
-                        double res = (double)(cast_float(pr_globals_read(st.a)) * cast_float(pr_globals_read(st.b))
-                                                + cast_float(pr_globals_read(st.a + 1)) * cast_float(pr_globals_read(st.b + 1))
-                                                + cast_float(pr_globals_read(st.a + 2)) * cast_float(pr_globals_read(st.b + 2)));
+                        double res =
+                            (double)
+                            (cast_float(pr_globals_read(st.a)) * cast_float(pr_globals_read(st.b))
+                             + cast_float(pr_globals_read(st.a + 1)) * cast_float(pr_globals_read(st.b + 1))
+                             + cast_float(pr_globals_read(st.a + 2)) * cast_float(pr_globals_read(st.b + 2)));
                         pr_globals_write(st.c, res);
                         break;
-                    /*case opcode_t.OP_MUL_FV:
-                        c->vector[0] = a->_float * b->vector[0];
-                        c->vector[1] = a->_float * b->vector[1];
-                        c->vector[2] = a->_float * b->vector[2];
-                        break;*/
+                    case opcode_t.OP_MUL_FV:
+                        //c->vector[0] = a->_float * b->vector[0];
+                        //c->vector[1] = a->_float * b->vector[1];
+                        //c->vector[2] = a->_float * b->vector[2];
+                        throw new NotImplementedException();
+                        break;
                     case opcode_t.OP_MUL_VF:
                         /*c->vector[0] = b->_float * a->vector[0];
                         c->vector[1] = b->_float * a->vector[1];
                         c->vector[2] = b->_float * a->vector[2];*/
-                        pr_globals_write(st.c, (double)(cast_float(pr_globals_read(st.b)) * cast_float(pr_globals_read(st.a))));
-                        pr_globals_write(st.c + 1, (double)(cast_float(pr_globals_read(st.b + 1)) * cast_float(pr_globals_read(st.a + 1))));
-                        pr_globals_write(st.c + 2, (double)(cast_float(pr_globals_read(st.b + 2)) * cast_float(pr_globals_read(st.a + 2))));
+                        var b_float = (double)(cast_float(pr_globals_read(st.b)));
+                        pr_globals_write(st.c, b_float * cast_float(pr_globals_read(st.a)));
+                        pr_globals_write(st.c + 1, b_float * cast_float(pr_globals_read(st.a + 1)));
+                        pr_globals_write(st.c + 2, b_float * cast_float(pr_globals_read(st.a + 2)));
                         break;
 
                     case opcode_t.OP_BITAND:
                         //c->_float = (int)a->_float & (int)b->_float;
-                        pr_globals_write(st.c, (double)((int)cast_float(pr_globals_read(st.a)) & (int)cast_float(pr_globals_read(st.b))));
+                        pr_globals_write(
+                            st.c,
+                            (double)((int)cast_float(pr_globals_read(st.a)) & (int)cast_float(pr_globals_read(st.b))));
                         break;
 
                     case opcode_t.OP_BITOR:
                         //c->_float = (int)a->_float | (int)b->_float;
-                        pr_globals_write(st.c, (double)((int)cast_float(pr_globals_read(st.a)) | (int)cast_float(pr_globals_read(st.b))));
+                        pr_globals_write(
+                            st.c,
+                            (double)((int)cast_float(pr_globals_read(st.a)) | (int)cast_float(pr_globals_read(st.b))));
                         break;
 
                     case opcode_t.OP_GE:
                         //c->_float = a->_float >= b->_float;
-                        pr_globals_write(st.c, (double)(cast_float(pr_globals_read(st.a)) >= cast_float(pr_globals_read(st.b)) ? 1 : 0));
+                        pr_globals_write(
+                            st.c,
+                            (double)(cast_float(pr_globals_read(st.a)) >= cast_float(pr_globals_read(st.b)) ? 1 : 0));
                         break;
                     case opcode_t.OP_LE:
                         //c->_float = a->_float <= b->_float;
-                        pr_globals_write(st.c, (double)(cast_float(pr_globals_read(st.a)) <= cast_float(pr_globals_read(st.b)) ? 1 : 0));
+                        pr_globals_write(
+                            st.c,
+                            (double)(cast_float(pr_globals_read(st.a)) <= cast_float(pr_globals_read(st.b)) ? 1 : 0));
                         break;
                     case opcode_t.OP_GT:
                         //c->_float = a->_float > b->_float;
-                        pr_globals_write(st.c, (double)(cast_float(pr_globals_read(st.a)) > cast_float(pr_globals_read(st.b)) ? 1 : 0));
+                        pr_globals_write(
+                            st.c,
+                            (double)(cast_float(pr_globals_read(st.a)) > cast_float(pr_globals_read(st.b)) ? 1 : 0));
                         break;
                     case opcode_t.OP_LT:
                         //c->_float = a->_float < b->_float;
-                        pr_globals_write(st.c, (double)(cast_float(pr_globals_read(st.a)) < cast_float(pr_globals_read(st.b)) ? 1 : 0));
+                        pr_globals_write(
+                            st.c,
+                            (double)(cast_float(pr_globals_read(st.a)) < cast_float(pr_globals_read(st.b)) ? 1 : 0));
                         break;
                     case opcode_t.OP_AND:
                         //c->_float = a->_float && b->_float;
-                        pr_globals_write(st.c, (double)(cast_float(pr_globals_read(st.a)) != 0 && cast_float(pr_globals_read(st.b)) != 0 ? 1 : 0));
+                        pr_globals_write(
+                            st.c,
+                            (double)
+                            (cast_float(pr_globals_read(st.a)) != 0 && cast_float(pr_globals_read(st.b)) != 0 ? 1 : 0));
                         break;
                     case opcode_t.OP_OR:
                         //c->_float = a->_float || b->_float;
-                        pr_globals_write(st.c, (double)(cast_float(pr_globals_read(st.a)) != 0 || cast_float(pr_globals_read(st.b)) != 0 ? 1 : 0));
+                        pr_globals_write(
+                            st.c,
+                            (double)
+                            (cast_float(pr_globals_read(st.a)) != 0 || cast_float(pr_globals_read(st.b)) != 0 ? 1 : 0));
                         break;
 
-	                case opcode_t.OP_NOT_F:
-		                //c->_float = !a->_float;
+                    case opcode_t.OP_NOT_F:
+                        //c->_float = !a->_float;
                         pr_globals_write(st.c, (double)(cast_float(pr_globals_read(st.a)) == 0 ? 1 : 0));
-		                break;
-	                case opcode_t.OP_NOT_S:
+                        break;
+                    case opcode_t.OP_NOT_S:
                         //c->_float = !a->string || !pr_strings[a->string];
                         int astring = cast_int(pr_globals_read(st.a));
                         pr_globals_write(st.c, (double)(((astring == 0) || (pr_string(astring) == null)) ? 1 : 0));
-		                break;
-	                case opcode_t.OP_NOT_FNC:
-		                //c->_float = !a->function;
+                        break;
+                    case opcode_t.OP_NOT_FNC:
+                        //c->_float = !a->function;
                         pr_globals_write(st.c, (double)(cast_int(pr_globals_read(st.a)) == 0 ? 1 : 0));
                         break;
-	                case opcode_t.OP_NOT_ENT:
-		                //c->_float = (PROG_TO_EDICT(a->edict) == sv.edicts);
-                        pr_globals_write(st.c, (double)(PROG_TO_EDICT(cast_int(pr_globals_read(st.a))) == server.sv.edicts[0] ? 1 : 0));
+                    case opcode_t.OP_NOT_ENT:
+                        //c->_float = (PROG_TO_EDICT(a->edict) == sv.edicts);
+                        pr_globals_write(
+                            st.c,
+                            (double)(PROG_TO_EDICT(cast_int(pr_globals_read(st.a))) == server.sv.edicts[0] ? 1 : 0));
                         break;
 
                     case opcode_t.OP_EQ_F:
                         //c->_float = a->_float == b->_float;
-                        pr_globals_write(st.c, (double)(cast_float(pr_globals_read(st.a)) == cast_float(pr_globals_read(st.b)) ? 1 : 0));
+                        pr_globals_write(
+                            st.c,
+                            (double)(cast_float(pr_globals_read(st.a)) == cast_float(pr_globals_read(st.b)) ? 1 : 0));
                         break;
                     case opcode_t.OP_EQ_V:
                         /*c->_float = (a->vector[0] == b->vector[0]) &&
                                     (a->vector[1] == b->vector[1]) &&
                                     (a->vector[2] == b->vector[2]);*/
-                        eval = (cast_float(pr_globals_read(st.a)) == cast_float(pr_globals_read(st.b))) &&
-                               (cast_float(pr_globals_read(st.a + 1)) == cast_float(pr_globals_read(st.b + 1))) &&
-                               (cast_float(pr_globals_read(st.a + 2)) == cast_float(pr_globals_read(st.b + 2)));
+                        eval = (cast_float(pr_globals_read(st.a)) == cast_float(pr_globals_read(st.b)))
+                               && (cast_float(pr_globals_read(st.a + 1)) == cast_float(pr_globals_read(st.b + 1)))
+                               && (cast_float(pr_globals_read(st.a + 2)) == cast_float(pr_globals_read(st.b + 2)));
                         pr_globals_write(st.c, (double)(eval ? 1 : 0));
                         break;
-	                case opcode_t.OP_EQ_S:
-		                //c->_float = !strcmp(pr_strings+a->string,pr_strings+b->string);
-                        pr_globals_write(st.c, (double)(pr_string(cast_int(pr_globals_read(st.a))).CompareTo(pr_string(cast_int(pr_globals_read(st.b)))) == 0 ? 1 : 0));
-		                break;
+                    case opcode_t.OP_EQ_S:
+                        //c->_float = !strcmp(pr_strings+a->string,pr_strings+b->string);
+                        pr_globals_write(
+                            st.c,
+                            (double)
+                            (pr_string(cast_int(pr_globals_read(st.a)))
+                                 .CompareTo(pr_string(cast_int(pr_globals_read(st.b)))) == 0
+                                 ? 1
+                                 : 0));
+                        break;
 
                     case opcode_t.OP_NE_V:
                         /*c->_float = (a->vector[0] != b->vector[0]) ||
                                     (a->vector[1] != b->vector[1]) ||
                                     (a->vector[2] != b->vector[2]);*/
-                        eval = (cast_float(pr_globals_read(st.a)) != cast_float(pr_globals_read(st.b))) ||
-                               (cast_float(pr_globals_read(st.a + 1)) != cast_float(pr_globals_read(st.b + 1))) ||
-                               (cast_float(pr_globals_read(st.a + 2)) != cast_float(pr_globals_read(st.b + 2)));
+                        eval = (cast_float(pr_globals_read(st.a)) != cast_float(pr_globals_read(st.b)))
+                               || (cast_float(pr_globals_read(st.a + 1)) != cast_float(pr_globals_read(st.b + 1)))
+                               || (cast_float(pr_globals_read(st.a + 2)) != cast_float(pr_globals_read(st.b + 2)));
                         pr_globals_write(st.c, (double)(eval ? 1 : 0));
                         break;
 
-                    //==================
+                        //==================
                     case opcode_t.OP_STORE_F:
                     case opcode_t.OP_STORE_ENT:
-                    case opcode_t.OP_STORE_FLD:		// integers
+                    case opcode_t.OP_STORE_FLD: // integers
                     case opcode_t.OP_STORE_S:
-                    case opcode_t.OP_STORE_FNC:		// pointers
+                    case opcode_t.OP_STORE_FNC: // pointers
                         pr_globals_write(st.b, pr_globals_read(st.a));
                         break;
                     case opcode_t.OP_STORE_V:
@@ -703,9 +787,9 @@ namespace quake
 
                     case opcode_t.OP_STOREP_F:
                     case opcode_t.OP_STOREP_ENT:
-                    case opcode_t.OP_STOREP_FLD:		// integers
+                    case opcode_t.OP_STOREP_FLD: // integers
                     case opcode_t.OP_STOREP_S:
-                    case opcode_t.OP_STOREP_FNC:		// pointers
+                    case opcode_t.OP_STOREP_FNC: // pointers
                         //ptr = (eval_t*)((byte*)sv.edicts + b->_int);
                         //ptr->_int = a->_int;
                         writeptr(cast_int(pr_globals_read(st.b)), cast_int(pr_globals_read(st.a)));
@@ -720,50 +804,59 @@ namespace quake
                         writeptr(cast_int(pr_globals_read(st.b)) + 2, cast_int(pr_globals_read(st.a + 2)));
                         break;
 
-	                case opcode_t.OP_ADDRESS:
-		                ed = PROG_TO_EDICT(cast_int(pr_globals_read(st.a)));
-		                if (ed == server.sv.edicts[0] && server.sv.state == server.server_state_t.ss_active)
-			                PR_RunError ("assignment to world entity");
-		                //c->_int = (byte *)((int *)&ed->v + b->_int) - (byte *)sv.edicts;
+                    case opcode_t.OP_ADDRESS:
+                        ed = PROG_TO_EDICT(cast_int(pr_globals_read(st.a)));
+                        if (ed == server.sv.edicts[0] && server.sv.state == server.server_state_t.ss_active) PR_RunError("assignment to world entity");
+                        //c->_int = (byte *)((int *)&ed->v + b->_int) - (byte *)sv.edicts;
                         pr_globals_write(st.c, ed.index * pr_edict_size + 96 + cast_int(pr_globals_read(st.b)) * 4);
-		                break;
-
-	                case opcode_t.OP_LOAD_F:
-	                case opcode_t.OP_LOAD_FLD:
-	                case opcode_t.OP_LOAD_ENT:
-	                case opcode_t.OP_LOAD_S:
-	                case opcode_t.OP_LOAD_FNC:
-		                ed = PROG_TO_EDICT(cast_int(pr_globals_read(st.a)));
-		                //a = (eval_t *)((int *)&ed->v + b->_int);
-		                //c->_int = a->_int;
-                        pr_globals_write(st.c, cast_int(readptr(ed.index * pr_edict_size + 96 + cast_int(pr_globals_read(st.b)) * 4)));
-		                break;
-
-	                case opcode_t.OP_LOAD_V:
-		                ed = PROG_TO_EDICT(cast_int(pr_globals_read(st.a)));
-		                //a = (eval_t *)((int *)&ed->v + b->_int);
-		                //c->vector[0] = a->vector[0];
-		                //c->vector[1] = a->vector[1];
-		                //c->vector[2] = a->vector[2];
-                        pr_globals_write(st.c, (double)cast_float(readptr(ed.index * pr_edict_size + 96 + cast_int(pr_globals_read(st.b)) * 4)));
-                        pr_globals_write(st.c + 1, (double)cast_float(readptr(ed.index * pr_edict_size + 96 + (cast_int(pr_globals_read(st.b)) + 1) * 4)));
-                        pr_globals_write(st.c + 2, (double)cast_float(readptr(ed.index * pr_edict_size + 96 + (cast_int(pr_globals_read(st.b)) + 2) * 4)));
                         break;
-		
-                    //==================
+
+                    case opcode_t.OP_LOAD_F:
+                    case opcode_t.OP_LOAD_FLD:
+                    case opcode_t.OP_LOAD_ENT:
+                    case opcode_t.OP_LOAD_S:
+                    case opcode_t.OP_LOAD_FNC:
+                        ed = PROG_TO_EDICT(cast_int(pr_globals_read(st.a)));
+                        //a = (eval_t *)((int *)&ed->v + b->_int);
+                        //c->_int = a->_int;
+                        pr_globals_write(
+                            st.c, cast_int(readptr(ed.index * pr_edict_size + 96 + cast_int(pr_globals_read(st.b)) * 4)));
+                        break;
+
+                    case opcode_t.OP_LOAD_V:
+                        ed = PROG_TO_EDICT(cast_int(pr_globals_read(st.a)));
+                        //a = (eval_t *)((int *)&ed->v + b->_int);
+                        //c->vector[0] = a->vector[0];
+                        //c->vector[1] = a->vector[1];
+                        //c->vector[2] = a->vector[2];
+                        pr_globals_write(
+                            st.c,
+                            (double)
+                            cast_float(readptr(ed.index * pr_edict_size + 96 + cast_int(pr_globals_read(st.b)) * 4)));
+                        pr_globals_write(
+                            st.c + 1,
+                            (double)
+                            cast_float(
+                                readptr(ed.index * pr_edict_size + 96 + (cast_int(pr_globals_read(st.b)) + 1) * 4)));
+                        pr_globals_write(
+                            st.c + 2,
+                            (double)
+                            cast_float(
+                                readptr(ed.index * pr_edict_size + 96 + (cast_int(pr_globals_read(st.b)) + 2) * 4)));
+                        break;
+
+                        //==================
 
                     case opcode_t.OP_IFNOT:
-                        if (cast_int(pr_globals_read(st.a)) == 0)
-                            s += st.b - 1;	// offset the s++
+                        if (cast_int(pr_globals_read(st.a)) == 0) s += st.b - 1; // offset the s++
                         break;
 
                     case opcode_t.OP_IF:
-                        if (cast_int(pr_globals_read(st.a)) != 0)
-                            s += st.b - 1;	// offset the s++
+                        if (cast_int(pr_globals_read(st.a)) != 0) s += st.b - 1; // offset the s++
                         break;
 
                     case opcode_t.OP_GOTO:
-                        s += st.a - 1;	// offset the s++
+                        s += st.a - 1; // offset the s++
                         break;
 
                     case opcode_t.OP_CALL0:
@@ -777,16 +870,16 @@ namespace quake
                     case opcode_t.OP_CALL8:
                         pr_argc = st.op - (int)opcode_t.OP_CALL0;
                         int afunction = cast_int(pr_globals_read(st.a));
-                        if (afunction == 0)
-                            PR_RunError("NULL function");
+                        if (afunction == 0) PR_RunError("NULL function");
 
                         newf = pr_functions[afunction];
 
                         if (newf.first_statement < 0)
-                        {	// negative statements are built in functions
+                        {
+                            // negative statements are built in functions
                             i = -newf.first_statement;
-                            if (i >= pr_numbuiltins)
-                                PR_RunError("Bad builtin call number");
+                            if (i >= pr_numbuiltins) PR_RunError("Bad builtin call number");
+                            //Debug.WriteLine("pr_builtins " + i);
                             pr_builtins[i]();
                             break;
                         }
@@ -801,19 +894,18 @@ namespace quake
                         pr_globals_write(OFS_RETURN + 2, pr_globals_read(st.a + 2));
 
                         s = PR_LeaveFunction();
-                        if (pr_depth == exitdepth)
-                            return;		// all done
+                        if (pr_depth == exitdepth) return; // all done
                         break;
 
-	                case opcode_t.OP_STATE:
-		                ed = PROG_TO_EDICT(pr_global_struct[0].self);
-		                ed.v.nextthink = pr_global_struct[0].time + 0.1;
-		                if (cast_float(pr_globals_read(st.a)) != ed.v.frame)
-		                {
-			                ed.v.frame = cast_float(pr_globals_read(st.a));
-		                }
-		                ed.v.think = cast_int(pr_globals_read(st.b));
-		                break;
+                    case opcode_t.OP_STATE:
+                        ed = PROG_TO_EDICT(pr_global_struct[0].self);
+                        ed.v.nextthink = pr_global_struct[0].time + 0.1;
+                        if (cast_float(pr_globals_read(st.a)) != ed.v.frame)
+                        {
+                            ed.v.frame = cast_float(pr_globals_read(st.a));
+                        }
+                        ed.v.think = cast_int(pr_globals_read(st.b));
+                        break;
 
                     default:
                         break;
