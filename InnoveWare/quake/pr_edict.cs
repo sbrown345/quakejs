@@ -26,6 +26,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 namespace quake
 {
+    using System.Diagnostics;
+
     public partial class prog
     {
         static dprograms_t              progs;
@@ -247,10 +249,10 @@ namespace quake
 		        line = "void";
 		        break;
 	        case etype_t.ev_float:
-                line = "".ToString() + cast_float(val);
+	                line = cast_float(val).ToString();
 		        break;  
 	        case etype_t.ev_vector:
-		        line = "'" + cast_float(val) + "'";
+	                line = cast_float(val).ToString();
 		        break;
 	        case etype_t.ev_pointer:
 		        line = "pointer";
@@ -281,11 +283,22 @@ namespace quake
 	        val = pr_globals_read(ofs);
 	        def = ED_GlobalAtOfs(ofs);
 	        if (def == null)
-		        line = ofs + "(?]";
+		        line = ofs + "(???)";
 	        else
 	        {
-		        s = PR_ValueString (def.type, val);
-		        line = ofs + "(" + pr_string(def.s_name) + ")" + s;
+	            if (def.type == (int)etype_t.ev_vector || (int)etype_t.ev_vector == (def.type & ~DEF_SAVEGLOBAL))
+	            {
+	                Object val2 = pr_globals_read(ofs + 1);
+	                Object val3 = pr_globals_read(ofs + 2);
+
+	                s = "'   " + PR_ValueString(def.type, val) + "   " + PR_ValueString(def.type, val2) + "   "
+	                    + PR_ValueString(def.type, val3) + "'";
+	            }
+	            else
+	            {
+	                s = PR_ValueString(def.type, val);
+	            }
+	            line = ofs + "(" + pr_string(def.s_name) + ")" + s;
 	        }
         	
 	        i = line.Length;
@@ -303,7 +316,7 @@ namespace quake
         	
 	        def = ED_GlobalAtOfs(ofs);
 	        if (def == null)
-		        line = ofs + "(?]";
+		        line = ofs + "(???)";
 	        else
 		        line = ofs + "(" + pr_string(def.s_name) + ")";
         	
@@ -849,7 +862,19 @@ namespace quake
             if (value == null)
                 return 0;
             if (value.GetType() == typeof(Double))
-                return BitConverter.ToInt32(BitConverter.GetBytes((float)(double)value), 0);
+            {
+                var val = BitConverter.ToInt32(BitConverter.GetBytes((float)(double)value), 0);
+                if (val.ToString() == "544" || val.ToString() == "288" || val.ToString() == "32")
+                {
+                    //return Convert.ToInt32((double)value);
+                    Debug.WriteLine("odd bit here!");
+                }
+                //if (val > 1000000000)
+                //{ //NO THIS IS correct but maybe it is beign useed wrong someplace
+                //    Debug.WriteLine(prNum + " bad cast_int " + value + " turned to " + val);
+                //}
+                return val;
+            }
             else
                 return (int)value;
         }
