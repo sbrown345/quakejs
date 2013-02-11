@@ -4,6 +4,11 @@
 
     public static class Convert
     {
+        public static int ToInt32(object value)
+        {
+            throw new NotImplementedException();
+        }
+
         public static string ToString(object value)
         {
             return value.ToString();

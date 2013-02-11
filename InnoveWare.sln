@@ -20,7 +20,7 @@ Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "InnoveWareWeb", "InnoveWare
 		Release.AspNetCompiler.ForceOverwrite = "true"
 		Release.AspNetCompiler.FixedNames = "false"
 		Release.AspNetCompiler.Debug = "False"
-		VWDPort = "4490"
+		VWDPort = "14581"
 		DefaultWebSiteLanguage = "Visual C#"
 		ProjOutputReferences = "{B78AC384-7DB3-49F9-AE2E-8C6513D66AED}|ClientBin|false;"
 	EndProjectSection
@@ -44,7 +44,7 @@ Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "web", "web\", "{06B86A6C-EA
 		Release.AspNetCompiler.ForceOverwrite = "true"
 		Release.AspNetCompiler.FixedNames = "false"
 		Release.AspNetCompiler.Debug = "False"
-		VWDPort = "27467"
+		VWDPort = "14574"
 		VWDVirtualPath = "/"
 		DefaultWebSiteLanguage = "Visual C#"
 	EndProjectSection

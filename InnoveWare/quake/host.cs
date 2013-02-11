@@ -242,7 +242,8 @@ namespace quake
         Sends text to all active clients
         =================
         */
-        void SV_BroadcastPrintf (string fmt)
+
+        public void SV_BroadcastPrintf (string fmt)
         {
         }
 

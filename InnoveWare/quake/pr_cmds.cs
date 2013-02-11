@@ -282,6 +282,8 @@ namespace quake
         */
         static void PF_bprint ()
         {
+            //var s = PF_VarString(0);
+            //host.SV_BroadcastPrintf(s); todo
         }
 
         /*
@@ -295,6 +297,7 @@ namespace quake
         */
         static void PF_sprint ()
         {
+            //todo
         }
 
         /*
@@ -308,6 +311,7 @@ namespace quake
         */
         static void PF_centerprint ()
         {
+            //todo
         }
 
         /*
@@ -319,6 +323,8 @@ namespace quake
         */
         static void PF_normalize ()
         {
+            throw new NotImplementedException();
+            Debug.WriteLine("todo PF_normalize");
         }
 
         /*
@@ -330,6 +336,8 @@ namespace quake
         */
         static void PF_vlen ()
         {
+            throw new NotImplementedException();
+            Debug.WriteLine("todo PF_vlen");
         }
 
         /*
@@ -341,6 +349,8 @@ namespace quake
         */
         static void PF_vectoyaw ()
         {
+            throw new NotImplementedException();
+            Debug.WriteLine("todo PF_vectoyaw");
         }
 
         /*
@@ -352,6 +362,8 @@ namespace quake
         */
         static void PF_vectoangles ()
         {
+            throw new NotImplementedException();
+            Debug.WriteLine("todo PF_vectoangles");
         }
 
         /*
@@ -368,8 +380,11 @@ namespace quake
 	        double		num;
         		
 	        num = (helper.rand ()&0x7fff) / ((double)0x7fff);
-        	
+            //TODO: RREMOVE THIS DEBUG TEST  THING
+            num = 0.3;
+
 	        pr_globals_write(OFS_RETURN, num);
+
         }
 
         /*
@@ -381,6 +396,7 @@ namespace quake
         */
         static void PF_particle ()
         {
+            //todo
         }
         
         /*
@@ -391,6 +407,7 @@ namespace quake
         */
         static void PF_ambientsound ()
         {
+            //throw new NotImplementedException(); todo
         }
 
         /*
@@ -410,6 +427,7 @@ namespace quake
         */
         static void PF_sound ()
         {
+            //todo
         }
 
         /*
@@ -421,6 +439,7 @@ namespace quake
         */
         static void PF_break ()
         {
+            throw new NotImplementedException();
         }
 
         /*
@@ -436,6 +455,7 @@ namespace quake
         */
         static void PF_traceline ()
         {
+            throw new NotImplementedException();
         }
 
         /*
@@ -450,6 +470,7 @@ namespace quake
         */
         static void PF_checkpos ()
         {
+            throw new NotImplementedException();
         }
 
         //============================================================================
@@ -471,6 +492,7 @@ namespace quake
         */
         static void PF_checkclient ()
         {
+            throw new NotImplementedException();
         }
 
         //============================================================================
@@ -486,6 +508,7 @@ namespace quake
         */
         static void PF_stuffcmd ()
         {
+            throw new NotImplementedException();
         }
 
         /*
@@ -499,6 +522,7 @@ namespace quake
         */
         static void PF_localcmd ()
         {
+            throw new NotImplementedException();
         }
 
         /*
@@ -545,6 +569,7 @@ namespace quake
         */
         static void PF_findradius ()
         {
+            throw new NotImplementedException();
         }
 
         /*
@@ -554,10 +579,12 @@ namespace quake
         */
         static void PF_dprint ()
         {
+            Debug.WriteLine("todo PF_dprint");
         }
 
         static void PF_ftos ()
         {
+            Debug.WriteLine("todo PF_ftos");
         }
 
         static void PF_fabs ()
@@ -569,6 +596,7 @@ namespace quake
 
         static void PF_vtos ()
         {
+            Debug.WriteLine("todo PF_vtos");
         }
 
         static void PF_Spawn ()
@@ -626,6 +654,7 @@ namespace quake
 
         static void PF_precache_file ()
         {
+            throw new NotImplementedException();
         }
 
         static void PF_precache_sound ()
@@ -681,18 +710,26 @@ namespace quake
 
         static void PF_coredump ()
         {
+            throw new NotImplementedException();
+            //ED_PrintEdicts();
         }
 
         static void PF_traceon ()
         {
+            throw new NotImplementedException();
+            pr_trace = true;
         }
 
         static void PF_traceoff ()
         {
+            throw new NotImplementedException();
+            pr_trace = false;
         }
 
         static void PF_eprint ()
         {
+            throw new NotImplementedException();
+            //ED_PrintNum(G_EDICTNUM(OFS_PARM0));
         }
 
         /*
@@ -704,6 +741,7 @@ namespace quake
         */
         static void PF_walkmove ()
         {
+            throw new NotImplementedException();
         }
 
         /*
@@ -715,6 +753,7 @@ namespace quake
         */
         static void PF_droptofloor ()
         {
+            throw new NotImplementedException();
         }
 
         /*
@@ -778,6 +817,7 @@ namespace quake
         */
         static void PF_checkbottom ()
         {
+            throw new NotImplementedException();
         }
 
         /*
@@ -787,6 +827,7 @@ namespace quake
         */
         static void PF_pointcontents ()
         {
+            throw new NotImplementedException();
         }
 
         /*
@@ -798,6 +839,7 @@ namespace quake
         */
         static void PF_nextent ()
         {
+            throw new NotImplementedException();
         }
 
         /*
@@ -810,6 +852,7 @@ namespace quake
         */
         static void PF_aim ()
         {
+            throw new NotImplementedException();
         }
 
         /*
@@ -821,6 +864,7 @@ namespace quake
         */
         static void PF_changeyaw ()
         {
+            throw new NotImplementedException();
         }
 
         /*
@@ -833,34 +877,42 @@ namespace quake
 
         static void PF_WriteByte ()
         {
+            throw new NotImplementedException();
         }
 
         static void PF_WriteChar ()
         {
+            throw new NotImplementedException();
         }
 
         static void PF_WriteShort ()
         {
+            throw new NotImplementedException();
         }
 
         static void PF_WriteLong ()
         {
+            throw new NotImplementedException();
         }
 
         static void PF_WriteAngle ()
         {
+            throw new NotImplementedException();
         }
 
         static void PF_WriteCoord ()
         {
+            throw new NotImplementedException();
         }
 
         static void PF_WriteString ()
         {
+            throw new NotImplementedException();
         }
         
         static void PF_WriteEntity ()
         {
+            throw new NotImplementedException();
         }
 
         //=============================================================================
@@ -898,6 +950,7 @@ namespace quake
         */
         static void PF_setspawnparms ()
         {
+            throw new NotImplementedException();
         }
 
         /*
@@ -907,6 +960,7 @@ namespace quake
         */
         static void PF_changelevel ()
         {
+            throw new NotImplementedException();
         }
 
         static void PF_Fixme ()

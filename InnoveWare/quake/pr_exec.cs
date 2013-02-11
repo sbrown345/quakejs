@@ -154,7 +154,7 @@ namespace quake
         private static void PR_PrintStatement(dstatement_t s)
         {
             int i;
-            if (prNum >= 640)
+            if (prNum >= 7000)
             {
                 PR_StackTraceStr();
                 console.Con_Printf((prNum) + " ");
@@ -237,7 +237,7 @@ namespace quake
                     Debug.WriteLine("<NO FUNCTION>");
                 }
                 else 
-                    Debug.WriteLine(pr_string(f.s_file) + " : " + pr_string(f.s_name));
+                    Debug.WriteLine("    " + pr_string(f.s_file) + " : " + pr_string(f.s_name));
             }
             return;
         }

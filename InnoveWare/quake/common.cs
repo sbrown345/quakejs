@@ -824,7 +824,7 @@ namespace quake
 			        for (i=0 ; i<pak.numfiles ; i++)
 				        if (pak.files[i].name.CompareTo(filename) == 0)
 				        {       // found it!
-					        sys_linux.Sys_Printf ("PackFile: " + pak.filename + " : " + filename + "\n");
+                            //sys_linux.Sys_Printf ("PackFile: " + pak.filename + " : " + filename + "\n");
                             if (handle != -1)
                             {
                                 handle = pak.handle;

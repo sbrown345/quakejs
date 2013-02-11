@@ -3625,7 +3625,7 @@
 				for (i = 0; i < pak.$numfiles; i++) {
 					if (ss.compare(pak.$files[i].$name, filename) === 0) {
 						// found it!
-						$quake_sys_linux.sys_Printf('PackFile: ' + pak.$filename + ' : ' + filename + '\n');
+						//sys_linux.Sys_Printf ("PackFile: " + pak.filename + " : " + filename + "\n");
 						if (handle.$ !== -1) {
 							handle.$ = pak.$handle;
 							$quake_sys_linux.sys_FileSeek(pak.$handle, pak.$files[i].$filepos);
@@ -6758,7 +6758,7 @@
 		},
 		$sV_ClientPrintf: function(fmt) {
 		},
-		$sV_BroadcastPrintf: function(fmt) {
+		sV_BroadcastPrintf: function(fmt) {
 		},
 		$host_ClientCommands: function(fmt) {
 		},
@@ -6768,6 +6768,7 @@
 		},
 		$host_Shutdown: function() {
 			if ($quake_host.$isdown) {
+				ss.Debug.writeln('recursive shutdown');
 				return;
 			}
 			$quake_host.$isdown = true;
@@ -11498,6 +11499,7 @@
 		e = $quake_prog.$g_EDICT($quake_prog.ofS_PARM0);
 		org = $quake_prog.$g_VECTOR($quake_prog.ofS_PARM1);
 		$quake_mathlib.vectorCopy(org, e.v.origin);
+		//Debug.WriteLine("PF_setorigin {0} {1} {2}", org[0], org[1], org[2]);
 		//SV_LinkEdict(e, false);
 	};
 	$quake_prog.$setMinMaxSize = function(e, min, max, rotate) {
@@ -11592,47 +11594,76 @@
 		//SV_ModelIndex (m);
 		mod = $quake_server.sv.models[ss.Int32.trunc(e.v.modelindex)];
 		// Mod_ForName (m, true);
-		//	        if (mod != null)
-		//	        SetMinMaxSize (e, mod->mins, mod->maxs, true);
-		//	        else
-		//	        SetMinMaxSize (e, vec3_origin, vec3_origin, true);
+		if (ss.isValue(mod)) {
+			$quake_prog.$setMinMaxSize(e, mod.mins, mod.maxs, true);
+		}
+		else {
+			$quake_prog.$setMinMaxSize(e, $quake_mathlib.vec3_origin, $quake_mathlib.vec3_origin, true);
+		}
+		//if (mod != null)
+		//SetMinMaxSize (e, mod->mins, mod->maxs, true);
+		//else
+		//SetMinMaxSize (e, vec3_origin, vec3_origin, true);
 	};
 	$quake_prog.$pF_bprint = function() {
+		//var s = PF_VarString(0);
+		//host.SV_BroadcastPrintf(s); todo
 	};
 	$quake_prog.$pF_sprint = function() {
+		//todo
 	};
 	$quake_prog.$pF_centerprint = function() {
+		//todo
 	};
 	$quake_prog.$pF_normalize = function() {
+		throw new $System_NotImplementedException();
+		ss.Debug.writeln('todo PF_normalize');
 	};
 	$quake_prog.$pF_vlen = function() {
+		throw new $System_NotImplementedException();
+		ss.Debug.writeln('todo PF_vlen');
 	};
 	$quake_prog.$pF_vectoyaw = function() {
+		throw new $System_NotImplementedException();
+		ss.Debug.writeln('todo PF_vectoyaw');
 	};
 	$quake_prog.$pF_vectoangles = function() {
+		throw new $System_NotImplementedException();
+		ss.Debug.writeln('todo PF_vectoangles');
 	};
 	$quake_prog.$pF_random = function() {
 		var num;
 		num = ($Helper_helper.rand() & 32767) / 32767;
+		//TODO: RREMOVE THIS DEBUG TEST  THING
+		num = 0.3;
 		$quake_prog.pr_globals_write($quake_prog.ofS_RETURN, num);
 	};
 	$quake_prog.$pF_particle = function() {
+		//todo
 	};
 	$quake_prog.$pF_ambientsound = function() {
+		//throw new NotImplementedException(); todo
 	};
 	$quake_prog.$pF_sound = function() {
+		//todo
 	};
 	$quake_prog.$pF_break = function() {
+		throw new $System_NotImplementedException();
 	};
 	$quake_prog.$pF_traceline = function() {
+		throw new $System_NotImplementedException();
 	};
 	$quake_prog.$pF_checkpos = function() {
+		throw new $System_NotImplementedException();
 	};
 	$quake_prog.$pF_checkclient = function() {
+		throw new $System_NotImplementedException();
 	};
 	$quake_prog.$pF_stuffcmd = function() {
+		throw new $System_NotImplementedException();
 	};
 	$quake_prog.$pF_localcmd = function() {
+		throw new $System_NotImplementedException();
 	};
 	$quake_prog.$pF_cvar = function() {
 		var str;
@@ -11646,10 +11677,13 @@
 		$quake_cvar_t.cvar_Set(var1, val);
 	};
 	$quake_prog.$pF_findradius = function() {
+		throw new $System_NotImplementedException();
 	};
 	$quake_prog.$pF_dprint = function() {
+		ss.Debug.writeln('todo PF_dprint');
 	};
 	$quake_prog.$pF_ftos = function() {
+		ss.Debug.writeln('todo PF_ftos');
 	};
 	$quake_prog.$pF_fabs = function() {
 		var v;
@@ -11657,6 +11691,7 @@
 		$quake_prog.pr_globals_write($quake_prog.ofS_RETURN, Math.abs(v));
 	};
 	$quake_prog.$pF_vtos = function() {
+		ss.Debug.writeln('todo PF_vtos');
 	};
 	$quake_prog.$pF_Spawn = function() {
 		var ed;
@@ -11701,6 +11736,7 @@
 		}
 	};
 	$quake_prog.$pF_precache_file = function() {
+		throw new $System_NotImplementedException();
 	};
 	$quake_prog.$pF_precache_sound = function() {
 		var s;
@@ -11744,16 +11780,26 @@
 		$quake_prog.$pR_RunError('PF_precache_model: overflow');
 	};
 	$quake_prog.$pF_coredump = function() {
+		throw new $System_NotImplementedException();
+		//ED_PrintEdicts();
 	};
 	$quake_prog.$pF_traceon = function() {
+		throw new $System_NotImplementedException();
+		$quake_prog.$pr_trace = true;
 	};
 	$quake_prog.$pF_traceoff = function() {
+		throw new $System_NotImplementedException();
+		$quake_prog.$pr_trace = false;
 	};
 	$quake_prog.$pF_eprint = function() {
+		throw new $System_NotImplementedException();
+		//ED_PrintNum(G_EDICTNUM(OFS_PARM0));
 	};
 	$quake_prog.$pF_walkmove = function() {
+		throw new $System_NotImplementedException();
 	};
 	$quake_prog.$pF_droptofloor = function() {
+		throw new $System_NotImplementedException();
 	};
 	$quake_prog.$pF_lightstyle = function() {
 		var style;
@@ -11794,30 +11840,43 @@
 		$quake_prog.pr_globals_write($quake_prog.ofS_RETURN, Math.ceil($quake_prog.$g_FLOAT($quake_prog.ofS_PARM0)));
 	};
 	$quake_prog.$pF_checkbottom = function() {
+		throw new $System_NotImplementedException();
 	};
 	$quake_prog.$pF_pointcontents = function() {
+		throw new $System_NotImplementedException();
 	};
 	$quake_prog.$pF_nextent = function() {
+		throw new $System_NotImplementedException();
 	};
 	$quake_prog.$pF_aim = function() {
+		throw new $System_NotImplementedException();
 	};
 	$quake_prog.$pF_changeyaw = function() {
+		throw new $System_NotImplementedException();
 	};
 	$quake_prog.$pF_WriteByte = function() {
+		throw new $System_NotImplementedException();
 	};
 	$quake_prog.$pF_WriteChar = function() {
+		throw new $System_NotImplementedException();
 	};
 	$quake_prog.$pF_WriteShort = function() {
+		throw new $System_NotImplementedException();
 	};
 	$quake_prog.$pF_WriteLong = function() {
+		throw new $System_NotImplementedException();
 	};
 	$quake_prog.$pF_WriteAngle = function() {
+		throw new $System_NotImplementedException();
 	};
 	$quake_prog.$pF_WriteCoord = function() {
+		throw new $System_NotImplementedException();
 	};
 	$quake_prog.$pF_WriteString = function() {
+		throw new $System_NotImplementedException();
 	};
 	$quake_prog.$pF_WriteEntity = function() {
+		throw new $System_NotImplementedException();
 	};
 	$quake_prog.$pF_makestatic = function() {
 		var ent;
@@ -11836,8 +11895,10 @@
 		$quake_prog.$eD_Free(ent);
 	};
 	$quake_prog.$pF_setspawnparms = function() {
+		throw new $System_NotImplementedException();
 	};
 	$quake_prog.$pF_changelevel = function() {
+		throw new $System_NotImplementedException();
 	};
 	$quake_prog.$pF_Fixme = function() {
 		$quake_prog.$pR_RunError('unimplemented bulitin');
@@ -11954,11 +12015,11 @@
 				break;
 			}
 			case 2: {
-				$quake_prog.$line = ''.toString() + $quake_prog.cast_float(val);
+				$quake_prog.$line = $quake_prog.cast_float(val).toString();
 				break;
 			}
 			case 3: {
-				$quake_prog.$line = '\'' + $quake_prog.cast_float(val) + '\'';
+				$quake_prog.$line = $quake_prog.cast_float(val).toString();
 				break;
 			}
 			case 7: {
@@ -11980,10 +12041,17 @@
 		val = $quake_prog.pr_globals_read(ofs);
 		def = $quake_prog.$eD_GlobalAtOfs(ofs);
 		if (ss.isNullOrUndefined(def)) {
-			$quake_prog.$line = ofs + '(?]';
+			$quake_prog.$line = ofs + '(???)';
 		}
 		else {
-			s = $quake_prog.$pR_ValueString(def.type, val);
+			if (def.type === 3 || 3 === (def.type & -32769)) {
+				var val2 = $quake_prog.pr_globals_read(ofs + 1);
+				var val3 = $quake_prog.pr_globals_read(ofs + 2);
+				s = '\'   ' + $quake_prog.$pR_ValueString(def.type, val) + '   ' + $quake_prog.$pR_ValueString(def.type, val2) + '   ' + $quake_prog.$pR_ValueString(def.type, val3) + '\'';
+			}
+			else {
+				s = $quake_prog.$pR_ValueString(def.type, val);
+			}
 			$quake_prog.$line = ofs + '(' + $quake_prog.pr_string(def.s_name) + ')' + s;
 		}
 		i = $quake_prog.$line.length;
@@ -11998,7 +12066,7 @@
 		var def;
 		def = $quake_prog.$eD_GlobalAtOfs(ofs);
 		if (ss.isNullOrUndefined(def)) {
-			$quake_prog.$line = ofs + '(?]';
+			$quake_prog.$line = ofs + '(???)';
 		}
 		else {
 			$quake_prog.$line = ofs + '(' + $quake_prog.pr_string(def.s_name) + ')';
@@ -12713,7 +12781,16 @@
 			return 0;
 		}
 		if (ss.referenceEquals(ss.getInstanceType(value), Number)) {
-			return BitConverter.toInt32(BitConverter.getBytes(ss.Nullable.unbox(ss.cast(value, Number))), 0);
+			var val = BitConverter.toInt32(BitConverter.getBytes(ss.Nullable.unbox(ss.cast(value, Number))), 0);
+			if (val.toString() === '544' || val.toString() === '288' || val.toString() === '32') {
+				//return Convert.ToInt32((double)value);
+				ss.Debug.writeln('odd bit here!');
+			}
+			//if (val > 1000000000)
+			//{ //NO THIS IS correct but maybe it is beign useed wrong someplace
+			//    Debug.WriteLine(prNum + " bad cast_int " + value + " turned to " + val);
+			//}
+			return val;
 		}
 		else {
 			return ss.Nullable.unbox(ss.cast(value, ss.Int32));
@@ -12822,35 +12899,39 @@
 	};
 	$quake_prog.$pR_PrintStatement = function(s) {
 		var i;
-		if (s.op < $quake_prog.$pr_opnames.length) {
-			$quake_console.con_Printf($quake_prog.$pr_opnames[s.op] + ' ');
-			i = $quake_prog.$pr_opnames[s.op].length;
-			for (; i < 10; i++) {
-				$quake_console.con_Printf(' ');
+		if ($quake_prog.$prNum >= 7000) {
+			$quake_prog.$pR_StackTraceStr();
+			$quake_console.con_Printf($quake_prog.$prNum + ' ');
+			if (s.op < $quake_prog.$pr_opnames.length) {
+				$quake_console.con_Printf($quake_prog.$pr_opnames[s.op] + ' ');
+				i = $quake_prog.$pr_opnames[s.op].length;
+				for (; i < 10; i++) {
+					$quake_console.con_Printf(' ');
+				}
 			}
-		}
-		if (s.op === 49 || s.op === 50) {
-			$quake_console.con_Printf($quake_prog.$pR_GlobalString(s.a) + 'branch ' + s.b);
-		}
-		else if (s.op === 61) {
-			$quake_console.con_Printf('branch ' + s.a);
-		}
-		else if (s.op - 31 < 6) {
-			$quake_console.con_Printf($quake_prog.$pR_GlobalString(s.a));
-			$quake_console.con_Printf($quake_prog.$pR_GlobalStringNoContents(s.b));
-		}
-		else {
-			if (s.a !== 0) {
+			if (s.op === 49 || s.op === 50) {
+				$quake_console.con_Printf($quake_prog.$pR_GlobalString(s.a) + 'branch ' + s.b);
+			}
+			else if (s.op === 61) {
+				$quake_console.con_Printf('branch ' + s.a);
+			}
+			else if (s.op - 31 < 6) {
 				$quake_console.con_Printf($quake_prog.$pR_GlobalString(s.a));
+				$quake_console.con_Printf($quake_prog.$pR_GlobalStringNoContents(s.b));
 			}
-			if (s.b !== 0) {
-				$quake_console.con_Printf($quake_prog.$pR_GlobalString(s.b));
+			else {
+				if (s.a !== 0) {
+					$quake_console.con_Printf($quake_prog.$pR_GlobalString(s.a));
+				}
+				if (s.b !== 0) {
+					$quake_console.con_Printf($quake_prog.$pR_GlobalString(s.b));
+				}
+				if (s.c !== 0) {
+					$quake_console.con_Printf($quake_prog.$pR_GlobalStringNoContents(s.c));
+				}
 			}
-			if (s.c !== 0) {
-				$quake_console.con_Printf($quake_prog.$pR_GlobalStringNoContents(s.c));
-			}
+			$quake_console.con_Printf('\n');
 		}
-		$quake_console.con_Printf('\n');
 	};
 	$quake_prog.$pR_StackTrace = function() {
 		var f;
@@ -12869,6 +12950,25 @@
 				$quake_console.con_Printf($quake_prog.pr_string(f.s_file) + ' : ' + $quake_prog.pr_string(f.s_name) + '\n');
 			}
 		}
+	};
+	$quake_prog.$pR_StackTraceStr = function() {
+		var f;
+		var i;
+		if ($quake_prog.$pr_depth === 0) {
+			$quake_console.con_Printf('<NO STACK>');
+			ss.Debug.writeln('<NO STACK>');
+		}
+		$quake_prog.$pr_stack[$quake_prog.$pr_depth].f = $quake_prog.$pr_xfunction;
+		for (i = $quake_prog.$pr_depth; i >= 0; i--) {
+			f = $quake_prog.$pr_stack[i].f;
+			if (ss.isNullOrUndefined(f)) {
+				ss.Debug.writeln('<NO FUNCTION>');
+			}
+			else {
+				ss.Debug.writeln('    ' + $quake_prog.pr_string(f.s_file) + ' : ' + $quake_prog.pr_string(f.s_name));
+			}
+		}
+		return;
 	};
 	$quake_prog.$pR_Profile_f = function() {
 		var f, best;
@@ -13398,13 +13498,14 @@
 		//
 		//f = &pr_functions[fnum];
 		runaway = 100000;
-		$quake_prog.$pr_trace = false;
+		$quake_prog.$pr_trace = true;
 		// make a stack frame
 		exitdepth = $quake_prog.$pr_depth;
 		s = $quake_prog.pR_EnterFunction(fnum);
 		while (true) {
 			s++;
 			// next statement
+			$quake_prog.$prNum++;
 			st = $quake_prog.$pr_statements[s];
 			if (--runaway === 0) {
 				$quake_prog.$pR_RunError('runaway loop error');
@@ -13413,6 +13514,10 @@
 			$quake_prog.$pr_xstatement = s;
 			if ($quake_prog.$pr_trace) {
 				$quake_prog.$pR_PrintStatement(st);
+				//Debug.WriteLine(string.Format("a {0}: {1} {2} {3}", st.a, pr_globals_read(st.a), pr_globals_read(st.a + 1), pr_globals_read(st.a + 2)));
+				//Debug.WriteLine(string.Format("b {0}: {1} {2} {3}", st.b, pr_globals_read(st.b), pr_globals_read(st.b + 1), pr_globals_read(st.b + 2)));
+				//Debug.WriteLine(string.Format("c {0}: {1} {2} {3}", st.c, pr_globals_read(st.c), pr_globals_read(st.c + 1), pr_globals_read(st.c + 2)));
+				//PR_StackTraceStr();
 			}
 			if (st.c === 7505) {
 				st.c = st.c;
@@ -13460,13 +13565,21 @@
 					$quake_prog.pr_globals_write(st.c, res);
 					break;
 				}
+				case 3: {
+					//c->vector[0] = a->_float * b->vector[0];
+					//c->vector[1] = a->_float * b->vector[1];
+					//c->vector[2] = a->_float * b->vector[2];
+					throw new $System_NotImplementedException();
+					break;
+				}
 				case 4: {
 					//c->vector[0] = b->_float * a->vector[0];
 					//c->vector[1] = b->_float * a->vector[1];
 					//c->vector[2] = b->_float * a->vector[2];
-					$quake_prog.pr_globals_write(st.c, $quake_prog.cast_float($quake_prog.pr_globals_read(st.b)) * $quake_prog.cast_float($quake_prog.pr_globals_read(st.a)));
-					$quake_prog.pr_globals_write(st.c + 1, $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 1)) * $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 1)));
-					$quake_prog.pr_globals_write(st.c + 2, $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 2)) * $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 2)));
+					var b_float = $quake_prog.cast_float($quake_prog.pr_globals_read(st.b));
+					$quake_prog.pr_globals_write(st.c, b_float * $quake_prog.cast_float($quake_prog.pr_globals_read(st.a)));
+					$quake_prog.pr_globals_write(st.c + 1, b_float * $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 1)));
+					$quake_prog.pr_globals_write(st.c + 2, b_float * $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 2)));
 					break;
 				}
 				case 64: {
@@ -13668,6 +13781,7 @@
 						if (i >= $quake_prog.$pr_numbuiltins) {
 							$quake_prog.$pR_RunError('Bad builtin call number');
 						}
+						//Debug.WriteLine("pr_builtins " + i);
 						$quake_prog.$pr_builtins[i]();
 						break;
 					}
@@ -21856,6 +21970,7 @@
 		$sys_DebugNumber: function(y, val) {
 		},
 		$sys_Warn: function(warning) {
+			ss.Debug.writeln('Warning: ' + warning);
 		},
 		$sys_FileTime: function(path) {
 			return -1;
@@ -21884,6 +21999,7 @@
 	$quake_sys_linux.sys_Printf = function(text) {
 		$quake_sys_linux.$printbuffer += text;
 		if ($quake_sys_linux.$printbuffer.charCodeAt($quake_sys_linux.$printbuffer.length - 1) === 10) {
+			ss.Debug.writeln($quake_sys_linux.$printbuffer.substr(0, $quake_sys_linux.$printbuffer.length - 1));
 			$quake_sys_linux.$printbuffer = '';
 		}
 	};
@@ -21957,6 +22073,7 @@
 			$quake_sys_linux.$nostdout = 1;
 		}
 		else {
+			ss.Debug.writeln('Linux Quake -- Version ' + $quake_quakedef.linuX_VERSION);
 		}
 		//cmd.Cbuf_InsertText("menu_main\n");
 		return 0;
@@ -22825,6 +22942,9 @@
 	////////////////////////////////////////////////////////////////////////////////
 	// System.Convert
 	var $System_Convert = function() {
+	};
+	$System_Convert.toInt32 = function(value) {
+		throw new $System_NotImplementedException();
 	};
 	$System_Convert.toString = function(value) {
 		return value.toString();
@@ -24355,6 +24475,7 @@
 	$quake_prog.$pr_xstatement = 0;
 	$quake_prog.$pr_argc = 0;
 	$quake_prog.$pr_opnames = ['DONE', 'MUL_F', 'MUL_V', 'MUL_FV', 'MUL_VF', 'DIV', 'ADD_F', 'ADD_V', 'SUB_F', 'SUB_V', 'EQ_F', 'EQ_V', 'EQ_S', 'EQ_E', 'EQ_FNC', 'NE_F', 'NE_V', 'NE_S', 'NE_E', 'NE_FNC', 'LE', 'GE', 'LT', 'GT', 'INDIRECT', 'INDIRECT', 'INDIRECT', 'INDIRECT', 'INDIRECT', 'INDIRECT', 'ADDRESS', 'STORE_F', 'STORE_V', 'STORE_S', 'STORE_ENT', 'STORE_FLD', 'STORE_FNC', 'STOREP_F', 'STOREP_V', 'STOREP_S', 'STOREP_ENT', 'STOREP_FLD', 'STOREP_FNC', 'RETURN', 'NOT_F', 'NOT_V', 'NOT_S', 'NOT_ENT', 'NOT_FNC', 'IF', 'IFNOT', 'CALL0', 'CALL1', 'CALL2', 'CALL3', 'CALL4', 'CALL5', 'CALL6', 'CALL7', 'CALL8', 'STATE', 'GOTO', 'AND', 'OR', 'BITAND', 'BITOR'];
+	$quake_prog.$prNum = 0;
 	$quake_server.nuM_PING_TIMES = 16;
 	$quake_server.nuM_SPAWN_PARMS = 16;
 	$quake_server.movetypE_NONE = 0;
