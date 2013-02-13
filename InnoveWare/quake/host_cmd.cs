@@ -21,6 +21,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 namespace quake
 {
     using System;
+    using System.Diagnostics;
 
     public partial class host
     {
@@ -166,6 +167,7 @@ namespace quake
         */
         static void Host_Changelevel_f()
         {
+            throw new NotImplementedException();
         }
 
         /*
@@ -338,6 +340,13 @@ namespace quake
         */
         static void Host_Kill_f ()
         {
+            server.sv_player.v.origin[0] = 544;
+            server.sv_player.v.origin[1] = 288;
+            server.sv_player.v.origin[2] = 66;
+            cmd.Cbuf_AddText("toggleconsole;\n");
+            cmd.Cbuf_AddText("+back;\n");
+            //cmd.Cbuf_AddText("+attack;\n"); //PDF_Aim not implemetned?
+            
         }
         
         /*
@@ -543,6 +552,7 @@ namespace quake
         */
         static void Host_Give_f()
         {
+            throw new NotImplementedException();
         }
 
         /*
@@ -552,6 +562,7 @@ namespace quake
         */
         static void Host_Viewmodel_f()
         {
+            Debug.WriteLine("todo Host_Viewmodel_f");
         }
 
         /*
@@ -561,6 +572,8 @@ namespace quake
         */
         static void Host_Viewframe_f()
         {
+            Debug.WriteLine("todo Host_Viewframe_f");
+
         }
 
 
@@ -571,6 +584,7 @@ namespace quake
         */
         static void Host_Viewnext_f()
         {
+            Debug.WriteLine("todo Host_Viewnext_f");
         }
 
         /*
@@ -580,6 +594,7 @@ namespace quake
         */
         static void Host_Viewprev_f()
         {
+            Debug.WriteLine("todo Host_Viewprev_f");
         }
 
         /*

@@ -30,28 +30,29 @@ namespace quake
 
     public partial class prog
     {
-        static dprograms_t              progs;
+        static dprograms_t progs;
         public static dfunction_t[] pr_functions;
         static Uint8Array pr_strings;
-        static ddef_t[]                 pr_fielddefs;
-        static ddef_t[]                 pr_globaldefs;
-        static dstatement_t[]           pr_statements;
-        public static globalvars_t[]    pr_global_struct;
-        public static int               pr_edict_size;	// in bytes
+        static ddef_t[] pr_fielddefs;
+        static ddef_t[] pr_globaldefs;
+        static dstatement_t[] pr_statements;
+        public static globalvars_t[] pr_global_struct;
+        public static int pr_edict_size;	// in bytes
 
-        public static ushort            pr_crc;
+        public static ushort pr_crc;
+        //int	type_size = new{1,/*sizeof(string_t)*/ 4 /4,1,3,1,1,/*sizeof(func_t)*/5/4,/*sizeof(void *)*/4/4};
 
-        static cvar_t	nomonsters = new cvar_t("nomonsters", "0");
-        static cvar_t	gamecfg = new cvar_t("gamecfg", "0");
-        static cvar_t	scratch1 = new cvar_t("scratch1", "0");
-        static cvar_t	scratch2 = new cvar_t("scratch2", "0");
-        static cvar_t	scratch3 = new cvar_t("scratch3", "0");
-        static cvar_t	scratch4 = new cvar_t("scratch4", "0");
-        static cvar_t	savedgamecfg = new cvar_t("savedgamecfg", "0", true);
-        static cvar_t	saved1 = new cvar_t("saved1", "0", true);
-        static cvar_t	saved2 = new cvar_t("saved2", "0", true);
-        static cvar_t	saved3 = new cvar_t("saved3", "0", true);
-        static cvar_t	saved4 = new cvar_t("saved4", "0", true);
+        static cvar_t nomonsters = new cvar_t("nomonsters", "0");
+        static cvar_t gamecfg = new cvar_t("gamecfg", "0");
+        static cvar_t scratch1 = new cvar_t("scratch1", "0");
+        static cvar_t scratch2 = new cvar_t("scratch2", "0");
+        static cvar_t scratch3 = new cvar_t("scratch3", "0");
+        static cvar_t scratch4 = new cvar_t("scratch4", "0");
+        static cvar_t savedgamecfg = new cvar_t("savedgamecfg", "0", true);
+        static cvar_t saved1 = new cvar_t("saved1", "0", true);
+        static cvar_t saved2 = new cvar_t("saved2", "0", true);
+        static cvar_t saved3 = new cvar_t("saved3", "0", true);
+        static cvar_t saved4 = new cvar_t("saved4", "0", true);
 
         private static Dictionary<string, int> stringDictionary = new Dictionary<string, int>();
         private static String[] stringPool = new String[1000];
@@ -64,11 +65,11 @@ namespace quake
         Sets everything to NULL
         =================
         */
-        static void ED_ClearEdict (edict_t e)
+        static void ED_ClearEdict(edict_t e)
         {
             e.v.clear();
-	        //memset (&e->v, 0, progs->entityfields * 4);
-	        e.free = false;
+            //memset (&e->v, 0, progs->entityfields * 4);
+            e.free = false;
         }
 
         /*
@@ -82,31 +83,31 @@ namespace quake
         angles and bad trails.
         =================
         */
-        static edict_t ED_Alloc ()
+        static edict_t ED_Alloc()
         {
-	        int			i;
-	        edict_t		e;
+            int i;
+            edict_t e;
 
-	        for ( i=server.svs.maxclients+1 ; i<server.sv.num_edicts ; i++)
-	        {
-		        e = EDICT_NUM(i);
-		        // the first couple seconds of server time can involve a lot of
-		        // freeing and allocating, so relax the replacement policy
-		        if (e.free && ( e.freetime < 2 || server.sv.time - e.freetime > 0.5 ) )
-		        {
-			        ED_ClearEdict (e);
-			        return e;
-		        }
-	        }
-        	
-	        if (i == quakedef.MAX_EDICTS)
-		        sys_linux.Sys_Error ("ED_Alloc: no free edicts");
-        		
-	        server.sv.num_edicts++;
-	        e = EDICT_NUM(i);
-	        ED_ClearEdict (e);
+            for (i = server.svs.maxclients + 1; i < server.sv.num_edicts; i++)
+            {
+                e = EDICT_NUM(i);
+                // the first couple seconds of server time can involve a lot of
+                // freeing and allocating, so relax the replacement policy
+                if (e.free && (e.freetime < 2 || server.sv.time - e.freetime > 0.5))
+                {
+                    ED_ClearEdict(e);
+                    return e;
+                }
+            }
 
-	        return e;
+            if (i == quakedef.MAX_EDICTS)
+                sys_linux.Sys_Error("ED_Alloc: no free edicts");
+
+            server.sv.num_edicts++;
+            e = EDICT_NUM(i);
+            ED_ClearEdict(e);
+
+            return e;
         }
 
         /*
@@ -117,23 +118,23 @@ namespace quake
         FIXME: walk all entities and NULL out references to this entity
         =================
         */
-        static void ED_Free (edict_t ed)
+        static void ED_Free(edict_t ed)
         {
-	        //SV_UnlinkEdict (ed);		// unlink from world bsp
+            //SV_UnlinkEdict (ed);		// unlink from world bsp
 
-	        ed.free = true;
-	        ed.v.model = 0;
-	        ed.v.takedamage = 0;
-	        ed.v.modelindex = 0;
-	        ed.v.colormap = 0;
-	        ed.v.skin = 0;
-	        ed.v.frame = 0;
-	        mathlib.VectorCopy (mathlib.vec3_origin, ed.v.origin);
-            mathlib.VectorCopy (mathlib.vec3_origin, ed.v.angles);
-	        ed.v.nextthink = -1;
-	        ed.v.solid = 0;
-        	
-	        ed.freetime = server.sv.time;
+            ed.free = true;
+            ed.v.model = 0;
+            ed.v.takedamage = 0;
+            ed.v.modelindex = 0;
+            ed.v.colormap = 0;
+            ed.v.skin = 0;
+            ed.v.frame = 0;
+            mathlib.VectorCopy(mathlib.vec3_origin, ed.v.origin);
+            mathlib.VectorCopy(mathlib.vec3_origin, ed.v.angles);
+            ed.v.nextthink = -1;
+            ed.v.solid = 0;
+
+            ed.freetime = server.sv.time;
         }
 
         /*
@@ -143,8 +144,8 @@ namespace quake
         */
         public static ddef_t ED_FindField(string name)
         {
-            ddef_t  def;
-            int     i;
+            ddef_t def;
+            int i;
 
             for (i = 0; i < progs.numfielddefs; i++)
             {
@@ -163,7 +164,7 @@ namespace quake
         public static dfunction_t ED_FindFunction(string name)
         {
             dfunction_t func;
-            int         i;
+            int i;
 
             for (i = 0; i < progs.numfunctions; i++)
             {
@@ -183,8 +184,8 @@ namespace quake
         */
         static ddef_t ED_GlobalAtOfs(int ofs)
         {
-            ddef_t  def;
-            int     i;
+            ddef_t def;
+            int i;
 
             for (i = 0; i < progs.numglobaldefs; i++)
             {
@@ -202,8 +203,8 @@ namespace quake
         */
         static ddef_t ED_FieldAtOfs(int ofs)
         {
-            ddef_t  def;
-            int     i;
+            ddef_t def;
+            int i;
 
             for (i = 0; i < progs.numfielddefs; i++)
             {
@@ -224,45 +225,47 @@ namespace quake
         static string line = StringExtensions.StringOfLength(256);
         static string PR_ValueString(int type, Object val)
         {
-	        ddef_t		def;
-	        dfunction_t f;
-        	
-	        type &= ~DEF_SAVEGLOBAL;
+            ddef_t def;
+            dfunction_t f;
 
-	        switch ((etype_t)type)
-	        {
-	        case etype_t.ev_string:
-		        line = pr_string(cast_int(val));
-		        break;
-	        case etype_t.ev_entity:	
-		        line = "entity " + NUM_FOR_EDICT(PROG_TO_EDICT(cast_int(val)));
-		        break;
-	        case etype_t.ev_function:
-		        f = pr_functions[cast_int(val)];
-		        line = pr_string(f.s_name) + "()";
-		        break;
-	        case etype_t.ev_field:
-		        def = ED_FieldAtOfs ( cast_int(val) );
-		        line = "." + pr_string(def.s_name);
-		        break;
-	        case etype_t.ev_void:
-		        line = "void";
-		        break;
-	        case etype_t.ev_float:
-	                line = cast_float(val).ToString();
-		        break;  
-	        case etype_t.ev_vector:
-	                line = cast_float(val).ToString();
-		        break;
-	        case etype_t.ev_pointer:
-		        line = "pointer";
-		        break;
-	        default:
-		        line = "bad type " + type;
-		        break;
-	        }
-        	
-	        return line;
+            type &= ~DEF_SAVEGLOBAL;
+
+            switch ((etype_t)type)
+            {
+                case etype_t.ev_string:
+                    line = pr_string(cast_int(val));
+                    break;
+                case etype_t.ev_entity:
+                    line = "entity " + NUM_FOR_EDICT(PROG_TO_EDICT(cast_int(val)));
+                    break;
+                case etype_t.ev_function:
+                    f = pr_functions[cast_int(val)];
+                    line = pr_string(f.s_name) + "()";
+                    break;
+                case etype_t.ev_field:
+                    def = ED_FieldAtOfs(cast_int(val));
+                    line = "." + pr_string(def.s_name);
+                    break;
+                case etype_t.ev_void:
+                    line = "void";
+                    break;
+                case etype_t.ev_float:
+                    line = string.Format("{0:F1}", cast_float(val));
+                    break;
+                case etype_t.ev_vector:
+                    var vec = (double[])val;
+                    //line = "'" + vec[0] + " " + vec[1] + " " + vec[2] + "'";
+                    line = string.Format("'{0:F1} {1:F1} {2:F1}'", vec[0], vec[1], vec[2]);
+                    break;
+                case etype_t.ev_pointer:
+                    line = "pointer";
+                    break;
+                default:
+                    line = "bad type " + type;
+                    break;
+            }
+
+            return line;
         }
 
         /*
@@ -275,86 +278,343 @@ namespace quake
         */
         static string PR_GlobalString(int ofs)
         {
-	        string  s;
-	        int		i;
-	        ddef_t	def;
-	        Object  val;
-        	
-	        val = pr_globals_read(ofs);
-	        def = ED_GlobalAtOfs(ofs);
-	        if (def == null)
-		        line = ofs + "(???)";
-	        else
-	        {
-	            if (def.type == (int)etype_t.ev_vector || (int)etype_t.ev_vector == (def.type & ~DEF_SAVEGLOBAL))
-	            {
-	                Object val2 = pr_globals_read(ofs + 1);
-	                Object val3 = pr_globals_read(ofs + 2);
+            string s;
+            int i;
+            ddef_t def;
+            Object val;
 
-	                s = "'   " + PR_ValueString(def.type, val) + "   " + PR_ValueString(def.type, val2) + "   "
-	                    + PR_ValueString(def.type, val3) + "'";
-	            }
-	            else
-	            {
-	                s = PR_ValueString(def.type, val);
-	            }
-	            line = ofs + "(" + pr_string(def.s_name) + ")" + s;
-	        }
-        	
-	        i = line.Length;
-	        for ( ; i<20 ; i++)
-		        line += " ";
-	        line += " ";
-        		
-	        return line;
+            val = pr_globals_read(ofs);
+            def = ED_GlobalAtOfs(ofs);
+            if (def == null)
+                line = ofs + "(???)";
+            else
+            {
+                if (def.type == (int)etype_t.ev_vector || (int)etype_t.ev_vector == (def.type & ~DEF_SAVEGLOBAL))
+                {
+                    Object val2 = pr_globals_read(ofs + 1);
+                    Object val3 = pr_globals_read(ofs + 2);
+
+                    s = "'   " + PR_ValueString(def.type, val) + "   " + PR_ValueString(def.type, val2) + "   "
+                        + PR_ValueString(def.type, val3) + "'";
+                }
+                else
+                {
+                    s = PR_ValueString(def.type, val);
+                }
+                line = ofs + "(" + pr_string(def.s_name) + ")" + s;
+            }
+
+            i = line.Length;
+            for (; i < 20; i++)
+                line += " ";
+            line += " ";
+
+            return line;
+        }
+
+        static bool PR_GlobalStringHasValue(int ofs)
+        {
+            string s;
+            int i;
+            ddef_t def;
+            Object val;
+
+            val = pr_globals_read(ofs);
+            def = ED_GlobalAtOfs(ofs);
+            if (def == null) return false;
+            else
+            {
+                if (def.type == (int)etype_t.ev_vector || (int)etype_t.ev_vector == (def.type & ~DEF_SAVEGLOBAL))
+                {
+                    var val2 = (double)pr_globals_read(ofs + 1);
+                    var val3 = (double)pr_globals_read(ofs + 2);
+                    return ((double)val + val2 + val3) == 0;
+                }
+                else
+                {
+                    return val != null && val.ToString() != "0";
+                }
+            }
+
+            return true;
         }
 
         static string PR_GlobalStringNoContents(int ofs)
         {
-	        int		i;
-	        ddef_t	def;
-        	
-	        def = ED_GlobalAtOfs(ofs);
-	        if (def == null)
-		        line = ofs + "(???)";
-	        else
-		        line = ofs + "(" + pr_string(def.s_name) + ")";
-        	
-	        i = line.Length;
-	        for ( ; i<20 ; i++)
-		        line += " ";
-	        line += " ";
-        		
-	        return line;
+            int i;
+            ddef_t def;
+
+            def = ED_GlobalAtOfs(ofs);
+            if (def == null)
+                line = ofs + "(???)";
+            else
+                line = ofs + "(" + pr_string(def.s_name) + ")";
+
+            i = line.Length;
+            for (; i < 20; i++)
+                line += " ";
+            line += " ";
+
+            return line;
         }
 
+        /*
+        =============
+        ED_Print
+
+        For debugging
+        =============
+        */
+
+        public static void ED_Print(edict_t ed)
+        {
+#if SILVERLIGHT
+            int l;
+            ddef_t d;
+            //C++ TO C# CONVERTER TODO TASK: C# does not have an equivalent for pointers to value types:
+            //ORIGINAL LINE: int *v;
+            int v;
+            int i;
+            int j;
+            string name;
+            int type;
+
+            if (ed.free)
+            {
+                console.Con_Printf("FREE\n");
+                return;
+            }
+
+            string output = "\nEDICT " + NUM_FOR_EDICT(ed) + ":\n";
+            for (i = 1; i < progs.numfielddefs; i++)
+            {
+                d = pr_fielddefs[i];
+                name = pr_string(d.s_name);
+                if (name[name.Length - 2] == '_')
+                {
+                    continue; // skip _x, _y, _z vars
+                }
+
+                //// if the value is still all 0, skip the field
+                type = d.type & ~DEF_SAVEGLOBAL;
+
+                var field = ed.v.GetType().GetField(name);
+                object value = null;
+                string valStr = null;
+                if (field == null)
+                {
+                    valStr = pr_string(cast_int(ed.v.variables[d.ofs - 105]));
+                    if (valStr == "")
+                    {
+                        continue;
+                    }
+                }
+                else
+                {
+                    switch ((etype_t)type)
+                    {
+                        case etype_t.ev_function:
+                        case etype_t.ev_string:
+                            value = cast_int(field.GetValue(ed.v));
+                            if ((int)value == 0)
+                            {
+                                continue;
+                            }
+                            break;
+                        case etype_t.ev_entity:
+                            var testVal = NUM_FOR_EDICT(PROG_TO_EDICT(cast_int(field.GetValue(ed.v))));
+                            if (testVal == 0)
+                            {
+                                continue;
+                            }
+                            value = cast_int(field.GetValue(ed.v));
+                            break;
+                        case etype_t.ev_field:
+                        case etype_t.ev_void:
+                        case etype_t.ev_pointer:
+                        case etype_t.ev_float:
+                            value = field.GetValue(ed.v);
+                            if ((double)value == 0.0)
+                            {
+                                continue;
+                            }
+                            break;
+                        case etype_t.ev_vector:
+                            value = field.GetValue(ed.v);
+                            var dblVal = (double[])value;
+                            if (dblVal[0] == 0 && dblVal[1] == 0 && dblVal[2] == 0)
+                            {
+                                continue;
+                            }
+                            break;
+                    }
+                }
+
+                output += name;
+                l = name.Length;
+                while (l++ < 15)
+                {
+                    output += " ";
+                }
+
+
+                output += (valStr ?? PR_ValueString(d.type, value)) + "\n";
+
+            }
+            console.Con_Printf(output);
+#endif
+        }
+
+        ///*
+        //=============
+        //ED_Write
+
+        //For savegames
+        //=============
+        //*/
+        //void ED_Write (FILE *f, edict_t *ed)
+        //{
+        //    ddef_t	*d;
+        //    int		*v;
+        //    int		i, j;
+        //    char	*name;
+        //    int		type;
+
+        //    fprintf (f, "{\n");
+
+        //    if (ed->free)
+        //    {
+        //        fprintf (f, "}\n");
+        //        return;
+        //    }
+
+        //    for (i=1 ; i<progs->numfielddefs ; i++)
+        //    {
+        //        d = &pr_fielddefs[i];
+        //        name = pr_strings + d->s_name;
+        //        if (name[strlen(name)-2] == '_')
+        //            continue;	// skip _x, _y, _z vars
+
+        //        v = (int *)((char *)&ed->v + d->ofs*4);
+
+        //    // if the value is still all 0, skip the field
+        //        type = d->type & ~DEF_SAVEGLOBAL;
+        //        for (j=0 ; j<type_size[type] ; j++)
+        //            if (v[j])
+        //                break;
+        //        if (j == type_size[type])
+        //            continue;
+
+        //        fprintf (f,"\"%s\" ",name);
+        //        fprintf (f,"\"%s\"\n", PR_UglyValueString(d->type, (eval_t *)v));		
+        //    }
+
+        //    fprintf (f, "}\n");
+        //}
+
+        public static void ED_PrintNum(int ent)
+        {
+            ED_Print(EDICT_NUM(ent));
+        }
+
+        /*
+        =============
+        ED_PrintEdicts
+
+        For debugging, prints all the entities in the current server
+        =============
+        */
+        public static void ED_PrintEdicts()
+        {
+            int i;
+
+            console.Con_Printf(server.sv.num_edicts + " entities\n");
+            for (i = 0; i < server.sv.num_edicts; i++)
+                ED_PrintNum(i);
+        }
+
+        ///*
+        //=============
+        //ED_PrintEdict_f
+
+        //For debugging, prints a single edicy
+        //=============
+        //*/
+        //void ED_PrintEdict_f (void)
+        //{
+        //    int		i;
+
+        //    i = Q_atoi (Cmd_Argv(1));
+        //    if (i >= sv.num_edicts)
+        //    {
+        //        Con_Printf("Bad edict number\n");
+        //        return;
+        //    }
+        //    ED_PrintNum (i);
+        //}
+
+        ///*
+        //=============
+        //ED_Count
+
+        //For debugging
+        //=============
+        //*/
+        //void ED_Count (void)
+        //{
+        //    int		i;
+        //    edict_t	*ent;
+        //    int		active, models, solid, step;
+
+        //    active = models = solid = step = 0;
+        //    for (i=0 ; i<sv.num_edicts ; i++)
+        //    {
+        //        ent = EDICT_NUM(i);
+        //        if (ent->free)
+        //            continue;
+        //        active++;
+        //        if (ent->v.solid)
+        //            solid++;
+        //        if (ent->v.model)
+        //            models++;
+        //        if (ent->v.movetype == MOVETYPE_STEP)
+        //            step++;
+        //    }
+
+        //    Con_Printf ("num_edicts:%3i\n", sv.num_edicts);
+        //    Con_Printf ("active    :%3i\n", active);
+        //    Con_Printf ("view      :%3i\n", models);
+        //    Con_Printf ("touch     :%3i\n", solid);
+        //    Con_Printf ("step      :%3i\n", step);
+
+        //}
         /*
         =============
         ED_NewString
         =============
         */
-        public static string ED_NewString (string @string)
+        public static string ED_NewString(string @string)
         {
-	        string  @new = "";
-	        int		i,l;
-        	
-	        l = @string.Length;
+            string @new = "";
+            int i, l;
 
-	        for (i=0 ; i< l ; i++)
-	        {
-		        if (@string[i] == '\\' && i < l-1)
-		        {
-			        i++;
-			        if (@string[i] == 'n')
-				        @new += "\n";
-			        else
-				        @new += "\\";
-		        }
-		        else
-			        @new += @string[i].ToString();
-	        }
-        	
-	        return @new;
+            l = @string.Length;
+
+            for (i = 0; i < l; i++)
+            {
+                if (@string[i] == '\\' && i < l - 1)
+                {
+                    i++;
+                    if (@string[i] == 'n')
+                        @new += "\n";
+                    else
+                        @new += "\\";
+                }
+                else
+                    @new += @string[i].ToString();
+            }
+
+            return @new;
         }
 
         /*
@@ -365,87 +625,83 @@ namespace quake
         returns false if error
         =============
         */
-        public static bool ED_ParseEpair (object @base, ddef_t key, string keyname, string s)
+        public static bool ED_ParseEpair(object @base, ddef_t key, string keyname, string s)
         {
 #if SILVERLIGHT
-	        int		                    i;
-	        /*ddef_t	*def;
-	        char	*v, *w;*/
-	        FieldInfo	                d;
-	        //dfunction_t	*func;
-            Object[]                    variables = null;
-            double[]                    values = new double[3];
-        	
-	        //d = (void *)((int *)base + key->ofs);
+            int i;
+            /*ddef_t	*def;
+            char	*v, *w;*/
+            FieldInfo d;
+            //dfunction_t	*func;
+            Object[] variables = null;
+            double[] values = new double[3];
+
+            //d = (void *)((int *)base + key->ofs);
             d = @base.GetType().GetField(keyname);
             if (d == null)
                 variables = ((entvars_t)@base).variables;
 
-	        switch ((etype_t)(key.type & ~DEF_SAVEGLOBAL))
-	        {
-	        case etype_t.ev_string:
-                if (d != null)
-                    d.SetValue(@base, getStringIndex(ED_NewString(s)) - 15000);
-                else
-                    variables[key.ofs - 105] = getStringIndex(ED_NewString(s)) - 15000;
-		        break;
-        		
-	        case etype_t.ev_float:
-                if (d != null)
-                    d.SetValue(@base, common.Q_atof(s));
-                else
-                    variables[key.ofs - 105] = common.Q_atof(s);
-		        break;
-        		
-	        case etype_t.ev_vector:
-                int w = 0;
-                int v = 0;
-		        for (i=0 ; i<3 ; i++)
-		        {
-			        while (v < s.Length && s[v] != ' ')
-				        v++;
+            switch ((etype_t)(key.type & ~DEF_SAVEGLOBAL))
+            {
+                case etype_t.ev_string:
+                    if (d != null) d.SetValue(@base, getStringIndex(ED_NewString(s)) - 15000);
+                    else variables[key.ofs - 105] = getStringIndex(ED_NewString(s)) - 15000;
+                    break;
 
-			        values[i] = common.Q_atof (s.Substring(w, v - w));
-			        w = v = v+1;
-		        }
-                if (d != null)
-                    d.SetValue(@base, values);
-                else
-                {
-                    for (i=0; i<3; i++)
-                        variables[key.ofs - 105 + i] = values[i];
-                }
-		        break;
-        		
-/*	        case ev_entity:
-		        *(int *)d = EDICT_TO_PROG(EDICT_NUM(atoi (s)));
-		        break;
-        		
-	        case ev_field:
-		        def = ED_FindField (s);
-		        if (!def)
-		        {
-			        Con_Printf ("Can't find field %s\n", s);
-			        return false;
-		        }
-		        *(int *)d = G_INT(def->ofs);
-		        break;
-        	
-	        case ev_function:
-		        func = ED_FindFunction (s);
-		        if (!func)
-		        {
-			        Con_Printf ("Can't find function %s\n", s);
-			        return false;
-		        }
-		        *(func_t *)d = func - pr_functions;
-		        break;*/
-        		
-	        default:
-                sys_linux.Sys_Error("ERROR");
-		        break;
-	        }
-	        return true;
+                case etype_t.ev_float:
+                    if (d != null) d.SetValue(@base, common.Q_atof(s));
+                    else variables[key.ofs - 105] = common.Q_atof(s);
+                    break;
+
+                case etype_t.ev_vector:
+                    int w = 0;
+                    int v = 0;
+                    for (i = 0; i < 3; i++)
+                    {
+                        while (v < s.Length && s[v] != ' ') v++;
+
+                        values[i] = common.Q_atof(s.Substring(w, v - w));
+                        w = v = v + 1;
+                    }
+                    if (d != null) d.SetValue(@base, values);
+                    else
+                    {
+                        for (i = 0; i < 3; i++) variables[key.ofs - 105 + i] = values[i];
+                    }
+                    break;
+
+                case etype_t.ev_entity:
+                    throw new NotImplementedException();
+                    //*(int *)d = EDICT_TO_PROG(EDICT_NUM(atoi (s)));
+                    break;
+
+                case etype_t.ev_field:
+                    throw new NotImplementedException();
+                    //def = ED_FindField (s);
+                    //if (!def)
+                    //{
+                    //    Con_Printf ("Can't find field %s\n", s);
+                    //    return false;
+                    //}
+                    //*(int *)d = G_INT(def->ofs);
+                    break;
+
+                case etype_t.ev_function:
+                    throw new NotImplementedException();
+                    //func = ED_FindFunction (s);
+                    //if (!func)
+                    //{
+                    //    Con_Printf ("Can't find function %s\n", s);
+                    //    return false;
+                    //}
+                    //*(func_t *)d = func - pr_functions;
+                    break;
+
+                default:
+                    sys_linux.Sys_Error("ERROR");
+                    break;
+            }
+            return true;
 #else
             throw new NotImplementedException("ED_ParseEpair todo!");
 #endif
@@ -460,71 +716,71 @@ namespace quake
         Used for initial level load and for savegames.
         ====================
         */
-        public static void ED_ParseEdict (char[] data, ref int ofs, edict_t ent)
+        public static void ED_ParseEdict(char[] data, ref int ofs, edict_t ent)
         {
-	        ddef_t		key;
-	        bool	    anglehack;
-	        bool	    init;
-	        string		keyname = StringExtensions.StringOfLength(256);
-	        int			n;
+            ddef_t key;
+            bool anglehack;
+            bool init;
+            string keyname = StringExtensions.StringOfLength(256);
+            int n;
 
-	        init = false;
+            init = false;
 
-        // clear it
+            // clear it
             if (ent != server.sv.edicts[0])	// hack
                 ent.v.clear();
-		        //memset (&ent->v, 0, progs->entityfields * 4);
+            //memset (&ent->v, 0, progs->entityfields * 4);
 
-        // go through all the dictionary pairs
-	        while (true)
-	        {	
-	        // parse key
-		        common.COM_Parse (data, ref ofs);
-		        if (common.com_token[0] == '}')
-			        break;
-		        if (ofs == -1)
-			        sys_linux.Sys_Error ("ED_ParseEntity: EOF without closing brace");
-        		
+            // go through all the dictionary pairs
+            while (true)
+            {
+                // parse key
+                common.COM_Parse(data, ref ofs);
+                if (common.com_token[0] == '}')
+                    break;
+                if (ofs == -1)
+                    sys_linux.Sys_Error("ED_ParseEntity: EOF without closing brace");
+
                 // anglehack is to allow QuakeEd to write single scalar angles
                 // and allow them to be turned into vectors. (FIXME...)
                 if (common.com_token.CompareTo("angle") == 0)
                 {
-	                common.com_token = "angles";
-	                anglehack = true;
+                    common.com_token = "angles";
+                    anglehack = true;
                 }
                 else
-	                anglehack = false;
+                    anglehack = false;
 
                 // FIXME: change light to _light to get rid of this hack
                 if (common.com_token.CompareTo("light") == 0)
-	                common.com_token = "light_lev";	// hack for single light def
+                    common.com_token = "light_lev";	// hack for single light def
 
-		        keyname = common.com_token;
+                keyname = common.com_token;
 
-		        // another hack to fix heynames with trailing spaces
+                // another hack to fix heynames with trailing spaces
                 keyname.TrimEnd();
 
-	        // parse value	
-		        common.COM_Parse (data, ref ofs);
-		        if (ofs == -1)
-			        sys_linux.Sys_Error ("ED_ParseEntity: EOF without closing brace");
+                // parse value	
+                common.COM_Parse(data, ref ofs);
+                if (ofs == -1)
+                    sys_linux.Sys_Error("ED_ParseEntity: EOF without closing brace");
 
-		        if (common.com_token[0] == '}')
-			        sys_linux.Sys_Error ("ED_ParseEntity: closing brace without data");
+                if (common.com_token[0] == '}')
+                    sys_linux.Sys_Error("ED_ParseEntity: closing brace without data");
 
-		        init = true;	
+                init = true;
 
-        // keynames with a leading underscore are used for utility comments,
-        // and are immediately discarded by quake
-		        if (keyname[0] == '_')
-			        continue;
-        		
-		        key = ED_FindField (keyname);
-		        if (key == null)
-		        {
-			        console.Con_Printf ("'" + keyname + "' is not a field\n");
-			        continue;
-		        }
+                // keynames with a leading underscore are used for utility comments,
+                // and are immediately discarded by quake
+                if (keyname[0] == '_')
+                    continue;
+
+                key = ED_FindField(keyname);
+                if (key == null)
+                {
+                    console.Con_Printf("'" + keyname + "' is not a field\n");
+                    continue;
+                }
 
                 if (anglehack)
                 {
@@ -533,12 +789,12 @@ namespace quake
                     common.com_token = "0 " + temp + " 0";
                 }
 
-		        if (!ED_ParseEpair (ent.v, key, keyname, common.com_token))
-			        host.Host_Error ("ED_ParseEdict: parse error");
-	        }
+                if (!ED_ParseEpair(ent.v, key, keyname, common.com_token))
+                    host.Host_Error("ED_ParseEdict: parse error");
+            }
 
-	        if (!init)
-		        ent.free = true;
+            if (!init)
+                ent.free = true;
         }
 
         /*
@@ -558,10 +814,10 @@ namespace quake
         */
         public static void ED_LoadFromFile(char[] data)
         {
-            edict_t     ent;
-            int         inhibit;
+            edict_t ent;
+            int inhibit;
             dfunction_t func;
-            int         ofs = 0;
+            int ofs = 0;
 
             ent = null;
             inhibit = 0;
@@ -579,57 +835,57 @@ namespace quake
 
                 if (ent == null)
                     ent = EDICT_NUM(0);
-		        else
-			        ent = ED_Alloc ();
+                else
+                    ent = ED_Alloc();
                 if (ent.index == 49)
                     ent.index = ent.index;
-		        ED_ParseEdict (data, ref ofs, ent);
+                ED_ParseEdict(data, ref ofs, ent);
 
-        // remove things from different skill levels or deathmatch
-		        if (host.deathmatch.value != 0)
-		        {
-			        if (((int)ent.v.spawnflags & server.SPAWNFLAG_NOT_DEATHMATCH) != 0)
-			        {
-				        ED_Free (ent);
-				        inhibit++;
-				        continue;
-			        }
-		        }
-		        else if ((host.current_skill == 0 && ((int)ent.v.spawnflags & server.SPAWNFLAG_NOT_EASY) != 0)
+                // remove things from different skill levels or deathmatch
+                if (host.deathmatch.value != 0)
+                {
+                    if (((int)ent.v.spawnflags & server.SPAWNFLAG_NOT_DEATHMATCH) != 0)
+                    {
+                        ED_Free(ent);
+                        inhibit++;
+                        continue;
+                    }
+                }
+                else if ((host.current_skill == 0 && ((int)ent.v.spawnflags & server.SPAWNFLAG_NOT_EASY) != 0)
                         || (host.current_skill == 1 && ((int)ent.v.spawnflags & server.SPAWNFLAG_NOT_MEDIUM) != 0)
                         || (host.current_skill >= 2 && ((int)ent.v.spawnflags & server.SPAWNFLAG_NOT_HARD) != 0))
-		        {
-			        ED_Free (ent);	
-			        inhibit++;
-			        continue;
-		        }
+                {
+                    ED_Free(ent);
+                    inhibit++;
+                    continue;
+                }
 
-        //
-        // immediately call spawn function
-        //
-		        if (ent.v.classname == 0)
-		        {
-			        console.Con_Printf ("No classname for:\n");
-			        //ED_Print (ent);
-			        ED_Free (ent);
-			        continue;
-		        }
+                //
+                // immediately call spawn function
+                //
+                if (ent.v.classname == 0)
+                {
+                    console.Con_Printf("No classname for:\n");
+                    //ED_Print (ent);
+                    ED_Free(ent);
+                    continue;
+                }
 
-	        // look for the spawn function
-                func = ED_FindFunction( pr_string(ent.v.classname) );
+                // look for the spawn function
+                func = ED_FindFunction(pr_string(ent.v.classname));
 
-		        if (func == null)
-		        {
-			        console.Con_Printf ("No spawn function for:\n");
-			        //ED_Print (ent);
-			        ED_Free (ent);
-			        continue;
-		        }
+                if (func == null)
+                {
+                    console.Con_Printf("No spawn function for:\n");
+                    //ED_Print (ent);
+                    ED_Free(ent);
+                    continue;
+                }
 
                 if (pr_string(ent.v.classname) == "trigger_teleport")
                     inhibit = inhibit;
-		        pr_global_struct[0].self = EDICT_TO_PROG(ent);
-		        PR_ExecuteProgram (func);
+                pr_global_struct[0].self = EDICT_TO_PROG(ent);
+                PR_ExecuteProgram(func);
             }
 
             console.Con_DPrintf(inhibit + " entities inhibited\n");
@@ -644,7 +900,7 @@ namespace quake
 
         public static void pr_globals_write(int address, Object value)
         {
-            globalvars_t globalvars = pr_global_struct[address * 4 / sizeof_globalvars_t ];
+            globalvars_t globalvars = pr_global_struct[address * 4 / sizeof_globalvars_t];
             int offset = address % (sizeof_globalvars_t / 4);
             switch (offset)
             {
@@ -748,7 +1004,7 @@ namespace quake
         {
             globalvars_t globalvars = pr_global_struct[address * 4 / sizeof_globalvars_t];
             int offset = address % (sizeof_globalvars_t / 4);
-            switch(offset)
+            switch (offset)
             {
                 case 0:
                 case 1:
@@ -895,22 +1151,22 @@ namespace quake
         PR_LoadProgs
         ===============
         */
-        public static void PR_LoadProgs ()
+        public static void PR_LoadProgs()
         {
-	        int		            i;
-            Uint8Array          buf;
-            int                 kk;
-            helper.ByteBuffer   bbuf;
+            int i;
+            Uint8Array buf;
+            int kk;
+            helper.ByteBuffer bbuf;
 
             pr_crc = crc.CRC_Init();
 
-	        buf = common.COM_LoadHunkFile ("progs.dat");
+            buf = common.COM_LoadHunkFile("progs.dat");
             progs = (dprograms_t)buf;
-	        if (progs == null)
-		        sys_linux.Sys_Error ("PR_LoadProgs: couldn't load progs.dat");
-	        console.Con_DPrintf ("Programs occupy " + (common.com_filesize/1024) + "K.\n");
+            if (progs == null)
+                sys_linux.Sys_Error("PR_LoadProgs: couldn't load progs.dat");
+            console.Con_DPrintf("Programs occupy " + (common.com_filesize / 1024) + "K.\n");
 
-	        for (i=0 ; i<common.com_filesize ; i++)
+            for (i = 0; i < common.com_filesize; i++)
                 pr_crc = crc.CRC_ProcessByte(pr_crc, (byte)buf[i]);
 
             if (progs.version != PROG_VERSION)
@@ -971,9 +1227,9 @@ namespace quake
         PR_Init
         ===============
         */
-        public static void PR_Init ()
+        public static void PR_Init()
         {
-	        //Cmd_AddCommand ("edict", ED_PrintEdict_f);
+            //Cmd_AddCommand ("edict", ED_PrintEdict_f);
             //Cmd_AddCommand ("edicts", ED_PrintEdicts);
             //Cmd_AddCommand ("edictcount", ED_Count);
             //Cmd_AddCommand ("profile", PR_Profile_f);
@@ -987,7 +1243,7 @@ namespace quake
             cvar_t.Cvar_RegisterVariable(saved1);
             cvar_t.Cvar_RegisterVariable(saved2);
             cvar_t.Cvar_RegisterVariable(saved3);
-	        cvar_t.Cvar_RegisterVariable (saved4);
+            cvar_t.Cvar_RegisterVariable(saved4);
         }
 
         public static edict_t EDICT_NUM(int n)

@@ -710,8 +710,7 @@ namespace quake
 
         static void PF_coredump ()
         {
-            throw new NotImplementedException();
-            //ED_PrintEdicts();
+           prog.ED_PrintEdicts();
         }
 
         static void PF_traceon ()

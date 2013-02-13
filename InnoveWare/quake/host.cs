@@ -220,6 +220,8 @@ namespace quake
         */
         void Host_WriteConfiguration ()
         {
+            //todo
+            throw new NotImplementedException();
         }
 
 
@@ -256,6 +258,7 @@ namespace quake
         */
         void Host_ClientCommands (string fmt)
         {
+            throw new NotImplementedException();
         }
 
         /*

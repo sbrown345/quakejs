@@ -76,7 +76,7 @@ namespace quake
 		        bottom[0] = top[0];
 		        bottom[1] = top[1];
 		        bottom[2] = top[2] - 160;
-        		
+        		throw  new NotImplementedException();
 		        /*tr = SV_Move (top, vec3_origin, vec3_origin, bottom, 1, sv_player);
 		        if (tr.allsolid)
 			        return;	// looking at a wall, leave ideal the way is was*/
