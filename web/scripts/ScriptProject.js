@@ -6755,12 +6755,15 @@
 	};
 	$quake_host.prototype = {
 		$host_WriteConfiguration: function() {
+			//todo
+			throw new $System_NotImplementedException();
 		},
 		$sV_ClientPrintf: function(fmt) {
 		},
 		sV_BroadcastPrintf: function(fmt) {
 		},
 		$host_ClientCommands: function(fmt) {
+			throw new $System_NotImplementedException();
 		},
 		$sV_DropClient: function(crash) {
 		},
@@ -6774,6 +6777,7 @@
 			$quake_host.$isdown = true;
 		},
 		$host_SavegameComment: function(text) {
+			ss.Debug.writeln('todo Host_SavegameComment');
 		}
 	};
 	$quake_host.host_EndGame = function(message) {
@@ -7051,16 +7055,22 @@
 		$quake_sys_linux.sys_Quit();
 	};
 	$quake_host.$host_Status_f = function() {
+		ss.Debug.writeln('todo Host_Status_f');
 	};
 	$quake_host.$host_God_f = function() {
+		ss.Debug.writeln('todo Host_God_f');
 	};
 	$quake_host.$host_Notarget_f = function() {
+		ss.Debug.writeln('todo Host_Notarget_f');
 	};
 	$quake_host.$host_Noclip_f = function() {
+		ss.Debug.writeln('todo Host_Noclip_f');
 	};
 	$quake_host.$host_Fly_f = function() {
+		ss.Debug.writeln('todo Host_Fly_f');
 	};
 	$quake_host.$host_Ping_f = function() {
+		ss.Debug.writeln('todo Host_Ping_f');
 	};
 	$quake_host.$host_Map_f = function() {
 		var i;
@@ -7098,8 +7108,10 @@
 		}
 	};
 	$quake_host.$host_Changelevel_f = function() {
+		ss.Debug.writeln('todo Host_Changelevel_f');
 	};
 	$quake_host.$host_Restart_f = function() {
+		ss.Debug.writeln('todo Host_Restart_f');
 	};
 	$quake_host.$host_Reconnect_f = function() {
 		$quake_screen.scR_BeginLoadingPlaque();
@@ -7119,8 +7131,10 @@
 		$quake_host.$host_Reconnect_f();
 	};
 	$quake_host.$host_Savegame_f = function() {
+		ss.Debug.writeln('todo Host_Savegame_f');
 	};
 	$quake_host.$host_Loadgame_f = function() {
+		ss.Debug.writeln('todo Host_Loadgame_f');
 	};
 	$quake_host.$host_Name_f = function() {
 		var newName;
@@ -7161,6 +7175,7 @@
 		//console.Con_Printf ("Exe: " + _TIME_ + " " + __DATE__ + "\n");
 	};
 	$quake_host.$host_Say = function(teamonly) {
+		ss.Debug.writeln('todo Host_Say');
 	};
 	$quake_host.$host_Say_f = function() {
 		$quake_host.$host_Say(false);
@@ -7169,12 +7184,21 @@
 		$quake_host.$host_Say(true);
 	};
 	$quake_host.$host_Tell_f = function() {
+		ss.Debug.writeln('todo Host_Tell_f');
 	};
 	$quake_host.$host_Color_f = function() {
+		ss.Debug.writeln('todo Host_Color_f');
 	};
 	$quake_host.$host_Kill_f = function() {
+		$quake_server.sv_player.v.origin[0] = 544;
+		$quake_server.sv_player.v.origin[1] = 288;
+		$quake_server.sv_player.v.origin[2] = 66;
+		$quake_cmd.cbuf_AddText('toggleconsole;\n');
+		$quake_cmd.cbuf_AddText('+back;\n');
+		//cmd.Cbuf_AddText("+attack;\n"); //PDF_Aim not implemetned?
 	};
 	$quake_host.$host_Pause_f = function() {
+		ss.Debug.writeln('todo Host_Pause_f');
 	};
 	$quake_host.$host_PreSpawn_f = function() {
 		if ($quake_cmd.cmd_source === 1) {
@@ -7291,16 +7315,22 @@
 		$quake_host.host_client.spawned = true;
 	};
 	$quake_host.$host_Kick_f = function() {
+		ss.Debug.writeln('todo Host_Kick_f');
 	};
 	$quake_host.$host_Give_f = function() {
+		ss.Debug.writeln('todo Host_Give_f');
 	};
 	$quake_host.$host_Viewmodel_f = function() {
+		ss.Debug.writeln('todo Host_Viewmodel_f');
 	};
 	$quake_host.$host_Viewframe_f = function() {
+		ss.Debug.writeln('todo Host_Viewframe_f');
 	};
 	$quake_host.$host_Viewnext_f = function() {
+		ss.Debug.writeln('todo Host_Viewnext_f');
 	};
 	$quake_host.$host_Viewprev_f = function() {
+		ss.Debug.writeln('todo Host_Viewprev_f');
 	};
 	$quake_host.$host_Startdemos_f = function() {
 		var i, c;
@@ -11562,7 +11592,7 @@
 		$quake_mathlib.vectorCopy(rmin, e.v.mins);
 		$quake_mathlib.vectorCopy(rmax, e.v.maxs);
 		$quake_mathlib.vectorSubtract(max, min, e.v.size);
-		//SV_LinkEdict (e, false);
+		$quake_world.sV_LinkEdict(e, false);
 	};
 	$quake_prog.$pF_setsize = function() {
 		var e;
@@ -11780,8 +11810,7 @@
 		$quake_prog.$pR_RunError('PF_precache_model: overflow');
 	};
 	$quake_prog.$pF_coredump = function() {
-		throw new $System_NotImplementedException();
-		//ED_PrintEdicts();
+		$quake_prog.eD_PrintEdicts();
 	};
 	$quake_prog.$pF_traceon = function() {
 		throw new $System_NotImplementedException();
@@ -12015,11 +12044,13 @@
 				break;
 			}
 			case 2: {
-				$quake_prog.$line = $quake_prog.cast_float(val).toString();
+				$quake_prog.$line = ss.formatString('{0:F1}', $quake_prog.cast_float(val));
 				break;
 			}
 			case 3: {
-				$quake_prog.$line = $quake_prog.cast_float(val).toString();
+				var vec = ss.cast(val, Array);
+				//line = "'" + vec[0] + " " + vec[1] + " " + vec[2] + "'";
+				$quake_prog.$line = ss.formatString('\'{0:F1} {1:F1} {2:F1}\'', vec[0], vec[1], vec[2]);
 				break;
 			}
 			case 7: {
@@ -12044,10 +12075,12 @@
 			$quake_prog.$line = ofs + '(???)';
 		}
 		else {
-			if (def.type === 3 || 3 === (def.type & -32769)) {
+			if (3 === (def.type & -32769)) {
 				var val2 = $quake_prog.pr_globals_read(ofs + 1);
 				var val3 = $quake_prog.pr_globals_read(ofs + 2);
-				s = '\'   ' + $quake_prog.$pR_ValueString(def.type, val) + '   ' + $quake_prog.$pR_ValueString(def.type, val2) + '   ' + $quake_prog.$pR_ValueString(def.type, val3) + '\'';
+				s = '\'   ' + $quake_prog.cast_float(val) + '   ' + $quake_prog.cast_float(val2) + '   ' + $quake_prog.cast_float(val3) + '\'';
+				//s = "'   " + PR_ValueString(def.type, val) + "   " + PR_ValueString(def.type, val2) + "   "
+				//    + PR_ValueString(def.type, val3) + "'";
 			}
 			else {
 				s = $quake_prog.$pR_ValueString(def.type, val);
@@ -12060,6 +12093,26 @@
 		}
 		$quake_prog.$line += ' ';
 		return $quake_prog.$line;
+	};
+	$quake_prog.$pR_GlobalStringHasValue = function(ofs) {
+		var s;
+		var i;
+		var def;
+		var val;
+		val = $quake_prog.pr_globals_read(ofs);
+		def = $quake_prog.$eD_GlobalAtOfs(ofs);
+		if (ss.isNullOrUndefined(def)) {
+			return false;
+		}
+		else if (def.type === 3 || 3 === (def.type & -32769)) {
+			var val2 = ss.Nullable.unbox(ss.cast($quake_prog.pr_globals_read(ofs + 1), Number));
+			var val3 = ss.Nullable.unbox(ss.cast($quake_prog.pr_globals_read(ofs + 2), Number));
+			return ss.Nullable.unbox(ss.cast(val, Number)) + val2 + val3 === 0;
+		}
+		else {
+			return ss.isValue(val) && val.toString() !== '0';
+		}
+		return true;
 	};
 	$quake_prog.$pR_GlobalStringNoContents = function(ofs) {
 		var i;
@@ -12077,6 +12130,22 @@
 		}
 		$quake_prog.$line += ' ';
 		return $quake_prog.$line;
+	};
+	$quake_prog.eD_Print = function(ed) {
+		var output = '\nEDICT ' + $quake_prog.nuM_FOR_EDICT(ed) + ':\n';
+		return output;
+	};
+	$quake_prog.eD_PrintNum = function(ent) {
+		return $quake_prog.eD_Print($quake_prog.edicT_NUM(ent));
+	};
+	$quake_prog.eD_PrintEdicts = function() {
+		var i;
+		var output = $quake_server.sv.num_edicts + ' entities\n';
+		for (i = 0; i < $quake_server.sv.num_edicts; i++) {
+			output += $quake_prog.eD_PrintNum(i);
+		}
+		//console.Con_Printf(output);
+		ss.Debug.writeln(output);
 	};
 	$quake_prog.eD_NewString = function(string) {
 		var new1 = '';
@@ -12782,10 +12851,11 @@
 		}
 		if (ss.referenceEquals(ss.getInstanceType(value), Number)) {
 			var val = BitConverter.toInt32(BitConverter.getBytes(ss.Nullable.unbox(ss.cast(value, Number))), 0);
-			if (val.toString() === '544' || val.toString() === '288' || val.toString() === '32') {
-				//return Convert.ToInt32((double)value);
-				ss.Debug.writeln('odd bit here!');
-			}
+			//if (val.ToString() == "544" || val.ToString() == "288" || val.ToString() == "32")
+			//{
+			//    //return Convert.ToInt32((double)value);
+			//    Debug.WriteLine("odd bit here!");
+			//}
 			//if (val > 1000000000)
 			//{ //NO THIS IS correct but maybe it is beign useed wrong someplace
 			//    Debug.WriteLine(prNum + " bad cast_int " + value + " turned to " + val);
@@ -12899,7 +12969,7 @@
 	};
 	$quake_prog.$pR_PrintStatement = function(s) {
 		var i;
-		if ($quake_prog.$prNum >= 7000) {
+		if ($quake_prog.$prNum >= 5000) {
 			$quake_prog.$pR_StackTraceStr();
 			$quake_console.con_Printf($quake_prog.$prNum + ' ');
 			if (s.op < $quake_prog.$pr_opnames.length) {
@@ -12932,6 +13002,7 @@
 			}
 			$quake_console.con_Printf('\n');
 		}
+		$quake_prog.$pF_coredump();
 	};
 	$quake_prog.$pR_StackTrace = function() {
 		var f;
@@ -13513,7 +13584,7 @@
 			$quake_prog.$pr_xfunction.profile++;
 			$quake_prog.$pr_xstatement = s;
 			if ($quake_prog.$pr_trace) {
-				$quake_prog.$pR_PrintStatement(st);
+				//PR_PrintStatement(st);
 				//Debug.WriteLine(string.Format("a {0}: {1} {2} {3}", st.a, pr_globals_read(st.a), pr_globals_read(st.a + 1), pr_globals_read(st.a + 2)));
 				//Debug.WriteLine(string.Format("b {0}: {1} {2} {3}", st.b, pr_globals_read(st.b), pr_globals_read(st.b + 1), pr_globals_read(st.b + 2)));
 				//Debug.WriteLine(string.Format("c {0}: {1} {2} {3}", st.c, pr_globals_read(st.c), pr_globals_read(st.c + 1), pr_globals_read(st.c + 2)));
@@ -13810,6 +13881,7 @@
 					break;
 				}
 				default: {
+					$quake_prog.$pR_RunError('Bad opcode ' + st.op);
 					break;
 				}
 			}
@@ -20697,7 +20769,7 @@
 		}
 		$quake_mathlib.vectorMA(ent.v.angles, $quake_host.host_frametime, ent.v.avelocity, ent.v.angles);
 		$quake_mathlib.vectorMA(ent.v.origin, $quake_host.host_frametime, ent.v.velocity, ent.v.origin);
-		//SV_LinkEdict (ent, false);
+		$quake_world.sV_LinkEdict(ent, false);
 	};
 	$quake_server.$sV_Physics_Toss = function(ent) {
 		//trace_t	trace;
@@ -20765,7 +20837,8 @@
 				continue;
 			}
 			if ($quake_prog.pr_global_struct[0].force_retouch !== 0) {
-				//SV_LinkEdict (ent, true);	// force retouch even for stationary
+				$quake_world.sV_LinkEdict(ent, true);
+				// force retouch even for stationary
 			}
 			if (i > 0 && i <= $quake_server.svs.maxclients) {
 				$quake_server.$sV_Physics_Client(ent, i);
@@ -20778,6 +20851,11 @@
 			}
 			else if (ent.v.movetype === 8) {
 				$quake_server.$sV_Physics_Noclip(ent);
+			}
+			else if (ent.v.movetype === 4) {
+				//todo!!! step phys
+				//Debug.WriteLine("SV_Physics_Step todo");
+				//SV_Physics_Step (ent);
 			}
 			else if (ent.v.movetype === 6 || ent.v.movetype === 10 || ent.v.movetype === 5 || ent.v.movetype === 9) {
 				$quake_server.$sV_Physics_Toss(ent);
@@ -20811,6 +20889,7 @@
 			bottom[0] = top[0];
 			bottom[1] = top[1];
 			bottom[2] = top[2] - 160;
+			throw new $System_NotImplementedException();
 			//tr = SV_Move (top, vec3_origin, vec3_origin, bottom, 1, sv_player);
 			//if (tr.allsolid)
 			//return;	// looking at a wall, leave ideal the way is was
@@ -22902,6 +22981,69 @@
 	// quake.world
 	var $quake_world = function() {
 	};
+	$quake_world.sV_LinkEdict = function(ent, touch_triggers) {
+		//TODO: NOT SUPER NEEDED
+		//    areanode_t node;
+		//    if (ent->area.prev)
+		//        SV_UnlinkEdict(ent);	// unlink from old position
+		//    if (ent == sv.edicts)
+		//        return;		// don't add the world
+		//    if (ent->free)
+		//        return;
+		//    // set the abs box
+		//    {
+		//        VectorAdd(ent->v.origin, ent->v.mins, ent->v.absmin);
+		//        VectorAdd(ent->v.origin, ent->v.maxs, ent->v.absmax);
+		//    }
+		//    //
+		//    // to make items easier to pick up and allow them to be grabbed off
+		//    // of shelves, the abs sizes are expanded
+		//    //
+		//    if ((int)ent->v.flags & FL_ITEM)
+		//    {
+		//        ent->v.absmin[0] -= 15;
+		//        ent->v.absmin[1] -= 15;
+		//        ent->v.absmax[0] += 15;
+		//        ent->v.absmax[1] += 15;
+		//    }
+		//    else
+		//    {	// because movement is clipped an epsilon away from an actual edge,
+		//        // we must fully check even when bounding boxes don't quite touch
+		//        ent->v.absmin[0] -= 1;
+		//        ent->v.absmin[1] -= 1;
+		//        ent->v.absmin[2] -= 1;
+		//        ent->v.absmax[0] += 1;
+		//        ent->v.absmax[1] += 1;
+		//        ent->v.absmax[2] += 1;
+		//    }
+		//    // link to PVS leafs
+		//    ent->num_leafs = 0;
+		//    if (ent->v.modelindex)
+		//        SV_FindTouchedLeafs(ent, sv.worldmodel->nodes);
+		//    if (ent->v.solid == SOLID_NOT)
+		//        return;
+		//    // find the first node that the ent's box crosses
+		//    node = sv_areanodes;
+		//    while (1)
+		//    {
+		//        if (node->axis == -1)
+		//            break;
+		//        if (ent->v.absmin[node->axis] > node->dist)
+		//            node = node->children[0];
+		//        else if (ent->v.absmax[node->axis] < node->dist)
+		//            node = node->children[1];
+		//        else
+		//            break;		// crosses the node
+		//    }
+		//    // link it in	
+		//    if (ent->v.solid == SOLID_TRIGGER)
+		//        InsertLinkBefore(&ent->area, &node->trigger_edicts);
+		//    else
+		//        InsertLinkBefore(&ent->area, &node->solid_edicts);
+		//    // if touch_triggers, touch all entities at this node and decend for more
+		//    if (touch_triggers)
+		//        SV_TouchLinks(ent, sv_areanodes);
+	};
 	////////////////////////////////////////////////////////////////////////////////
 	// quake.world.plane_t
 	var $quake_world$plane_t = function() {
@@ -23637,6 +23779,9 @@
 			// does not support
 		}
 	}
+	$quake_world.movE_NORMAL = 0;
+	$quake_world.movE_NOMONSTERS = 1;
+	$quake_world.movE_MISSILE = 2;
 	$quake_crc.crC_INIT_VALUE = 65535;
 	$quake_crc.crC_XOR_VALUE = 0;
 	$quake_crc.$crctable = [0, 4129, 8258, 12387, 16516, 20645, 24774, 28903, 33032, 37161, 41290, 45419, 49548, 53677, 57806, 61935, 4657, 528, 12915, 8786, 21173, 17044, 29431, 25302, 37689, 33560, 45947, 41818, 54205, 50076, 62463, 58334, 9314, 13379, 1056, 5121, 25830, 29895, 17572, 21637, 42346, 46411, 34088, 38153, 58862, 62927, 50604, 54669, 13907, 9842, 5649, 1584, 30423, 26358, 22165, 18100, 46939, 42874, 38681, 34616, 63455, 59390, 55197, 51132, 18628, 22757, 26758, 30887, 2112, 6241, 10242, 14371, 51660, 55789, 59790, 63919, 35144, 39273, 43274, 47403, 23285, 19156, 31415, 27286, 6769, 2640, 14899, 10770, 56317, 52188, 64447, 60318, 39801, 35672, 47931, 43802, 27814, 31879, 19684, 23749, 11298, 15363, 3168, 7233, 60846, 64911, 52716, 56781, 44330, 48395, 36200, 40265, 32407, 28342, 24277, 20212, 15891, 11826, 7761, 3696, 65439, 61374, 57309, 53244, 48923, 44858, 40793, 36728, 37256, 33193, 45514, 41451, 53516, 49453, 61774, 57711, 4224, 161, 12482, 8419, 20484, 16421, 28742, 24679, 33721, 37784, 41979, 46042, 49981, 54044, 58239, 62302, 689, 4752, 8947, 13010, 16949, 21012, 25207, 29270, 46570, 42443, 38312, 34185, 62830, 58703, 54572, 50445, 13538, 9411, 5280, 1153, 29798, 25671, 21540, 17413, 42971, 47098, 34713, 38840, 59231, 63358, 50973, 55100, 9939, 14066, 1681, 5808, 26199, 30326, 17941, 22068, 55628, 51565, 63758, 59695, 39368, 35305, 47498, 43435, 22596, 18533, 30726, 26663, 6336, 2273, 14466, 10403, 52093, 56156, 60223, 64286, 35833, 39896, 43963, 48026, 19061, 23124, 27191, 31254, 2801, 6864, 10931, 14994, 64814, 60687, 56684, 52557, 48554, 44427, 40424, 36297, 31782, 27655, 23652, 19525, 15522, 11395, 7392, 3265, 61215, 65342, 53085, 57212, 44955, 49082, 36825, 40952, 28183, 32310, 20053, 24180, 11923, 16050, 3793, 7920];
@@ -24944,8 +25089,5 @@
 	$quake_$vrect_s.$y = 4;
 	$quake_$vrect_s.$width = 8;
 	$quake_$vrect_s.$height = 12;
-	$quake_world.movE_NORMAL = 0;
-	$quake_world.movE_NOMONSTERS = 1;
-	$quake_world.movE_MISSILE = 2;
 	main();
 })();

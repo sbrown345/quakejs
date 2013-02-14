@@ -618,6 +618,7 @@ namespace quake
             for (i = 0; i < server.sv.num_edicts; i++)
                 output += ED_PrintNum(i);
             //console.Con_Printf(output);
+            Debug.WriteLine(output);
         }
 
         ///*
