@@ -21,6 +21,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 namespace quake
 {
+    using System.Diagnostics;
+
     public partial class server
     {
         /*
@@ -286,7 +288,7 @@ namespace quake
 	        mathlib.VectorMA (ent.v.angles, host.host_frametime, ent.v.avelocity, ent.v.angles);
             mathlib.VectorMA(ent.v.origin, host.host_frametime, ent.v.velocity, ent.v.origin);
 
-	        //SV_LinkEdict (ent, false);
+            world.SV_LinkEdict(ent, false);
         }
 
         /*
@@ -381,7 +383,7 @@ namespace quake
 
 		        if (prog.pr_global_struct[0].force_retouch != 0)
 		        {
-			        //SV_LinkEdict (ent, true);	// force retouch even for stationary
+                    world.SV_LinkEdict(ent, true);	// force retouch even for stationary
 		        }
 
 		        if (i > 0 && i <= svs.maxclients)
@@ -392,8 +394,11 @@ namespace quake
 			        SV_Physics_None (ent);
 		        else if (ent.v.movetype == MOVETYPE_NOCLIP)
 			        SV_Physics_Noclip (ent);
-		        /*else if (ent.v.movetype == MOVETYPE_STEP)
-			        SV_Physics_Step (ent);*/
+		        else if (ent.v.movetype == MOVETYPE_STEP) {
+                    //todo!!! step phys
+                    //Debug.WriteLine("SV_Physics_Step todo");
+                    //SV_Physics_Step (ent);
+                }
 		        else if (ent.v.movetype == MOVETYPE_TOSS 
 		        || ent.v.movetype == MOVETYPE_BOUNCE
 		        || ent.v.movetype == MOVETYPE_FLY

@@ -204,8 +204,8 @@ namespace quake
 	        mathlib.VectorCopy (rmin, e.v.mins);
             mathlib.VectorCopy (rmax, e.v.maxs);
             mathlib.VectorSubtract (max, min, e.v.size);
-        	
-	        //SV_LinkEdict (e, false);
+
+           world. SV_LinkEdict(e, false);
         }
 
         /*

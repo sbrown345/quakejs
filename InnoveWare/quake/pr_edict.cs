@@ -289,13 +289,16 @@ namespace quake
                 line = ofs + "(???)";
             else
             {
-                if (def.type == (int)etype_t.ev_vector || (int)etype_t.ev_vector == (def.type & ~DEF_SAVEGLOBAL))
+                if ((int)etype_t.ev_vector == (def.type & ~DEF_SAVEGLOBAL))
                 {
                     Object val2 = pr_globals_read(ofs + 1);
                     Object val3 = pr_globals_read(ofs + 2);
 
-                    s = "'   " + PR_ValueString(def.type, val) + "   " + PR_ValueString(def.type, val2) + "   "
-                        + PR_ValueString(def.type, val3) + "'";
+
+                    s = "'   " + cast_float(val) + "   " + cast_float(val2) + "   " + cast_float(val3) + "'";
+
+                    //s = "'   " + PR_ValueString(def.type, val) + "   " + PR_ValueString(def.type, val2) + "   "
+                    //    + PR_ValueString(def.type, val3) + "'";
                 }
                 else
                 {
@@ -366,8 +369,9 @@ namespace quake
         =============
         */
 
-        public static void ED_Print(edict_t ed)
+        public static string ED_Print(edict_t ed)
         {
+            string output = "\nEDICT " + NUM_FOR_EDICT(ed) + ":\n";
 #if SILVERLIGHT
             int l;
             ddef_t d;
@@ -381,88 +385,171 @@ namespace quake
 
             if (ed.free)
             {
-                console.Con_Printf("FREE\n");
-                return;
+                return "FREE\n";
             }
 
-            string output = "\nEDICT " + NUM_FOR_EDICT(ed) + ":\n";
             for (i = 1; i < progs.numfielddefs; i++)
             {
                 d = pr_fielddefs[i];
                 name = pr_string(d.s_name);
-                if (name[name.Length - 2] == '_')
+                try
                 {
-                    continue; // skip _x, _y, _z vars
-                }
-
-                //// if the value is still all 0, skip the field
-                type = d.type & ~DEF_SAVEGLOBAL;
-
-                var field = ed.v.GetType().GetField(name);
-                object value = null;
-                string valStr = null;
-                if (field == null)
-                {
-                    valStr = pr_string(cast_int(ed.v.variables[d.ofs - 105]));
-                    if (valStr == "")
+                    if (name[name.Length - 2] == '_')
                     {
-                        continue;
+                        continue; // skip _x, _y, _z vars
                     }
-                }
-                else
-                {
-                    switch ((etype_t)type)
+
+                    //// if the value is still all 0, skip the field
+
+                    var field = ed.v.GetType().GetField(name);
+                    var prop = ed.v.GetType().GetProperty(name);
+                    object value = null;
+                    string valStr = null;
+                    type = d.type & ~DEF_SAVEGLOBAL;
+                    if (field == null && prop == null)
                     {
-                        case etype_t.ev_function:
-                        case etype_t.ev_string:
-                            value = cast_int(field.GetValue(ed.v));
-                            if ((int)value == 0)
+                        if (d.ofs > 104)
+                        {
+                            //if ((etype_t)type == etype_t.ev_float)
+                            //{
+                            //    value = ed.v.variables[d.ofs - 105];
+                            //    if ((double)value == 0.0) continue;
+                            //}
+                            //else if ((etype_t)type == etype_t.ev_string)
+                            //{
+                            //    valStr = pr_string(cast_int(ed.v.variables[d.ofs - 105]));
+                            //    if (valStr == "") continue;
+                            //}
+                            //else
+                            //{
+                            //    throw new Exception("not implmemetned: " + type);
+                            //}
+
+
+
+                            var tempval = ed.v.variables[d.ofs - 105];
+                            if (tempval == null) continue;
+                            switch ((etype_t)type)
                             {
-                                continue;
+                                case etype_t.ev_function:
+                                case etype_t.ev_string:
+                                    valStr = pr_string(cast_int(ed.v.variables[d.ofs - 105]));
+                                    if (valStr == "")
+                                        continue;
+                                    break;
+                                case etype_t.ev_entity:
+                                    var testVal = NUM_FOR_EDICT(PROG_TO_EDICT(cast_int(tempval)));
+                                    if (testVal == 0)
+                                    {
+                                        continue;
+                                    }
+                                    value = cast_int(tempval);
+                                    break;
+                                case etype_t.ev_field:
+                                case etype_t.ev_void:
+                                case etype_t.ev_pointer:
+                                case etype_t.ev_float:
+                                    if (cast_float(tempval) == 0.0)
+                                        continue;
+                                    value = tempval;
+                                    break;
+                                case etype_t.ev_vector:
+                                    if (tempval.GetType() != typeof(double[])) continue;
+                                    var dblVal = (double[])tempval;
+                                    if (dblVal[0] == 0 && dblVal[1] == 0 && dblVal[2] == 0)
+                                    {
+                                        continue;
+                                    }
+                                    value = dblVal;
+                                    break;
+                                default:
+                                    throw new Exception("not implmemetned: " + type);
                             }
-                            break;
-                        case etype_t.ev_entity:
-                            var testVal = NUM_FOR_EDICT(PROG_TO_EDICT(cast_int(field.GetValue(ed.v))));
-                            if (testVal == 0)
-                            {
-                                continue;
-                            }
-                            value = cast_int(field.GetValue(ed.v));
-                            break;
-                        case etype_t.ev_field:
-                        case etype_t.ev_void:
-                        case etype_t.ev_pointer:
-                        case etype_t.ev_float:
-                            value = field.GetValue(ed.v);
-                            if ((double)value == 0.0)
-                            {
-                                continue;
-                            }
-                            break;
-                        case etype_t.ev_vector:
-                            value = field.GetValue(ed.v);
-                            var dblVal = (double[])value;
-                            if (dblVal[0] == 0 && dblVal[1] == 0 && dblVal[2] == 0)
-                            {
-                                continue;
-                            }
-                            break;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        }
+                        else
+                        {
+                            throw new Exception("d.ofs wrong");
+                        }
                     }
-                }
+                    else
+                    {
+                        Object theValue = field == null ? prop.GetValue(ed.v, null) : field.GetValue(ed.v);
+                        switch ((etype_t)type)
+                        {
+                            case etype_t.ev_function:
+                            case etype_t.ev_string:
+                                value = cast_int(theValue);
+                                if ((int)value == 0)
+                                {
+                                    continue;
+                                }
+                                break;
+                            case etype_t.ev_entity:
+                                var testVal = NUM_FOR_EDICT(PROG_TO_EDICT(cast_int(theValue)));
+                                if (testVal == 0)
+                                {
+                                    continue;
+                                }
+                                value = cast_int(theValue);
+                                break;
+                            case etype_t.ev_field:
+                            case etype_t.ev_void:
+                            case etype_t.ev_pointer:
+                            case etype_t.ev_float:
+                                value = theValue;
+                                if ((double)value == 0.0)
+                                {
+                                    continue;
+                                }
+                                break;
+                            case etype_t.ev_vector:
+                                value = theValue;
+                                var dblVal = (double[])value;
+                                if (dblVal[0] == 0 && dblVal[1] == 0 && dblVal[2] == 0)
+                                {
+                                    continue;
+                                }
+                                break;
+                        }
+                    }
 
-                output += name;
-                l = name.Length;
-                while (l++ < 15)
+                    output += name;
+                    l = name.Length;
+                    while (l++ < 15)
+                    {
+                        output += " ";
+                    }
+
+
+                    output += (valStr ?? PR_ValueString(d.type, value)) + "\n";
+                }
+                catch (Exception e)
                 {
-                    output += " ";
+                    output += "-----------\nBAD ON " + name + " type: " + d.type + "\n" + e.Message + e.StackTrace + e + output
+                              + "\n------------------------------\n";
                 }
-
-
-                output += (valStr ?? PR_ValueString(d.type, value)) + "\n";
-
             }
-            console.Con_Printf(output);
 #endif
+            return output;
         }
 
         ///*
@@ -512,9 +599,9 @@ namespace quake
         //    fprintf (f, "}\n");
         //}
 
-        public static void ED_PrintNum(int ent)
+        public static string ED_PrintNum(int ent)
         {
-            ED_Print(EDICT_NUM(ent));
+            return ED_Print(EDICT_NUM(ent));
         }
 
         /*
@@ -527,10 +614,10 @@ namespace quake
         public static void ED_PrintEdicts()
         {
             int i;
-
-            console.Con_Printf(server.sv.num_edicts + " entities\n");
+            string output = server.sv.num_edicts + " entities\n";
             for (i = 0; i < server.sv.num_edicts; i++)
-                ED_PrintNum(i);
+                output += ED_PrintNum(i);
+            //console.Con_Printf(output);
         }
 
         ///*
@@ -1120,11 +1207,11 @@ namespace quake
             if (value.GetType() == typeof(Double))
             {
                 var val = BitConverter.ToInt32(BitConverter.GetBytes((float)(double)value), 0);
-                if (val.ToString() == "544" || val.ToString() == "288" || val.ToString() == "32")
-                {
-                    //return Convert.ToInt32((double)value);
-                    Debug.WriteLine("odd bit here!");
-                }
+                //if (val.ToString() == "544" || val.ToString() == "288" || val.ToString() == "32")
+                //{
+                //    //return Convert.ToInt32((double)value);
+                //    Debug.WriteLine("odd bit here!");
+                //}
                 //if (val > 1000000000)
                 //{ //NO THIS IS correct but maybe it is beign useed wrong someplace
                 //    Debug.WriteLine(prNum + " bad cast_int " + value + " turned to " + val);

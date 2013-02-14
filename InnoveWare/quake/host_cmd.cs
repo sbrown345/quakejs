@@ -53,6 +53,7 @@ namespace quake
         */
         static void Host_Status_f ()
         {
+            throw new NotImplementedException("Host_Status_f");
         }
 
         /*
@@ -64,16 +65,19 @@ namespace quake
         */
         static void Host_God_f()
         {
+            throw new NotImplementedException("Host_God_f");
         }
 
         static void Host_Notarget_f ()
         {
+            throw new NotImplementedException("Host_Notarget_f");
         }
 
         public static bool noclip_anglehack;
 
         static void Host_Noclip_f ()
         {
+            throw new NotImplementedException("Host_Noclip_f");
         }
 
         /*
@@ -85,6 +89,7 @@ namespace quake
         */
         static void Host_Fly_f()
         {
+            throw new NotImplementedException("Host_Fly_f");
         }
         
         /*
@@ -95,6 +100,7 @@ namespace quake
         */
         static void Host_Ping_f ()
         {
+            throw new NotImplementedException("Host_Ping_f");
         }
 
         /*
@@ -167,7 +173,7 @@ namespace quake
         */
         static void Host_Changelevel_f()
         {
-            throw new NotImplementedException();
+            throw new NotImplementedException("Host_Changelevel_f");
         }
 
         /*
@@ -179,6 +185,7 @@ namespace quake
         */
         static void Host_Restart_f()
         {
+            throw new NotImplementedException("Host_Restart_f");
         }
 
         /*
@@ -236,6 +243,7 @@ namespace quake
         */
         void Host_SavegameComment (string text)
         {
+            throw new NotImplementedException("Host_SavegameComment");
         }
         
         /*
@@ -245,6 +253,7 @@ namespace quake
         */
         static void Host_Savegame_f()
         {
+            throw new NotImplementedException("Host_Savegame_f");
         }
         
         /*
@@ -254,6 +263,7 @@ namespace quake
         */
         static void Host_Loadgame_f()
         {
+            throw new NotImplementedException("Host_Loadgame_f");
         }
 
         //============================================================================
@@ -308,6 +318,7 @@ namespace quake
 
         static void Host_Say(bool teamonly)
         {
+            throw new NotImplementedException("Host_Say");
         }
 
         static void Host_Say_f()
@@ -322,6 +333,7 @@ namespace quake
 
         static void Host_Tell_f()
         {
+            throw new NotImplementedException("Host_Tell_f");
         }
         
         /*
@@ -331,6 +343,7 @@ namespace quake
         */
         static void Host_Color_f()
         {
+            throw new NotImplementedException("Host_Color_f");
         }
 
         /*
@@ -356,6 +369,7 @@ namespace quake
         */
         static void Host_Pause_f()
         {
+            throw new NotImplementedException("Host_Pause_f");
         }
 
         //===========================================================================
@@ -535,6 +549,7 @@ namespace quake
         */
         static void Host_Kick_f()
         {
+            throw new NotImplementedException("Host_Kick_f");
         }
 
         /*
@@ -552,7 +567,7 @@ namespace quake
         */
         static void Host_Give_f()
         {
-            throw new NotImplementedException();
+            throw new NotImplementedException("Host_Give_f");
         }
 
         /*
