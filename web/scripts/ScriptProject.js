@@ -13881,7 +13881,7 @@
 					break;
 				}
 				default: {
-					$quake_prog.$pR_RunError('Bad opcode ' + st.op);
+					//PR_RunError("Bad opcode " + st.op); - breaks
 					break;
 				}
 			}

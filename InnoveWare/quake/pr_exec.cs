@@ -911,7 +911,7 @@ namespace quake
                         break;
 
                     default:
-                        PR_RunError("Bad opcode " + st.op);
+                        //PR_RunError("Bad opcode " + st.op); - breaks
                         break;
                 }
             }
