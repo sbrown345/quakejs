@@ -223,17 +223,20 @@ namespace quake
 			        SV_AddGravity (ent);
 		        SV_CheckStuck (ent);
 		        SV_WalkMove (ent);*/
+                Debug.WriteLine("todo SV_AddGravity? SV_CheckStuck SV_WalkMove");
 		        break;
         		
 	        case MOVETYPE_TOSS:
 	        case MOVETYPE_BOUNCE:
 		        //SV_Physics_Toss (ent);
+                Debug.WriteLine("todo SV_Physics_Toss");
 		        break;
 
 	        case MOVETYPE_FLY:
 		        if (!SV_RunThink (ent))
 			        return;
 		        //SV_FlyMove (ent, host.host_frametime, null);
+                Debug.WriteLine("todo SV_FlyMove");
 		        break;
         		
 	        case MOVETYPE_NOCLIP:
@@ -250,7 +253,8 @@ namespace quake
         //
         // call standard player post-think
         //		
-	        //SV_LinkEdict (ent, true);
+            Debug.WriteLine("todo SV_LinkEdict");
+            //SV_LinkEdict (ent, true);
 
 	        prog.pr_global_struct[0].time = sv.time;
             prog.pr_global_struct[0].self = prog.EDICT_TO_PROG(ent);
@@ -396,7 +400,7 @@ namespace quake
 			        SV_Physics_Noclip (ent);
 		        else if (ent.v.movetype == MOVETYPE_STEP) {
                     //todo!!! step phys
-                    //Debug.WriteLine("SV_Physics_Step todo");
+                    Debug.WriteLine("SV_Physics_Step todo");
                     //SV_Physics_Step (ent);
                 }
 		        else if (ent.v.movetype == MOVETYPE_TOSS 
