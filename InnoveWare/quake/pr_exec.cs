@@ -154,7 +154,7 @@ namespace quake
         private static void PR_PrintStatement(dstatement_t s)
         {
             int i;
-            if (prNum >= 5000)
+            if (prNum >= 930)
             {
                 PR_StackTraceStr();
                 console.Con_Printf((prNum) + " ");
@@ -184,8 +184,9 @@ namespace quake
                     if (s.c != 0) console.Con_Printf(PR_GlobalStringNoContents(s.c));
                 }
                 console.Con_Printf("\n");
+            //if (prNum % 100 == 0)
+                prog.PF_coredump();
             }
-            prog.PF_coredump();
         }
 
         /*
@@ -460,10 +461,11 @@ namespace quake
             return readentvar(entvars, offset);
         }
 
-        static void writeptr(int address, Object value)
+        static void writeptr(int address, Object value, int addressOffset = 0 /*fix vectors on .variables, each value was overwriting the previous*/)
         {
             entvars_t entvars = server.sv.edicts[address / pr_edict_size].v;
             int offset = ((address % pr_edict_size) - 96) / 4;
+            offset += addressOffset;
             if (offset > 104)
             {
                 entvars.variables[offset - 105] = value;
@@ -576,7 +578,7 @@ namespace quake
 
                 if (pr_trace)
                 {
-                    //PR_PrintStatement(st);
+                    PR_PrintStatement(st);
                     //Debug.WriteLine(string.Format("a {0}: {1} {2} {3}", st.a, pr_globals_read(st.a), pr_globals_read(st.a + 1), pr_globals_read(st.a + 2)));
                     //Debug.WriteLine(string.Format("b {0}: {1} {2} {3}", st.b, pr_globals_read(st.b), pr_globals_read(st.b + 1), pr_globals_read(st.b + 2)));
                     //Debug.WriteLine(string.Format("c {0}: {1} {2} {3}", st.c, pr_globals_read(st.c), pr_globals_read(st.c + 1), pr_globals_read(st.c + 2)));
@@ -800,9 +802,9 @@ namespace quake
                         //ptr->vector[0] = a->vector[0];
                         //ptr->vector[1] = a->vector[1];
                         //ptr->vector[2] = a->vector[2];
-                        writeptr(cast_int(pr_globals_read(st.b)), cast_int(pr_globals_read(st.a)));
-                        writeptr(cast_int(pr_globals_read(st.b)) + 1, cast_int(pr_globals_read(st.a + 1)));
-                        writeptr(cast_int(pr_globals_read(st.b)) + 2, cast_int(pr_globals_read(st.a + 2)));
+                        writeptr(cast_int(pr_globals_read(st.b)), cast_int(pr_globals_read(st.a)), 0);
+                        writeptr(cast_int(pr_globals_read(st.b)), cast_int(pr_globals_read(st.a + 1)), 1);
+                        writeptr(cast_int(pr_globals_read(st.b)), cast_int(pr_globals_read(st.a + 2)), 2);
                         break;
 
                     case opcode_t.OP_ADDRESS:
@@ -911,7 +913,8 @@ namespace quake
                         break;
 
                     default:
-                        //PR_RunError("Bad opcode " + st.op); - breaks
+                        // todo: this works fine on winquake. need to comment out here
+                        //PR_RunError("Bad opcode " + st.op); 
                         break;
                 }
             }
