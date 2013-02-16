@@ -154,7 +154,7 @@ namespace quake
         private static void PR_PrintStatement(dstatement_t s)
         {
             int i;
-            if (prNum >= 930)
+            if (prNum >= 2700)
             {
                 PR_StackTraceStr();
                 console.Con_Printf((prNum) + " ");
@@ -184,7 +184,7 @@ namespace quake
                     if (s.c != 0) console.Con_Printf(PR_GlobalStringNoContents(s.c));
                 }
                 console.Con_Printf("\n");
-            //if (prNum % 100 == 0)
+                if (prNum % 100 == 0)
                 prog.PF_coredump();
             }
         }
@@ -578,7 +578,7 @@ namespace quake
 
                 if (pr_trace)
                 {
-                    PR_PrintStatement(st);
+                    //PR_PrintStatement(st);
                     //Debug.WriteLine(string.Format("a {0}: {1} {2} {3}", st.a, pr_globals_read(st.a), pr_globals_read(st.a + 1), pr_globals_read(st.a + 2)));
                     //Debug.WriteLine(string.Format("b {0}: {1} {2} {3}", st.b, pr_globals_read(st.b), pr_globals_read(st.b + 1), pr_globals_read(st.b + 2)));
                     //Debug.WriteLine(string.Format("c {0}: {1} {2} {3}", st.c, pr_globals_read(st.c), pr_globals_read(st.c + 1), pr_globals_read(st.c + 2)));
@@ -761,6 +761,12 @@ namespace quake
                                  : 0));
                         break;
 
+                    case opcode_t.OP_NE_F:
+                        eval = cast_float(pr_globals_read(st.a)) != cast_float(pr_globals_read(st.b));
+                        pr_globals_write(st.c, (double)(eval ? 1 : 0));
+                        
+                        break;
+
                     case opcode_t.OP_NE_V:
                         /*c->_float = (a->vector[0] != b->vector[0]) ||
                                     (a->vector[1] != b->vector[1]) ||
@@ -913,6 +919,7 @@ namespace quake
                         break;
 
                     default:
+                        Debug.WriteLine("******Bad opcode " + st.op + " prNum: " + prNum);
                         // todo: this works fine on winquake. need to comment out here
                         //PR_RunError("Bad opcode " + st.op); 
                         break;
