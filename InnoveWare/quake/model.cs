@@ -173,13 +173,13 @@ namespace quake
         // !!! if this is changed, it must be changed in asm_i386.h too !!!
         public class hull_t
         {
-	        //dclipnode_t	*clipnodes;
-	        mplane_t	planes;
-	        public int	    firstclipnode;
-            public int      lastclipnode;
-	        double[]	clip_mins = new double[3];
-	        double[]	clip_maxs = new double[3];
-        };
+           public bspfile.dclipnode_t clipnodes;
+	       public  mplane_t	planes;
+	       public  int	    firstclipnode;
+           public  int      lastclipnode;
+	       public  double[]	clip_mins = new double[3];
+	       public  double[]	clip_maxs = new double[3];
+        }
 
         /*
         ==============================================================================

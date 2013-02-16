@@ -315,8 +315,8 @@ namespace quake
 
         public class dclipnode_t
         {
-	        int			planenum;
-	        short[]		children = new short[2];	// negative numbers are contents
+	        public int			planenum;
+	        public short[]		children = new short[2];	// negative numbers are contents
         };
         
         public class texinfo_t

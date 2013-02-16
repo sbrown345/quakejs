@@ -211,140 +211,143 @@ If steptrace is not NULL, the trace of any vertical wall hit will be stored
 */
 
         private const int MAX_CLIP_PLANES = 5;
-static int SV_FlyMove (prog.edict_t ent, double time /*was float*/, world.trace_t steptrace)
-{
-    int			bumpcount, numbumps;
-    double[]		dir= new double[3];
-    double		d;
-    int			numplanes;
-    double[][] planes = { ArrayHelpers .ExplcitDoubleArray(3),ArrayHelpers .ExplcitDoubleArray(3),ArrayHelpers .ExplcitDoubleArray(3),ArrayHelpers .ExplcitDoubleArray(3),ArrayHelpers .ExplcitDoubleArray(3)};
-    double[] primal_velocity = new double[3], original_velocity = new double[3], new_velocity = new double[3];
-    int			i, j;
-    world.trace_t		trace;
-    double[]		end= new double[3];
-    double		time_left;
-    int			blocked;
-	
-    numbumps = 4;
-	
-    blocked = 0;
-   mathlib. VectorCopy (ent.v.velocity, original_velocity);
-   mathlib. VectorCopy (ent.v.velocity, primal_velocity);
-    numplanes = 0;
-	
-    time_left = time;
 
-    for (bumpcount=0 ; bumpcount<numbumps ; bumpcount++)
-    {
-        if (ent.v.velocity[0] == 0 && ent.v.velocity[1] == 0 && ent.v.velocity[2] == 0)
-            break;
-
-        for (i=0 ; i<3 ; i++)
-            end[i] = ent.v.origin[i] + time_left * ent.v.velocity[i];
-
-        trace = world.SV_Move (ent.v.origin, ent.v.mins, ent.v.maxs, end, 0, ent);
-
-        if (trace.allsolid)
-        {	// entity is trapped in another solid
-            mathlib.VectorCopy(mathlib.vec3_origin, ent.v.velocity);
-            return 3;
-        }
-
-        if (trace.fraction > 0)
-        {	// actually covered some distance
-           mathlib. VectorCopy (trace.endpos, ent.v.origin);
-           mathlib. VectorCopy (ent.v.velocity, original_velocity);
-            numplanes = 0;
-        }
-
-        if (trace.fraction == 1)
-             break;		// moved the entire distance
-
-        if (trace.ent == null)
-            sys_linux.Sys_Error ("SV_FlyMove: !trace.ent");
-
-        if (trace.plane.normal[2] > 0.7)
+        private static int SV_FlyMove(prog.edict_t ent, double time /*was float*/, world.trace_t steptrace)
         {
-            blocked |= 1;		// floor
-            if (trace.ent.v.solid == SOLID_BSP)
-            {
-                ent.v.flags =	(int)ent.v.flags | FL_ONGROUND;
-                ent.v.groundentity = prog.EDICT_TO_PROG(trace.ent);
-            }
-        }
-        if (trace.plane.normal[2] !=0)
-        {
-            blocked |= 2;		// step
-            if (steptrace != null)
-                steptrace = trace;	// save for player extrafriction
-        }
-
-//
-// run the impact function
-//
-        SV_Impact (ent, trace.ent);
-        if (ent.free)
-            break;		// removed by the impact function
-
-		
-        time_left -= time_left * trace.fraction;
-		
-    // cliped to another plane
-        if (numplanes >= MAX_CLIP_PLANES)
-        {	// this shouldn't really happen
-            mathlib.VectorCopy(mathlib.vec3_origin, ent.v.velocity);
-            return 3;
-        }
-
-       mathlib. VectorCopy (trace.plane.normal, planes[numplanes]);
-        numplanes++;
-
-//
-// modify original_velocity so it parallels all of the clip planes
-//
-        for (i=0 ; i<numplanes ; i++)
-        {
-            ClipVelocity (original_velocity, planes[i], new_velocity, 1);
-            for (j=0 ; j<numplanes ; j++)
-                if (j != i)
+            int bumpcount, numbumps;
+            double[] dir = new double[3];
+            double d;
+            int numplanes;
+            double[][] planes =
                 {
-                    if (mathlib.DotProduct(new_velocity, planes[j]) < 0)
-                        break;	// not ok
-                }
-            if (j == numplanes)
-                break;
-        }
-		
-        if (i != numplanes)
-        {	// go along this plane
-            mathlib.VectorCopy(new_velocity, ent.v.velocity);
-        }
-        else
-        {	// go along the crease
-            if (numplanes != 2)
-            {
-//				Con_Printf ("clip velocity, numplanes == %i\n",numplanes);
-                mathlib.VectorCopy(mathlib.vec3_origin, ent.v.velocity);
-                return 7;
-            }
-            mathlib.CrossProduct(planes[0], planes[1], dir);
-            d = mathlib.DotProduct(dir, ent.v.velocity);
-            mathlib.VectorScale(dir, d, ent.v.velocity);
-        }
+                    ArrayHelpers.ExplcitDoubleArray(3), ArrayHelpers.ExplcitDoubleArray(3),
+                    ArrayHelpers.ExplcitDoubleArray(3), ArrayHelpers.ExplcitDoubleArray(3),
+                    ArrayHelpers.ExplcitDoubleArray(3)
+                };
+            double[] primal_velocity = new double[3], original_velocity = new double[3], new_velocity = new double[3];
+            int i, j;
+            world.trace_t trace;
+            double[] end = new double[3];
+            double time_left;
+            int blocked;
 
-//
-// if original velocity is against the original velocity, stop dead
-// to avoid tiny occilations in sloping corners
-//
-        if (mathlib.DotProduct(ent.v.velocity, primal_velocity) <= 0)
-        {
-            mathlib.VectorCopy(mathlib.vec3_origin, ent.v.velocity);
+            numbumps = 4;
+
+            blocked = 0;
+            mathlib.VectorCopy(ent.v.velocity, original_velocity);
+            mathlib.VectorCopy(ent.v.velocity, primal_velocity);
+            numplanes = 0;
+
+            time_left = time;
+
+            for (bumpcount = 0; bumpcount < numbumps; bumpcount++)
+            {
+                if (ent.v.velocity[0] == 0 && ent.v.velocity[1] == 0 && ent.v.velocity[2] == 0) break;
+
+                for (i = 0; i < 3; i++) end[i] = ent.v.origin[i] + time_left * ent.v.velocity[i];
+
+                trace = world.SV_Move(ent.v.origin, ent.v.mins, ent.v.maxs, end, 0, ent);
+
+                if (trace.allsolid)
+                {
+                    // entity is trapped in another solid
+                    mathlib.VectorCopy(mathlib.vec3_origin, ent.v.velocity);
+                    return 3;
+                }
+
+                if (trace.fraction > 0)
+                {
+                    // actually covered some distance
+                    mathlib.VectorCopy(trace.endpos, ent.v.origin);
+                    mathlib.VectorCopy(ent.v.velocity, original_velocity);
+                    numplanes = 0;
+                }
+
+                if (trace.fraction == 1) break; // moved the entire distance
+
+                if (trace.ent == null) sys_linux.Sys_Error("SV_FlyMove: !trace.ent");
+
+                if (trace.plane.normal[2] > 0.7)
+                {
+                    blocked |= 1; // floor
+                    if (trace.ent.v.solid == SOLID_BSP)
+                    {
+                        ent.v.flags = (int)ent.v.flags | FL_ONGROUND;
+                        ent.v.groundentity = prog.EDICT_TO_PROG(trace.ent);
+                    }
+                }
+                if (trace.plane.normal[2] != 0)
+                {
+                    blocked |= 2; // step
+                    if (steptrace != null) steptrace = trace; // save for player extrafriction
+                }
+
+                //
+                // run the impact function
+                //
+                SV_Impact(ent, trace.ent);
+                if (ent.free) break; // removed by the impact function
+
+
+                time_left -= time_left * trace.fraction;
+
+                // cliped to another plane
+                if (numplanes >= MAX_CLIP_PLANES)
+                {
+                    // this shouldn't really happen
+                    mathlib.VectorCopy(mathlib.vec3_origin, ent.v.velocity);
+                    return 3;
+                }
+
+                mathlib.VectorCopy(trace.plane.normal, planes[numplanes]);
+                numplanes++;
+
+                //
+                // modify original_velocity so it parallels all of the clip planes
+                //
+                for (i = 0; i < numplanes; i++)
+                {
+                    ClipVelocity(original_velocity, planes[i], new_velocity, 1);
+                    for (j = 0; j < numplanes; j++)
+                        if (j != i)
+                        {
+                            if (mathlib.DotProduct(new_velocity, planes[j]) < 0) break; // not ok
+                        }
+                    if (j == numplanes) break;
+                }
+
+                if (i != numplanes)
+                {
+                    // go along this plane
+                    mathlib.VectorCopy(new_velocity, ent.v.velocity);
+                }
+                else
+                {
+                    // go along the crease
+                    if (numplanes != 2)
+                    {
+                        //				Con_Printf ("clip velocity, numplanes == %i\n",numplanes);
+                        mathlib.VectorCopy(mathlib.vec3_origin, ent.v.velocity);
+                        return 7;
+                    }
+                    mathlib.CrossProduct(planes[0], planes[1], dir);
+                    d = mathlib.DotProduct(dir, ent.v.velocity);
+                    mathlib.VectorScale(dir, d, ent.v.velocity);
+                }
+
+                //
+                // if original velocity is against the original velocity, stop dead
+                // to avoid tiny occilations in sloping corners
+                //
+                if (mathlib.DotProduct(ent.v.velocity, primal_velocity) <= 0)
+                {
+                    mathlib.VectorCopy(mathlib.vec3_origin, ent.v.velocity);
+                    return blocked;
+                }
+            }
+
             return blocked;
         }
-    }
-
-    return blocked;
-}
 
         /*
         ============
@@ -637,36 +640,35 @@ throw  new NotImplementedException();
 SV_CheckWater
 =============
 */
-bool SV_CheckWater (prog.edict_t ent)
+static bool SV_CheckWater (prog.edict_t ent)
 {
-    throw new NotImplementedException();
-    //double[]	point;
-    //int		cont;
+    double[] point = new double[3];
+    int cont;
 
-    //point[0] = ent->v.origin[0];
-    //point[1] = ent->v.origin[1];
-    //point[2] = ent->v.origin[2] + ent->v.mins[2] + 1;	
-	
-    //ent->v.waterlevel = 0;
-    //ent->v.watertype = CONTENTS_EMPTY;
-    //cont = SV_PointContents (point);
-    //if (cont <= CONTENTS_WATER)
-    //{
-    //    ent->v.watertype = cont;
-    //    ent->v.waterlevel = 1;
-    //    point[2] = ent->v.origin[2] + (ent->v.mins[2] + ent->v.maxs[2])*0.5;
-    //    cont = SV_PointContents (point);
-    //    if (cont <= CONTENTS_WATER)
-    //    {
-    //        ent->v.waterlevel = 2;
-    //        point[2] = ent->v.origin[2] + ent->v.view_ofs[2];
-    //        cont = SV_PointContents (point);
-    //        if (cont <= CONTENTS_WATER)
-    //            ent->v.waterlevel = 3;
-    //    }
-    //}
-	
-    //return ent->v.waterlevel > 1;
+    point[0] = ent.v.origin[0];
+    point[1] = ent.v.origin[1];
+    point[2] = ent.v.origin[2] + ent.v.mins[2] + 1;
+
+    ent.v.waterlevel = 0;
+    ent.v.watertype = bspfile.CONTENTS_EMPTY;
+    cont = world.SV_PointContents(point);
+    if (cont <= bspfile.CONTENTS_WATER)
+    {
+        ent.v.watertype = cont;
+        ent.v.waterlevel = 1;
+        point[2] = ent.v.origin[2] + (ent.v.mins[2] + ent.v.maxs[2]) * 0.5;
+        cont = world.SV_PointContents(point);
+        if (cont <= bspfile.CONTENTS_WATER)
+        {
+            ent.v.waterlevel = 2;
+            point[2] = ent.v.origin[2] + ent.v.view_ofs[2];
+            cont = world.SV_PointContents(point);
+            if (cont <= bspfile.CONTENTS_WATER)
+                ent.v.waterlevel = 3;
+        }
+    }
+
+    return ent.v.waterlevel > 1;
 }
 
 /*
@@ -895,11 +897,11 @@ Only used by players
 	        case MOVETYPE_WALK:
 		        if (!SV_RunThink (ent))
 			        return;
-		        /*if (!SV_CheckWater (ent) && ! ((int)ent.v.flags & FL_WATERJUMP) )
+		        if (!SV_CheckWater (ent) && ! (((int)ent.v.flags & FL_WATERJUMP) != 0) )
 			        SV_AddGravity (ent);
-		        SV_CheckStuck (ent);*/
+                //SV_CheckStuck (ent);
+                Debug.WriteLine("todo SV_CheckStuck");
 		        SV_WalkMove (ent);
-                Debug.WriteLine("todo SV_AddGravity? SV_CheckStuck SV_WalkMove");
 		        break;
         		
 	        case MOVETYPE_TOSS:

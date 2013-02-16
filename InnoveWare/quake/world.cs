@@ -22,6 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 namespace quake
 {
     using System;
+    using System.Diagnostics;
 
     public static class world
     {
@@ -467,71 +468,71 @@ namespace quake
 
 
 
-///*
-//===============================================================================
+        /*
+        ===============================================================================
 
-//POINT TESTING IN HULLS
+        POINT TESTING IN HULLS
 
-//===============================================================================
-//*/
-
-
-///*
-//==================
-//SV_HullPointContents
-
-//==================
-//*/
-//int SV_HullPointContents (hull_t *hull, int num, vec3_t p)
-//{
-//    float		d;
-//    dclipnode_t	*node;
-//    mplane_t	*plane;
-
-//    while (num >= 0)
-//    {
-//        if (num < hull->firstclipnode || num > hull->lastclipnode)
-//            Sys_Error ("SV_HullPointContents: bad node number");
-	
-//        node = hull->clipnodes + num;
-//        plane = hull->planes + node->planenum;
-		
-//        if (plane->type < 3)
-//            d = p[plane->type] - plane->dist;
-//        else
-//            d = DotProduct (plane->normal, p) - plane->dist;
-//        if (d < 0)
-//            num = node->children[1];
-//        else
-//            num = node->children[0];
-//    }
-	
-//    return num;
-//}
-
-//#endif	// !id386
+        ===============================================================================
+        */
 
 
-///*
-//==================
-//SV_PointContents
+        /*
+        ==================
+        SV_HullPointContents
 
-//==================
-//*/
-//int SV_PointContents (vec3_t p)
-//{
-//    int		cont;
+        ==================
+        */
+        public static int SV_HullPointContents(model.hull_t hull, int num, double[] p)
+        {
+            double d;
+            bspfile.dclipnode_t node;
+            model.mplane_t plane;
 
-//    cont = SV_HullPointContents (&sv.worldmodel->hulls[0], 0, p);
-//    if (cont <= CONTENTS_CURRENT_0 && cont >= CONTENTS_CURRENT_DOWN)
-//        cont = CONTENTS_WATER;
-//    return cont;
-//}
+            while (num >= 0)
+            {
+                if (num < hull.firstclipnode || num > hull.lastclipnode)
+                    sys_linux.Sys_Error("SV_HullPointContents: bad node number");
 
-//int SV_TruePointContents (vec3_t p)
-//{
-//    return SV_HullPointContents (&sv.worldmodel->hulls[0], 0, p);
-//}
+                Debug.WriteLine("POTNIER LOGIC???");
+                //node = hull.clipnodes + num; // pointer logic??????
+                //plane = hull.planes + node.planenum; // pointer logic??????
+
+                //if (plane.type < 3)
+                //    d = p[plane.type] - plane.dist;
+                //else
+                //    d = mathlib.DotProduct(plane.normal, p) - plane.dist;
+                //if (d < 0)
+                //    num = node.children[1];
+                //else
+                //    num = node.children[0];
+                Debug.WriteLine("EO POSS POTNIER LOGIC???");
+            }
+
+            return num;
+        }
+
+
+        /*
+        ==================
+        SV_PointContents
+
+        ==================
+        */
+        public static int SV_PointContents(double[] p)
+        {
+            int cont;
+
+            cont = SV_HullPointContents(server. sv.worldmodel.hulls[0], 0, p);
+            if (cont <= bspfile.CONTENTS_CURRENT_0 && cont >= bspfile.CONTENTS_CURRENT_DOWN)
+            cont = bspfile.CONTENTS_WATER;
+            return cont;
+        }
+
+        public static int SV_TruePointContents(double[] p)
+        {
+            return SV_HullPointContents(server.sv.worldmodel.hulls[0], 0, p);
+        }
 
 ////===========================================================================
 
