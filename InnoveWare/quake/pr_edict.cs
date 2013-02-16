@@ -428,6 +428,8 @@ namespace quake
                             switch ((etype_t)type)
                             {
                                 case etype_t.ev_function:
+                                    value = ed.v.variables[d.ofs - 105];
+                                    break;
                                 case etype_t.ev_string:
                                     valStr = pr_string(cast_int(ed.v.variables[d.ofs - 105]));
                                     if (valStr == "")
