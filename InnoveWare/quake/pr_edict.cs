@@ -450,10 +450,10 @@ namespace quake
                                     value = tempval;
                                     break;
                                 case etype_t.ev_vector:
-                                    //if ( ed.v.variables[d.ofs - 105] == 0 && ed.v.variables[d.ofs - 105+1]  == 0 && ed.v.variables[d.ofs - 105+2]  == 0)
-                                    //{
-                                    //    continue;
-                                    //}
+                                    if (cast_float(ed.v.variables[d.ofs - 105]) == 0 && cast_float(ed.v.variables[d.ofs - 105 + 1]) == 0 && cast_float(ed.v.variables[d.ofs - 105 + 2]) == 0)
+                                    {
+                                        continue;
+                                    }
                                     value = new double[] { cast_float(ed.v.variables[d.ofs - 105]), 
                                        cast_float( ed.v.variables[d.ofs - 105+1]),
                                         cast_float(ed.v.variables[d.ofs - 105+2]) };
