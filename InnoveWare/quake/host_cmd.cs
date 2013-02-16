@@ -353,9 +353,9 @@ namespace quake
         */
         static void Host_Kill_f ()
         {
-            server.sv_player.v.origin[0] = 544;
-            server.sv_player.v.origin[1] = 288;
-            server.sv_player.v.origin[2] = 66;
+            //server.sv_player.v.origin[0] = 544;
+            //server.sv_player.v.origin[1] = 288;
+            //server.sv_player.v.origin[2] = 66;
             cmd.Cbuf_AddText("toggleconsole;\n");
             cmd.Cbuf_AddText("+back;\n");
             //cmd.Cbuf_AddText("+attack;\n"); //PDF_Aim not implemetned?

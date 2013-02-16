@@ -154,7 +154,7 @@ namespace quake
         private static void PR_PrintStatement(dstatement_t s)
         {
             int i;
-            if (prNum >= 2700)
+            if (prNum >= 5040)
             {
                 PR_StackTraceStr();
                 console.Con_Printf((prNum) + " ");
@@ -184,8 +184,8 @@ namespace quake
                     if (s.c != 0) console.Con_Printf(PR_GlobalStringNoContents(s.c));
                 }
                 console.Con_Printf("\n");
-                if (prNum % 100 == 0)
-                prog.PF_coredump();
+                //if (prNum % 200 == 0)
+                    //prog.PF_coredump();
             }
         }
 

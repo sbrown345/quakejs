@@ -21,23 +21,25 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 namespace quake
 {
+    using System;
+
     public static class world
     {
         public class plane_t
         {
-	        double[]	normal = new double[3];
-	        double	    dist;
+            public   double[]	normal = new double[3];
+            public double	    dist;
         };
 
         public class trace_t
         {
-	        bool	    allsolid;	// if true, plane is not valid
-	        bool	    startsolid;	// if true, the initial point was in a solid area
-	        bool	    inopen, inwater;
-	        double	    fraction;		// time completed, 1.0 = didn't hit anything
-	        double[]	endpos = new double[3];			// final position
-	        plane_t	    plane;			// surface normal at impact
-	        //edict_t	*ent;			// entity the surface is on
+	      public bool	    allsolid;	// if true, plane is not valid
+	      public bool	    startsolid;	// if true, the initial point was in a solid area
+	      public bool	    inopen, inwater;
+	      public double	    fraction;		// time completed, 1.0 = didn't hit anything
+	      public double[]	endpos = new double[3];			// final position
+	      public plane_t	    plane;			// surface normal at impact
+          public prog.edict_t ent;			// entity the surface is on
         };
         
         public const int	MOVE_NORMAL		= 0;
@@ -844,49 +846,50 @@ namespace quake
 //#endif
 //}
 
-///*
-//==================
-//SV_Move
-//==================
-//*/
-//trace_t SV_Move (vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end, int type, edict_t *passedict)
-//{
-//    moveclip_t	clip;
-//    int			i;
+        /*
+        ==================
+        SV_Move
+        ==================
+        */
+        public static trace_t SV_Move(double[]  start, double[]  mins, double[] maxs, double[]  end, int type, prog.edict_t passedict)
+        {
+            throw  new NotImplementedException();
+            //moveclip_t clip;
+            //int i;
 
-//    memset ( &clip, 0, sizeof ( moveclip_t ) );
+            //memset(&clip, 0, sizeof(moveclip_t));
 
-//// clip to world
-//    clip.trace = SV_ClipMoveToEntity ( sv.edicts, start, mins, maxs, end );
+            //// clip to world
+            //clip.trace = SV_ClipMoveToEntity(sv.edicts, start, mins, maxs, end);
 
-//    clip.start = start;
-//    clip.end = end;
-//    clip.mins = mins;
-//    clip.maxs = maxs;
-//    clip.type = type;
-//    clip.passedict = passedict;
+            //clip.start = start;
+            //clip.end = end;
+            //clip.mins = mins;
+            //clip.maxs = maxs;
+            //clip.type = type;
+            //clip.passedict = passedict;
 
-//    if (type == MOVE_MISSILE)
-//    {
-//        for (i=0 ; i<3 ; i++)
-//        {
-//            clip.mins2[i] = -15;
-//            clip.maxs2[i] = 15;
-//        }
-//    }
-//    else
-//    {
-//        VectorCopy (mins, clip.mins2);
-//        VectorCopy (maxs, clip.maxs2);
-//    }
-	
-//// create the bounding box of the entire move
-//    SV_MoveBounds ( start, clip.mins2, clip.maxs2, end, clip.boxmins, clip.boxmaxs );
+            //if (type == MOVE_MISSILE)
+            //{
+            //    for (i = 0; i < 3; i++)
+            //    {
+            //        clip.mins2[i] = -15;
+            //        clip.maxs2[i] = 15;
+            //    }
+            //}
+            //else
+            //{
+            //    VectorCopy(mins, clip.mins2);
+            //    VectorCopy(maxs, clip.maxs2);
+            //}
 
-//// clip to entities
-//    SV_ClipToLinks ( sv_areanodes, &clip );
+            //// create the bounding box of the entire move
+            //SV_MoveBounds(start, clip.mins2, clip.maxs2, end, clip.boxmins, clip.boxmaxs);
 
-//    return clip.trace;
-//}
+            //// clip to entities
+            //SV_ClipToLinks(sv_areanodes, &clip);
+
+            //return clip.trace;
+        }
     }
 }

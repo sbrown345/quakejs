@@ -215,7 +215,7 @@ namespace quake
 	        vecc[2] = veca[2] + scale*vecb[2];
         }
 
-        void CrossProduct (double[] v1, double[] v2, double[] cross)
+        public static void CrossProduct (double[] v1, double[] v2, double[] cross)
         {
 	        cross[0] = v1[1]*v2[2] - v1[2]*v2[1];
 	        cross[1] = v1[2]*v2[0] - v1[0]*v2[2];
