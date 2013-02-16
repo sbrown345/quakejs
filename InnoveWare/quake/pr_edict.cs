@@ -294,11 +294,7 @@ namespace quake
                     Object val2 = pr_globals_read(ofs + 1);
                     Object val3 = pr_globals_read(ofs + 2);
 
-
-                    s = "'   " + cast_float(val) + "   " + cast_float(val2) + "   " + cast_float(val3) + "'";
-
-                    //s = "'   " + PR_ValueString(def.type, val) + "   " + PR_ValueString(def.type, val2) + "   "
-                    //    + PR_ValueString(def.type, val3) + "'";
+                    s = string.Format("'{0:F1} {1:F1} {2:F1}'", cast_float(val), cast_float(val2), cast_float(val3));
                 }
                 else
                 {
