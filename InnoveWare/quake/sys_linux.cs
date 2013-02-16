@@ -49,8 +49,8 @@ namespace quake
 
         public static void Sys_Error (string error)
         {
-            MessageBox.Show("Error: " + error);
-//            Debug.WriteLine("Error: " + error);
+            //MessageBox.Show("Error: " + error);
+            Debug.WriteLine("Error: " + error);
 //            Host_Shutdown ();
             throw new Exception();
         } 

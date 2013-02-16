@@ -317,7 +317,24 @@ namespace quake
         {
 	        public int			planenum;
 	        public short[]		children = new short[2];	// negative numbers are contents
+
+            public static implicit operator dclipnode_t(ByteBuffer buf)
+            {
+                int i;
+                int ofs = buf.ofs;
+                dclipnode_t dclipnode = new dclipnode_t();
+                dclipnode.planenum = common.parseInt(buf.buffer, ref ofs);
+                for (i = 0; i < 2; i++)
+                {
+                    dclipnode.children[i] = BitConverter.ToInt16(buf.buffer, ofs);
+                    ofs += sizeof(short);
+                }
+                ofs += sizeof(short);
+                return dclipnode;
+            }
         };
+
+        public const int sizeof_dclipnode_t = 8;
         
         public class texinfo_t
         {

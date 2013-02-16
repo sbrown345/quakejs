@@ -27,6 +27,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 namespace quake
 {
+    using System.Diagnostics;
+
     public partial class model
     {
         /*
@@ -173,8 +175,8 @@ namespace quake
         // !!! if this is changed, it must be changed in asm_i386.h too !!!
         public class hull_t
         {
-           public bspfile.dclipnode_t clipnodes;
-	       public  mplane_t	planes;
+           public bspfile.dclipnode_t[] clipnodes;
+	       public  mplane_t[]	planes;
 	       public  int	    firstclipnode;
            public  int      lastclipnode;
 	       public  double[]	clip_mins = new double[3];
@@ -350,7 +352,7 @@ namespace quake
 	        public int[]		        surfedges;
 
 	        public int			        numclipnodes;
-	        public bspfile.dclipnode_t	clipnodes;
+	        public bspfile.dclipnode_t[]	clipnodes;
 
 	        public int			        nummarksurfaces;
 	        public msurface_t[]	        marksurfaces;
@@ -1373,8 +1375,60 @@ namespace quake
         Mod_LoadClipnodes
         =================
         */
-        static void Mod_LoadClipnodes(bspfile.lump_t l)
+
+        private static void Mod_LoadClipnodes(bspfile.lump_t l)
         {
+            bspfile.dclipnode_t[] @in, @out;
+            int i, count;
+            hull_t hull;
+
+            if ((l.filelen % bspfile.sizeof_dclipnode_t) != 0)
+                sys_linux.Sys_Error("MOD_LoadBmodel: funny lump size in " + loadmodel.name);
+            count = l.filelen / bspfile.sizeof_dclipnode_t;
+            bspfile.ByteBuffer buf = new bspfile.ByteBuffer(mod_base, l.fileofs);
+            @in =  new bspfile.dclipnode_t[count];
+            @out = new bspfile.dclipnode_t[count];
+            for (int kk = 0; kk < count; kk++)
+            {
+                @in[kk] = (bspfile.dclipnode_t)buf;
+                buf.ofs += bspfile.sizeof_dleaf_t;
+                @out[kk] = new bspfile.dclipnode_t();
+            }
+
+
+            loadmodel.clipnodes = @out;
+            loadmodel.numclipnodes = count;
+
+            hull = loadmodel.hulls[1];
+            hull.clipnodes = @out;
+            hull.firstclipnode = 0;
+            hull.lastclipnode = count - 1;
+            hull.planes = loadmodel.planes;
+            hull.clip_mins[0] = -16;
+            hull.clip_mins[1] = -16;
+            hull.clip_mins[2] = -24;
+            hull.clip_maxs[0] = 16;
+            hull.clip_maxs[1] = 16;
+            hull.clip_maxs[2] = 32;
+
+            hull = loadmodel.hulls[2];
+            hull.clipnodes = @out;
+            hull.firstclipnode = 0;
+            hull.lastclipnode = count - 1;
+            hull.planes = loadmodel.planes;
+            hull.clip_mins[0] = -32;
+            hull.clip_mins[1] = -32;
+            hull.clip_mins[2] = -24;
+            hull.clip_maxs[0] = 32;
+            hull.clip_maxs[1] = 32;
+            hull.clip_maxs[2] = 64;
+
+            for (i = 0; i < count; i++)
+            {
+                @out[i].planenum = @in[i].planenum;
+                @out[i].children[0] = @in[i].children[0];
+                @out[i].children[1] = @in[i].children[1];
+            }
         }
 
         /*
@@ -1386,6 +1440,42 @@ namespace quake
         */
         static void Mod_MakeHull0()
         {
+            mnode_t[] @in; 
+            mnode_t child;
+	        bspfile.dclipnode_t[] @out;
+	        int			i, j, count;
+	        hull_t		hull;
+	
+	        hull = loadmodel.hulls[0];	
+	
+	        @in = loadmodel.nodes;
+	        count = loadmodel.numnodes;
+            //@out = Hunk_AllocName ( count*sizeof(*@out), loadname);	
+            @out = new bspfile.dclipnode_t[count];
+            //for (int kk = 0; kk < count; kk++)
+            //{
+            //    @in[kk] = (bspfile.dleaf_t)buf;
+            //    buf.ofs += bspfile.sizeof_dleaf_t;
+            //    @out[kk] = new mleaf_t();
+            //}
+
+	        hull.clipnodes = @out;
+	        hull.firstclipnode = 0;
+	        hull.lastclipnode = count-1;
+	        hull.planes = loadmodel.planes;
+
+	        for (i=0 ; i<count ; i++)
+	        {
+                @out[i].planenum = @in[i].plane - loadmodel.planes;
+                for (j = 0; j < 2; j++)
+                {
+                    child = @in[i].children[j];
+                    if (child.contents < 0)
+                        @out[i].children[j] = child.contents;
+                    else
+                        @out[i].children[j] = child - loadmodel.nodes;
+                }
+	        }
         }
 
         /*
@@ -1565,7 +1655,7 @@ namespace quake
 		        for (j=1 ; j<bspfile.MAX_MAP_HULLS ; j++)
 		        {
 			        mod.hulls[j].firstclipnode = bm.headnode[j];
-			        mod.hulls[j].lastclipnode = mod.numclipnodes-1;
+                    mod.hulls[j].lastclipnode = mod.numclipnodes - 1;
 		        }
         		
 		        mod.firstmodelsurface = bm.firstface;
