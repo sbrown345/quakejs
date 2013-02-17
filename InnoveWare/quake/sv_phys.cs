@@ -563,8 +563,9 @@ static void SV_PushMove (prog.edict_t pusher, Double movetime)
 	        {
 			    SV_PushMove (ent, movetime);	// advances ent.v.ltime if not blocked
 	        }
-        		
-	        if (thinktime > oldltime && thinktime <= ent.v.ltime)
+
+            // todo: this float thing may have issues with JS!
+            if ((float)thinktime > (float)oldltime && (float)thinktime <= (float)ent.v.ltime)
 	        {
 		        ent.v.nextthink = 0;
 		        prog.pr_global_struct[0].time = sv.time;
