@@ -778,6 +778,11 @@ namespace quake
                         pr_globals_write(st.c, (double)(eval ? 1 : 0));
                         break;
 
+                    case opcode_t.OP_NE_S:
+                        eval = pr_string(st.a) == pr_string(st.b);
+                        pr_globals_write(st.c, (double)(eval ? 1 : 0));
+                        break;
+
                         //==================
                     case opcode_t.OP_STORE_F:
                     case opcode_t.OP_STORE_ENT:
@@ -920,7 +925,7 @@ namespace quake
                         break;
 
                     default:
-                        Debug.WriteLine("******Bad opcode " + st.op + " prNum: " + prNum);
+                        Debug.WriteLine("******Bad opcode " + ((opcode_t)st.op) + " prNum: " + prNum);
                         // todo: this works fine on winquake. need to comment out here
                         //PR_RunError("Bad opcode " + st.op); 
                         break;
