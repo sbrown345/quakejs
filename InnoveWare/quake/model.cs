@@ -71,8 +71,8 @@ namespace quake
         {
 	        public double[]	normal = new double[3];
 	        public double	dist;
-	        public byte	    type;			// for texture axis selection and fast side tests
-            public byte     signbits;		// signx + signy<<1 + signz<<1
+	        public int/*byte*/	    type;			// for texture axis selection and fast side tests
+            public int/*byte*/     signbits;		// signx + signy<<1 + signz<<1
 	        byte[]	    pad = new byte[2];
         };
 

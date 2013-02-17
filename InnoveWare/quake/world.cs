@@ -67,55 +67,54 @@ namespace quake
 
 
 
-//        /*
-///*
-//===============================================================================
+                /*
+        /*
+        ===============================================================================
 
-//HULL BOXES
+        HULL BOXES
 
-//===============================================================================
-//*/
+        ===============================================================================
+        */
 
 
-static	model.hull_t		box_hull  = new model.hull_t();
-static	bspfile.dclipnode_t[] box_clipnodes = new bspfile.dclipnode_t[6];
-static model.mplane_t[] box_planes = new model.mplane_t[6];
+        static	model.hull_t		box_hull  = new model.hull_t();
+        static	bspfile.dclipnode_t[] box_clipnodes = new bspfile.dclipnode_t[6];
+        static model.mplane_t[] box_planes = new model.mplane_t[6];
 
-///*
-//===================
-//SV_InitBoxHull
+        /*
+        ===================
+        SV_InitBoxHull
 
-//Set up the planes and clipnodes so that the six floats of a bounding box
-//can just be stored out and get a proper hull_t structure.
-//===================
-//*/
-//void SV_InitBoxHull (void)
-//{
-//    int		i;
-//    int		side;
+        Set up the planes and clipnodes so that the six floats of a bounding box
+        can just be stored out and get a proper hull_t structure.
+        ===================
+        */
+        static void SV_InitBoxHull ()
+        {
+            int		i;
+            int		side;
 
-//    box_hull.clipnodes = box_clipnodes;
-//    box_hull.planes = box_planes;
-//    box_hull.firstclipnode = 0;
-//    box_hull.lastclipnode = 5;
+            box_hull.clipnodes = box_clipnodes;
+            box_hull.planes = box_planes;
+            box_hull.firstclipnode = 0;
+            box_hull.lastclipnode = 5;
 
-//    for (i=0 ; i<6 ; i++)
-//    {
-//        box_clipnodes[i].planenum = i;
+            for (i=0 ; i<6 ; i++)
+            {
+                box_clipnodes[i].planenum = i;
 		
-//        side = i&1;
+                side = i&1;
 		
-//        box_clipnodes[i].children[side] = CONTENTS_EMPTY;
-//        if (i != 5)
-//            box_clipnodes[i].children[side^1] = i + 1;
-//        else
-//            box_clipnodes[i].children[side^1] = CONTENTS_SOLID;
+                box_clipnodes[i].children[side] = bspfile.CONTENTS_EMPTY;
+                if (i != 5)
+                    box_clipnodes[i].children[side^1] = i + 1;
+                else
+                    box_clipnodes[i].children[side^1] = bspfile.CONTENTS_SOLID;
 		
-//        box_planes[i].type = i>>1;
-//        box_planes[i].normal[i>>1] = 1;
-//    }
-	
-//}
+                box_planes[i].type = i>>1;
+                box_planes[i].normal[i>>1] = 1;
+            }
+        }
 
 
         /*
@@ -194,89 +193,99 @@ static model.mplane_t[] box_planes = new model.mplane_t[6];
             return hull;
         }
 
-///*
-//===============================================================================
+       /*
+       ===============================================================================
 
-//ENTITY AREA CHECKING
+       ENTITY AREA CHECKING
 
-//===============================================================================
-//*/
+       ===============================================================================
+       */
 
-class/* struct*/ areanode_t
-{
-  public int		axis;		// -1 = leaf node
-  public float	dist;
-  public  areanode_t[]	children = new areanode_t[2];
-  public common.link_t	trigger_edicts;
-  public common.link_t	solid_edicts;
-} ;
+        class/* struct*/ areanode_t
+        {
+          public int		axis;		// -1 = leaf node
+          public double	dist;
+          public  areanode_t[]	children = new areanode_t[2];
+          public common.link_t	trigger_edicts;
+          public common.link_t	solid_edicts;
+        }
 
-const int 	AREA_DEPTH	=4    ;
+        private const int AREA_DEPTH = 4;
 
         private const int AREA_NODES = 32;
 
-static	areanode_t[]	sv_areanodes= new areanode_t[AREA_NODES];
-static	int			sv_numareanodes;
+        static	areanode_t[]	sv_areanodes = Init_areanode_t(AREA_NODES);
 
-///*
-//===============
-//SV_CreateAreaNode
+        private static areanode_t[] Init_areanode_t(int count)
+        {
+            var nodes = new areanode_t[count];
+            for (int i = 0; i < count; i++)
+                nodes[i] = new areanode_t();
+            return nodes;
+        }
 
-//===============
-//*/
-//areanode_t *SV_CreateAreaNode (int depth, double[] mins, double[] maxs)
-//{
-//    areanode_t	*anode;
-//    double[]		size;
-//    double[]		mins1, maxs1, mins2, maxs2;
+        static	int	sv_numareanodes;
 
-//    anode = &sv_areanodes[sv_numareanodes];
-//    sv_numareanodes++;
+        /*
+        ===============
+        SV_CreateAreaNode
 
-//    ClearLink (&anode->trigger_edicts);
-//    ClearLink (&anode->solid_edicts);
-	
-//    if (depth == AREA_DEPTH)
-//    {
-//        anode->axis = -1;
-//        anode->children[0] = anode->children[1] = NULL;
-//        return anode;
-//    }
-	
-//    VectorSubtract (maxs, mins, size);
-//    if (size[0] > size[1])
-//        anode->axis = 0;
-//    else
-//        anode->axis = 1;
-	
-//    anode->dist = 0.5 * (maxs[anode->axis] + mins[anode->axis]);
-//    VectorCopy (mins, mins1);	
-//    VectorCopy (mins, mins2);	
-//    VectorCopy (maxs, maxs1);	
-//    VectorCopy (maxs, maxs2);	
-	
-//    maxs1[anode->axis] = mins2[anode->axis] = anode->dist;
-	
-//    anode->children[0] = SV_CreateAreaNode (depth+1, mins2, maxs2);
-//    anode->children[1] = SV_CreateAreaNode (depth+1, mins1, maxs1);
+        ===============
+        */
+        static areanode_t SV_CreateAreaNode(int depth, double[] mins, double[] maxs)
+        {
+            areanode_t anode;
+            double[] size = new double[3];
+            double[] mins1 = new double[3], maxs1 = new double[3], mins2 = new double[3], maxs2 = new double[3];
 
-//    return anode;
-//}
+            anode = sv_areanodes[sv_numareanodes];
+            sv_numareanodes++;
 
-///*
-//===============
-//SV_ClearWorld
+            //common.ClearLink(anode.trigger_edicts);
+            anode.trigger_edicts.prev = anode.trigger_edicts.next = anode.trigger_edicts;
+            //common.ClearLink(anode.solid_edicts);
+            anode.solid_edicts.prev = anode.solid_edicts.next = anode.solid_edicts;
 
-//===============
-//*/
-//void SV_ClearWorld (void)
-//{
-//    SV_InitBoxHull ();
-	
-//    memset (sv_areanodes, 0, sizeof(sv_areanodes));
-//    sv_numareanodes = 0;
-//    SV_CreateAreaNode (0, sv.worldmodel->mins, sv.worldmodel->maxs);
-//}
+            if (depth == AREA_DEPTH)
+            {
+                anode.axis = -1;
+                anode.children[0] = anode.children[1] = null;
+                return anode;
+            }
+
+            mathlib.VectorSubtract(maxs, mins, size);
+            if (size[0] > size[1])
+                anode.axis = 0;
+            else
+                anode.axis = 1;
+
+            anode.dist = 0.5 * (maxs[anode.axis] + mins[anode.axis]);
+          mathlib. VectorCopy(mins, mins1);
+          mathlib. VectorCopy(mins, mins2);
+          mathlib. VectorCopy(maxs, maxs1);
+          mathlib. VectorCopy(maxs, maxs2);
+
+            maxs1[anode.axis] = mins2[anode.axis] = anode.dist;
+
+            anode.children[0] = SV_CreateAreaNode(depth + 1, mins2, maxs2);
+            anode.children[1] = SV_CreateAreaNode(depth + 1, mins1, maxs1);
+
+            return anode;
+        }
+
+        /*
+        ===============
+        SV_ClearWorld
+
+        ===============
+        */
+        public static void SV_ClearWorld ()
+        {
+            //SV_InitBoxHull();
+            //sv_areanodes = new areanode_t[AREA_NODES];
+            //sv_numareanodes = 0;
+            //SV_CreateAreaNode(0, server.sv.worldmodel.mins, server.sv.worldmodel.maxs);
+        }
 
 
 ///*
@@ -876,7 +885,7 @@ static	int			sv_numareanodes;
             }
             else
             {
-             mathlib.   VectorCopy(mins, clip.mins2);
+             mathlib.VectorCopy(mins, clip.mins2);
              mathlib.VectorCopy(maxs, clip.maxs2);
             }
 
