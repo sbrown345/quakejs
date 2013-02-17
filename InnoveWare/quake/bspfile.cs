@@ -316,7 +316,7 @@ namespace quake
         public class dclipnode_t
         {
 	        public int			planenum;
-	        public short[]		children = new short[2];	// negative numbers are contents
+            public int[] children = new int[2];	// negative numbers are contents
 
             public static implicit operator dclipnode_t(ByteBuffer buf)
             {

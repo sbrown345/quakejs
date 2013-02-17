@@ -1428,12 +1428,12 @@ namespace quake
                 @out[i].planenum = @in[i].planenum;
                 @out[i].children[0] = @in[i].children[0];  //LittleShort
                 @out[i].children[1] = @in[i].children[1];
-                Debug.WriteLine(
+                /*Debug.WriteLine(
                     string.Format(
                         " @planenum: {0}, @children[0]: {1}, @children[1]: {2}",
                         @in[i].planenum,
                         @in[i].children[0],
-                        @in[i].children[1]));
+                        @in[i].children[1]));*/
             }
 
 
@@ -1449,7 +1449,7 @@ namespace quake
         static void Mod_MakeHull0()
         {
             mnode_t[] @in; 
-            mnode_t child;
+            node_or_leaf_t child;
 	        bspfile.dclipnode_t[] @out;
 	        int			i, j, count;
 	        hull_t		hull;
@@ -1460,12 +1460,12 @@ namespace quake
 	        count = loadmodel.numnodes;
             //@out = Hunk_AllocName ( count*sizeof(*@out), loadname);	
             @out = new bspfile.dclipnode_t[count];
-            //for (int kk = 0; kk < count; kk++)
-            //{
-            //    @in[kk] = (bspfile.dleaf_t)buf;
-            //    buf.ofs += bspfile.sizeof_dleaf_t;
-            //    @out[kk] = new mleaf_t();
-            //}
+            for (int kk = 0; kk < count; kk++)
+            {
+                //@in[kk] = (bspfile.dleaf_t)buf;
+                //buf.ofs += bspfile.sizeof_dleaf_t;
+                @out[kk] = new bspfile.dclipnode_t();
+            }
 
 	        hull.clipnodes = @out;
 	        hull.firstclipnode = 0;
@@ -1474,16 +1474,40 @@ namespace quake
 
 	        for (i=0 ; i<count ; i++)
 	        {
-               // Debug.WriteLine("todo makehull");
-                /*@out[i].planenum = @in[i].plane - loadmodel.planes;
+                for (int k = 0; k < loadmodel.planes.Length; k++)
+                {
+                    var plane = loadmodel.planes[k];
+                    if (@in[i].plane == plane)
+                    {
+                        @out[i].planenum = k;
+                        break;
+                    }
+                }
+                //Debug.WriteLine("out.planeum " + @out[i].planenum);
+
                 for (j = 0; j < 2; j++)
                 {
                     child = @in[i].children[j];
                     if (child.contents < 0)
+                    {
+                        //Debug.WriteLine("1");
                         @out[i].children[j] = child.contents;
+                    }
                     else
-                        @out[i].children[j] = child - loadmodel.nodes;
-                }*/
+                    {
+                        //Debug.WriteLine("2");
+                        for (int k = 0; k < loadmodel.nodes.Length; k++)
+                        {
+                            mnode_t node = loadmodel.nodes[k];
+                            if (child == node)
+                            {
+                                @out[i].children[j] = k;
+                                break;
+                            }
+                        }
+                    }
+                    //Debug.WriteLine("out[i].children[j] " + @out[i].children[j]);
+                }
 	        }
         }
 
