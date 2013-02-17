@@ -879,7 +879,7 @@ namespace quake
             clip = new moveclip_t();
 
             // clip to world
-            Debug.WriteLine("SV_Move ?? SV_ClipMoveToEntity");
+            //Debug.WriteLine("SV_Move ?? SV_ClipMoveToEntity");
             clip.trace = SV_ClipMoveToEntity(server.sv.edicts[0], start, mins, maxs, end);
 
             clip.start = start;
@@ -907,7 +907,7 @@ namespace quake
             SV_MoveBounds(start, clip.mins2, clip.maxs2, end, clip.boxmins, clip.boxmaxs);
 
             // clip to entities
-            Debug.WriteLine("SV_Move ?? SV_ClipToLinks");
+            //Debug.WriteLine("SV_Move ?? SV_ClipToLinks");
             SV_ClipToLinks(sv_areanodes[0], clip);
 
             return clip.trace;

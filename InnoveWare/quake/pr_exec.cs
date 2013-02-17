@@ -154,7 +154,7 @@ namespace quake
         private static void PR_PrintStatement(dstatement_t s)
         {
             int i;
-            if (prNum >= 5043)
+            if (prNum >= 5103)
             {
                 PR_StackTraceStr();
                 console.Con_Printf((prNum) + " ");
@@ -185,8 +185,8 @@ namespace quake
                 }
                 console.Con_Printf("\n");
                //if (prNum % 200 == 0)
-                if (prNum == 5043)
-                    prog.PF_coredump();
+                //if (prNum == 5200)
+                    //prog.PF_coredump();
             }
         }
 
@@ -387,20 +387,38 @@ namespace quake
             switch (offset)
             {
                 case 0: return entvars.modelindex;
+                case 1: return entvars.absmin[0];
+                case 2: return entvars.absmin[1];
+                case 3: return entvars.absmin[2];
+                case 4: return entvars.absmax[0];
+                case 5: return entvars.absmax[1];
+                case 6: return entvars.absmax[2];
                 case 7: return entvars.ltime;
                 case 8: return entvars.movetype;
                 case 9: return entvars.solid;
                 case 10: return entvars.origin[0];
                 case 11: return entvars.origin[1];
                 case 12: return entvars.origin[2];
+                case 13: return entvars.oldorigin[0];
+                case 14: return entvars.oldorigin[1];
+                case 15: return entvars.oldorigin[2];
                 case 16: return entvars.velocity[0];
                 case 17: return entvars.velocity[1];
                 case 18: return entvars.velocity[2];
                 case 19: return entvars.angles[0];
                 case 20: return entvars.angles[1];
                 case 21: return entvars.angles[2];
+                case 22: return entvars.avelocity[0];
+                case 23: return entvars.avelocity[1];
+                case 24: return entvars.avelocity[2];
+                case 25: return entvars.punchangle[0];
+                case 26: return entvars.punchangle[1];
+                case 27: return entvars.punchangle[2];
                 case 28: return entvars.classname;
                 case 29: return entvars.model;
+                case 30: return entvars.frame;
+                case 31: return entvars.skin;
+                case 32: return entvars.effects;
                 case 33: return entvars.mins[0];
                 case 34: return entvars.mins[1];
                 case 35: return entvars.mins[2];
@@ -410,9 +428,16 @@ namespace quake
                 case 39: return entvars.size[0];
                 case 40: return entvars.size[1];
                 case 41: return entvars.size[2];
+                case 42: return entvars.touch;
+                case 43: return entvars.use;
+                case 44: return entvars.think;
+                case 45: return entvars.blocked;
+                case 46: return entvars.nextthink;
+                case 47: return entvars.groundentity;
                 case 48: return entvars.health;
                 case 49: return entvars.frags;
                 case 50: return entvars.weapon;
+                case 51: return entvars.weaponmodel;
                 case 52: return entvars.weaponframe;
                 case 53: return entvars.currentammo;
                 case 54: return entvars.ammo_shells;
@@ -421,6 +446,7 @@ namespace quake
                 case 57: return entvars.ammo_cells;
                 case 58: return entvars.items;
                 case 59: return entvars.takedamage;
+                case 60: return entvars.chain;
                 case 61: return entvars.deadflag;
                 case 62: return entvars.view_ofs[0];
                 case 63: return entvars.view_ofs[1];
@@ -429,29 +455,44 @@ namespace quake
                 case 66: return entvars.button1;
                 case 67: return entvars.button2;
                 case 68: return entvars.impulse;
+                case 69: return entvars.fixangle;
                 case 70: return entvars.v_angle[0];
                 case 71: return entvars.v_angle[1];
                 case 72: return entvars.v_angle[2];
+                case 73: return entvars.idealpitch;
                 case 74: return entvars.netname;
+                case 75: return entvars.enemy;
                 case 76: return entvars.flags;
+                case 77: return entvars.colormap;
                 case 78: return entvars.team;
                 case 79: return entvars.max_health;
+                case 80: return entvars.teleport_time;
                 case 81: return entvars.armortype;
                 case 82: return entvars.armorvalue;
                 case 83: return entvars.waterlevel;
                 case 84: return entvars.watertype;
+                case 85: return entvars.ideal_yaw;
+                case 86: return entvars.yaw_speed;
+                case 87: return entvars.aiment;
+                case 88: return entvars.goalentity;
                 case 89: return entvars.spawnflags;
                 case 90: return entvars.target;
                 case 91: return entvars.targetname;
                 case 92: return entvars.dmg_take;
                 case 93: return entvars.dmg_save;
+                case 94: return entvars.dmg_inflictor;
                 case 95: return entvars.owner;
                 case 96: return entvars.movedir[0];
                 case 97: return entvars.movedir[1];
                 case 98: return entvars.movedir[2];
+                case 99: return entvars.message;
                 case 100: return entvars.sounds;
                 case 101: return entvars.noise;
+                case 102: return entvars.noise1;
+                case 103: return entvars.noise2;
+                case 104: return entvars.noise3;
             }
+            Debug.WriteLine("cant read offset " + offset);
             return null;
         }
 
@@ -475,18 +516,44 @@ namespace quake
             switch (offset)
             {
                 case 0: entvars.modelindex = cast_float(value); break;
+                case 1: entvars.absmin[0] = cast_float(value); break;
+                case 2: entvars.absmin[1] = cast_float(value); break;
+                case 3: entvars.absmin[2] = cast_float(value); break;
+                case 4: entvars.absmax[0] = cast_float(value); break;
+                case 5: entvars.absmax[1] = cast_float(value); break;
+                case 6: entvars.absmax[2] = cast_float(value); break;
+                case 7: entvars.ltime = cast_float(value); break;
                 case 8: entvars.movetype = cast_float(value); break;
                 case 9: entvars.solid = cast_float(value); break;
                 case 10: entvars.origin[0] = cast_float(value); break;
                 case 11: entvars.origin[1] = cast_float(value); break;
                 case 12: entvars.origin[2] = cast_float(value); break;
+                case 13: entvars.oldorigin[0] = cast_float(value); break;
+                case 14: entvars.oldorigin[1] = cast_float(value); break;
+                case 15: entvars.oldorigin[2] = cast_float(value); break;
+                case 16: entvars.velocity[0] = cast_float(value); break;
+                case 17: entvars.velocity[1] = cast_float(value); break;
+                case 18: entvars.velocity[2] = cast_float(value); break;
                 case 19: entvars.angles[0] = cast_float(value); break;
                 case 20: entvars.angles[1] = cast_float(value); break;
                 case 21: entvars.angles[2] = cast_float(value); break;
+                case 22: entvars.avelocity[0] = cast_float(value); break;
+                case 23: entvars.avelocity[1] = cast_float(value); break;
+                case 24: entvars.avelocity[2] = cast_float(value); break;
+                case 25: entvars.punchangle[0] = cast_float(value); break;
+                case 26: entvars.punchangle[1] = cast_float(value); break;
+                case 27: entvars.punchangle[2] = cast_float(value); break;
                 case 28: entvars.classname = cast_int(value); break;
                 case 29: entvars.model = cast_int(value); break;
                 case 30: entvars.frame = cast_float(value); break;
+                case 31: entvars.skin = cast_float(value); break;
                 case 32: entvars.effects = cast_float(value); break;
+                case 33: entvars.mins[0] = cast_float(value); break;
+                case 34: entvars.mins[1] = cast_float(value); break;
+                case 35: entvars.mins[2] = cast_float(value); break;
+                case 36: entvars.maxs[0] = cast_float(value); break;
+                case 37: entvars.maxs[1] = cast_float(value); break;
+                case 38: entvars.maxs[2] = cast_float(value); break;
                 case 39: entvars.size[0] = cast_float(value); break;
                 case 40: entvars.size[1] = cast_float(value); break;
                 case 41: entvars.size[2] = cast_float(value); break;
@@ -495,7 +562,9 @@ namespace quake
                 case 44: entvars.think = cast_int(value); break;
                 case 45: entvars.blocked = cast_int(value); break;
                 case 46: entvars.nextthink = cast_float(value); break;
+                case 47: entvars.groundentity = cast_int(value); break;
                 case 48: entvars.health = cast_float(value); break;
+                case 49: entvars.frags = cast_float(value); break;
                 case 50: entvars.weapon = cast_float(value); break;
                 case 51: entvars.weaponmodel = cast_int(value); break;
                 case 52: entvars.weaponframe = cast_float(value); break;
@@ -506,26 +575,54 @@ namespace quake
                 case 57: entvars.ammo_cells = cast_float(value); break;
                 case 58: entvars.items = cast_float(value); break;
                 case 59: entvars.takedamage = cast_float(value); break;
+                case 60: entvars.chain = cast_int(value); break;
                 case 61: entvars.deadflag = cast_float(value); break;
                 case 62: entvars.view_ofs[0] = cast_float(value); break;
                 case 63: entvars.view_ofs[1] = cast_float(value); break;
                 case 64: entvars.view_ofs[2] = cast_float(value); break;
+                case 65: entvars.button0 = cast_float(value); break;
+                case 66: entvars.button1 = cast_float(value); break;
+                case 67: entvars.button2 = cast_float(value); break;
+                case 68: entvars.impulse = cast_float(value); break;
                 case 69: entvars.fixangle = cast_float(value); break;
+                case 70: entvars.v_angle[0] = cast_float(value); break;
+                case 71: entvars.v_angle[1] = cast_float(value); break;
+                case 72: entvars.v_angle[2] = cast_float(value); break;
+                case 73: entvars.idealpitch = cast_int(value); break;
+                case 74: entvars.netname = cast_int(value); break;
+                case 75: entvars.enemy = cast_int(value); break;
                 case 76: entvars.flags = cast_float(value); break;
+                case 77: entvars.colormap = cast_float(value); break;
+                case 78: entvars.team = cast_float(value); break;
                 case 79: entvars.max_health = cast_float(value); break;
+                case 80: entvars.teleport_time = cast_float(value); break;
                 case 81: entvars.armortype = cast_float(value); break;
                 case 82: entvars.armorvalue = cast_float(value); break;
+                case 83: entvars.waterlevel = cast_float(value); break;
+                case 84: entvars.watertype = cast_float(value); break;
+                case 85: entvars.ideal_yaw = cast_float(value); break;
+                case 86: entvars.yaw_speed = cast_float(value); break;
+                case 87: entvars.aiment = cast_int(value); break;
+                case 88: entvars.goalentity = cast_int(value); break;
                 case 89: entvars.spawnflags = cast_float(value); break;
+                case 90: entvars.target = cast_int(value); break;
+                case 91: entvars.targetname = cast_int(value); break;
+                case 92: entvars.dmg_take = cast_float(value); break;
+                case 93: entvars.dmg_save = cast_float(value); break;
+                case 94: entvars.dmg_inflictor = cast_int(value); break;
                 case 95: entvars.owner = cast_int(value); break;
                 case 96: entvars.movedir[0] = cast_float(value); break;
                 case 97: entvars.movedir[1] = cast_float(value); break;
                 case 98: entvars.movedir[2] = cast_float(value); break;
+                case 99: entvars.message = cast_int(value); break;
                 case 100: entvars.sounds = cast_float(value); break;
                 case 101: entvars.noise = cast_int(value); break;
                 case 102: entvars.noise1 = cast_int(value); break;
                 case 103: entvars.noise2 = cast_int(value); break;
                 case 104: entvars.noise3 = cast_int(value); break;
-                default: break;
+                default: 
+                    Debug.WriteLine("cant write offset " + offset);
+                    break;
             }
         }
 
@@ -579,7 +676,7 @@ namespace quake
 
                 if (pr_trace)
                 {
-                    PR_PrintStatement(st);
+                    //PR_PrintStatement(st);
                     //Debug.WriteLine(string.Format("a {0}: {1} {2} {3}", st.a, pr_globals_read(st.a), pr_globals_read(st.a + 1), pr_globals_read(st.a + 2)));
                     //Debug.WriteLine(string.Format("b {0}: {1} {2} {3}", st.b, pr_globals_read(st.b), pr_globals_read(st.b + 1), pr_globals_read(st.b + 2)));
                     //Debug.WriteLine(string.Format("c {0}: {1} {2} {3}", st.c, pr_globals_read(st.c), pr_globals_read(st.c + 1), pr_globals_read(st.c + 2)));

@@ -644,7 +644,7 @@ static void SV_PushMove (prog.edict_t pusher, Double movetime)
         */
         static bool SV_CheckWater (prog.edict_t ent)
         {
-            Debug.WriteLine("SV_CheckWater");
+            //Debug.WriteLine("SV_CheckWater");
             double[] point = new double[3];
             int cont;
 
@@ -892,7 +892,6 @@ static void SV_PushMove (prog.edict_t pusher, Double movetime)
         //
         // decide which move function to call
         //
-            Debug.WriteLine("SV_Physics_Client " + (int)ent.v.movetype);
             switch ((int)ent.v.movetype)
 	        {
 	        case MOVETYPE_NONE:
@@ -936,8 +935,7 @@ static void SV_PushMove (prog.edict_t pusher, Double movetime)
         //
         // call standard player post-think
         //		
-            Debug.WriteLine("todo SV_LinkEdict");
-            //SV_LinkEdict (ent, true);
+           world.SV_LinkEdict (ent, true);
 
 	        prog.pr_global_struct[0].time = sv.time;
             prog.pr_global_struct[0].self = prog.EDICT_TO_PROG(ent);

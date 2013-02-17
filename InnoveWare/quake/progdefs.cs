@@ -156,33 +156,6 @@ namespace quake
 
             public double[] absmin = new double[3]; // 1
             public double[] absmax = new double[3]; // 4
-
-            //private double[] _absmin = new double[3]; // 1
-            //public double[] absmin
-            //{
-            //    get
-            //    {
-            //        return _absmin;
-            //    }
-            //    set
-            //    {
-            //        _absmin = value;
-            //    }
-            //}
-
-            //private double[] _absmax = new double[3]; // 4
-            //public double[] absmax
-            //{
-            //    get
-            //    {
-            //        return _absmax;
-            //    }
-            //    set
-            //    {
-            //        _absmax = value;
-            //    }
-            //}
-
             public double   ltime; // 7
             public double   movetype;
             public double   solid;
