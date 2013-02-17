@@ -60,6 +60,19 @@ namespace quake
 
         public const int sizeof_edict_t = 516;
 
+        public static edict_t NEXT_EDICT(edict_t e)
+        {
+            for (int i = 0; i < server.sv.edicts.Length; i++)
+            {
+                var edict = server.sv.edicts[i];
+                if (e == edict && i + 1 < server.sv.edicts.Length)
+                {
+                    return edict;
+                }
+            }
+            return null;
+        }
+
         public static int EDICT_TO_PROG(edict_t e) { return e.index * pr_edict_size; }
         public static edict_t PROG_TO_EDICT(int e) { return server.sv.edicts[e / pr_edict_size]; }
 

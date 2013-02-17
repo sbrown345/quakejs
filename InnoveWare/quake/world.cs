@@ -576,14 +576,14 @@ namespace quake
         This could be a lot more efficient...
         ============
         */
-        public static prog.edict_t[] SV_TestEntityPosition(prog.edict_t ent)
+        public static prog.edict_t SV_TestEntityPosition(prog.edict_t ent)
         {
             trace_t trace;
 
             trace = SV_Move(ent.v.origin, ent.v.mins, ent.v.maxs, ent.v.origin, 0, ent);
 
             if (trace.startsolid)
-                return server.sv.edicts;
+                return server.sv.edicts[0];
 
             return null;
         }

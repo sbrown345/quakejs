@@ -106,7 +106,7 @@ namespace quake
         */
         static bool SV_RunThink(prog.edict_t ent)
         {
-            Debug.WriteLine("SV_RunThink");
+            //Debug.WriteLine("SV_RunThink");
             double thinktime;
 
             thinktime = ent.v.nextthink;
@@ -418,121 +418,120 @@ SV_PushMove
 
 ============
 */
-void SV_PushMove (prog.edict_t pusher, float movetime)
+static void SV_PushMove (prog.edict_t pusher, Double movetime)
 {
-throw  new NotImplementedException();
-//    int			i, e;
-//    prog.edict_t		check, block;
-//    double[]		mins = new double[3], maxs = new double[3], move = new double[3];
-//    double[]		entorig = new double[3], pushorig = new double[3];
-//    int			num_moved;
-//    prog.edict_t		*moved_edict[MAX_EDICTS];
-//    double[]		moved_from[MAX_EDICTS];
+    int			i, e;
+    prog.edict_t		check, block;
+    double[]		mins = new double[3], maxs = new double[3], move = new double[3];
+    double[]		entorig = new double[3], pushorig = new double[3];
+    int			num_moved;
+    prog.edict_t[] moved_edict = new prog.edict_t[quakedef.MAX_EDICTS];
+    double[][]		moved_from = new double[quakedef.MAX_EDICTS][];
 
-//    if (!pusher.v.velocity[0] && !pusher.v.velocity[1] && !pusher.v.velocity[2])
-//    {
-//        pusher.v.ltime += movetime;
-//        return;
-//    }
+    if (pusher.v.velocity[0]==0 && pusher.v.velocity[1]==0 && pusher.v.velocity[2]==0)
+    {
+        pusher.v.ltime += movetime;
+        return;
+    }
 
-//    for (i=0 ; i<3 ; i++)
-//    {
-//        move[i] = pusher.v.velocity[i] * movetime;
-//        mins[i] = pusher.v.absmin[i] + move[i];
-//        maxs[i] = pusher.v.absmax[i] + move[i];
-//    }
+    for (i=0 ; i<3 ; i++)
+    {
+        move[i] = pusher.v.velocity[i] * movetime;
+        mins[i] = pusher.v.absmin[i] + move[i];
+        maxs[i] = pusher.v.absmax[i] + move[i];
+    }
 
-//    mathlib.VectorCopy (pusher.v.origin, pushorig);
+    mathlib.VectorCopy (pusher.v.origin, pushorig);
 	
-//// move the pusher to it's final position
+// move the pusher to it's final position
 
-//    mathlib.VectorAdd (pusher.v.origin, move, pusher.v.origin);
-//    pusher.v.ltime += movetime;
-//    world.SV_LinkEdict (pusher, false);
+    mathlib.VectorAdd (pusher.v.origin, move, pusher.v.origin);
+    pusher.v.ltime += movetime;
+    world.SV_LinkEdict (pusher, false);
 
 
-//// see if any solid entities are inside the final position
-//    num_moved = 0;
-//    check = NEXT_EDICT(sv.edicts);
-//    for (e=1 ; e<sv.num_edicts ; e++, check = NEXT_EDICT(check))
-//    {
-//        if (check.free)
-//            continue;
-//        if (check.v.movetype == MOVETYPE_PUSH
-//        || check.v.movetype == MOVETYPE_NONE
+// see if any solid entities are inside the final position
+    num_moved = 0;
+    check = prog.NEXT_EDICT(sv.edicts[0]);
+    for (e=1 ; e<sv.num_edicts ; e++, check = prog.NEXT_EDICT(check))
+    {
+        if (check.free)
+            continue;
+        if (check.v.movetype == MOVETYPE_PUSH
+        || check.v.movetype == MOVETYPE_NONE
 
-//        || check.v.movetype == MOVETYPE_NOCLIP)
-//            continue;
+        || check.v.movetype == MOVETYPE_NOCLIP)
+            continue;
 
-//    // if the entity is standing on the pusher, it will definately be moved
-//        if ( ! ( ((int)check.v.flags & FL_ONGROUND)
-//        && prog.PROG_TO_EDICT(check.v.groundentity) == pusher) )
-//        {
-//            if ( check.v.absmin[0] >= maxs[0]
-//            || check.v.absmin[1] >= maxs[1]
-//            || check.v.absmin[2] >= maxs[2]
-//            || check.v.absmax[0] <= mins[0]
-//            || check.v.absmax[1] <= mins[1]
-//            || check.v.absmax[2] <= mins[2] )
-//                continue;
+    // if the entity is standing on the pusher, it will definately be moved
+        if ( ! ( ((int)check.v.flags & FL_ONGROUND) != 0
+        && prog.PROG_TO_EDICT(check.v.groundentity) == pusher) )
+        {
+            if ( check.v.absmin[0] >= maxs[0]
+            || check.v.absmin[1] >= maxs[1] 
+            || check.v.absmin[2] >= maxs[2]
+            || check.v.absmax[0] <= mins[0]
+            || check.v.absmax[1] <= mins[1]
+            || check.v.absmax[2] <= mins[2] )
+                continue;
 
-//        // see if the ent's bbox is inside the pusher's final position
-//            if (!SV_TestEntityPosition (check))
-//                continue;
-//        }
+        // see if the ent's bbox is inside the pusher's final position
+            if (world.SV_TestEntityPosition (check) != null)
+                continue;
+        }
 
-//    // remove the onground flag for non-players
-//        if (check.v.movetype != MOVETYPE_WALK)
-//            check.v.flags = (int)check.v.flags & ~FL_ONGROUND;
+    // remove the onground flag for non-players
+        if (check.v.movetype != MOVETYPE_WALK)
+            check.v.flags = (int)check.v.flags & ~FL_ONGROUND;
 		
-//        mathlib.VectorCopy (check.v.origin, entorig);
-//        mathlib.VectorCopy (check.v.origin, moved_from[num_moved]);
-//        moved_edict[num_moved] = check;
-//        num_moved++;
+        mathlib.VectorCopy (check.v.origin, entorig);
+        mathlib.VectorCopy (check.v.origin, moved_from[num_moved]);
+        moved_edict[num_moved] = check;
+        num_moved++;
 
-//        // try moving the contacted entity 
-//        pusher.v.solid = SOLID_NOT;
-//        SV_PushEntity (check, move);
-//        pusher.v.solid = SOLID_BSP;
+        // try moving the contacted entity 
+        pusher.v.solid = SOLID_NOT;
+        SV_PushEntity (check, move);
+        pusher.v.solid = SOLID_BSP;
 
-//    // if it is still inside the pusher, block
-//        block = SV_TestEntityPosition (check);
-//        if (block)
-//        {	// fail the move
-//            if (check.v.mins[0] == check.v.maxs[0])
-//                continue;
-//            if (check.v.solid == SOLID_NOT || check.v.solid == SOLID_TRIGGER)
-//            {	// corpse
-//                check.v.mins[0] = check.v.mins[1] = 0;
-//                mathlib.VectorCopy (check.v.mins, check.v.maxs);
-//                continue;
-//            }
+    // if it is still inside the pusher, block
+        block = world.SV_TestEntityPosition (check);
+        if (block != null)
+        {	// fail the move
+            if (check.v.mins[0] == check.v.maxs[0])
+                continue;
+            if (check.v.solid == SOLID_NOT || check.v.solid == SOLID_TRIGGER)
+            {	// corpse
+                check.v.mins[0] = check.v.mins[1] = 0;
+                mathlib.VectorCopy (check.v.mins, check.v.maxs);
+                continue;
+            }
 			
-//            mathlib.VectorCopy (entorig, check.v.origin);
-//            world.SV_LinkEdict (check, true);
+            mathlib.VectorCopy (entorig, check.v.origin);
+            world.SV_LinkEdict (check, true);
 
-//            mathlib.VectorCopy (pushorig, pusher.v.origin);
-//            world.SV_LinkEdict (pusher, false);
-//            pusher.v.ltime -= movetime;
+            mathlib.VectorCopy (pushorig, pusher.v.origin);
+            world.SV_LinkEdict (pusher, false);
+            pusher.v.ltime -= movetime;
 
-//            // if the pusher has a "blocked" function, call it
-//            // otherwise, just stay in place until the obstacle is gone
-//            if (pusher.v.blocked)
-//            {
-//                pr_global_struct.self = prog.EDICT_TO_PROG(pusher);
-//                pr_global_struct.other = prog.EDICT_TO_PROG(check);
-//                PR_ExecuteProgram (pusher.v.blocked);
-//            }
+            // if the pusher has a "blocked" function, call it
+            // otherwise, just stay in place until the obstacle is gone
+            if (pusher.v.blocked != null)
+            {
+                prog.pr_global_struct[0].self = prog.EDICT_TO_PROG(pusher); //todo [0] is this right??
+               prog.pr_global_struct[0].other = prog.EDICT_TO_PROG(check);
+                prog.PR_ExecuteProgram (prog.pr_functions[pusher.v.blocked]);
+            }
 			
-//        // move back any entities we already moved
-//            for (i=0 ; i<num_moved ; i++)
-//            {
-//                mathlib.VectorCopy (moved_from[i], moved_edict[i].v.origin);
-//                world.SV_LinkEdict (moved_edict[i], false);
-//            }
-//            return;
-//        }	
-//    }
+        // move back any entities we already moved
+            for (i=0 ; i<num_moved ; i++)
+            {
+                mathlib.VectorCopy (moved_from[i], moved_edict[i].v.origin);
+                world.SV_LinkEdict (moved_edict[i], false);
+            }
+            return;
+        }	
+    }
 
 	
 }
@@ -562,7 +561,7 @@ throw  new NotImplementedException();
 
 	        if (movetime != 0)
 	        {
-			        //SV_PushMove (ent, movetime);	// advances ent.v.ltime if not blocked
+			    SV_PushMove (ent, movetime);	// advances ent.v.ltime if not blocked
 	        }
         		
 	        if (thinktime > oldltime && thinktime <= ent.v.ltime)
@@ -1046,6 +1045,8 @@ throw  new NotImplementedException();
 
         ================
         */
+
+        private static int phys_num = 0;
         public static void SV_Physics ()
         {
 	        int		        i;
@@ -1064,15 +1065,18 @@ throw  new NotImplementedException();
         //
 	        for (i=0 ; i<sv.num_edicts ; i++)
 	        {
-    	        ent = sv.edicts[i];
-		        if (ent.free)
-			        continue;
+                ent = sv.edicts[i];
+                Debug.WriteLine(string.Format("phys_num {1} edict {2} movetype {0}", (int)ent.v.movetype, phys_num, i));
+                if (ent.free) 
+                {
+                    Debug.WriteLine("free");
+                    continue;
+                }
 
 		        if (prog.pr_global_struct[0].force_retouch != 0)
 		        {
                     world.SV_LinkEdict(ent, true);	// force retouch even for stationary
 		        }
-
 		        if (i > 0 && i <= svs.maxclients)
 			        SV_Physics_Client (ent, i);
 		        else if (ent.v.movetype == MOVETYPE_PUSH)
@@ -1099,6 +1103,9 @@ throw  new NotImplementedException();
 		        prog.pr_global_struct[0].force_retouch--;	
 
 	        sv.time += host.host_frametime;
+
+            phys_num++;
         }
+
     }
 }

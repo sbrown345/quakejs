@@ -149,12 +149,12 @@ namespace quake
         =================
         */
 
-        private static int prNum = 0;
+        public static int prNum = 0;
 
         private static void PR_PrintStatement(dstatement_t s)
         {
             int i;
-            if (prNum >= 5040)
+            if (prNum >= 5043)
             {
                 PR_StackTraceStr();
                 console.Con_Printf((prNum) + " ");
@@ -184,8 +184,9 @@ namespace quake
                     if (s.c != 0) console.Con_Printf(PR_GlobalStringNoContents(s.c));
                 }
                 console.Con_Printf("\n");
-                //if (prNum % 200 == 0)
-                    //prog.PF_coredump();
+               //if (prNum % 200 == 0)
+                if (prNum == 5043)
+                    prog.PF_coredump();
             }
         }
 
@@ -578,7 +579,7 @@ namespace quake
 
                 if (pr_trace)
                 {
-                    //PR_PrintStatement(st);
+                    PR_PrintStatement(st);
                     //Debug.WriteLine(string.Format("a {0}: {1} {2} {3}", st.a, pr_globals_read(st.a), pr_globals_read(st.a + 1), pr_globals_read(st.a + 2)));
                     //Debug.WriteLine(string.Format("b {0}: {1} {2} {3}", st.b, pr_globals_read(st.b), pr_globals_read(st.b + 1), pr_globals_read(st.b + 2)));
                     //Debug.WriteLine(string.Format("c {0}: {1} {2} {3}", st.c, pr_globals_read(st.c), pr_globals_read(st.c + 1), pr_globals_read(st.c + 2)));
