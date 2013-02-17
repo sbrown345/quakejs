@@ -23,6 +23,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 namespace quake
 {
+    using System.Diagnostics;
+
     public partial class server
     {
         public static server_t		    sv = new server_t();
@@ -884,12 +886,14 @@ namespace quake
 		        sv.active = false;
 		        return;
 	        }
-	        sv.models[1] = sv.worldmodel;
+            sv.models[1] = sv.worldmodel; 
+            Debug.WriteLine("world firstclipnode " + sv.worldmodel.hulls[0].firstclipnode);
 
             //
             // clear world interaction links
             //
             //SV_ClearWorld();
+            Debug.WriteLine("todo SV_ClearWorld");
 
             //sv.model_precache[0] = pr_strings;
             sv.model_precache[0] = "";

@@ -177,8 +177,22 @@ namespace quake
         {
            public bspfile.dclipnode_t[] clipnodes;
 	       public  mplane_t[]	planes;
-	       public  int	    firstclipnode;
-           public  int      lastclipnode;
+           public int firstclipnode;
+           //int	    _firstclipnode;
+
+           // public int firstclipnode
+           // {
+           //     get
+           //     {
+           //         return _firstclipnode;
+           //     }
+           //     set
+           //     {
+           //         _firstclipnode = value;
+           //     }
+           // }
+
+            public  int      lastclipnode;
 	       public  double[]	clip_mins = new double[3];
 	       public  double[]	clip_maxs = new double[3];
         }
@@ -411,7 +425,21 @@ namespace quake
                 this.clipnodes = model.clipnodes;
                 this.nummarksurfaces = model.nummarksurfaces;
                 this.marksurfaces = model.marksurfaces;
-                this.hulls = model.hulls;
+                //this.hulls = model.hulls; //dodgey clone! firstclipnode breaks for world
+                this.hulls = new hull_t[bspfile.MAX_MAP_HULLS];
+                for (int i = 0; i < model.hulls.Length; i++)
+                {
+                    var h = model.hulls[i];
+                    this.hulls[i] = new hull_t
+                                        {
+                                            clipnodes = h.clipnodes,
+                                             firstclipnode= h.firstclipnode,
+                                             clip_maxs = h.clip_maxs,
+                                             clip_mins = h.clip_mins,
+                                             lastclipnode = h.lastclipnode,
+                                             planes = h.planes
+                                        };
+                }
                 this.numtextures = model.numtextures;
                 this.textures = model.textures;
                 this.visdata = model.visdata;
@@ -1410,6 +1438,7 @@ namespace quake
             hull.clip_maxs[0] = 16;
             hull.clip_maxs[1] = 16;
             hull.clip_maxs[2] = 32;
+            //Debug.WriteLine("@hull1 firstclipnode: " + hull.firstclipnode);
 
             hull = loadmodel.hulls[2];
             hull.clipnodes = @out;
@@ -1422,6 +1451,7 @@ namespace quake
             hull.clip_maxs[0] = 32;
             hull.clip_maxs[1] = 32;
             hull.clip_maxs[2] = 64;
+            //Debug.WriteLine("@hull2 firstclipnode: "+ hull.firstclipnode);
 
             for (i = 0; i < count; i++)
             {
@@ -1685,9 +1715,12 @@ namespace quake
 		        bm = mod.submodels[i];
 
 		        mod.hulls[0].firstclipnode = bm.headnode[0];
-		        for (j=1 ; j<bspfile.MAX_MAP_HULLS ; j++)
+                //Debug.WriteLine("mod " + mod.name);
+                //Debug.WriteLine("0 firstclipnode " + mod.hulls[0].firstclipnode);
+                for (j = 1; j < bspfile.MAX_MAP_HULLS; j++)
 		        {
 			        mod.hulls[j].firstclipnode = bm.headnode[j];
+                    //Debug.WriteLine("firstclipnode " + mod.hulls[j].firstclipnode);
                     mod.hulls[j].lastclipnode = mod.numclipnodes - 1;
 		        }
         		
@@ -1709,7 +1742,8 @@ namespace quake
 //			        *loadmodel = *mod;
                     loadmodel.Clone(mod);
 			        loadmodel.name = name;
-			        mod = loadmodel;
+                    //Debug.WriteLine("loadmodel firstclipnode " + loadmodel.hulls[0].firstclipnode);
+                    mod = loadmodel;
 		        }
 	        }
         }
