@@ -26,6 +26,17 @@ namespace quake
 
     public static class world
     {
+        public class /*struct */ moveclip_t
+        {
+          public double[] boxmins = new double[3], boxmaxs = new double[3];// enclose the test object along entire move
+          public double[] mins = new double[3], maxs = new double[3];	// size of the moving object
+          public double[] mins2 = new double[3], maxs2 = new double[3];	// size when clipping against mosnters
+          public double[] start, end;
+          public trace_t trace;
+          public int type;
+          public prog.edict_t passedict;
+        }
+
         public class plane_t
         {
             public   double[]	normal = new double[3];
@@ -66,9 +77,9 @@ namespace quake
 //*/
 
 
-//static	model.hull_t		box_hull;
-//static	bspfile.dclipnode_t	box_clipnodes[6];
-//static	model.mplane_t	box_planes[6];
+static	model.hull_t		box_hull  = new model.hull_t();
+static	bspfile.dclipnode_t[] box_clipnodes = new bspfile.dclipnode_t[6];
+static model.mplane_t[] box_planes = new model.mplane_t[6];
 
 ///*
 //===================
@@ -107,81 +118,81 @@ namespace quake
 //}
 
 
-///*
-//===================
-//SV_HullForBox
+        /*
+        ===================
+        SV_HullForBox
 
-//To keep everything totally uniform, bounding boxes are turned into small
-//BSP trees instead of being compared directly.
-//===================
-//*/
-//hull_t	*SV_HullForBox (vec3_t mins, vec3_t maxs)
-//{
-//    box_planes[0].dist = maxs[0];
-//    box_planes[1].dist = mins[0];
-//    box_planes[2].dist = maxs[1];
-//    box_planes[3].dist = mins[1];
-//    box_planes[4].dist = maxs[2];
-//    box_planes[5].dist = mins[2];
+        To keep everything totally uniform, bounding boxes are turned into small
+        BSP trees instead of being compared directly.
+        ===================
+        */
+        static model.hull_t SV_HullForBox(double[] mins, double[] maxs)
+        {
+            box_planes[0].dist = maxs[0];
+            box_planes[1].dist = mins[0];
+            box_planes[2].dist = maxs[1];
+            box_planes[3].dist = mins[1];
+            box_planes[4].dist = maxs[2];
+            box_planes[5].dist = mins[2];
 
-//    return &box_hull;
-//}
-
-
-
-///*
-//================
-//SV_HullForEntity
-
-//Returns a hull that can be used for testing or clipping an object of mins/maxs
-//size.
-//Offset is filled in to contain the adjustment that must be added to the
-//testing object's origin to get a point to use with the returned hull.
-//================
-//*/
-//hull_t *SV_HullForEntity (edict_t *ent, vec3_t mins, vec3_t maxs, vec3_t offset)
-//{
-//    model_t		*model;
-//    vec3_t		size;
-//    vec3_t		hullmins, hullmaxs;
-//    hull_t		*hull;
-
-//// decide which clipping hull to use, based on the size
-//    if (ent->v.solid == SOLID_BSP)
-//    {	// explicit hulls in the BSP model
-//        if (ent->v.movetype != MOVETYPE_PUSH)
-//            Sys_Error ("SOLID_BSP without MOVETYPE_PUSH");
-
-//        model = sv.models[ (int)ent->v.modelindex ];
-
-//        if (!model || model->type != mod_brush)
-//            Sys_Error ("MOVETYPE_PUSH with a non bsp model");
-
-//        VectorSubtract (maxs, mins, size);
-//        if (size[0] < 3)
-//            hull = &model->hulls[0];
-//        else if (size[0] <= 32)
-//            hull = &model->hulls[1];
-//        else
-//            hull = &model->hulls[2];
-
-//// calculate an offset value to center the origin
-//        VectorSubtract (hull->clip_mins, mins, offset);
-//        VectorAdd (offset, ent->v.origin, offset);
-//    }
-//    else
-//    {	// create a temp hull from bounding box sizes
-
-//        VectorSubtract (ent->v.mins, maxs, hullmins);
-//        VectorSubtract (ent->v.maxs, mins, hullmaxs);
-//        hull = SV_HullForBox (hullmins, hullmaxs);
-		
-//        VectorCopy (ent->v.origin, offset);
-//    }
+            return box_hull;
+        }
 
 
-//    return hull;
-//}
+
+        /*
+        ================
+        SV_HullForEntity
+
+        Returns a hull that can be used for testing or clipping an object of mins/maxs
+        size.
+        Offset is filled in to contain the adjustment that must be added to the
+        testing object's origin to get a point to use with the returned hull.
+        ================
+        */
+       static  model.hull_t SV_HullForEntity(prog.edict_t ent, double[] mins, double[] maxs, double[] offset)
+        {
+            model.model_t model;
+            double[] size = new double[3];
+            double[] hullmins= new double[3], hullmaxs= new double[3];
+            model.hull_t hull;
+
+            // decide which clipping hull to use, based on the size
+            if (ent.v.solid == server.SOLID_BSP)
+            {	// explicit hulls in the BSP model
+                if (ent.v.movetype != server.MOVETYPE_PUSH)
+                   sys_linux. Sys_Error("SOLID_BSP without MOVETYPE_PUSH");
+
+                model = server.sv.models[(int)ent.v.modelindex];
+
+                if (model == null || model.type != quake.model.modtype_t.mod_brush)
+                   sys_linux.Sys_Error("MOVETYPE_PUSH with a non bsp model");
+
+               mathlib. VectorSubtract(maxs, mins, size);
+                if (size[0] < 3)
+                    hull = model.hulls[0];
+                else if (size[0] <= 32)
+                    hull = model.hulls[1];
+                else
+                    hull = model.hulls[2];
+
+                // calculate an offset value to center the origin
+                mathlib.VectorSubtract(hull.clip_mins, mins, offset);
+                mathlib.VectorAdd(offset, ent.v.origin, offset);
+            }
+            else
+            {	// create a temp hull from bounding box sizes
+
+                mathlib.VectorSubtract(ent.v.mins, maxs, hullmins);
+                mathlib.VectorSubtract(ent.v.maxs, mins, hullmaxs);
+                hull = SV_HullForBox(hullmins, hullmaxs);
+
+                mathlib.VectorCopy(ent.v.origin, offset);
+            }
+
+
+            return hull;
+        }
 
 ///*
 //===============================================================================
@@ -191,20 +202,21 @@ namespace quake
 //===============================================================================
 //*/
 
-//typedef struct areanode_s
-//{
-//    int		axis;		// -1 = leaf node
-//    float	dist;
-//    struct areanode_s	*children[2];
-//    link_t	trigger_edicts;
-//    link_t	solid_edicts;
-//} areanode_t;
+class/* struct*/ areanode_t
+{
+  public int		axis;		// -1 = leaf node
+  public float	dist;
+  public  areanode_t[]	children = new areanode_t[2];
+  public common.link_t	trigger_edicts;
+  public common.link_t	solid_edicts;
+} ;
 
-//#define	AREA_DEPTH	4
-//#define	AREA_NODES	32
+const int 	AREA_DEPTH	=4    ;
 
-//static	areanode_t	sv_areanodes[AREA_NODES];
-//static	int			sv_numareanodes;
+        private const int AREA_NODES = 32;
+
+static	areanode_t[]	sv_areanodes= new areanode_t[AREA_NODES];
+static	int			sv_numareanodes;
 
 ///*
 //===============
@@ -212,11 +224,11 @@ namespace quake
 
 //===============
 //*/
-//areanode_t *SV_CreateAreaNode (int depth, vec3_t mins, vec3_t maxs)
+//areanode_t *SV_CreateAreaNode (int depth, double[] mins, double[] maxs)
 //{
 //    areanode_t	*anode;
-//    vec3_t		size;
-//    vec3_t		mins1, maxs1, mins2, maxs2;
+//    double[]		size;
+//    double[]		mins1, maxs1, mins2, maxs2;
 
 //    anode = &sv_areanodes[sv_numareanodes];
 //    sv_numareanodes++;
@@ -494,19 +506,17 @@ namespace quake
                 if (num < hull.firstclipnode || num > hull.lastclipnode)
                     sys_linux.Sys_Error("SV_HullPointContents: bad node number");
 
-                Debug.WriteLine("POTNIER LOGIC???");
-                //node = hull.clipnodes + num; // pointer logic??????
-                //plane = hull.planes + node.planenum; // pointer logic??????
+                node = hull.clipnodes[num];
+                plane = hull.planes[node.planenum];
 
-                //if (plane.type < 3)
-                //    d = p[plane.type] - plane.dist;
-                //else
-                //    d = mathlib.DotProduct(plane.normal, p) - plane.dist;
-                //if (d < 0)
-                //    num = node.children[1];
-                //else
-                //    num = node.children[0];
-                Debug.WriteLine("EO POSS POTNIER LOGIC???");
+                if (plane.type < 3)
+                    d = p[plane.type] - plane.dist;
+                else
+                    d = mathlib.DotProduct(plane.normal, p) - plane.dist;
+                if (d < 0)
+                    num = node.children[1];
+                else
+                    num = node.children[0];
             }
 
             return num;
@@ -534,318 +544,304 @@ namespace quake
             return SV_HullPointContents(server.sv.worldmodel.hulls[0], 0, p);
         }
 
-////===========================================================================
+        //===========================================================================
 
-///*
-//============
-//SV_TestEntityPosition
+        /*
+        ============
+        SV_TestEntityPosition
 
-//This could be a lot more efficient...
-//============
-//*/
-//edict_t	*SV_TestEntityPosition (edict_t *ent)
-//{
-//    trace_t	trace;
+        This could be a lot more efficient...
+        ============
+        */
+        public static prog.edict_t[] SV_TestEntityPosition(prog.edict_t ent)
+        {
+            trace_t trace;
 
-//    trace = SV_Move (ent->v.origin, ent->v.mins, ent->v.maxs, ent->v.origin, 0, ent);
+            trace = SV_Move(ent.v.origin, ent.v.mins, ent.v.maxs, ent.v.origin, 0, ent);
+
+            if (trace.startsolid)
+                return server.sv.edicts;
+
+            return null;
+        }
+
+
+        /*
+        ===============================================================================
+
+        LINE TESTING IN HULLS
+
+        ===============================================================================
+        */
+
+        // 1/32 epsilon to keep floating point happy
+        private const double DIST_EPSILON = 0.03125;
+
+        /*
+        ==================
+        SV_RecursiveHullCheck
+
+        ==================
+        */
+        private static bool SV_RecursiveHullCheck(
+            model.hull_t hull, int num, double p1f, double p2f, double[] p1, double[] p2, trace_t trace)
+        {
+            bspfile.dclipnode_t node;
+            model.mplane_t plane;
+            double t1, t2;
+            double frac;
+            int i;
+            double[] mid = new double[3];
+            int side;
+            double midf;
+
+            // check for empty
+            if (num < 0)
+            {
+                if (num != bspfile.CONTENTS_SOLID)
+                {
+                    trace.allsolid = false;
+                    if (num == bspfile.CONTENTS_EMPTY) trace.inopen = true;
+                    else trace.inwater = true;
+                }
+                else trace.startsolid = true;
+                return true; // empty
+            }
+
+            if (num < hull.firstclipnode || num > hull.lastclipnode) sys_linux.Sys_Error("SV_RecursiveHullCheck: bad node number");
+
+            //
+            // find the point distances
+            //
+            node = hull.clipnodes[num];
+            plane = hull.planes[node.planenum];
+
+            if (plane.type < 3)
+            {
+                t1 = p1[plane.type] - plane.dist;
+                t2 = p2[plane.type] - plane.dist;
+            }
+            else
+            {
+                t1 = mathlib.DotProduct(plane.normal, p1) - plane.dist;
+                t2 = mathlib.DotProduct(plane.normal, p2) - plane.dist;
+            }
+
+            if (t1 >= 0 && t2 >= 0) return SV_RecursiveHullCheck(hull, node.children[0], p1f, p2f, p1, p2, trace);
+            if (t1 < 0 && t2 < 0) return SV_RecursiveHullCheck(hull, node.children[1], p1f, p2f, p1, p2, trace);
+
+
+            // put the crosspoint DIST_EPSILON pixels on the near side
+            if (t1 < 0) frac = (t1 + DIST_EPSILON) / (t1 - t2);
+            else frac = (t1 - DIST_EPSILON) / (t1 - t2);
+            if (frac < 0) frac = 0;
+            if (frac > 1) frac = 1;
+
+            midf = p1f + (p2f - p1f) * frac;
+            for (i = 0; i < 3; i++) mid[i] = p1[i] + frac * (p2[i] - p1[i]);
+
+            side = (t1 < 0) ? 1 : 0;
+
+            // move up to the node
+            if (!SV_RecursiveHullCheck(hull, node.children[side], p1f, midf, p1, mid, trace)) return false;
+
+            if (SV_HullPointContents(hull, node.children[side ^ 1], mid) != bspfile.CONTENTS_SOLID) // go past the node
+                return SV_RecursiveHullCheck(hull, node.children[side ^ 1], midf, p2f, mid, p2, trace);
+
+            if (trace.allsolid) return false; // never got out of the solid area
+
+            //==================
+            // the other side of the node is solid, this is the impact point
+            //==================
+            if (side == 0)
+            {
+                mathlib.VectorCopy(plane.normal, trace.plane.normal);
+                trace.plane.dist = plane.dist;
+            }
+            else
+            {
+                mathlib.VectorSubtract(mathlib.vec3_origin, plane.normal, trace.plane.normal);
+                trace.plane.dist = -plane.dist;
+            }
+
+            while (SV_HullPointContents(hull, hull.firstclipnode, mid) == bspfile.CONTENTS_SOLID)
+            {
+                // shouldn't really happen, but does occasionally
+                frac -= 0.1;
+                if (frac < 0)
+                {
+                    trace.fraction = midf;
+                    mathlib.VectorCopy(mid, trace.endpos);
+                    console.Con_DPrintf("backup past 0\n");
+                    return false;
+                }
+                midf = p1f + (p2f - p1f) * frac;
+                for (i = 0; i < 3; i++) mid[i] = p1[i] + frac * (p2[i] - p1[i]);
+            }
+
+            trace.fraction = midf;
+            mathlib.VectorCopy(mid, trace.endpos);
+
+            return false;
+        }
+
+
+        /*
+        ==================
+        SV_ClipMoveToEntity
+
+        Handles selection or creation of a clipping hull, and offseting (and
+        eventually rotation) of the end points
+        ==================
+        */
+        public static trace_t SV_ClipMoveToEntity(prog.edict_t ent, double[] start, double[] mins, double[] maxs, double[] end)
+        {
+            trace_t trace;
+            double[] offset = new double[3];
+            double[] start_l = new double[3], end_l = new double[3];
+            model.hull_t hull;
+
+            // fill in a default trace
+            trace = new trace_t();
+            trace.fraction = 1;
+            trace.allsolid = true;
+            mathlib.VectorCopy(end, trace.endpos);
+
+            // get the clipping hull
+            hull = SV_HullForEntity(ent, mins, maxs, offset);
+
+            mathlib.VectorSubtract(start, offset, start_l);
+            mathlib.VectorSubtract(end, offset, end_l);
+
+
+            // trace a line through the apropriate clipping hull
+            SV_RecursiveHullCheck(hull, hull.firstclipnode, 0, 1, start_l, end_l, trace);
+
+
+            // fix trace up by the offset
+            if (trace.fraction != 1)
+                mathlib.VectorAdd(trace.endpos, offset, trace.endpos);
+
+            // did we clip the move?
+            if (trace.fraction < 1 || trace.startsolid)
+                trace.ent = ent;
+
+            return trace;
+        }
+
+        //===========================================================================
+
+        /*
+        ====================
+        SV_ClipToLinks
+
+        Mins and maxs enclose the entire area swept by the move
+        ====================
+        */
+        static void SV_ClipToLinks(areanode_t node, moveclip_t clip)
+        {
+            common.link_t		l, next;
+            prog.edict_t		touch;
+            trace_t		trace;
+
+        // touch linked edicts
+            for (l = node.solid_edicts.next ; l != node.solid_edicts ; l = next)
+            {
+                next = l.next;
+                touch = prog. EDICT_FROM_AREA(l);
+                if (touch.v.solid == server.SOLID_NOT)
+                    continue;
+                if (touch == clip.passedict)
+                    continue;
+                if (touch.v.solid == server. SOLID_TRIGGER)
+                  sys_linux.  Sys_Error ("Trigger in clipping list");
+
+                if (clip.type == MOVE_NOMONSTERS && touch.v.solid != server.SOLID_BSP)
+                    continue;
+
+                if (clip.boxmins[0] > touch.v.absmax[0]
+                || clip.boxmins[1] > touch.v.absmax[1]
+                || clip.boxmins[2] > touch.v.absmax[2]
+                || clip.boxmaxs[0] < touch.v.absmin[0]
+                || clip.boxmaxs[1] < touch.v.absmin[1]
+                || clip.boxmaxs[2] < touch.v.absmin[2] )
+                    continue;
+
+                //if (clip.passedict && clip.passedict.v.size[0] && !touch.v.size[0])
+                if (clip.passedict !=null && clip.passedict.v.size[0] != 0 && touch.v.size[0] != 0)
+                    continue;	// points never interact
+
+            // might intersect, so do an exact clip
+                if (clip.trace.allsolid)
+                    return;
+                if (clip.passedict != null)
+                {
+                    if (prog.PROG_TO_EDICT(touch.v.owner) == clip.passedict)
+                        continue;	// don't clip against own missiles
+                    if (prog.PROG_TO_EDICT(clip.passedict.v.owner) == touch)
+                        continue;	// don't clip against owner
+                }
+
+                if (((int)touch.v.flags & server.FL_MONSTER )!=  0)
+                    trace = SV_ClipMoveToEntity (touch, clip.start, clip.mins2, clip.maxs2, clip.end);
+                else
+                    trace = SV_ClipMoveToEntity (touch, clip.start, clip.mins, clip.maxs, clip.end);
+                if (trace.allsolid || trace.startsolid ||
+                trace.fraction < clip.trace.fraction)
+                {
+                    trace.ent = touch;
+                    if (clip.trace.startsolid)
+                    {
+                        clip.trace = trace;
+                        clip.trace.startsolid = true;
+                    }
+                    else
+                        clip.trace = trace;
+                }
+                else if (trace.startsolid)
+                    clip.trace.startsolid = true;
+            }
 	
-//    if (trace.startsolid)
-//        return sv.edicts;
-		
-//    return NULL;
-//}
+        // recurse down both sides
+            if (node.axis == -1)
+                return;
+
+            if ( clip.boxmaxs[node.axis] > node.dist )
+                SV_ClipToLinks ( node.children[0], clip );
+            if ( clip.boxmins[node.axis] < node.dist )
+                SV_ClipToLinks ( node.children[1], clip );
+        }
 
 
-///*
-//===============================================================================
-
-//LINE TESTING IN HULLS
-
-//===============================================================================
-//*/
-
-//// 1/32 epsilon to keep floating point happy
-//        private const double DIST_EPSILON = 0.03125;
-
-///*
-//==================
-//SV_RecursiveHullCheck
-
-//==================
-//*/
-//bool SV_RecursiveHullCheck (hull_t *hull, int num, float p1f, float p2f, vec3_t p1, vec3_t p2, trace_t *trace)
-//{
-//    dclipnode_t	*node;
-//    mplane_t	*plane;
-//    float		t1, t2;
-//    float		frac;
-//    int			i;
-//    vec3_t		mid;
-//    int			side;
-//    float		midf;
-
-//// check for empty
-//    if (num < 0)
-//    {
-//        if (num != CONTENTS_SOLID)
-//        {
-//            trace->allsolid = false;
-//            if (num == CONTENTS_EMPTY)
-//                trace->inopen = true;
-//            else
-//                trace->inwater = true;
-//        }
-//        else
-//            trace->startsolid = true;
-//        return true;		// empty
-//    }
-
-//    if (num < hull->firstclipnode || num > hull->lastclipnode)
-//        Sys_Error ("SV_RecursiveHullCheck: bad node number");
-
-////
-//// find the point distances
-////
-//    node = hull->clipnodes + num;
-//    plane = hull->planes + node->planenum;
-
-//    if (plane->type < 3)
-//    {
-//        t1 = p1[plane->type] - plane->dist;
-//        t2 = p2[plane->type] - plane->dist;
-//    }
-//    else
-//    {
-//        t1 = DotProduct (plane->normal, p1) - plane->dist;
-//        t2 = DotProduct (plane->normal, p2) - plane->dist;
-//    }
+        /*
+        ==================
+        SV_MoveBounds
+        ==================
+        */
+      static  void SV_MoveBounds (double[] start, double[] mins, double[] maxs, double[] end, double[] boxmins, double[] boxmaxs)
+        {
+        //#if 0
+        //// debug to test against everything
+        //boxmins[0] = boxmins[1] = boxmins[2] = -9999;
+        //boxmaxs[0] = boxmaxs[1] = boxmaxs[2] = 9999;
+        //#else
+            int		i;
 	
-//    if (t1 >= 0 && t2 >= 0)
-//        return SV_RecursiveHullCheck (hull, node->children[0], p1f, p2f, p1, p2, trace);
-//    if (t1 < 0 && t2 < 0)
-//        return SV_RecursiveHullCheck (hull, node->children[1], p1f, p2f, p1, p2, trace);
-
-
-//// put the crosspoint DIST_EPSILON pixels on the near side
-//    if (t1 < 0)
-//        frac = (t1 + DIST_EPSILON)/(t1-t2);
-//    else
-//        frac = (t1 - DIST_EPSILON)/(t1-t2);
-//    if (frac < 0)
-//        frac = 0;
-//    if (frac > 1)
-//        frac = 1;
-		
-//    midf = p1f + (p2f - p1f)*frac;
-//    for (i=0 ; i<3 ; i++)
-//        mid[i] = p1[i] + frac*(p2[i] - p1[i]);
-
-//    side = (t1 < 0);
-
-//// move up to the node
-//    if (!SV_RecursiveHullCheck (hull, node->children[side], p1f, midf, p1, mid, trace) )
-//        return false;
-	
-//    if (SV_HullPointContents (hull, node->children[side^1], mid)
-//    != CONTENTS_SOLID)
-//// go past the node
-//        return SV_RecursiveHullCheck (hull, node->children[side^1], midf, p2f, mid, p2, trace);
-	
-//    if (trace->allsolid)
-//        return false;		// never got out of the solid area
-		
-////==================
-//// the other side of the node is solid, this is the impact point
-////==================
-//    if (!side)
-//    {
-//        VectorCopy (plane->normal, trace->plane.normal);
-//        trace->plane.dist = plane->dist;
-//    }
-//    else
-//    {
-//        VectorSubtract (vec3_origin, plane->normal, trace->plane.normal);
-//        trace->plane.dist = -plane->dist;
-//    }
-
-//    while (SV_HullPointContents (hull, hull->firstclipnode, mid)
-//    == CONTENTS_SOLID)
-//    { // shouldn't really happen, but does occasionally
-//        frac -= 0.1;
-//        if (frac < 0)
-//        {
-//            trace->fraction = midf;
-//            VectorCopy (mid, trace->endpos);
-//            Con_DPrintf ("backup past 0\n");
-//            return false;
-//        }
-//        midf = p1f + (p2f - p1f)*frac;
-//        for (i=0 ; i<3 ; i++)
-//            mid[i] = p1[i] + frac*(p2[i] - p1[i]);
-//    }
-
-//    trace->fraction = midf;
-//    VectorCopy (mid, trace->endpos);
-
-//    return false;
-//}
-
-
-///*
-//==================
-//SV_ClipMoveToEntity
-
-//Handles selection or creation of a clipping hull, and offseting (and
-//eventually rotation) of the end points
-//==================
-//*/
-//trace_t SV_ClipMoveToEntity (edict_t *ent, vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end)
-//{
-//    trace_t		trace;
-//    vec3_t		offset;
-//    vec3_t		start_l, end_l;
-//    hull_t		*hull;
-
-//// fill in a default trace
-//    memset (&trace, 0, sizeof(trace_t));
-//    trace.fraction = 1;
-//    trace.allsolid = true;
-//    VectorCopy (end, trace.endpos);
-
-//// get the clipping hull
-//    hull = SV_HullForEntity (ent, mins, maxs, offset);
-
-//    VectorSubtract (start, offset, start_l);
-//    VectorSubtract (end, offset, end_l);
-
-
-//// trace a line through the apropriate clipping hull
-//    SV_RecursiveHullCheck (hull, hull->firstclipnode, 0, 1, start_l, end_l, &trace);
-
-
-//// fix trace up by the offset
-//    if (trace.fraction != 1)
-//        VectorAdd (trace.endpos, offset, trace.endpos);
-
-//// did we clip the move?
-//    if (trace.fraction < 1 || trace.startsolid  )
-//        trace.ent = ent;
-
-//    return trace;
-//}
-
-////===========================================================================
-
-///*
-//====================
-//SV_ClipToLinks
-
-//Mins and maxs enclose the entire area swept by the move
-//====================
-//*/
-//void SV_ClipToLinks ( areanode_t *node, moveclip_t *clip )
-//{
-//    link_t		*l, *next;
-//    edict_t		*touch;
-//    trace_t		trace;
-
-//// touch linked edicts
-//    for (l = node->solid_edicts.next ; l != &node->solid_edicts ; l = next)
-//    {
-//        next = l->next;
-//        touch = EDICT_FROM_AREA(l);
-//        if (touch->v.solid == SOLID_NOT)
-//            continue;
-//        if (touch == clip->passedict)
-//            continue;
-//        if (touch->v.solid == SOLID_TRIGGER)
-//            Sys_Error ("Trigger in clipping list");
-
-//        if (clip->type == MOVE_NOMONSTERS && touch->v.solid != SOLID_BSP)
-//            continue;
-
-//        if (clip->boxmins[0] > touch->v.absmax[0]
-//        || clip->boxmins[1] > touch->v.absmax[1]
-//        || clip->boxmins[2] > touch->v.absmax[2]
-//        || clip->boxmaxs[0] < touch->v.absmin[0]
-//        || clip->boxmaxs[1] < touch->v.absmin[1]
-//        || clip->boxmaxs[2] < touch->v.absmin[2] )
-//            continue;
-
-//        if (clip->passedict && clip->passedict->v.size[0] && !touch->v.size[0])
-//            continue;	// points never interact
-
-//    // might intersect, so do an exact clip
-//        if (clip->trace.allsolid)
-//            return;
-//        if (clip->passedict)
-//        {
-//            if (PROG_TO_EDICT(touch->v.owner) == clip->passedict)
-//                continue;	// don't clip against own missiles
-//            if (PROG_TO_EDICT(clip->passedict->v.owner) == touch)
-//                continue;	// don't clip against owner
-//        }
-
-//        if ((int)touch->v.flags & FL_MONSTER)
-//            trace = SV_ClipMoveToEntity (touch, clip->start, clip->mins2, clip->maxs2, clip->end);
-//        else
-//            trace = SV_ClipMoveToEntity (touch, clip->start, clip->mins, clip->maxs, clip->end);
-//        if (trace.allsolid || trace.startsolid ||
-//        trace.fraction < clip->trace.fraction)
-//        {
-//            trace.ent = touch;
-//            if (clip->trace.startsolid)
-//            {
-//                clip->trace = trace;
-//                clip->trace.startsolid = true;
-//            }
-//            else
-//                clip->trace = trace;
-//        }
-//        else if (trace.startsolid)
-//            clip->trace.startsolid = true;
-//    }
-	
-//// recurse down both sides
-//    if (node->axis == -1)
-//        return;
-
-//    if ( clip->boxmaxs[node->axis] > node->dist )
-//        SV_ClipToLinks ( node->children[0], clip );
-//    if ( clip->boxmins[node->axis] < node->dist )
-//        SV_ClipToLinks ( node->children[1], clip );
-//}
-
-
-///*
-//==================
-//SV_MoveBounds
-//==================
-//*/
-//void SV_MoveBounds (vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end, vec3_t boxmins, vec3_t boxmaxs)
-//{
-//#if 0
-//// debug to test against everything
-//boxmins[0] = boxmins[1] = boxmins[2] = -9999;
-//boxmaxs[0] = boxmaxs[1] = boxmaxs[2] = 9999;
-//#else
-//    int		i;
-	
-//    for (i=0 ; i<3 ; i++)
-//    {
-//        if (end[i] > start[i])
-//        {
-//            boxmins[i] = start[i] + mins[i] - 1;
-//            boxmaxs[i] = end[i] + maxs[i] + 1;
-//        }
-//        else
-//        {
-//            boxmins[i] = end[i] + mins[i] - 1;
-//            boxmaxs[i] = start[i] + maxs[i] + 1;
-//        }
-//    }
-//#endif
-//}
+            for (i=0 ; i<3 ; i++)
+            {
+                if (end[i] > start[i])
+                {
+                    boxmins[i] = start[i] + mins[i] - 1;
+                    boxmaxs[i] = end[i] + maxs[i] + 1;
+                }
+                else
+                {
+                    boxmins[i] = end[i] + mins[i] - 1;
+                    boxmaxs[i] = start[i] + maxs[i] + 1;
+                }
+            }
+        //#endif
+        }
 
         /*
         ==================
@@ -854,43 +850,44 @@ namespace quake
         */
         public static trace_t SV_Move(double[]  start, double[]  mins, double[] maxs, double[]  end, int type, prog.edict_t passedict)
         {
-            throw  new NotImplementedException();
-            //moveclip_t clip;
-            //int i;
+            moveclip_t clip;
+            int i;
 
-            //memset(&clip, 0, sizeof(moveclip_t));
+            clip = new moveclip_t();
 
-            //// clip to world
-            //clip.trace = SV_ClipMoveToEntity(sv.edicts, start, mins, maxs, end);
+            // clip to world
+            Debug.WriteLine("SV_Move ?? SV_ClipMoveToEntity");
+            clip.trace = SV_ClipMoveToEntity(server.sv.edicts[0], start, mins, maxs, end);
 
-            //clip.start = start;
-            //clip.end = end;
-            //clip.mins = mins;
-            //clip.maxs = maxs;
-            //clip.type = type;
-            //clip.passedict = passedict;
+            clip.start = start;
+            clip.end = end;
+            clip.mins = mins;
+            clip.maxs = maxs;
+            clip.type = type;
+            clip.passedict = passedict;
 
-            //if (type == MOVE_MISSILE)
-            //{
-            //    for (i = 0; i < 3; i++)
-            //    {
-            //        clip.mins2[i] = -15;
-            //        clip.maxs2[i] = 15;
-            //    }
-            //}
-            //else
-            //{
-            //    VectorCopy(mins, clip.mins2);
-            //    VectorCopy(maxs, clip.maxs2);
-            //}
+            if (type == MOVE_MISSILE)
+            {
+                for (i = 0; i < 3; i++)
+                {
+                    clip.mins2[i] = -15;
+                    clip.maxs2[i] = 15;
+                }
+            }
+            else
+            {
+             mathlib.   VectorCopy(mins, clip.mins2);
+             mathlib.VectorCopy(maxs, clip.maxs2);
+            }
 
-            //// create the bounding box of the entire move
-            //SV_MoveBounds(start, clip.mins2, clip.maxs2, end, clip.boxmins, clip.boxmaxs);
+            // create the bounding box of the entire move
+            SV_MoveBounds(start, clip.mins2, clip.maxs2, end, clip.boxmins, clip.boxmaxs);
 
-            //// clip to entities
-            //SV_ClipToLinks(sv_areanodes, &clip);
+            // clip to entities
+            Debug.WriteLine("SV_Move ?? SV_ClipToLinks");
+            SV_ClipToLinks(sv_areanodes[0], clip);
 
-            //return clip.trace;
+            return clip.trace;
         }
     }
 }

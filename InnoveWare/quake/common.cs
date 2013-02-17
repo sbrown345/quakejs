@@ -428,6 +428,14 @@ namespace quake
                     dst[offset - 1 + kk] = (byte)data[kk]; // write over trailing 0
             }
         }
+        //============================================================================
+
+        public class /*struct*/ link_t
+        {
+            public link_t prev, next;
+        }
+
+        public static prog.edict_t STRUCT_FROM_LINK(common.link_t l) { throw new NotImplementedException("STRUCT_FROM_LINK !!"); }
 
 
         //============================================================================

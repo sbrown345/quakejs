@@ -242,7 +242,7 @@ If steptrace is not NULL, the trace of any vertical wall hit will be stored
 
             for (bumpcount = 0; bumpcount < numbumps; bumpcount++)
             {
-                if (ent.v.velocity[0] == 0 && ent.v.velocity[1] == 0 && ent.v.velocity[2] == 0) break;
+                if (ent.v.velocity[0] == 0.0 && ent.v.velocity[1] == 0.0 && ent.v.velocity[2] == 0.0) break;
 
                 for (i = 0; i < 3; i++) end[i] = ent.v.origin[i] + time_left * ent.v.velocity[i];
 
@@ -263,7 +263,7 @@ If steptrace is not NULL, the trace of any vertical wall hit will be stored
                     numplanes = 0;
                 }
 
-                if (trace.fraction == 1) break; // moved the entire distance
+                if (trace.fraction == 1.0) break; // moved the entire distance
 
                 if (trace.ent == null) sys_linux.Sys_Error("SV_FlyMove: !trace.ent");
 
@@ -276,7 +276,7 @@ If steptrace is not NULL, the trace of any vertical wall hit will be stored
                         ent.v.groundentity = prog.EDICT_TO_PROG(trace.ent);
                     }
                 }
-                if (trace.plane.normal[2] != 0)
+                if (trace.plane.normal[2] != 0.0)
                 {
                     blocked |= 2; // step
                     if (steptrace != null) steptrace = trace; // save for player extrafriction
@@ -359,13 +359,13 @@ If steptrace is not NULL, the trace of any vertical wall hit will be stored
         {
 	        double	ent_gravity;
 
-	        /*eval_t	*val;
+            /*eval_t	*val;
 
-	        val = GetEdictFieldValue(ent, "gravity");
-	        if (val && val._float)
-		        ent_gravity = val._float;
-	        else*/
-		        ent_gravity = 1.0;
+            val = GetEdictFieldValue(ent, "gravity"); //TODO GetEdictFieldValue and gravity
+            if (val && val._float)
+                ent_gravity = val._float;
+            else*/
+            ent_gravity = 1.0;
 	        ent.v.velocity[2] -= ent_gravity * sv_gravity.value * host.host_frametime;
         }
         
@@ -577,198 +577,198 @@ throw  new NotImplementedException();
         }
 
     
-/*
-===============================================================================
+        /*
+        ===============================================================================
 
-CLIENT MOVEMENT
+        CLIENT MOVEMENT
 
-===============================================================================
-*/
+        ===============================================================================
+        */
 
-/*
-=============
-SV_CheckStuck
+        /*
+        =============
+        SV_CheckStuck
 
-This is a big hack to try and fix the rare case of getting stuck in the world
-clipping hull.
-=============
-*/
-void SV_CheckStuck (prog.edict_t ent)
-{
-throw  new NotImplementedException();
-    //int		i, j;
-    //int		z;
-    //double[]	org = new double[3];
+        This is a big hack to try and fix the rare case of getting stuck in the world
+        clipping hull.
+        =============
+        */
 
-    //if (!SV_TestEntityPosition(ent))
-    //{
-    //    mathlib.VectorCopy (ent.v.origin, ent.v.oldorigin);
-    //    return;
-    //}
-
-    //mathlib.VectorCopy (ent.v.origin, org);
-    //mathlib.VectorCopy (ent.v.oldorigin, ent.v.origin);
-    //if (!SV_TestEntityPosition(ent))
-    //{
-    //    console.Con_DPrintf ("Unstuck.\n");
-    //    world.SV_LinkEdict (ent, true);
-    //    return;
-    //}
-	
-    //for (z=0 ; z< 18 ; z++)
-    //    for (i=-1 ; i <= 1 ; i++)
-    //        for (j=-1 ; j <= 1 ; j++)
-    //        {
-    //            ent.v.origin[0] = org[0] + i;
-    //            ent.v.origin[1] = org[1] + j;
-    //            ent.v.origin[2] = org[2] + z;
-    //            if (!SV_TestEntityPosition(ent))
-    //            {
-    //                console.Con_DPrintf ("Unstuck.\n");
-    //                world.SV_LinkEdict (ent, true);
-    //                return;
-    //            }
-    //        }
-			
-    //mathlib.VectorCopy (org, ent.v.origin);
-    //console.Con_DPrintf ("player is stuck.\n");
-}
-
-
-/*
-=============
-SV_CheckWater
-=============
-*/
-static bool SV_CheckWater (prog.edict_t ent)
-{
-    double[] point = new double[3];
-    int cont;
-
-    point[0] = ent.v.origin[0];
-    point[1] = ent.v.origin[1];
-    point[2] = ent.v.origin[2] + ent.v.mins[2] + 1;
-
-    ent.v.waterlevel = 0;
-    ent.v.watertype = bspfile.CONTENTS_EMPTY;
-    cont = world.SV_PointContents(point);
-    if (cont <= bspfile.CONTENTS_WATER)
-    {
-        ent.v.watertype = cont;
-        ent.v.waterlevel = 1;
-        point[2] = ent.v.origin[2] + (ent.v.mins[2] + ent.v.maxs[2]) * 0.5;
-        cont = world.SV_PointContents(point);
-        if (cont <= bspfile.CONTENTS_WATER)
+        private static void SV_CheckStuck(prog.edict_t ent)
         {
-            ent.v.waterlevel = 2;
-            point[2] = ent.v.origin[2] + ent.v.view_ofs[2];
+            int i, j;
+            int z;
+            double[] org = new double[3];
+
+            if (world.SV_TestEntityPosition(ent) != null)
+            {
+                mathlib.VectorCopy(ent.v.origin, ent.v.oldorigin);
+                return;
+            }
+
+            mathlib.VectorCopy(ent.v.origin, org);
+            mathlib.VectorCopy(ent.v.oldorigin, ent.v.origin);
+            if (world.SV_TestEntityPosition(ent) != null)
+            {
+                console.Con_DPrintf("Unstuck.\n");
+                world.SV_LinkEdict(ent, true);
+                return;
+            }
+
+            for (z = 0; z < 18; z++)
+                for (i = -1; i <= 1; i++)
+                    for (j = -1; j <= 1; j++)
+                    {
+                        ent.v.origin[0] = org[0] + i;
+                        ent.v.origin[1] = org[1] + j;
+                        ent.v.origin[2] = org[2] + z;
+                        if (world.SV_TestEntityPosition(ent) != null)
+                        {
+                            console.Con_DPrintf("Unstuck.\n");
+                            world.SV_LinkEdict(ent, true);
+                            return;
+                        }
+                    }
+
+            mathlib.VectorCopy(org, ent.v.origin);
+            console.Con_DPrintf("player is stuck.\n");
+        }
+
+
+        /*
+        =============
+        SV_CheckWater
+        =============
+        */
+        static bool SV_CheckWater (prog.edict_t ent)
+        {
+            double[] point = new double[3];
+            int cont;
+
+            point[0] = ent.v.origin[0];
+            point[1] = ent.v.origin[1];
+            point[2] = ent.v.origin[2] + ent.v.mins[2] + 1;
+
+            ent.v.waterlevel = 0;
+            ent.v.watertype = bspfile.CONTENTS_EMPTY;
             cont = world.SV_PointContents(point);
             if (cont <= bspfile.CONTENTS_WATER)
-                ent.v.waterlevel = 3;
+            {
+                ent.v.watertype = cont;
+                ent.v.waterlevel = 1;
+                point[2] = ent.v.origin[2] + (ent.v.mins[2] + ent.v.maxs[2]) * 0.5;
+                cont = world.SV_PointContents(point);
+                if (cont <= bspfile.CONTENTS_WATER)
+                {
+                    ent.v.waterlevel = 2;
+                    point[2] = ent.v.origin[2] + ent.v.view_ofs[2];
+                    cont = world.SV_PointContents(point);
+                    if (cont <= bspfile.CONTENTS_WATER)
+                        ent.v.waterlevel = 3;
+                }
+            }
+
+            return ent.v.waterlevel > 1;
         }
-    }
 
-    return ent.v.waterlevel > 1;
-}
+        /*
+        ============
+        SV_WallFriction
 
-/*
-============
-SV_WallFriction
-
-============
-*/
-static void SV_WallFriction (prog.edict_t ent, world.trace_t trace)
-{
-    throw new NotImplementedException();
-//    double[] forward = new double[3], right = new double[3], up = new double[3];
-//    float		d, i;
-//    double[]		into=new double[3], side=new double[3];
+        ============
+        */
+        static void SV_WallFriction (prog.edict_t ent, world.trace_t trace)
+        {
+            throw new NotImplementedException();
+        //    double[] forward = new double[3], right = new double[3], up = new double[3];
+        //    float		d, i;
+        //    double[]		into=new double[3], side=new double[3];
 	
-//    mathlib.AngleVectors (ent.v.v_angle, forward, right, up);
-//    d = mathlib.DotProduct (trace.plane.normal, forward);
+        //    mathlib.AngleVectors (ent.v.v_angle, forward, right, up);
+        //    d = mathlib.DotProduct (trace.plane.normal, forward);
 	
-//    d += 0.5;
-//    if (d >= 0)
-//        return;
+        //    d += 0.5;
+        //    if (d >= 0)
+        //        return;
 		
-//// cut the tangential velocity
-//    i =mathlib. DotProduct (trace.plane.normal, ent.v.velocity);
-//    mathlib.VectorScale (trace.plane.normal, i, into);
-//    mathlib.VectorSubtract (ent.v.velocity, into, side);
+        //// cut the tangential velocity
+        //    i =mathlib. DotProduct (trace.plane.normal, ent.v.velocity);
+        //    mathlib.VectorScale (trace.plane.normal, i, into);
+        //    mathlib.VectorSubtract (ent.v.velocity, into, side);
 	
-//    ent.v.velocity[0] = side[0] * (1 + d);
-//    ent.v.velocity[1] = side[1] * (1 + d);
-}
+        //    ent.v.velocity[0] = side[0] * (1 + d);
+        //    ent.v.velocity[1] = side[1] * (1 + d);
+        }
 
-/*
-=====================
-SV_TryUnstick
+        /*
+        =====================
+        SV_TryUnstick
 
-Player has come to a dead stop, possibly due to the problem with limited
-float precision at some angle joins in the BSP hull.
+        Player has come to a dead stop, possibly due to the problem with limited
+        float precision at some angle joins in the BSP hull.
 
-Try fixing by pushing one pixel in each direction.
+        Try fixing by pushing one pixel in each direction.
 
-This is a hack, but in the interest of good gameplay...
-======================
-*/
-static int SV_TryUnstick (prog.edict_t ent, double[] oldvel)
-{
-	int		i;
-	double[]	oldorg = new double[3];
-	double[]	dir = new double[3];
-	int		clip;
-	world.trace_t	steptrace = new world.trace_t();
+        This is a hack, but in the interest of good gameplay...
+        ======================
+        */
+        static int SV_TryUnstick (prog.edict_t ent, double[] oldvel)
+        {
+	        int		i;
+	        double[]	oldorg = new double[3];
+	        double[]	dir = new double[3];
+	        int		clip;
+	        world.trace_t	steptrace = new world.trace_t();
 	
-	mathlib.VectorCopy (ent.v.origin, oldorg);
-	mathlib.VectorCopy (mathlib.vec3_origin, dir);
+	        mathlib.VectorCopy (ent.v.origin, oldorg);
+	        mathlib.VectorCopy (mathlib.vec3_origin, dir);
 
-	for (i=0 ; i<8 ; i++)
-	{
-// try pushing a little in an axial direction
-		switch (i)
-		{
-			case 0:	dir[0] = 2; dir[1] = 0; break;
-			case 1:	dir[0] = 0; dir[1] = 2; break;
-			case 2:	dir[0] = -2; dir[1] = 0; break;
-			case 3:	dir[0] = 0; dir[1] = -2; break;
-			case 4:	dir[0] = 2; dir[1] = 2; break;
-			case 5:	dir[0] = -2; dir[1] = 2; break;
-			case 6:	dir[0] = 2; dir[1] = -2; break;
-			case 7:	dir[0] = -2; dir[1] = -2; break;
-		}
+	        for (i=0 ; i<8 ; i++)
+	        {
+        // try pushing a little in an axial direction
+		        switch (i)
+		        {
+			        case 0:	dir[0] = 2; dir[1] = 0; break;
+			        case 1:	dir[0] = 0; dir[1] = 2; break;
+			        case 2:	dir[0] = -2; dir[1] = 0; break;
+			        case 3:	dir[0] = 0; dir[1] = -2; break;
+			        case 4:	dir[0] = 2; dir[1] = 2; break;
+			        case 5:	dir[0] = -2; dir[1] = 2; break;
+			        case 6:	dir[0] = 2; dir[1] = -2; break;
+			        case 7:	dir[0] = -2; dir[1] = -2; break;
+		        }
 		
-		SV_PushEntity (ent, dir);
+		        SV_PushEntity (ent, dir);
 
-// retry the original move
-		ent.v.velocity[0] = oldvel[0];
-		ent.v. velocity[1] = oldvel[1];
-		ent.v. velocity[2] = 0;
-		clip = SV_FlyMove (ent, 0.1f, steptrace);
+        // retry the original move
+		        ent.v.velocity[0] = oldvel[0];
+		        ent.v. velocity[1] = oldvel[1];
+		        ent.v. velocity[2] = 0;
+		        clip = SV_FlyMove (ent, 0.1f, steptrace);
 
-		if (  Math.Abs(oldorg[1] - ent.v.origin[1]) > 4
-		||  Math.Abs(oldorg[0] - ent.v.origin[0]) > 4 )
-		{
-//Con_DPrintf ("unstuck!\n");
-			return clip;
-		}
+		        if (  Math.Abs(oldorg[1] - ent.v.origin[1]) > 4
+		        ||  Math.Abs(oldorg[0] - ent.v.origin[0]) > 4 )
+		        {
+        //Con_DPrintf ("unstuck!\n");
+			        return clip;
+		        }
 			
-// go back to the original pos and try again
-		mathlib.VectorCopy (oldorg, ent.v.origin);
-	}
+        // go back to the original pos and try again
+		        mathlib.VectorCopy (oldorg, ent.v.origin);
+	        }
 	
-	mathlib.VectorCopy (mathlib.vec3_origin, ent.v.velocity);
-	return 7;		// still not moving
-}
+	        mathlib.VectorCopy (mathlib.vec3_origin, ent.v.velocity);
+	        return 7;		// still not moving
+        }
 
     
-/*
-=====================
-SV_WalkMove
+        /*
+        =====================
+        SV_WalkMove
 
-Only used by players
-======================
-*/
+        Only used by players
+        ======================
+        */
 
         private const int STEPSIZE = 18;
 
@@ -899,8 +899,7 @@ Only used by players
 			        return;
 		        if (!SV_CheckWater (ent) && ! (((int)ent.v.flags & FL_WATERJUMP) != 0) )
 			        SV_AddGravity (ent);
-                //SV_CheckStuck (ent);
-                Debug.WriteLine("todo SV_CheckStuck");
+                SV_CheckStuck (ent);
 		        SV_WalkMove (ent);
 		        break;
         		

@@ -20,6 +20,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 namespace quake
 {
+    using System;
+
     public partial class prog
     {
         public class eval_t
@@ -53,6 +55,9 @@ namespace quake
                 this.index = index;
             }
         };
+        public static edict_t EDICT_FROM_AREA(common.link_t l) { return common.STRUCT_FROM_LINK(l/*, edict_t,area*/); }
+
+
         public const int sizeof_edict_t = 516;
 
         public static int EDICT_TO_PROG(edict_t e) { return e.index * pr_edict_size; }
