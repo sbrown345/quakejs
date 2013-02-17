@@ -106,6 +106,7 @@ namespace quake
         */
         static bool SV_RunThink(prog.edict_t ent)
         {
+            Debug.WriteLine("SV_RunThink");
             double thinktime;
 
             thinktime = ent.v.nextthink;
@@ -596,6 +597,7 @@ throw  new NotImplementedException();
 
         private static void SV_CheckStuck(prog.edict_t ent)
         {
+            Debug.WriteLine("SV_CheckStuck");
             int i, j;
             int z;
             double[] org = new double[3];
@@ -642,6 +644,7 @@ throw  new NotImplementedException();
         */
         static bool SV_CheckWater (prog.edict_t ent)
         {
+            Debug.WriteLine("SV_CheckWater");
             double[] point = new double[3];
             int cont;
 
@@ -679,6 +682,7 @@ throw  new NotImplementedException();
         */
         static void SV_WallFriction (prog.edict_t ent, world.trace_t trace)
         {
+            Debug.WriteLine("SV_WallFriction");
             throw new NotImplementedException();
         //    double[] forward = new double[3], right = new double[3], up = new double[3];
         //    float		d, i;
@@ -869,6 +873,7 @@ throw  new NotImplementedException();
         */
         static void SV_Physics_Client (prog.edict_t ent, int num)
         {
+            Debug.WriteLine("SV_Physics_Client");
 	        if ( ! svs.clients[num-1].active )
 		        return;		// unconnected slot
 
@@ -887,7 +892,8 @@ throw  new NotImplementedException();
         //
         // decide which move function to call
         //
-	        switch ((int)ent.v.movetype)
+            Debug.WriteLine("SV_Physics_Client " + (int)ent.v.movetype);
+            switch ((int)ent.v.movetype)
 	        {
 	        case MOVETYPE_NONE:
 		        if (!SV_RunThink (ent))

@@ -892,8 +892,7 @@ namespace quake
             //
             // clear world interaction links
             //
-            //SV_ClearWorld();
-            Debug.WriteLine("todo SV_ClearWorld");
+            world.SV_ClearWorld();
 
             //sv.model_precache[0] = pr_strings;
             sv.model_precache[0] = "";

@@ -435,7 +435,10 @@ namespace quake
             public link_t prev, next;
         }
 
-        public static prog.edict_t STRUCT_FROM_LINK(common.link_t l) { throw new NotImplementedException("STRUCT_FROM_LINK !!"); }
+        public static prog.edict_t STRUCT_FROM_LINK(common.link_t l)
+        {
+            throw new NotImplementedException("STRUCT_FROM_LINK !!");
+        }
 
 
         //============================================================================

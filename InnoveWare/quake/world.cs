@@ -78,8 +78,27 @@ namespace quake
 
 
         static	model.hull_t		box_hull  = new model.hull_t();
-        static	bspfile.dclipnode_t[] box_clipnodes = new bspfile.dclipnode_t[6];
-        static model.mplane_t[] box_planes = new model.mplane_t[6];
+        static	bspfile.dclipnode_t[] box_clipnodes = init_box_clip_nodes(6);
+        static bspfile.dclipnode_t[] init_box_clip_nodes(int num)
+        {
+            var box_clipnodes = new bspfile.dclipnode_t[num];
+            for (int i = 0; i < num; i++)
+            {
+                box_clipnodes[i]=new bspfile.dclipnode_t();
+            }
+            return box_clipnodes;
+        }
+
+        private static model.mplane_t[] box_planes = init_box_planes(6);
+        static model.mplane_t[] init_box_planes(int num)
+        {
+            var box_clipnodes = new model.mplane_t[num];
+            for (int i = 0; i < num; i++)
+            {
+                box_clipnodes[i] = new model.mplane_t();
+            }
+            return box_clipnodes;
+        }
 
         /*
         ===================
@@ -206,8 +225,8 @@ namespace quake
           public int		axis;		// -1 = leaf node
           public double	dist;
           public  areanode_t[]	children = new areanode_t[2];
-          public common.link_t	trigger_edicts;
-          public common.link_t	solid_edicts;
+          public common.link_t trigger_edicts = new common.link_t();
+          public common.link_t	solid_edicts = new common.link_t();
         }
 
         private const int AREA_DEPTH = 4;
@@ -234,7 +253,7 @@ namespace quake
         */
         static areanode_t SV_CreateAreaNode(int depth, double[] mins, double[] maxs)
         {
-            areanode_t anode;
+            areanode_t anode= new areanode_t();
             double[] size = new double[3];
             double[] mins1 = new double[3], maxs1 = new double[3], mins2 = new double[3], maxs2 = new double[3];
 
@@ -260,10 +279,10 @@ namespace quake
                 anode.axis = 1;
 
             anode.dist = 0.5 * (maxs[anode.axis] + mins[anode.axis]);
-          mathlib. VectorCopy(mins, mins1);
-          mathlib. VectorCopy(mins, mins2);
-          mathlib. VectorCopy(maxs, maxs1);
-          mathlib. VectorCopy(maxs, maxs2);
+            mathlib. VectorCopy(mins, mins1);
+            mathlib. VectorCopy(mins, mins2);
+            mathlib. VectorCopy(maxs, maxs1);
+            mathlib. VectorCopy(maxs, maxs2);
 
             maxs1[anode.axis] = mins2[anode.axis] = anode.dist;
 
@@ -281,26 +300,26 @@ namespace quake
         */
         public static void SV_ClearWorld ()
         {
-            //SV_InitBoxHull();
-            //sv_areanodes = new areanode_t[AREA_NODES];
-            //sv_numareanodes = 0;
-            //SV_CreateAreaNode(0, server.sv.worldmodel.mins, server.sv.worldmodel.maxs);
+            SV_InitBoxHull();
+            sv_areanodes =  Init_areanode_t(AREA_NODES);
+            sv_numareanodes = 0;
+            SV_CreateAreaNode(0, server.sv.worldmodel.mins, server.sv.worldmodel.maxs);
         }
 
 
-///*
-//===============
-//SV_UnlinkEdict
+        /*
+        ===============
+        SV_UnlinkEdict
 
-//===============
-//*/
-//void SV_UnlinkEdict (edict_t *ent)
-//{
-//    if (!ent->area.prev)
-//        return;		// not linked in anywhere
-//    RemoveLink (&ent->area);
-//    ent->area.prev = ent->area.next = NULL;
-//}
+        ===============
+        */
+       static void SV_UnlinkEdict(prog.edict_t ent)
+        {
+            if (ent.area.prev == null)
+                return;		// not linked in anywhere
+            //common.RemoveLink(&ent->area);
+            ent.area.prev = ent.area.next = null;
+        }
 
 
 ///*
@@ -405,86 +424,81 @@ namespace quake
         */
         public static void SV_LinkEdict(prog.edict_t ent, bool touch_triggers)
         {
-            //TODO: NOT SUPER NEEDED
+            //todo: runs okay without it
+            //areanode_t node;
+
+            //if (ent.area.prev != null)
+            //    world.SV_UnlinkEdict(ent);	// unlink from old position
+
+            ////if (ent == sv.edicts)
+            //if (ent == server.sv.edicts[0]) //todo! maybe dodgey
+            //    return;		// don't add the world
+
+            //if (ent.free)
+            //    return;
+
+            //// set the abs box
 
 
+            //{
+            //   mathlib. VectorAdd(ent.v.origin, ent.v.mins, ent.v.absmin);
+            //   mathlib.VectorAdd(ent.v.origin, ent.v.maxs, ent.v.absmax);
+            //}
 
+            ////
+            //// to make items easier to pick up and allow them to be grabbed off
+            //// of shelves, the abs sizes are expanded
+            ////
+            //if ((int)ent.v.flags & FL_ITEM)
+            //{
+            //    ent.v.absmin[0] -= 15;
+            //    ent.v.absmin[1] -= 15;
+            //    ent.v.absmax[0] += 15;
+            //    ent.v.absmax[1] += 15;
+            //}
+            //else
+            //{	// because movement is clipped an epsilon away from an actual edge,
+            //    // we must fully check even when bounding boxes don't quite touch
+            //    ent.v.absmin[0] -= 1;
+            //    ent.v.absmin[1] -= 1;
+            //    ent.v.absmin[2] -= 1;
+            //    ent.v.absmax[0] += 1;
+            //    ent.v.absmax[1] += 1;
+            //    ent.v.absmax[2] += 1;
+            //}
 
+            //// link to PVS leafs
+            //ent.num_leafs = 0;
+            //if (ent.v.modelindex)
+            //    SV_FindTouchedLeafs(ent, sv.worldmodel.nodes);
 
+            //if (ent.v.solid == SOLID_NOT)
+            //    return;
 
-        //    areanode_t node;
+            //// find the first node that the ent's box crosses
+            //node = sv_areanodes;
+            //while (1)
+            //{
+            //    if (node.axis == -1)
+            //        break;
+            //    if (ent.v.absmin[node.axis] > node.dist)
+            //        node = node.children[0];
+            //    else if (ent.v.absmax[node.axis] < node.dist)
+            //        node = node.children[1];
+            //    else
+            //        break;		// crosses the node
+            //}
 
-        //    if (ent->area.prev)
-        //        SV_UnlinkEdict(ent);	// unlink from old position
+            //// link it in	
 
-        //    if (ent == sv.edicts)
-        //        return;		// don't add the world
+            //if (ent.v.solid == SOLID_TRIGGER)
+            //    InsertLinkBefore(&ent.area, &node.trigger_edicts);
+            //else
+            //    InsertLinkBefore(&ent.area, &node.solid_edicts);
 
-        //    if (ent->free)
-        //        return;
-
-        //    // set the abs box
-
-
-        //    {
-        //        VectorAdd(ent->v.origin, ent->v.mins, ent->v.absmin);
-        //        VectorAdd(ent->v.origin, ent->v.maxs, ent->v.absmax);
-        //    }
-
-        //    //
-        //    // to make items easier to pick up and allow them to be grabbed off
-        //    // of shelves, the abs sizes are expanded
-        //    //
-        //    if ((int)ent->v.flags & FL_ITEM)
-        //    {
-        //        ent->v.absmin[0] -= 15;
-        //        ent->v.absmin[1] -= 15;
-        //        ent->v.absmax[0] += 15;
-        //        ent->v.absmax[1] += 15;
-        //    }
-        //    else
-        //    {	// because movement is clipped an epsilon away from an actual edge,
-        //        // we must fully check even when bounding boxes don't quite touch
-        //        ent->v.absmin[0] -= 1;
-        //        ent->v.absmin[1] -= 1;
-        //        ent->v.absmin[2] -= 1;
-        //        ent->v.absmax[0] += 1;
-        //        ent->v.absmax[1] += 1;
-        //        ent->v.absmax[2] += 1;
-        //    }
-
-        //    // link to PVS leafs
-        //    ent->num_leafs = 0;
-        //    if (ent->v.modelindex)
-        //        SV_FindTouchedLeafs(ent, sv.worldmodel->nodes);
-
-        //    if (ent->v.solid == SOLID_NOT)
-        //        return;
-
-        //    // find the first node that the ent's box crosses
-        //    node = sv_areanodes;
-        //    while (1)
-        //    {
-        //        if (node->axis == -1)
-        //            break;
-        //        if (ent->v.absmin[node->axis] > node->dist)
-        //            node = node->children[0];
-        //        else if (ent->v.absmax[node->axis] < node->dist)
-        //            node = node->children[1];
-        //        else
-        //            break;		// crosses the node
-        //    }
-
-        //    // link it in	
-
-        //    if (ent->v.solid == SOLID_TRIGGER)
-        //        InsertLinkBefore(&ent->area, &node->trigger_edicts);
-        //    else
-        //        InsertLinkBefore(&ent->area, &node->solid_edicts);
-
-        //    // if touch_triggers, touch all entities at this node and decend for more
-        //    if (touch_triggers)
-        //        SV_TouchLinks(ent, sv_areanodes);
+            //// if touch_triggers, touch all entities at this node and decend for more
+            //if (touch_triggers)
+            //    SV_TouchLinks(ent, sv_areanodes);
         }
 
 

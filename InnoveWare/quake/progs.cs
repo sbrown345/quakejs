@@ -39,7 +39,7 @@ namespace quake
         {
             public int                      index;
 	        public bool	                    free;
-            //public link_t		            area;				// linked to a division node or leaf
+            public common.link_t area = new common.link_t();				// linked to a division node or leaf
 
             public int                      num_leafs;
             public short[]                  leafnums = new short[MAX_ENT_LEAFS];
