@@ -276,7 +276,7 @@ If steptrace is not NULL, the trace of any vertical wall hit will be stored
                         ent.v.groundentity = prog.EDICT_TO_PROG(trace.ent);
                     }
                 }
-                if (trace.plane.normal[2] != 0.0)
+                if (!(trace.plane.normal[2] != 0.0))
                 {
                     blocked |= 2; // step
                     if (steptrace != null) steptrace = trace; // save for player extrafriction
