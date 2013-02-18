@@ -245,7 +245,8 @@ If steptrace is not NULL, the trace of any vertical wall hit will be stored
             {
                 if (ent.v.velocity[0] == 0.0 && ent.v.velocity[1] == 0.0 && ent.v.velocity[2] == 0.0) break;
 
-                for (i = 0; i < 3; i++) end[i] = ent.v.origin[i] + time_left * ent.v.velocity[i];
+                for (i = 0; i < 3; i++) 
+                    end[i] = ent.v.origin[i] + time_left * ent.v.velocity[i];
 
                 trace = world.SV_Move(ent.v.origin, ent.v.mins, ent.v.maxs, end, 0, ent);
 
@@ -602,7 +603,7 @@ static void SV_PushMove (prog.edict_t pusher, Double movetime)
             int z;
             double[] org = new double[3];
 
-            if (world.SV_TestEntityPosition(ent) != null)
+            if (world.SV_TestEntityPosition(ent) == null)
             {
                 mathlib.VectorCopy(ent.v.origin, ent.v.oldorigin);
                 return;
@@ -610,7 +611,7 @@ static void SV_PushMove (prog.edict_t pusher, Double movetime)
 
             mathlib.VectorCopy(ent.v.origin, org);
             mathlib.VectorCopy(ent.v.oldorigin, ent.v.origin);
-            if (world.SV_TestEntityPosition(ent) != null)
+            if (world.SV_TestEntityPosition(ent) == null)
             {
                 console.Con_DPrintf("Unstuck.\n");
                 world.SV_LinkEdict(ent, true);
@@ -1065,7 +1066,7 @@ static void SV_PushMove (prog.edict_t pusher, Double movetime)
 	        for (i=0 ; i<sv.num_edicts ; i++)
 	        {
                 ent = sv.edicts[i];
-                Debug.WriteLine(string.Format("phys_num {1} edict {2} movetype {0}", (int)ent.v.movetype, phys_num, i));
+                Debug.WriteLine(string.Format("phys_num {0} edict {1} movetype {2}", phys_num, i, (int)ent.v.movetype));
                 if (ent.free) 
                 {
                     Debug.WriteLine("free");

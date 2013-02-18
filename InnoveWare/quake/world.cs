@@ -50,7 +50,7 @@ namespace quake
 	      public bool	    inopen, inwater;
 	      public double	    fraction;		// time completed, 1.0 = didn't hit anything
 	      public double[]	endpos = new double[3];			// final position
-	      public plane_t	    plane;			// surface normal at impact
+	      public plane_t	    plane = new plane_t();			// surface normal at impact
           public prog.edict_t ent;			// entity the surface is on
         };
         
@@ -606,9 +606,12 @@ namespace quake
 
         ==================
         */
+
+        private static int num_hullcheck = 0;
         private static bool SV_RecursiveHullCheck(
             model.hull_t hull, int num, double p1f, double p2f, double[] p1, double[] p2, trace_t trace)
         {
+
             bspfile.dclipnode_t node;
             model.mplane_t plane;
             double t1, t2;
@@ -618,6 +621,9 @@ namespace quake
             int side;
             double midf;
 
+            Debug.WriteLine(string.Format("SV_RecursiveHullCheck hull.firstclipnode:{0} num:{1} {2} {3} p1[0] {4} p1[1] {5}  p1[2] {6} -  p2[0] {7} p2[1] {8} p2[2] {9} num_hullcheck: {10}", hull.firstclipnode, num, p1f, p2f, p1[0], p1[1], p1[2], p2[0], p2[1], p2[2], ++num_hullcheck));
+            if (trace.ent != null) 
+                Debug.WriteLine(string.Format("{0} {1}", trace.ent.v.modelindex, trace.ent.v.velocity[0]));
             // check for empty
             if (num < 0)
             {
@@ -628,10 +634,13 @@ namespace quake
                     else trace.inwater = true;
                 }
                 else trace.startsolid = true;
+
+                Debug.WriteLine(string.Format("empty"));
                 return true; // empty
             }
 
-            if (num < hull.firstclipnode || num > hull.lastclipnode) sys_linux.Sys_Error("SV_RecursiveHullCheck: bad node number");
+            if (num < hull.firstclipnode || num > hull.lastclipnode) 
+                sys_linux.Sys_Error("SV_RecursiveHullCheck: bad node number");
 
             //
             // find the point distances
@@ -649,9 +658,18 @@ namespace quake
                 t1 = mathlib.DotProduct(plane.normal, p1) - plane.dist;
                 t2 = mathlib.DotProduct(plane.normal, p2) - plane.dist;
             }
+            Debug.WriteLine(string.Format("t1: {0} t2: {1}", (float)t1, (float)t2));
 
-            if (t1 >= 0 && t2 >= 0) return SV_RecursiveHullCheck(hull, node.children[0], p1f, p2f, p1, p2, trace);
-            if (t1 < 0 && t2 < 0) return SV_RecursiveHullCheck(hull, node.children[1], p1f, p2f, p1, p2, trace);
+            if (t1 >= 0 && t2 >= 0)
+            {
+                Debug.WriteLine(string.Format("t1 >= 0 && t2 >= 0"));
+                return SV_RecursiveHullCheck(hull, node.children[0], p1f, p2f, p1, p2, trace);
+            }
+            if (t1 < 0 && t2 < 0)
+            {
+                Debug.WriteLine(string.Format("t1 < 0 && t2 < 0"));
+                return SV_RecursiveHullCheck(hull, node.children[1], p1f, p2f, p1, p2, trace);
+            }
 
 
             // put the crosspoint DIST_EPSILON pixels on the near side
@@ -666,12 +684,23 @@ namespace quake
             side = (t1 < 0) ? 1 : 0;
 
             // move up to the node
-            if (!SV_RecursiveHullCheck(hull, node.children[side], p1f, midf, p1, mid, trace)) return false;
+            if (!SV_RecursiveHullCheck(hull, node.children[side], p1f, midf, p1, mid, trace))
+            {
+                Debug.WriteLine(string.Format("move up to the node !SV_RecursiveHullCheck(hull, node.children[side], p1f, midf, p1, mid, trace)"));
+                return false;
+            }
 
             if (SV_HullPointContents(hull, node.children[side ^ 1], mid) != bspfile.CONTENTS_SOLID) // go past the node
+            {
+                Debug.WriteLine(string.Format("go past the node"));
                 return SV_RecursiveHullCheck(hull, node.children[side ^ 1], midf, p2f, mid, p2, trace);
+            }
 
-            if (trace.allsolid) return false; // never got out of the solid area
+            if (trace.allsolid) 
+            {
+                Debug.WriteLine(string.Format("trace.allsolid"));
+                return false; // never got out of the solid area
+            }
 
             //==================
             // the other side of the node is solid, this is the impact point
@@ -699,12 +728,14 @@ namespace quake
                     return false;
                 }
                 midf = p1f + (p2f - p1f) * frac;
-                for (i = 0; i < 3; i++) mid[i] = p1[i] + frac * (p2[i] - p1[i]);
+                for (i = 0; i < 3; i++) 
+                    mid[i] = p1[i] + frac * (p2[i] - p1[i]);
             }
 
             trace.fraction = midf;
             mathlib.VectorCopy(mid, trace.endpos);
 
+            Debug.WriteLine(string.Format("end of func return false"));
             return false;
         }
 
@@ -735,9 +766,10 @@ namespace quake
 
             mathlib.VectorSubtract(start, offset, start_l);
             mathlib.VectorSubtract(end, offset, end_l);
-
+            Debug.WriteLine("end[2] " + end[2]);
 
             // trace a line through the apropriate clipping hull
+            Debug.WriteLine("end_l[2] " + end_l[2]);
             SV_RecursiveHullCheck(hull, hull.firstclipnode, 0, 1, start_l, end_l, trace);
 
 
