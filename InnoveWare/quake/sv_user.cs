@@ -54,7 +54,7 @@ namespace quake
         static void SV_SetIdealPitch ()
         {
 	        double	    angleval, sinval, cosval;
-	        //trace_t	tr;
+	        world.trace_t	tr;
 	        double[]    top = new double[3], bottom = new double[3];
 	        double[]	z = new double[MAX_FORWARD];
 	        int		    i, j;
@@ -76,15 +76,14 @@ namespace quake
 		        bottom[0] = top[0];
 		        bottom[1] = top[1];
 		        bottom[2] = top[2] - 160;
-        		throw  new NotImplementedException();
-		        /*tr = SV_Move (top, vec3_origin, vec3_origin, bottom, 1, sv_player);
+		        tr = world.SV_Move (top, mathlib.vec3_origin, mathlib.vec3_origin, bottom, 1, sv_player);
 		        if (tr.allsolid)
 			        return;	// looking at a wall, leave ideal the way is was*/
 
-		        /*if (tr.fraction == 1)
+		        if (tr.fraction == 1)
 			        return;	// near a dropoff
-        		
-		        z[i] = top[2] + tr.fraction*(bottom[2]-top[2]);*/
+        	
+		        z[i] = top[2] + tr.fraction*(bottom[2]-top[2]);
 	        }
         	
 	        dir = 0;

@@ -134,29 +134,28 @@ Two entities have touched, so run their touch functions
 */
 static void SV_Impact (prog.edict_t e1, prog.edict_t e2)
 {
-throw  new NotImplementedException();
-    //int		old_self, old_other;
-	
-    //old_self = pr_global_struct->self;
-    //old_other = pr_global_struct->other;
-	
-    //pr_global_struct->time = sv.time;
-    //if (e1->v.touch && e1->v.solid != SOLID_NOT)
-    //{
-    //    pr_global_struct->self = EDICT_TO_PROG(e1);
-    //    pr_global_struct->other = EDICT_TO_PROG(e2);
-    //    PR_ExecuteProgram (e1->v.touch);
-    //}
-	
-    //if (e2->v.touch && e2->v.solid != SOLID_NOT)
-    //{
-    //    pr_global_struct->self = EDICT_TO_PROG(e2);
-    //    pr_global_struct->other = EDICT_TO_PROG(e1);
-    //    PR_ExecuteProgram (e2->v.touch);
-    //}
+    int old_self, old_other;
 
-    //pr_global_struct->self = old_self;
-    //pr_global_struct->other = old_other;
+    old_self = prog.pr_global_struct[0].self;
+    old_other = prog.pr_global_struct[0].other;
+
+    prog.pr_global_struct[0].time = sv.time;
+    if (e1.v.touch !=0  && e1.v.solid != SOLID_NOT)
+    {
+        prog.pr_global_struct[0].self = prog.EDICT_TO_PROG(e1);
+        prog.pr_global_struct[0].other = prog.EDICT_TO_PROG(e2);
+        prog.PR_ExecuteProgram(prog.pr_functions[e1.v.touch]);
+    }
+
+    if (e2.v.touch !=0 && e2.v.solid != SOLID_NOT)
+    {
+        prog.pr_global_struct[0].self = prog.EDICT_TO_PROG(e2);
+        prog.pr_global_struct[0].other = prog.EDICT_TO_PROG(e1);
+        prog.PR_ExecuteProgram(prog.pr_functions[e2.v.touch]);
+    }
+
+    prog.pr_global_struct[0].self = old_self;
+    prog.pr_global_struct[0].other = old_other;
 }
 
 
@@ -173,28 +172,27 @@ private const double STOP_EPSILON = 0.1;
 
 static int ClipVelocity (double[] @in, double[] normal, double[] @out, float overbounce)
 {
-throw  new NotImplementedException();
-    //float	backoff;
-    //float	change;
-    //int		i, blocked;
+    double backoff;
+    double	change;
+    int		i, blocked;
 	
-    //blocked = 0;
-    //if (normal[2] > 0)
-    //    blocked |= 1;		// floor
-    //if (!normal[2])
-    //    blocked |= 2;		// step
+    blocked = 0;
+    if (normal[2] > 0)
+        blocked |= 1;		// floor
+    if (!(normal[2] != 0))
+        blocked |= 2;		// step
 	
-    //backoff = DotProduct (in, normal) * overbounce;
+    backoff = mathlib.DotProduct (@in, normal) * overbounce;
 
-    //for (i=0 ; i<3 ; i++)
-    //{
-    //    change = normal[i]*backoff;
-    //    out[i] = in[i] - change;
-    //    if (out[i] > -STOP_EPSILON && out[i] < STOP_EPSILON)
-    //        out[i] = 0;
-    //}
+    for (i=0 ; i<3 ; i++)
+    {
+        change = normal[i]*backoff;
+        @out[i] = @in[i] - change;
+        if (@out[i] > -STOP_EPSILON && @out[i] < STOP_EPSILON)
+            @out[i] = 0;
+    }
 	
-    //return blocked;
+    return blocked;
 }
 
 
@@ -389,27 +387,26 @@ Does not change the entities velocity at all
 */
 static world.trace_t SV_PushEntity (prog.edict_t ent, double[] push)
 {
-throw  new NotImplementedException();
-    //world.trace_t	trace;
-    //double[]	end= new double[3];
-		
-    //mathlib.VectorAdd (ent.v.origin, push, end);
+    world.trace_t trace;
+    double[] end = new double[3];
 
-    //if (ent.v.movetype == MOVETYPE_FLYMISSILE)
-    //    trace = world.SV_Move (ent.v.origin, ent.v.mins, ent.v.maxs, end, world.MOVE_MISSILE, ent);
-    //else if (ent.v.solid == SOLID_TRIGGER || ent.v.solid == SOLID_NOT)
-    //// only clip against bmodels
-    //    trace = world.SV_Move (ent.v.origin, ent.v.mins, ent.v.maxs, end,world. MOVE_NOMONSTERS, ent);
-    //else
-    //    trace = world.SV_Move (ent.v.origin, ent.v.mins, ent.v.maxs, end,world. MOVE_NORMAL, ent);	
-	
-    //mathlib.VectorCopy (trace.endpos, ent.v.origin);
-    //world.SV_LinkEdict (ent, true);
+    mathlib.VectorAdd(ent.v.origin, push, end);
 
-    //if (trace.ent)
-    //    SV_Impact (ent, trace.ent);		
+    if (ent.v.movetype == MOVETYPE_FLYMISSILE)
+        trace = world.SV_Move(ent.v.origin, ent.v.mins, ent.v.maxs, end, world.MOVE_MISSILE, ent);
+    else if (ent.v.solid == SOLID_TRIGGER || ent.v.solid == SOLID_NOT)
+        // only clip against bmodels
+        trace = world.SV_Move(ent.v.origin, ent.v.mins, ent.v.maxs, end, world.MOVE_NOMONSTERS, ent);
+    else
+        trace = world.SV_Move(ent.v.origin, ent.v.mins, ent.v.maxs, end, world.MOVE_NORMAL, ent);
 
-    //return trace;
+    mathlib.VectorCopy(trace.endpos, ent.v.origin);
+    world.SV_LinkEdict(ent, true);
+
+    if (trace.ent != null)
+        SV_Impact(ent, trace.ent);
+
+    return trace;
 }					
 
 
