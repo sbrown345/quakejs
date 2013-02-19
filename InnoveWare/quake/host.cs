@@ -65,9 +65,9 @@ namespace quake
         static cvar_t   sys_ticrate = new cvar_t("sys_ticrate", "0.05");
         static cvar_t   serverprofile = new cvar_t("serverprofile", "0");
 
-        static cvar_t   fraglimit = new cvar_t("fraglimit", "0", false, true);
-        static cvar_t   timelimit = new cvar_t("timelimit", "0", false, true);
-        static cvar_t   teamplay = new cvar_t("teamplay", "0", false, true);
+       public static cvar_t   fraglimit = new cvar_t("fraglimit", "0", false, true);
+       public static cvar_t   timelimit = new cvar_t("timelimit", "0", false, true);
+       public static cvar_t   teamplay = new cvar_t("teamplay", "0", false, true);
 
         static cvar_t   samelevel = new cvar_t("samelevel", "0");
         static cvar_t   noexit = new cvar_t("noexit", "0", false, true);
@@ -328,8 +328,8 @@ namespace quake
             if (!client.cls.timedemo && realtime - oldrealtime < 1.0 / 72.0)
                 return false;		// framerate is too high
 
-            //host_frametime = realtime - oldrealtime;//TODO: USE THIS WHEN NOT DEBUGGING
-            host_frametime = 0.05;
+            host_frametime = realtime - oldrealtime;//TODO: USE THIS WHEN NOT DEBUGGING
+            //host_frametime = 0.1;
             oldrealtime = realtime;
 
             if (host_framerate.value > 0)

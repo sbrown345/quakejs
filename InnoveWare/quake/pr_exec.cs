@@ -748,7 +748,10 @@ namespace quake
                         //c->vector[0] = a->_float * b->vector[0];
                         //c->vector[1] = a->_float * b->vector[1];
                         //c->vector[2] = a->_float * b->vector[2];
-                        throw new NotImplementedException();
+                        var a_float = (double)(cast_float(pr_globals_read(st.a)));
+                        pr_globals_write(st.c, a_float * cast_float(pr_globals_read(st.b)));
+                        pr_globals_write(st.c + 1, a_float * cast_float(pr_globals_read(st.b + 1)));
+                        pr_globals_write(st.c + 2, a_float * cast_float(pr_globals_read(st.b + 2)));
                         break;
                     case opcode_t.OP_MUL_VF:
                         /*c->vector[0] = b->_float * a->vector[0];

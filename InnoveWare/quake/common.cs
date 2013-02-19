@@ -27,6 +27,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 namespace quake
 {
+    using System.Diagnostics;
+
     public sealed class common
     {
         public class sizebuf_t
@@ -437,6 +439,7 @@ namespace quake
 
         public static prog.edict_t STRUCT_FROM_LINK(common.link_t l)
         {
+           Debug.WriteLine("STRUCT_FROM_LINK !!");
             throw new NotImplementedException("STRUCT_FROM_LINK !!");
         }
 

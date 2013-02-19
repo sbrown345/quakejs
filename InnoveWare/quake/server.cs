@@ -137,6 +137,16 @@ namespace quake
         public const int	SOLID_SLIDEBOX			= 3;		// touch on edge, but not an onground
         public const int	SOLID_BSP				= 4;		// bsp clip, touch on edge, block
 
+        
+        // edict->deadflag values
+        public const int	DEAD_NO					= 0;
+        public const int	DEAD_DYING				= 1;
+        public const int	DEAD_DEAD				= 2;
+
+        public const int    DAMAGE_NO               = 0;
+        public const int	DAMAGE_YES				= 1;
+        public const int    DAMAGE_AIM              = 2;
+
         // edict->flags
         public const int	FL_FLY					= 1;
         public const int    FL_SWIM                 = 2;

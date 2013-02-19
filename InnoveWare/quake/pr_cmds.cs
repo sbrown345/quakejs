@@ -323,7 +323,7 @@ namespace quake
         */
         static void PF_normalize ()
         {
-            throw new NotImplementedException();
+            Debug.WriteLine("PF_normalize");
             Debug.WriteLine("todo PF_normalize");
         }
 
@@ -336,7 +336,7 @@ namespace quake
         */
         static void PF_vlen ()
         {
-            throw new NotImplementedException();
+            Debug.WriteLine("PF_vlen");
             Debug.WriteLine("todo PF_vlen");
         }
 
@@ -349,7 +349,7 @@ namespace quake
         */
         static void PF_vectoyaw ()
         {
-            throw new NotImplementedException();
+            Debug.WriteLine("PF_vectoyaw");
             Debug.WriteLine("todo PF_vectoyaw");
         }
 
@@ -362,7 +362,7 @@ namespace quake
         */
         static void PF_vectoangles ()
         {
-            throw new NotImplementedException();
+            Debug.WriteLine("PF_vectoangles");
             Debug.WriteLine("todo PF_vectoangles");
         }
 
@@ -407,7 +407,7 @@ namespace quake
         */
         static void PF_ambientsound ()
         {
-            //throw new NotImplementedException(); todo
+            //Debug.WriteLine("PF_ambientsound"); todo
         }
 
         /*
@@ -439,7 +439,7 @@ namespace quake
         */
         static void PF_break ()
         {
-            throw new NotImplementedException();
+            Debug.WriteLine("PF_break");
         }
 
         /*
@@ -455,7 +455,7 @@ namespace quake
         */
         static void PF_traceline ()
         {
-            throw new NotImplementedException();
+            Debug.WriteLine("PF_traceline");
         }
 
         /*
@@ -470,7 +470,7 @@ namespace quake
         */
         static void PF_checkpos ()
         {
-            throw new NotImplementedException();
+            Debug.WriteLine("PF_checkpos");
         }
 
         //============================================================================
@@ -492,7 +492,7 @@ namespace quake
         */
         static void PF_checkclient ()
         {
-            throw new NotImplementedException();
+            Debug.WriteLine("PF_checkclient");
         }
 
         //============================================================================
@@ -508,7 +508,7 @@ namespace quake
         */
         static void PF_stuffcmd ()
         {
-            throw new NotImplementedException();
+            Debug.WriteLine("PF_stuffcmd");
         }
 
         /*
@@ -522,7 +522,7 @@ namespace quake
         */
         static void PF_localcmd ()
         {
-            throw new NotImplementedException();
+            Debug.WriteLine("PF_localcmd");
         }
 
         /*
@@ -569,7 +569,7 @@ namespace quake
         */
         static void PF_findradius ()
         {
-            throw new NotImplementedException();
+            Debug.WriteLine("PF_findradius");
         }
 
         /*
@@ -654,7 +654,8 @@ namespace quake
 
         static void PF_precache_file ()
         {
-            throw new NotImplementedException();
+            Debug.WriteLine("PF_precache_file");
+            Debug.WriteLine("PF_precache_file");
         }
 
         static void PF_precache_sound ()
@@ -715,19 +716,19 @@ namespace quake
 
         static void PF_traceon ()
         {
-            throw new NotImplementedException();
+            Debug.WriteLine("PF_traceon");
             pr_trace = true;
         }
 
         static void PF_traceoff ()
         {
-            throw new NotImplementedException();
+            Debug.WriteLine("PF_traceoff");
             pr_trace = false;
         }
 
         static void PF_eprint ()
         {
-            throw new NotImplementedException();
+            Debug.WriteLine("PF_eprint");
             //ED_PrintNum(G_EDICTNUM(OFS_PARM0));
         }
 
@@ -740,7 +741,7 @@ namespace quake
         */
         static void PF_walkmove ()
         {
-            throw new NotImplementedException();
+            Debug.WriteLine("PF_walkmove");
         }
 
         /*
@@ -752,7 +753,7 @@ namespace quake
         */
         static void PF_droptofloor ()
         {
-            throw new NotImplementedException();
+            Debug.WriteLine("PF_droptofloor");
         }
 
         /*
@@ -816,7 +817,7 @@ namespace quake
         */
         static void PF_checkbottom ()
         {
-            throw new NotImplementedException();
+            Debug.WriteLine("PF_checkbottom");
         }
 
         /*
@@ -826,7 +827,7 @@ namespace quake
         */
         static void PF_pointcontents ()
         {
-            throw new NotImplementedException();
+            Debug.WriteLine("PF_pointcontents");
         }
 
         /*
@@ -838,7 +839,7 @@ namespace quake
         */
         static void PF_nextent ()
         {
-            throw new NotImplementedException();
+            Debug.WriteLine("PF_nextent");
         }
 
         /*
@@ -849,9 +850,78 @@ namespace quake
         vector aim(entity, missilespeed)
         =============
         */
-        static void PF_aim ()
+
+        private static cvar_t sv_aim = new cvar_t("sv_aim", "0.93");
+        static void PF_aim()
         {
-            throw new NotImplementedException();
+            edict_t	ent, check, bestent;
+            double[]	start = new double[3], dir = new double[3], end = new double[3], bestdir = new double[3];
+            int		i, j;
+            world.trace_t	tr;
+            double	dist, bestdist;
+            double	speed;
+	
+            ent = G_EDICT(OFS_PARM0);
+            speed = G_FLOAT(OFS_PARM1);
+
+            mathlib.VectorCopy (ent.v.origin, start);
+            start[2] += 20;
+
+            // try sending a trace straight
+            mathlib.VectorCopy (pr_global_struct[0].v_forward, dir);
+            mathlib.VectorMA (start, 2048, dir, end);
+            tr = world.SV_Move(start, mathlib.vec3_origin, mathlib.vec3_origin, end, 0, ent);
+            if (tr.ent != null && tr.ent.v.takedamage == server.DAMAGE_AIM
+            && (!(host.teamplay.value != 0) || ent.v.team <=0 || ent.v.team != tr.ent.v.team) )
+            {
+                mathlib.VectorCopy(pr_global_struct[0].v_forward, G_VECTOR(OFS_RETURN));
+	            return;
+            }
+
+
+            // try all possible entities
+            mathlib.VectorCopy (dir, bestdir);
+            bestdist = sv_aim.value;
+            bestent = null;
+
+            check = NEXT_EDICT(server.sv.edicts[0]);
+            for (i=1 ; i<server.sv.num_edicts ; i++, check = NEXT_EDICT(check) )
+            {
+	            if (check.v.takedamage != server.DAMAGE_AIM)
+		            continue;
+	            if (check == ent)
+		            continue;
+	            if (host.teamplay.value != 0 && ent.v.team > 0 && ent.v.team == check.v.team)
+		            continue;	// don't aim at teammate
+	            for (j=0 ; j<3 ; j++)
+		            end[j] = check.v.origin[j]
+		            + 0.5*(check.v.mins[j] + check.v.maxs[j]);
+	            mathlib.VectorSubtract (end, start, dir);
+	            mathlib.VectorNormalize (dir);
+                dist = mathlib.DotProduct(dir, pr_global_struct[0].v_forward);
+	            if (dist < bestdist)
+		            continue;	// to far to turn
+                tr = world.SV_Move(start, mathlib.vec3_origin, mathlib.vec3_origin, end, 0, ent);
+	            if (tr.ent == check)
+	            {	// can shoot at this one
+		            bestdist = dist;
+		            bestent = check;
+	            }
+            }
+	
+            if (bestent != null)
+            {
+	            mathlib.VectorSubtract (bestent.v.origin, ent.v.origin, dir);
+                dist = mathlib.DotProduct(dir, pr_global_struct[0].v_forward);
+	            mathlib.VectorScale (pr_global_struct[0].v_forward, dist, end);
+	            end[2] = dir[2];
+	            mathlib.VectorNormalize (end);
+	            mathlib.VectorCopy (end, G_VECTOR(OFS_RETURN));	
+            }
+            else
+            {
+	            mathlib.VectorCopy (bestdir, G_VECTOR(OFS_RETURN));
+            }
         }
 
         /*
@@ -863,7 +933,7 @@ namespace quake
         */
         static void PF_changeyaw ()
         {
-            throw new NotImplementedException();
+            Debug.WriteLine("PF_changeyaw");
         }
 
         /*
@@ -876,42 +946,42 @@ namespace quake
 
         static void PF_WriteByte ()
         {
-            throw new NotImplementedException();
+            Debug.WriteLine("PF_WriteByte");
         }
 
         static void PF_WriteChar ()
         {
-            throw new NotImplementedException();
+            Debug.WriteLine("PF_WriteChar");
         }
 
         static void PF_WriteShort ()
         {
-            throw new NotImplementedException();
+            Debug.WriteLine("PF_WriteShort");
         }
 
         static void PF_WriteLong ()
         {
-            throw new NotImplementedException();
+            Debug.WriteLine("PF_WriteLong");
         }
 
         static void PF_WriteAngle ()
         {
-            throw new NotImplementedException();
+            Debug.WriteLine("PF_WriteAngle");
         }
 
         static void PF_WriteCoord ()
         {
-            throw new NotImplementedException();
+            Debug.WriteLine("PF_WriteCoord");
         }
 
         static void PF_WriteString ()
         {
-            throw new NotImplementedException();
+            Debug.WriteLine("PF_WriteString");
         }
         
         static void PF_WriteEntity ()
         {
-            throw new NotImplementedException();
+            Debug.WriteLine("PF_WriteEntity");
         }
 
         //=============================================================================
@@ -949,7 +1019,7 @@ namespace quake
         */
         static void PF_setspawnparms ()
         {
-            throw new NotImplementedException();
+            Debug.WriteLine("PF_setspawnparms");
         }
 
         /*
@@ -959,7 +1029,7 @@ namespace quake
         */
         static void PF_changelevel ()
         {
-            throw new NotImplementedException();
+            Debug.WriteLine("PF_changelevel");
         }
 
         static void PF_Fixme ()

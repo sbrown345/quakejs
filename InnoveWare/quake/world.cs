@@ -621,7 +621,7 @@ namespace quake
             int side;
             double midf;
 
-            Debug.WriteLine(string.Format("SV_RecursiveHullCheck hull.firstclipnode:{0} num:{1} {2} {3} p1[0] {4} p1[1] {5}  p1[2] {6} -  p2[0] {7} p2[1] {8} p2[2] {9} num_hullcheck: {10}", hull.firstclipnode, num, p1f, p2f, p1[0], p1[1], p1[2], p2[0], p2[1], p2[2], ++num_hullcheck));
+            //Debug.WriteLine(string.Format("SV_RecursiveHullCheck hull.firstclipnode:{0} num:{1} {2:F6} {3:F6} p1[0] {4:F6} p1[1] {5:F6}  p1[2] {6:F6} -  p2[0] {7:F6} p2[1] {8:F6} p2[2] {9:F6} num_hullcheck: {10}", hull.firstclipnode, num, (float)p1f, (float)p2f, (float)p1[0], (float)p1[1], (float)p1[2], (float)p2[0], (float)p2[1], (float)p2[2], ++num_hullcheck));
             if (trace.ent != null) 
                 Debug.WriteLine(string.Format("{0} {1}", trace.ent.v.modelindex, trace.ent.v.velocity[0]));
             // check for empty
@@ -635,7 +635,7 @@ namespace quake
                 }
                 else trace.startsolid = true;
 
-                Debug.WriteLine(string.Format("empty"));
+                //Debug.WriteLine(string.Format("empty"));
                 return true; // empty
             }
 
@@ -658,16 +658,16 @@ namespace quake
                 t1 = mathlib.DotProduct(plane.normal, p1) - plane.dist;
                 t2 = mathlib.DotProduct(plane.normal, p2) - plane.dist;
             }
-            Debug.WriteLine(string.Format("t1: {0} t2: {1}", (float)t1, (float)t2));
+            //Debug.WriteLine(string.Format("t1: {0:F6} t2: {1:F6}", (float)t1, (float)t2));
 
             if (t1 >= 0 && t2 >= 0)
             {
-                Debug.WriteLine(string.Format("t1 >= 0 && t2 >= 0"));
+                //Debug.WriteLine(string.Format("t1 >= 0 && t2 >= 0"));
                 return SV_RecursiveHullCheck(hull, node.children[0], p1f, p2f, p1, p2, trace);
             }
             if (t1 < 0 && t2 < 0)
             {
-                Debug.WriteLine(string.Format("t1 < 0 && t2 < 0"));
+                //Debug.WriteLine(string.Format("t1 < 0 && t2 < 0"));
                 return SV_RecursiveHullCheck(hull, node.children[1], p1f, p2f, p1, p2, trace);
             }
 
@@ -686,19 +686,19 @@ namespace quake
             // move up to the node
             if (!SV_RecursiveHullCheck(hull, node.children[side], p1f, midf, p1, mid, trace))
             {
-                Debug.WriteLine(string.Format("move up to the node !SV_RecursiveHullCheck(hull, node.children[side], p1f, midf, p1, mid, trace)"));
+                //Debug.WriteLine(string.Format("move up to the node !SV_RecursiveHullCheck(hull, node.children[side], p1f, midf, p1, mid, trace)"));
                 return false;
             }
 
             if (SV_HullPointContents(hull, node.children[side ^ 1], mid) != bspfile.CONTENTS_SOLID) // go past the node
             {
-                Debug.WriteLine(string.Format("go past the node"));
+                //Debug.WriteLine(string.Format("go past the node"));
                 return SV_RecursiveHullCheck(hull, node.children[side ^ 1], midf, p2f, mid, p2, trace);
             }
 
             if (trace.allsolid) 
             {
-                Debug.WriteLine(string.Format("trace.allsolid"));
+                //Debug.WriteLine(string.Format("trace.allsolid"));
                 return false; // never got out of the solid area
             }
 
@@ -735,7 +735,7 @@ namespace quake
             trace.fraction = midf;
             mathlib.VectorCopy(mid, trace.endpos);
 
-            Debug.WriteLine(string.Format("end of func return false"));
+            //Debug.WriteLine(string.Format("end of func return false"));
             return false;
         }
 
@@ -766,10 +766,10 @@ namespace quake
 
             mathlib.VectorSubtract(start, offset, start_l);
             mathlib.VectorSubtract(end, offset, end_l);
-            Debug.WriteLine("end[2] " + end[2]);
+            //Debug.WriteLine(string.Format("end[2] {0:F6}", (float)end[2]));
 
             // trace a line through the apropriate clipping hull
-            Debug.WriteLine("end_l[2] " + end_l[2]);
+            //Debug.WriteLine(string.Format("end_l[2] {0:F6}",(float)  end_l[2]));
             SV_RecursiveHullCheck(hull, hull.firstclipnode, 0, 1, start_l, end_l, trace);
 
 
