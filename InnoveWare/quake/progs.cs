@@ -90,7 +90,7 @@ namespace quake
 
         //============================================================================
 
-        static double G_FLOAT(int o) { return cast_float(pr_globals_read(o)); }
+        public static double G_FLOAT(int o) { return cast_float(pr_globals_read(o)); }
         static int G_INT(int o) { return cast_int(pr_globals_read(o)); }
         static edict_t G_EDICT(int o) { return server.sv.edicts[(int)pr_globals_read(o) / pr_edict_size]; }
         static int G_EDICTNUM(int o) { return NUM_FOR_EDICT(G_EDICT(o)); }

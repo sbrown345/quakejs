@@ -229,210 +229,206 @@ namespace quake
 
         //============================================================================
 
-/////*
-////======================
-////SV_StepDirection
+        /*
+        ======================
+        SV_StepDirection
 
-////Turns to the movement direction, and walks the current distance if
-////facing it.
+        Turns to the movement direction, and walks the current distance if
+        facing it.
 
-////======================
-////*/
-////void PF_changeyaw (void);
-////bool SV_StepDirection (edict_t *ent, float yaw, float dist)
-////{
-////    double[]		move, oldorigin;
-////    float		delta;
+        ======================
+        */
+        
+       static bool SV_StepDirection (prog.edict_t ent, double yaw, double dist)
+        {
+            double[]		move = new double[3], oldorigin = new double[3];
+            double		delta;
 
-////    ent.v.ideal_yaw = yaw;
-////    PF_changeyaw();
+            ent.v.ideal_yaw = yaw;
+            prog.PF_changeyaw();
 
-////    yaw = yaw*M_PI*2 / 360;
-////    move[0] = cos(yaw)*dist;
-////    move[1] = sin(yaw)*dist;
-////    move[2] = 0;
+            yaw = yaw*mathlib.M_PI*2 / 360;
+            move[0] = Math.Cos(yaw)*dist;
+            move[1] = Math.Sin(yaw)*dist;
+            move[2] = 0;
 
-////    mathlib.VectorCopy (ent.v.origin, oldorigin);
-////    if (server.SV_Movestep (ent, move, false))
-////    {
-////        delta = ent.v.angles[YAW] - ent.v.ideal_yaw;
-////        if (delta > 45 && delta < 315)
-////        {		// not turned far enough, so don't take the step
-////            mathlib.VectorCopy (oldorigin, ent.v.origin);
-////        }
-////        world.SV_LinkEdict (ent, true);
-////        return true;
-////    }
-////    world.SV_LinkEdict (ent, true);
+            mathlib.VectorCopy (ent.v.origin, oldorigin);
+            if (server.SV_Movestep (ent, move, false))
+            {
+                delta = ent.v.angles[quakedef.YAW] - ent.v.ideal_yaw;
+                if (delta > 45 && delta < 315)
+                {		// not turned far enough, so don't take the step
+                    mathlib.VectorCopy (oldorigin, ent.v.origin);
+                }
+                world.SV_LinkEdict (ent, true);
+                return true;
+            }
+            world.SV_LinkEdict (ent, true);
 
-////    return false;
-////}
+            return false;
+        }
 
-/////*
-////======================
-////SV_FixCheckBottom
+        /*
+        ======================
+        SV_FixCheckBottom
 
-////======================
-////*/
-////void SV_FixCheckBottom (edict_t *ent)
-////{
-//////	Con_Printf ("SV_FixCheckBottom\n");
+        ======================
+        */
+        static void SV_FixCheckBottom (prog.edict_t ent)
+        {
+        //	Con_Printf ("SV_FixCheckBottom\n");
 
-////    ent.v.flags = (int)ent.v.flags | FL_PARTIALGROUND;
-////}
+            ent.v.flags = (int)ent.v.flags | FL_PARTIALGROUND;
+        }
 
 
 
-/////*
-////================
-////SV_NewChaseDir
+        /*
+        ================
+        SV_NewChaseDir
 
-////================
-////*/
-////#define	DI_NODIR	-1
-////void SV_NewChaseDir (edict_t *actor, edict_t *enemy, float dist)
-////{
-////    float		deltax,deltay;
-////    float			d[3];
-////    float		tdir, olddir, turnaround;
+        ================
+        */
 
-////    olddir = anglemod( (int)(actor.v.ideal_yaw/45)*45 );
-////    turnaround = anglemod(olddir - 180);
+        private const int DI_NODIR = -1;
+        public static void SV_NewChaseDir (prog.edict_t actor, prog.edict_t enemy, double dist)
+        {
+            double		deltax,deltay;
+            double[]	d = new double[3];
+            double		tdir, olddir, turnaround;
 
-////    deltax = enemy.v.origin[0] - actor.v.origin[0];
-////    deltay = enemy.v.origin[1] - actor.v.origin[1];
-////    if (deltax>10)
-////        d[1]= 0;
-////    else if (deltax<-10)
-////        d[1]= 180;
-////    else
-////        d[1]= DI_NODIR;
-////    if (deltay<-10)
-////        d[2]= 270;
-////    else if (deltay>10)
-////        d[2]= 90;
-////    else
-////        d[2]= DI_NODIR;
+            olddir = mathlib. anglemod( (int)(actor.v.ideal_yaw/45)*45 );
+            turnaround = mathlib.anglemod(olddir - 180);
 
-////// try direct route
-////    if (d[1] != DI_NODIR && d[2] != DI_NODIR)
-////    {
-////        if (d[1] == 0)
-////            tdir = d[2] == 90 ? 45 : 315;
-////        else
-////            tdir = d[2] == 90 ? 135 : 215;
+            deltax = enemy.v.origin[0] - actor.v.origin[0];
+            deltay = enemy.v.origin[1] - actor.v.origin[1];
+            if (deltax>10)
+                d[1]= 0;
+            else if (deltax<-10)
+                d[1]= 180;
+            else
+                d[1]= DI_NODIR;
+            if (deltay<-10)
+                d[2]= 270;
+            else if (deltay>10)
+                d[2]= 90;
+            else
+                d[2]= DI_NODIR;
 
-////        if (tdir != turnaround && SV_StepDirection(actor, tdir, dist))
-////            return;
-////    }
+        // try direct route
+            if (d[1] != DI_NODIR && d[2] != DI_NODIR)
+            {
+                if (d[1] == 0)
+                    tdir = d[2] == 90 ? 45 : 315;
+                else
+                    tdir = d[2] == 90 ? 135 : 215;
 
-////// try other directions
-////    if ( ((rand()&3) & 1) ||  abs(deltay)>abs(deltax))
-////    {
-////        tdir=d[1];
-////        d[1]=d[2];
-////        d[2]=tdir;
-////    }
+                if (tdir != turnaround && SV_StepDirection(actor, tdir, dist))
+                    return;
+            }
 
-////    if (d[1]!=DI_NODIR && d[1]!=turnaround 
-////    && SV_StepDirection(actor, d[1], dist))
-////            return;
+        // try other directions
+            if ((((Helper.helper.rand() & 3) & 1) != 0) || (Math.Abs(deltay) > Math.Abs(deltax)))
+            {
+                tdir=d[1];
+                d[1]=d[2];
+                d[2]=tdir;
+            }
 
-////    if (d[2]!=DI_NODIR && d[2]!=turnaround
-////    && SV_StepDirection(actor, d[2], dist))
-////            return;
+            if (d[1]!=DI_NODIR && d[1]!=turnaround 
+            && SV_StepDirection(actor, d[1], dist))
+                    return;
 
-/////* there is no direct path to the player, so pick another direction */
+            if (d[2]!=DI_NODIR && d[2]!=turnaround
+            && SV_StepDirection(actor, d[2], dist))
+                    return;
 
-////    if (olddir!=DI_NODIR && SV_StepDirection(actor, olddir, dist))
-////            return;
+        /* there is no direct path to the player, so pick another direction */
 
-////    if (rand()&1) 	/*randomly determine direction of search*/
-////    {
-////        for (tdir=0 ; tdir<=315 ; tdir += 45)
-////            if (tdir!=turnaround && SV_StepDirection(actor, tdir, dist) )
-////                    return;
-////    }
-////    else
-////    {
-////        for (tdir=315 ; tdir >=0 ; tdir -= 45)
-////            if (tdir!=turnaround && SV_StepDirection(actor, tdir, dist) )
-////                    return;
-////    }
+            if (olddir!=DI_NODIR && SV_StepDirection(actor, olddir, dist))
+                    return;
 
-////    if (turnaround != DI_NODIR && SV_StepDirection(actor, turnaround, dist) )
-////            return;
+            if ((Helper.helper.rand() & 1) != 0) 	/*randomly determine direction of search*/
+            {
+                for (tdir=0 ; tdir<=315 ; tdir += 45)
+                    if (tdir!=turnaround && SV_StepDirection(actor, tdir, dist) )
+                            return;
+            }
+            else
+            {
+                for (tdir=315 ; tdir >=0 ; tdir -= 45)
+                    if (tdir!=turnaround && SV_StepDirection(actor, tdir, dist) )
+                            return;
+            }
 
-////    actor.v.ideal_yaw = olddir;		// can't move
+            if (turnaround != DI_NODIR && SV_StepDirection(actor, turnaround, dist) )
+                    return;
 
-////// if a bridge was pulled out from underneath a monster, it may not have
-////// a valid standing position at all
+            actor.v.ideal_yaw = olddir;		// can't move
 
-////    if (!SV_CheckBottom (actor))
-////        SV_FixCheckBottom (actor);
+        // if a bridge was pulled out from underneath a monster, it may not have
+        // a valid standing position at all
 
-////}
+            if (!SV_CheckBottom (actor))
+                SV_FixCheckBottom (actor);
 
-/////*
-////======================
-////SV_CloseEnough
+        }
 
-////======================
-////*/
-////bool SV_CloseEnough (edict_t *ent, edict_t *goal, float dist)
-////{
-////    int		i;
+        /*
+        ======================
+        SV_CloseEnough
 
-////    for (i=0 ; i<3 ; i++)
-////    {
-////        if (goal.v.absmin[i] > ent.v.absmax[i] + dist)
-////            return false;
-////        if (goal.v.absmax[i] < ent.v.absmin[i] - dist)
-////            return false;
-////    }
-////    return true;
-////}
+        ======================
+        */
+        static bool SV_CloseEnough(prog.edict_t ent, prog.edict_t goal, double dist)
+        {
+            int i;
 
-/////*
-////======================
-////world.SV_MoveToGoal
+            for (i = 0; i < 3; i++)
+            {
+                if (goal.v.absmin[i] > ent.v.absmax[i] + dist)
+                    return false;
+                if (goal.v.absmax[i] < ent.v.absmin[i] - dist)
+                    return false;
+            }
+            return true;
+        }
 
-////======================
-////*/
-////void world.SV_MoveToGoal (void)
-////{
-////    edict_t		*ent, *goal;
-////    float		dist;
-////#ifdef QUAKE2
-////    edict_t		*enemy;
-////#endif
+        /*
+        ======================
+        world.SV_MoveToGoal
 
-////    ent = prog.PROG_TO_EDICT(pr_global_struct.self);
-////    goal = prog.PROG_TO_EDICT(ent.v.goalentity);
-////    dist = G_FLOAT(OFS_PARM0);
+        ======================
+        */
+       public static void SV_MoveToGoal ()
+        {
+            prog.edict_t		ent, goal;
+           double dist;
 
-////    if ( !( (int)ent.v.flags & (FL_ONGROUND|FL_FLY|FL_SWIM) ) )
-////    {
-////        G_FLOAT(OFS_RETURN) = 0;
-////        return;
-////    }
+            ent = prog.PROG_TO_EDICT(prog.pr_global_struct[0].self);
+            goal = prog.PROG_TO_EDICT(ent.v.goalentity);
+            dist =prog. G_FLOAT(prog.OFS_PARM0);
 
-////// if the next step hits the enemy, return immediately
-////#ifdef QUAKE2
-////    enemy = prog.PROG_TO_EDICT(ent.v.enemy);
-////    if (enemy != sv.edicts &&  SV_CloseEnough (ent, enemy, dist) )
-////#else
-////    if ( prog.PROG_TO_EDICT(ent.v.enemy) != sv.edicts &&  SV_CloseEnough (ent, goal, dist) )
-////#endif
-////        return;
+            if ( !( ((int)ent.v.flags & (FL_ONGROUND|FL_FLY|FL_SWIM) ) != 0 ))
+            {
+                //prog.G_FLOAT(prog.OFS_RETURN) = 0;
+                prog.pr_globals_write(prog.OFS_RETURN, 0);
+                return;
+            }
 
-////// bump around...
-////    if ( (rand()&3)==1 ||
-////    !SV_StepDirection (ent, ent.v.ideal_yaw, dist))
-////    {
-////        SV_NewChaseDir (ent, goal, dist);
-////    }
-////}
+        // if the next step hits the enemy, return immediately
+
+            if ( prog.PROG_TO_EDICT(ent.v.enemy) != sv.edicts[0] &&  SV_CloseEnough (ent, goal, dist) )
+    
+                return;
+
+        // bump around...
+            if ( (Helper.helper.rand()&3)==1 ||
+            !SV_StepDirection (ent, ent.v.ideal_yaw, dist))
+            {
+                SV_NewChaseDir (ent, goal, dist);
+            }
+        }
 
 
     }

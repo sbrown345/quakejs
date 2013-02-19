@@ -371,8 +371,22 @@ namespace quake
         */
         static void PF_vectoyaw ()
         {
-            Debug.WriteLine("PF_vectoyaw");
-            Debug.WriteLine("todo PF_vectoyaw");
+            double[] value1;
+            double yaw;
+
+            value1 = G_VECTOR(OFS_PARM0);
+
+            if (value1[1] == 0 && value1[0] == 0)
+                yaw = 0;
+            else
+            {
+                yaw = (int)(Math.Atan2(value1[1], value1[0]) * 180 / mathlib.M_PI);
+                if (yaw < 0)
+                    yaw += 360;
+            }
+
+            //G_FLOAT(OFS_RETURN) = yaw;
+            pr_globals_write(OFS_RETURN, yaw);
         }
 
         /*
@@ -1126,9 +1140,41 @@ namespace quake
         This was a major timewaster in progs, so it was converted to C
         ==============
         */
-        static void PF_changeyaw ()
+        public static void PF_changeyaw ()
         {
-            Debug.WriteLine("PF_changeyaw");
+            edict_t ent;
+            double ideal, current, move, speed;
+
+            ent = PROG_TO_EDICT(pr_global_struct[0].self);
+            current = mathlib. anglemod(ent.v.angles[1]);
+            ideal = ent.v.ideal_yaw;
+            speed = ent.v.yaw_speed;
+
+            if (current == ideal)
+                return;
+            move = ideal - current;
+            if (ideal > current)
+            {
+                if (move >= 180)
+                    move = move - 360;
+            }
+            else
+            {
+                if (move <= -180)
+                    move = move + 360;
+            }
+            if (move > 0)
+            {
+                if (move > speed)
+                    move = speed;
+            }
+            else
+            {
+                if (move < -speed)
+                    move = -speed;
+            }
+
+            ent.v.angles[1] = mathlib.anglemod(current + move);
         }
 
         /*
@@ -1304,7 +1350,7 @@ namespace quake
         PF_Fixme,
         PF_Fixme,
 
-        null/*server.SV_MoveToGoal*/,
+        server.SV_MoveToGoal,
         PF_precache_file,
         PF_makestatic,
 

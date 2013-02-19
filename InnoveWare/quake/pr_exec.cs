@@ -634,6 +634,7 @@ namespace quake
 
         public static void PR_ExecuteProgram(dfunction_t fnum)
         {
+          
             /*	        eval_t	*a, *b, *c;*/
             int s;
             dstatement_t st;
@@ -644,7 +645,7 @@ namespace quake
             edict_t ed;
             int exitdepth;
             //eval_t	*ptr;
-
+  try{
             /*if (!fnum || fnum >= progs.numfunctions)
             {
                 if (pr_global_struct.self)
@@ -1030,6 +1031,11 @@ namespace quake
                         //PR_RunError("Bad opcode " + st.op); 
                         break;
                 }
+            }
+            }
+            catch
+            {
+                Debug.WriteLine("broked");
             }
         }
     }
