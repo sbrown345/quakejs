@@ -80,6 +80,14 @@ namespace quake
             this._string = _string;
             this.archive = archive;
             this.server = server;
+            try
+            {
+                this.value = double.Parse(_string);
+            }
+            catch
+            {
+                
+            }
         }
         #endregion
 

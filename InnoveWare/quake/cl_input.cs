@@ -296,7 +296,7 @@ namespace quake
 	        }
 
 	        cmd.sidemove += cl_sidespeed.value * CL_KeyState (in_moveright);
-	        cmd.sidemove -= 350/*cl_sidespeed.value*/ * CL_KeyState (in_moveleft);
+	        cmd.sidemove -= cl_sidespeed.value * CL_KeyState (in_moveleft);
 
 	        cmd.upmove += cl_upspeed.value * CL_KeyState (in_up);
 	        cmd.upmove -= cl_upspeed.value * CL_KeyState (in_down);

@@ -1063,7 +1063,7 @@ static void SV_PushMove (prog.edict_t pusher, Double movetime)
 	        for (i=0 ; i<sv.num_edicts ; i++)
 	        {
                 ent = sv.edicts[i];
-                Debug.WriteLine(string.Format("phys_num {0} edict {1} movetype {2}", phys_num, i, (int)ent.v.movetype));
+                //Debug.WriteLine(string.Format("phys_num {0} edict {1} movetype {2}", phys_num, i, (int)ent.v.movetype));
                 if (ent.free) 
                 {
                     Debug.WriteLine("free");

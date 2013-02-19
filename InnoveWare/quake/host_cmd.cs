@@ -358,7 +358,7 @@ namespace quake
             //server.sv_player.v.origin[2] = 66;
             cmd.Cbuf_AddText("toggleconsole;\n");
             cmd.Cbuf_AddText("+forward;\n");
-            cmd.Cbuf_AddText("+attack;\n"); //PDF_Aim not implemetned?
+            //cmd.Cbuf_AddText("+attack;\n"); //PDF_Aim not implemetned?
             
         }
         
