@@ -233,8 +233,17 @@ namespace quake
         FIXME: make this just a stuffed echo?
         =================
         */
-        void SV_ClientPrintf (string fmt)
+        static void SV_ClientPrintf (string fmt)
         {
+            //va_list		argptr;
+            //char		string[1024];
+	
+            //va_start (argptr,fmt);
+            //vsprintf (string, fmt,argptr);
+            //va_end (argptr);
+
+            common.MSG_WriteByte(host_client.message, net.svc_print);
+            common.MSG_WriteString(host_client.message, fmt);
         }
 
         /*

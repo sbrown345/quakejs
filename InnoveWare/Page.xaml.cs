@@ -65,6 +65,7 @@ namespace InnoveWare
 
             // Prepare keyboard.
             BuildDictionaryKeys();
+            KeyUp += new KeyEventHandler(Page_KeyUp);
             KeyDown += new KeyEventHandler(Page_KeyDown);
 
             // Prepare full screen support.
@@ -180,6 +181,20 @@ namespace InnoveWare
                 quake.keys.Key_Event(quake_key, true);
             else if (e.PlatformKeyCode == 0xbc)
                 quake.keys.Key_Event(0x2c, true);
+        }
+        /// <summary>
+        /// Keydown event handler.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Page_KeyUp(object sender, KeyEventArgs e)
+        {
+            // Forward translated key to quake keyboard event.
+            int quake_key;
+            if (dictionaryKeys.TryGetValue(e.Key, out quake_key))
+                quake.keys.Key_Event(quake_key, false);
+            else if (e.PlatformKeyCode == 0xbc)
+                quake.keys.Key_Event(0x2c, false);
         }
 
         /// <summary>
