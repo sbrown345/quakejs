@@ -45,8 +45,8 @@ namespace quake
 
             public double           time;
         	
-	        int			lastcheck;			// used by PF_checkclient
-	        double		lastchecktime;
+	        public int			lastcheck;			// used by PF_checkclient
+	        public double		lastchecktime;
         	
 	        public string		    name;			    // map name
 	        public string		    modelname;		    // maps/<name>.bsp, for model_precache[0]

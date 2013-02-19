@@ -66,6 +66,105 @@ namespace quake
         =============================================================================
         */
 
+        /*  
+        ==================
+        SV_StartParticle
+
+        Make sure the event gets sent to all clients
+        ==================
+        */
+        public static void SV_StartParticle(double[] org, double[] dir, int color, int count)
+        {
+            int i, v;
+
+            if (sv.datagram.cursize > quakedef.MAX_DATAGRAM - 16)
+                return;
+            common.MSG_WriteByte(sv.datagram, net.svc_particle);
+            common.MSG_WriteCoord(sv.datagram, org[0]);
+            common.MSG_WriteCoord(sv.datagram, org[1]);
+            common.MSG_WriteCoord(sv.datagram, org[2]);
+            for (i = 0; i < 3; i++)
+            {
+                v = (int)dir[i] * 16;
+                if (v > 127)
+                    v = 127;
+                else if (v < -128)
+                    v = -128;
+                common.MSG_WriteChar(sv.datagram, v);
+            }
+            common.MSG_WriteByte(sv.datagram, count);
+            common.MSG_WriteByte(sv.datagram, color);
+        }
+
+        /*  
+        ==================
+        SV_StartSound
+
+        Each entity can have eight independant sound sources, like voice,
+        weapon, feet, etc.
+
+        Channel 0 is an auto-allocate channel, the others override anything
+        allready running on that entity/channel pair.
+
+        An attenuation of 0 will play full volume everywhere in the level.
+        Larger attenuations will drop off.  (max 4 attenuation)
+
+        ==================
+        */
+        public static void SV_StartSound(prog.edict_t entity, int channel, string sample, int volume,
+            double attenuation)
+        {
+            int sound_num;
+            int field_mask;
+            int i;
+            int ent;
+
+            if (volume < 0 || volume > 255)
+                sys_linux.Sys_Error("SV_StartSound: volume = "+ volume);
+
+            if (attenuation < 0 || attenuation > 4)
+                sys_linux.Sys_Error("SV_StartSound: attenuation = "+ attenuation);
+
+            if (channel < 0 || channel > 7)
+                sys_linux.Sys_Error("SV_StartSound: channel = "+ channel);
+
+            if (sv.datagram.cursize > quakedef.MAX_DATAGRAM - 16)
+                return;
+
+            // find precache number for sound
+            for (sound_num = 1; sound_num < quakedef.MAX_SOUNDS
+                && sv.sound_precache[sound_num] != null; sound_num++)
+                if (sample == sv.sound_precache[sound_num])
+                    break;
+
+            if (sound_num ==quakedef.MAX_SOUNDS || !(sv.sound_precache[sound_num] != null))
+            {
+                console.Con_Printf("SV_StartSound: not precacheed" + sample + "\n");
+                return;
+            }
+
+            ent = prog. NUM_FOR_EDICT(entity);
+
+            channel = (ent << 3) | channel;
+
+            field_mask = 0;
+            if (volume != sound.DEFAULT_SOUND_PACKET_VOLUME)
+                field_mask |= net.SND_VOLUME;
+            if (attenuation != sound.DEFAULT_SOUND_PACKET_ATTENUATION)
+                field_mask |= net.SND_ATTENUATION;
+
+            // directed messages go only to the entity the are targeted on
+           common. MSG_WriteByte(sv.datagram, net.svc_sound);
+           common. MSG_WriteByte(sv.datagram, field_mask);
+           if ((field_mask & net.SND_VOLUME) != 0)
+               common. MSG_WriteByte(sv.datagram, volume);
+            if ((field_mask & net.SND_ATTENUATION) != 0)
+               common. MSG_WriteByte(sv.datagram, (int) attenuation * 64);
+          common.  MSG_WriteShort(sv.datagram, channel);
+          common.  MSG_WriteByte(sv.datagram, sound_num);
+            for (i = 0; i < 3; i++)
+                common.MSG_WriteCoord(sv.datagram, entity.v.origin[i] + 0.5 * (entity.v.mins[i] + entity.v.maxs[i]));
+        }     
         /*
         ==============================================================================
 

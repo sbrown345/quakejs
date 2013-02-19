@@ -21,6 +21,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 namespace quake
 {
     using System;
+    using System.Diagnostics;
 
     public partial class prog
     {
@@ -74,7 +75,18 @@ namespace quake
         }
 
         public static int EDICT_TO_PROG(edict_t e) { return e.index * pr_edict_size; }
-        public static edict_t PROG_TO_EDICT(int e) { return server.sv.edicts[e / pr_edict_size]; }
+        public static edict_t PROG_TO_EDICT(int e)
+        {
+            try
+            {
+                return server.sv.edicts[e / pr_edict_size];
+            }
+            catch
+            {
+                Debug.WriteLine("bad! " + e);
+                throw;
+            }
+        }
 
         //============================================================================
 

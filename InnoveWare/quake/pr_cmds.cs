@@ -25,6 +25,8 @@ namespace quake
 {
     using System.Diagnostics;
 
+    using Missing;
+
     public partial class prog
     {
         static void RETURN_EDICT(edict_t e) { pr_globals_write(OFS_RETURN, EDICT_TO_PROG(e)); }
@@ -284,6 +286,7 @@ namespace quake
         {
             //var s = PF_VarString(0);
             //host.SV_BroadcastPrintf(s); todo
+            Debug.WriteLine("PF_bprint");
         }
 
         /*
@@ -297,7 +300,7 @@ namespace quake
         */
         static void PF_sprint ()
         {
-            //todo
+            Debug.WriteLine("PF_sprint");
         }
 
         /*
@@ -311,7 +314,7 @@ namespace quake
         */
         static void PF_centerprint ()
         {
-            //todo
+            Debug.WriteLine("PF_centerprint");
         }
 
         /*
@@ -323,8 +326,27 @@ namespace quake
         */
         static void PF_normalize ()
         {
-            Debug.WriteLine("PF_normalize");
-            Debug.WriteLine("todo PF_normalize");
+
+            double[] value1;
+	        double[]	newvalue= new double[3];
+	        double	@new;
+	
+	        value1 = G_VECTOR(OFS_PARM0);
+
+	        @new = value1[0] * value1[0] + value1[1] * value1[1] + value1[2]*value1[2];
+	        @new = Math.Sqrt(@new);
+	
+	        if (@new == 0)
+		        newvalue[0] = newvalue[1] = newvalue[2] = 0;
+	        else
+	        {
+		        @new = 1/@new;
+                newvalue[0] = value1[0] * @new;
+                newvalue[1] = value1[1] * @new;
+                newvalue[2] = value1[2] * @new;
+	        }
+	
+	        mathlib.VectorCopy (newvalue, G_VECTOR(OFS_RETURN));	
         }
 
         /*
@@ -427,7 +449,7 @@ namespace quake
         */
         static void PF_sound ()
         {
-            //todo
+            Debug.WriteLine("PF_sound");
         }
 
         /*
@@ -455,7 +477,30 @@ namespace quake
         */
         static void PF_traceline ()
         {
-            Debug.WriteLine("PF_traceline");
+ 	        double[]	v1, v2;
+	        world.trace_t	trace;
+	        int		nomonsters;
+	        edict_t	ent;
+
+	        v1 = G_VECTOR(OFS_PARM0);
+	        v2 = G_VECTOR(OFS_PARM1);
+	        nomonsters = (int)G_FLOAT(OFS_PARM2);
+	        ent = G_EDICT(OFS_PARM3);
+
+            trace = world.SV_Move(v1, mathlib.vec3_origin, mathlib.vec3_origin, v2, nomonsters, ent);
+
+            pr_global_struct[0].trace_allsolid = trace.allsolid ? 1 : 0;
+            pr_global_struct[0].trace_startsolid = trace.startsolid ? 1 : 0;
+            pr_global_struct[0].trace_fraction = trace.fraction;
+            pr_global_struct[0].trace_inwater = trace.inwater ? 1 : 0;
+            pr_global_struct[0].trace_inopen = trace.inopen ? 1 : 0;
+            mathlib.VectorCopy(trace.endpos, pr_global_struct[0].trace_endpos);
+            mathlib.VectorCopy(trace.plane.normal, pr_global_struct[0].trace_plane_normal);
+            pr_global_struct[0].trace_plane_dist = trace.plane.dist;	
+	        if (trace.ent != null)
+                pr_global_struct[0].trace_ent = EDICT_TO_PROG(trace.ent);
+	        else
+                pr_global_struct[0].trace_ent = EDICT_TO_PROG(server.sv.edicts[0]);
         }
 
         /*
@@ -470,10 +515,63 @@ namespace quake
         */
         static void PF_checkpos ()
         {
-            Debug.WriteLine("PF_checkpos");
+            //not implemented in winquake
         }
 
         //============================================================================
+        
+        static Uint8Array	checkpvs = new Uint8Array(bspfile.MAX_MAP_LEAFS/8);
+
+        static int PF_newcheckclient (int check)
+        {
+	        int		i;
+	        Uint8Array	pvs;
+	        edict_t	ent;
+	        model.mleaf_t	leaf;
+	        double[]	org = ArrayHelpers.ExplcitDoubleArray(3);
+
+            // cycle to the next one
+
+	        if (check < 1)
+		        check = 1;
+	        if (check > server.svs.maxclients)
+		        check = server.svs.maxclients;
+
+	        if (check == server.svs.maxclients)
+		        i = 1;
+	        else
+		        i = check + 1;
+
+	        for ( ;  ; i++)
+	        {
+		        if (i == server.svs.maxclients+1)
+			        i = 1;
+
+		        ent = EDICT_NUM(i);
+
+		        if (i == check)
+			        break;	// didn't find anything else
+
+		        if (ent.free)
+			        continue;
+		        if (ent.v.health <= 0)
+			        continue;
+		        if (((int)ent.v.flags & server.FL_NOTARGET) != 0)
+			        continue;
+
+	        // anything that is a client, or has a client as an enemy
+		        break;
+	        }
+
+            // get the PVS for the entity
+	        mathlib.VectorAdd (ent.v.origin, ent.v.view_ofs, org);
+	        leaf = model.Mod_PointInLeaf (org, server.sv.worldmodel);
+	        pvs = model.Mod_LeafPVS (leaf, server.sv.worldmodel);
+            //memcpy (checkpvs, pvs, (server.sv.worldmodel.numleafs+7)>>3 );
+            Buffer.BlockCopy(checkpvs, 0, pvs, 0, (server.sv.worldmodel.numleafs+7)>>3);
+
+	        return i;
+        }
 
         /*
         =================
@@ -490,9 +588,55 @@ namespace quake
         name checkclient ()
         =================
         */
-        static void PF_checkclient ()
+        static int c_invis, c_notvis;
+        static void PF_checkclient()
         {
-            Debug.WriteLine("PF_checkclient");
+    	    edict_t	ent, self;
+	        model.mleaf_t	leaf;
+	        int		l=0;
+	        double[]	view = ArrayHelpers.ExplcitDoubleArray(3);
+	
+        // find a new check if on a new frame
+            if (server.sv.time - server.sv.lastchecktime >= 0.1)
+	        {
+                server.sv.lastcheck = PF_newcheckclient(server.sv.lastcheck);
+                server.sv.lastchecktime = server.sv.time;
+	        }
+
+        // return check if it might be visible	
+            ent = EDICT_NUM(server.sv.lastcheck);
+	        if (ent.free || ent.v.health <= 0)
+	        {
+                RETURN_EDICT(server.sv.edicts[0]);
+		        return;
+	        }
+
+            // if current entity can't possibly see the check entity, return 0
+            self = PROG_TO_EDICT(pr_global_struct[0].self);
+            mathlib. VectorAdd (self.v.origin, self.v.view_ofs, view);
+            leaf = model.Mod_PointInLeaf(view, server.sv.worldmodel);
+            //l = (leaf - server.sv.worldmodel.leafs) - 1;
+            for (int i = 0; i < server.sv.worldmodel.leafs.Length; i++)
+            {
+                var mleafT = server.sv.worldmodel.leafs[i];
+                if (mleafT == leaf)  
+                {
+                    l = i - 1;
+                    break;
+                }
+            }
+            Debug.WriteLine("PF_checkclient l: " + l);
+
+            if ( (l<0) || !( (checkpvs[l>>3] & (1<<(l&7))) != 0 ) )
+	        {
+                c_notvis++;
+		        RETURN_EDICT(server.sv.edicts[0]);
+		        return;
+	        }
+
+        // might be able to see it
+            c_invis++;
+	        RETURN_EDICT(ent);
         }
 
         //============================================================================
@@ -741,7 +885,37 @@ namespace quake
         */
         static void PF_walkmove ()
         {
-            Debug.WriteLine("PF_walkmove");
+            edict_t ent;
+            double yaw, dist;
+            double[] move = new double[3];
+            dfunction_t oldf;
+            int oldself;
+
+            ent = PROG_TO_EDICT(pr_global_struct[0].self);
+            yaw = G_FLOAT(OFS_PARM0);
+            dist = G_FLOAT(OFS_PARM1);
+
+            if (!    (((int)ent.v.flags & (server.FL_ONGROUND |server. FL_FLY | server.FL_SWIM)) != 0))
+            {
+                pr_globals_write(OFS_RETURN, 0);
+                return;
+            }
+
+            yaw = yaw * mathlib.M_PI * 2 / 360;
+
+            move[0] = Math.Cos(yaw) * dist;
+            move[1] = Math.Sin(yaw) * dist;
+            move[2] = 0;
+
+            // save program state, because SV_movestep may call other progs
+            oldf = pr_xfunction;
+            oldself = pr_global_struct[0].self;
+
+            pr_globals_write(OFS_RETURN, server.SV_Movestep(ent, move, true) ? 1 : 0);
+
+            // restore program state
+            pr_xfunction = oldf;
+            pr_global_struct[0].self = oldself;
         }
 
         /*
@@ -751,9 +925,30 @@ namespace quake
         void() droptofloor
         ===============
         */
-        static void PF_droptofloor ()
+
+        private static void PF_droptofloor()
         {
-            Debug.WriteLine("PF_droptofloor");
+            edict_t ent;
+            double[] end = new double[3];
+            world.trace_t trace;
+
+            ent = PROG_TO_EDICT(pr_global_struct[0].self);
+
+            mathlib.VectorCopy(ent.v.origin, end);
+            end[2] -= 256;
+
+            trace = world.SV_Move(ent.v.origin, ent.v.mins, ent.v.maxs, end, 0, ent);
+
+            if (trace.fraction == 1 || trace.allsolid)
+                prog.pr_globals_write(OFS_RETURN, 0); //G_FLOAT(OFS_RETURN) = 0;
+            else
+            {
+                mathlib.VectorCopy(trace.endpos, ent.v.origin);
+                world.SV_LinkEdict(ent, false);
+                ent.v.flags = (int)ent.v.flags | server.FL_ONGROUND;
+                ent.v.groundentity = EDICT_TO_PROG(trace.ent);
+                prog.pr_globals_write(OFS_RETURN, 1);//G_FLOAT(OFS_RETURN) = 1;
+            }
         }
 
         /*

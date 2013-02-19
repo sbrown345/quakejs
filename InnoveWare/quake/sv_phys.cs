@@ -595,7 +595,7 @@ static void SV_PushMove (prog.edict_t pusher, Double movetime)
 
         private static void SV_CheckStuck(prog.edict_t ent)
         {
-            Debug.WriteLine("SV_CheckStuck");
+            //Debug.WriteLine("SV_CheckStuck");
             int i, j;
             int z;
             double[] org = new double[3];
@@ -680,26 +680,24 @@ static void SV_PushMove (prog.edict_t pusher, Double movetime)
         */
         static void SV_WallFriction (prog.edict_t ent, world.trace_t trace)
         {
-            Debug.WriteLine("SV_WallFriction");
-            throw new NotImplementedException();
-        //    double[] forward = new double[3], right = new double[3], up = new double[3];
-        //    float		d, i;
-        //    double[]		into=new double[3], side=new double[3];
-	
-        //    mathlib.AngleVectors (ent.v.v_angle, forward, right, up);
-        //    d = mathlib.DotProduct (trace.plane.normal, forward);
-	
-        //    d += 0.5;
-        //    if (d >= 0)
-        //        return;
-		
-        //// cut the tangential velocity
-        //    i =mathlib. DotProduct (trace.plane.normal, ent.v.velocity);
-        //    mathlib.VectorScale (trace.plane.normal, i, into);
-        //    mathlib.VectorSubtract (ent.v.velocity, into, side);
-	
-        //    ent.v.velocity[0] = side[0] * (1 + d);
-        //    ent.v.velocity[1] = side[1] * (1 + d);
+            double[] forward = new double[3], right = new double[3], up = new double[3];
+            double d, i;
+            double[] into = new double[3], side = new double[3];
+
+            mathlib.AngleVectors(ent.v.v_angle, forward, right, up);
+            d = mathlib.DotProduct(trace.plane.normal, forward);
+
+            d += 0.5;
+            if (d >= 0)
+                return;
+
+            // cut the tangential velocity
+            i = mathlib.DotProduct(trace.plane.normal, ent.v.velocity);
+            mathlib.VectorScale(trace.plane.normal, i, into);
+            mathlib.VectorSubtract(ent.v.velocity, into, side);
+
+            ent.v.velocity[0] = side[0] * (1 + d);
+            ent.v.velocity[1] = side[1] * (1 + d);
         }
 
         /*
@@ -772,9 +770,8 @@ static void SV_PushMove (prog.edict_t pusher, Double movetime)
         ======================
         */
 
-        private const int STEPSIZE = 18;
 
-        private static void SV_WalkMove(prog.edict_t ent)
+        public static void SV_WalkMove(prog.edict_t ent)
         {
             double[] upmove = new double[3], downmove = new double[3];
             double[] oldorg = new double[3], oldvel = new double[3];
@@ -871,7 +868,7 @@ static void SV_PushMove (prog.edict_t pusher, Double movetime)
         */
         static void SV_Physics_Client (prog.edict_t ent, int num)
         {
-            Debug.WriteLine("SV_Physics_Client");
+            //Debug.WriteLine("SV_Physics_Client");
 	        if ( ! svs.clients[num-1].active )
 		        return;		// unconnected slot
 
@@ -973,6 +970,51 @@ static void SV_PushMove (prog.edict_t pusher, Double movetime)
 
             world.SV_LinkEdict(ent, false);
         }
+        
+        /*
+        ==============================================================================
+
+        TOSS / BOUNCE
+
+        ==============================================================================
+        */
+
+        /*
+        =============
+        SV_CheckWaterTransition
+
+        =============
+        */
+        static void SV_CheckWaterTransition (prog.edict_t ent)
+        {
+	        int		cont;
+	        cont = world.SV_PointContents (ent.v.origin);
+	        if (! (ent.v.watertype != null))
+	        {	// just spawned here
+		        ent.v.watertype = cont;
+		        ent.v.waterlevel = 1;
+		        return;
+	        }
+	
+	        if (cont <= bspfile.CONTENTS_WATER)
+	        {
+                if (ent.v.watertype == bspfile.CONTENTS_EMPTY)
+		        {	// just crossed into water
+			        SV_StartSound (ent, 0, "misc/h2ohit1.wav", 255, 1);
+		        }		
+		        ent.v.watertype = cont;
+		        ent.v.waterlevel = 1;
+	        }
+	        else
+	        {
+                if (ent.v.watertype != bspfile.CONTENTS_EMPTY)
+		        {	// just crossed into water
+                    SV_StartSound(ent, 0, "misc/h2ohit1.wav", 255, 1);
+		        }
+                ent.v.watertype = bspfile.CONTENTS_EMPTY;
+		        ent.v.waterlevel = cont;
+	        }
+        }
 
         /*
         =============
@@ -1036,6 +1078,33 @@ static void SV_PushMove (prog.edict_t pusher, Double movetime)
 	        //SV_CheckWaterTransition (ent);
         }
 
+        static private void SV_Physics_Step(prog.edict_t ent)
+        {
+            bool hitsound;
+
+            // freefall if not onground
+            if (!(((int)ent.v.flags & (FL_ONGROUND | FL_FLY | FL_SWIM)) != 0))
+            {
+                if (ent.v.velocity[2] < sv_gravity.value * -0.1) hitsound = true;
+                else hitsound = false;
+
+                SV_AddGravity(ent);
+                SV_CheckVelocity(ent);
+                SV_FlyMove(ent, host.host_frametime, null);
+                world.SV_LinkEdict(ent, true);
+
+                if (((int)ent.v.flags & FL_ONGROUND) != 0) // just hit ground
+                {
+                    if (hitsound) SV_StartSound(ent, 0, "demon/dland2.wav", 255, 1);
+                }
+            }
+
+            // regular thinking
+            SV_RunThink(ent);
+
+            SV_CheckWaterTransition(ent);
+        }
+
         /*
         ================
         SV_Physics
@@ -1066,7 +1135,7 @@ static void SV_PushMove (prog.edict_t pusher, Double movetime)
                 //Debug.WriteLine(string.Format("phys_num {0} edict {1} movetype {2}", phys_num, i, (int)ent.v.movetype));
                 if (ent.free) 
                 {
-                    Debug.WriteLine("free");
+                    //Debug.WriteLine("free");
                     continue;
                 }
 
@@ -1084,8 +1153,7 @@ static void SV_PushMove (prog.edict_t pusher, Double movetime)
 			        SV_Physics_Noclip (ent);
 		        else if (ent.v.movetype == MOVETYPE_STEP) {
                     //todo!!! step phys
-                    Debug.WriteLine("SV_Physics_Step todo");
-                    //SV_Physics_Step (ent);
+                    SV_Physics_Step (ent);
                 }
 		        else if (ent.v.movetype == MOVETYPE_TOSS 
 		        || ent.v.movetype == MOVETYPE_BOUNCE
