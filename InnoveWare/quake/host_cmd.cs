@@ -351,17 +351,26 @@ namespace quake
         Host_Kill_f
         ==================
         */
-        static void Host_Kill_f ()
+
+        private static void Host_Kill_f()
         {
-            //server.sv_player.v.origin[0] = 544;
-            //server.sv_player.v.origin[1] = 288;
-            //server.sv_player.v.origin[2] = 66;
-            cmd.Cbuf_AddText("toggleconsole;\n");
-            cmd.Cbuf_AddText("+forward;\n");
-            //cmd.Cbuf_AddText("+attack;\n"); //PDF_Aim not implemetned?
-            
+            if (cmd.cmd_source == cmd.cmd_source_t.src_command)
+            {
+                cmd.Cmd_ForwardToServer();
+                return;
+            }
+
+            if (server.sv_player.v.health <= 0)
+            {
+                SV_ClientPrintf("Can't suicide -- allready dead!\n");
+                return;
+            }
+
+            prog.pr_global_struct[0].time = server.sv.time;
+            prog.pr_global_struct[0].self = prog.EDICT_TO_PROG(server.sv_player);
+            prog.PR_ExecuteProgram(prog.pr_functions[prog.pr_global_struct[0].ClientKill]);
         }
-        
+
         /*
         ==================
         Host_Pause_f
