@@ -763,6 +763,10 @@ namespace quake
                         pr_globals_write(st.c + 1, b_float * cast_float(pr_globals_read(st.a + 1)));
                         pr_globals_write(st.c + 2, b_float * cast_float(pr_globals_read(st.a + 2)));
                         break;
+                    case opcode_t.OP_DIV_F:
+                        //c->_float = a->_float / b->_float;
+                        pr_globals_write(st.c, (double)(cast_float(pr_globals_read(st.a)) / cast_float(pr_globals_read(st.b))));
+                        break;
 
                     case opcode_t.OP_BITAND:
                         //c->_float = (int)a->_float & (int)b->_float;
@@ -883,6 +887,16 @@ namespace quake
                         eval = pr_string(st.a) == pr_string(st.b);
                         pr_globals_write(st.c, (double)(eval ? 1 : 0));
                         break;
+
+                    case opcode_t.OP_NE_E:
+                        //c->_float = a->_int != b->_int;
+                        eval = cast_int(pr_globals_read(st.a)) != cast_int(pr_globals_read(st.b));
+                        pr_globals_write(st.c, (double)(eval ? 1 : 0));
+                        break;
+                    case opcode_t.OP_NE_FNC:
+                        //c->_float = a->function != b->function;
+                        break;
+
 
                         //==================
                     case opcode_t.OP_STORE_F:

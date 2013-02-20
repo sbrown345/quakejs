@@ -905,15 +905,13 @@ static void SV_PushMove (prog.edict_t pusher, Double movetime)
         		
 	        case MOVETYPE_TOSS:
 	        case MOVETYPE_BOUNCE:
-		        //SV_Physics_Toss (ent);
-                Debug.WriteLine("todo SV_Physics_Toss");
+		        SV_Physics_Toss (ent);
 		        break;
 
 	        case MOVETYPE_FLY:
 		        if (!SV_RunThink (ent))
 			        return;
-		        //SV_FlyMove (ent, host.host_frametime, null);
-                Debug.WriteLine("todo SV_FlyMove");
+		        SV_FlyMove (ent, host.host_frametime, null);
 		        break;
         		
 	        case MOVETYPE_NOCLIP:

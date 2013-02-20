@@ -469,9 +469,30 @@ namespace quake
 
         =================
         */
-        static void PF_sound ()
+        static void PF_sound()
         {
-            Debug.WriteLine("PF_sound");
+            string sample;
+            int channel;
+            edict_t entity;
+            int volume;
+            double attenuation;
+
+            entity = G_EDICT(OFS_PARM0);
+            channel = (int)G_FLOAT(OFS_PARM1);
+            sample = G_STRING(OFS_PARM2);
+            volume = (int)G_FLOAT(OFS_PARM3) * 255;
+            attenuation = G_FLOAT(OFS_PARM4);
+
+            if (volume < 0 || volume > 255)
+                sys_linux.Sys_Error("SV_StartSound: volume = " + volume);
+
+            if (attenuation < 0 || attenuation > 4)
+                sys_linux.Sys_Error("SV_StartSound: attenuation " + attenuation);
+
+            if (channel < 0 || channel > 7)
+                sys_linux.Sys_Error("SV_StartSound: channel = " + channel);
+
+            server.SV_StartSound(entity, channel, sample, volume, attenuation);
         }
 
         /*
@@ -689,7 +710,10 @@ namespace quake
         */
         static void PF_localcmd ()
         {
-            Debug.WriteLine("PF_localcmd");
+            string str;
+
+            str = G_STRING(OFS_PARM0);
+            cmd.Cbuf_AddText(str);
         }
 
         /*
@@ -746,7 +770,14 @@ namespace quake
         */
         static void PF_dprint ()
         {
-            Debug.WriteLine("todo PF_dprint");
+            try
+            {
+                console.Con_DPrintf(PF_VarString(0));
+            }
+            catch
+            {
+                Debug.WriteLine("todo PF_dprint - crashes");
+            }
         }
 
         static void PF_ftos ()
@@ -761,9 +792,15 @@ namespace quake
             pr_globals_write(OFS_RETURN, Math.Abs(v));
         }
 
+        private static string pr_string_temp = null;
         static void PF_vtos ()
         {
             Debug.WriteLine("todo PF_vtos");
+            //sprintf (pr_string_temp, "'%5.1f %5.1f %5.1f'", G_VECTOR(OFS_PARM0)[0], G_VECTOR(OFS_PARM0)[1], G_VECTOR(OFS_PARM0)[2]);
+            //pr_string_temp= string.Format("{0:F5} {1:F5} {2:F5} ", G_VECTOR(OFS_PARM0)[0], G_VECTOR(OFS_PARM0)[1], G_VECTOR(OFS_PARM0)[2]);
+
+            ////G_INT(OFS_RETURN) = pr_string_temp - pr_strings;
+            //pr_globals_write(OFS_RETURN, pr_string_temp - pr_strings;); //todo: check - how to get it from array?
         }
 
         static void PF_Spawn ()

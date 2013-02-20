@@ -185,7 +185,19 @@ namespace quake
         */
         static void Host_Restart_f()
         {
-            Debug.WriteLine("todo Host_Restart_f");
+            string mapname;
+
+
+            if (client.cls.demoplayback || !server.sv.active)
+                return;
+
+            if (cmd.cmd_source != cmd.cmd_source_t.src_command)
+                return;
+
+            mapname = server.sv.name;	// must copy out, because it gets cleared
+                                        // in sv_spawnserver
+
+            server.SV_SpawnServer(mapname);
         }
 
         /*
