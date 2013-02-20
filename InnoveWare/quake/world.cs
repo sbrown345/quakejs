@@ -322,99 +322,108 @@ namespace quake
         }
 
 
-///*
-//====================
-//SV_TouchLinks
-//====================
-//*/
-//void SV_TouchLinks ( edict_t *ent, areanode_t *node )
-//{
-//    link_t		*l, *next;
-//    edict_t		*touch;
-//    int			old_self, old_other;
+       /*
+       ====================
+       SV_TouchLinks
+       ====================
+       */
+       static void SV_TouchLinks(prog.edict_t ent, areanode_t node)
+       {
+           common.link_t l, next;
+           prog.edict_t touch;
+           int old_self, old_other;
 
-//// touch linked edicts
-//    for (l = node->trigger_edicts.next ; l != &node->trigger_edicts ; l = next)
-//    {
-//        next = l->next;
-//        touch = EDICT_FROM_AREA(l);
-//        if (touch == ent)
-//            continue;
-//        if (!touch->v.touch || touch->v.solid != SOLID_TRIGGER)
-//            continue;
-//        if (ent->v.absmin[0] > touch->v.absmax[0]
-//        || ent->v.absmin[1] > touch->v.absmax[1]
-//        || ent->v.absmin[2] > touch->v.absmax[2]
-//        || ent->v.absmax[0] < touch->v.absmin[0]
-//        || ent->v.absmax[1] < touch->v.absmin[1]
-//        || ent->v.absmax[2] < touch->v.absmin[2] )
-//            continue;
-//        old_self = pr_global_struct->self;
-//        old_other = pr_global_struct->other;
+           // touch linked edicts
+           for (l = node.trigger_edicts.next; l != node.trigger_edicts; l = next)
+           {
+               next = l.next;
+               touch = prog.EDICT_FROM_AREA(l);
+               if (touch == ent)
+                   continue;
+               if (!(touch.v.touch != 0) || touch.v.solid != server.SOLID_TRIGGER)
+                   continue;
+               if (ent.v.absmin[0] > touch.v.absmax[0]
+               || ent.v.absmin[1] > touch.v.absmax[1]
+               || ent.v.absmin[2] > touch.v.absmax[2]
+               || ent.v.absmax[0] < touch.v.absmin[0]
+               || ent.v.absmax[1] < touch.v.absmin[1]
+               || ent.v.absmax[2] < touch.v.absmin[2])
+                   continue;
+               old_self = prog.pr_global_struct[0].self;
+               old_other = prog.pr_global_struct[0].other;
 
-//        pr_global_struct->self = EDICT_TO_PROG(touch);
-//        pr_global_struct->other = EDICT_TO_PROG(ent);
-//        pr_global_struct->time = sv.time;
-//        PR_ExecuteProgram (touch->v.touch);
+               prog.pr_global_struct[0].self = prog.EDICT_TO_PROG(touch);
+               prog.pr_global_struct[0].other = prog.EDICT_TO_PROG(ent);
+               prog.pr_global_struct[0].time = server.sv.time;
+               prog.PR_ExecuteProgram(prog.pr_functions[touch.v.touch]);
 
-//        pr_global_struct->self = old_self;
-//        pr_global_struct->other = old_other;
-//    }
-	
-//// recurse down both sides
-//    if (node->axis == -1)
-//        return;
-	
-//    if ( ent->v.absmax[node->axis] > node->dist )
-//        SV_TouchLinks ( ent, node->children[0] );
-//    if ( ent->v.absmin[node->axis] < node->dist )
-//        SV_TouchLinks ( ent, node->children[1] );
-//}
+               prog.pr_global_struct[0].self = old_self;
+               prog.pr_global_struct[0].other = old_other;
+           }
+
+           // recurse down both sides
+           if (node.axis == -1)
+               return;
+
+           if (ent.v.absmax[node.axis] > node.dist)
+               SV_TouchLinks(ent, node.children[0]);
+           if (ent.v.absmin[node.axis] < node.dist)
+               SV_TouchLinks(ent, node.children[1]);
+       }
 
 
-///*
-//===============
-//SV_FindTouchedLeafs
+       /*
+       ===============
+       SV_FindTouchedLeafs
 
-//===============
-//*/
-//void SV_FindTouchedLeafs (edict_t *ent, mnode_t *node)
-//{
-//    mplane_t	*splitplane;
-//    mleaf_t		*leaf;
-//    int			sides;
-//    int			leafnum;
+       ===============
+       */
+       static void SV_FindTouchedLeafs(prog.edict_t ent, model.mnode_t node)
+       {
+           model.mplane_t splitplane;
+           model.mleaf_t leaf;
+           int sides;
+           int leafnum;
 
-//    if (node->contents == CONTENTS_SOLID)
-//        return;
-	
-//// add an efrag if the node is a leaf
+           if (node.contents == bspfile.CONTENTS_SOLID)
+               return;
 
-//    if ( node->contents < 0)
-//    {
-//        if (ent->num_leafs == MAX_ENT_LEAFS)
-//            return;
+           // add an efrag if the node is a leaf
 
-//        leaf = (mleaf_t *)node;
-//        leafnum = leaf - sv.worldmodel->leafs - 1;
+           if (node.contents < 0)
+           {
+               if (ent.num_leafs == prog.MAX_ENT_LEAFS)
+                   return;
 
-//        ent->leafnums[ent->num_leafs] = leafnum;
-//        ent->num_leafs++;			
-//        return;
-//    }
-	
-//// NODE_MIXED
+               leaf = (model.mleaf_t)node;
+               int i;
+               for ( i = 0; i < server.sv.worldmodel.leafs.Length; i++)
+               {
+                   var mleafT = server.sv.worldmodel.leafs[i];
+                   if (mleafT == leaf)
+                   {
+                       break;
+                   }
+               }
+               leafnum = i; //leaf - server.sv.worldmodel.leafs[0] - 1; //todo: test this is correct
 
-//    splitplane = node->plane;
-//    sides = BOX_ON_PLANE_SIDE(ent->v.absmin, ent->v.absmax, splitplane);
-	
-//// recurse down the contacted sides
-//    if (sides & 1)
-//        SV_FindTouchedLeafs (ent, node->children[0]);
-		
-//    if (sides & 2)
-//        SV_FindTouchedLeafs (ent, node->children[1]);
-//}
+               ent.leafnums[ent.num_leafs] = (short)leafnum;
+               ent.num_leafs++;
+               return;
+           }
+
+           // NODE_MIXED
+
+           splitplane = node.plane;
+           sides = mathlib.BOX_ON_PLANE_SIDE(ent.v.absmin, ent.v.absmax, splitplane);
+
+           // recurse down the contacted sides
+           if ((sides & 1) != 0)
+               SV_FindTouchedLeafs(ent, node.children[0]);
+
+           if ((sides & 2) !=0)
+               SV_FindTouchedLeafs(ent, node.children[1]);
+       }
 
         /*
         ===============
@@ -424,81 +433,79 @@ namespace quake
         */
         public static void SV_LinkEdict(prog.edict_t ent, bool touch_triggers)
         {
-            //todo: runs okay without it
-            //areanode_t node;
 
-            //if (ent.area.prev != null)
-            //    world.SV_UnlinkEdict(ent);	// unlink from old position
+            areanode_t node;
 
-            ////if (ent == sv.edicts)
-            //if (ent == server.sv.edicts[0]) //todo! maybe dodgey
-            //    return;		// don't add the world
+            if (ent.area.prev != null)
+                world.SV_UnlinkEdict(ent);	// unlink from old position
 
-            //if (ent.free)
-            //    return;
+            //if (ent == sv.edicts)
+            if (ent == server.sv.edicts[0]) //todo! maybe dodgey
+                return;		// don't add the world
 
-            //// set the abs box
+            if (ent.free)
+                return;
 
+            // set the abs box
+            {
+                mathlib.VectorAdd(ent.v.origin, ent.v.mins, ent.v.absmin);
+                mathlib.VectorAdd(ent.v.origin, ent.v.maxs, ent.v.absmax);
+            }
 
-            //{
-            //   mathlib. VectorAdd(ent.v.origin, ent.v.mins, ent.v.absmin);
-            //   mathlib.VectorAdd(ent.v.origin, ent.v.maxs, ent.v.absmax);
-            //}
+            //
+            // to make items easier to pick up and allow them to be grabbed off
+            // of shelves, the abs sizes are expanded
+            //
+            if (((int)ent.v.flags & server.FL_ITEM) != 0)
+            {
+                ent.v.absmin[0] -= 15;
+                ent.v.absmin[1] -= 15;
+                ent.v.absmax[0] += 15;
+                ent.v.absmax[1] += 15;
+            }
+            else
+            {	// because movement is clipped an epsilon away from an actual edge,
+                // we must fully check even when bounding boxes don't quite touch
+                ent.v.absmin[0] -= 1;
+                ent.v.absmin[1] -= 1;
+                ent.v.absmin[2] -= 1;
+                ent.v.absmax[0] += 1;
+                ent.v.absmax[1] += 1;
+                ent.v.absmax[2] += 1;
+            }
 
-            ////
-            //// to make items easier to pick up and allow them to be grabbed off
-            //// of shelves, the abs sizes are expanded
-            ////
-            //if ((int)ent.v.flags & FL_ITEM)
-            //{
-            //    ent.v.absmin[0] -= 15;
-            //    ent.v.absmin[1] -= 15;
-            //    ent.v.absmax[0] += 15;
-            //    ent.v.absmax[1] += 15;
-            //}
-            //else
-            //{	// because movement is clipped an epsilon away from an actual edge,
-            //    // we must fully check even when bounding boxes don't quite touch
-            //    ent.v.absmin[0] -= 1;
-            //    ent.v.absmin[1] -= 1;
-            //    ent.v.absmin[2] -= 1;
-            //    ent.v.absmax[0] += 1;
-            //    ent.v.absmax[1] += 1;
-            //    ent.v.absmax[2] += 1;
-            //}
+            // link to PVS leafs
+            ent.num_leafs = 0;
+            if (ent.v.modelindex != 0)
+                SV_FindTouchedLeafs(ent, server.sv.worldmodel.nodes[0]);
 
-            //// link to PVS leafs
-            //ent.num_leafs = 0;
-            //if (ent.v.modelindex)
-            //    SV_FindTouchedLeafs(ent, sv.worldmodel.nodes);
+            if (ent.v.solid ==server. SOLID_NOT)
+                return;
 
-            //if (ent.v.solid == SOLID_NOT)
-            //    return;
+            // find the first node that the ent's box crosses
+            node = sv_areanodes[0];
+            while (true)
+            {
+                if (node.axis == -1)
+                    break;
+                if (ent.v.absmin[node.axis] > node.dist)
+                    node = node.children[0];
+                else if (ent.v.absmax[node.axis] < node.dist)
+                    node = node.children[1];
+                else
+                    break;		// crosses the node
+            }
 
-            //// find the first node that the ent's box crosses
-            //node = sv_areanodes;
-            //while (1)
-            //{
-            //    if (node.axis == -1)
-            //        break;
-            //    if (ent.v.absmin[node.axis] > node.dist)
-            //        node = node.children[0];
-            //    else if (ent.v.absmax[node.axis] < node.dist)
-            //        node = node.children[1];
-            //    else
-            //        break;		// crosses the node
-            //}
+            // link it in	
 
-            //// link it in	
+            if (ent.v.solid == server.SOLID_TRIGGER)
+                common.InsertLinkBefore(ent.area, node.trigger_edicts);
+            else
+                common.InsertLinkBefore(ent.area, node.solid_edicts);
 
-            //if (ent.v.solid == SOLID_TRIGGER)
-            //    InsertLinkBefore(&ent.area, &node.trigger_edicts);
-            //else
-            //    InsertLinkBefore(&ent.area, &node.solid_edicts);
-
-            //// if touch_triggers, touch all entities at this node and decend for more
-            //if (touch_triggers)
-            //    SV_TouchLinks(ent, sv_areanodes);
+            // if touch_triggers, touch all entities at this node and decend for more
+            if (touch_triggers)
+                SV_TouchLinks(ent, sv_areanodes[0]);
         }
 
 

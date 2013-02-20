@@ -753,6 +753,7 @@ namespace quake
         */
         static void Host_Stopdemo_f()
         {
+            Debug.WriteLine("Host_Stopdemo_f");
         }
 
         //=============================================================================

@@ -194,10 +194,12 @@ namespace quake
 
         static void NET_Port_f ()
         {
+            Debug.WriteLine("NET_Port_f");
         }
 
         static void NET_Slist_f ()
         {
+            Debug.WriteLine("NET_Slist_f");
         }
 
         /*

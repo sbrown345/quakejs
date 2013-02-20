@@ -441,6 +441,7 @@ namespace quake
         static void PF_particle ()
         {
             //todo
+            Debug.WriteLine("PF_particle");
         }
         
         /*
@@ -452,6 +453,7 @@ namespace quake
         static void PF_ambientsound ()
         {
             //Debug.WriteLine("PF_ambientsound"); todo
+            Debug.WriteLine("PF_ambientsound");
         }
 
         /*

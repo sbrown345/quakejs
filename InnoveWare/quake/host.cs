@@ -294,6 +294,7 @@ namespace quake
         */
         void SV_DropClient (bool crash)
         {
+            Debug.WriteLine("SV_DropClient");
         }
 
         /*
@@ -377,7 +378,17 @@ namespace quake
         ===================
         */
         void Host_GetConsoleCommands ()
-        {
+        {	
+            //char	*cmd;
+
+    //while (1)
+    //{
+    //    cmd = Sys_ConsoleInput ();
+    //    if (!cmd)
+    //        break;
+    //    Cbuf_AddText (cmd);
+    //}
+            Debug.WriteLine("Host_GetConsoleCommands");
         }
 
 

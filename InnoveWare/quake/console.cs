@@ -23,6 +23,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 namespace quake
 {
+    using System.Diagnostics;
+
     public sealed class console
     {
         static int 		con_linewidth;
@@ -114,6 +116,7 @@ namespace quake
         */
         static void Con_MessageMode_f ()
         {
+            Debug.WriteLine("Con_MessageMode_f");
         }
                 						
         /*
@@ -123,6 +126,7 @@ namespace quake
         */
         static void Con_MessageMode2_f ()
         {
+            Debug.WriteLine("Con_MessageMode2_f");
         }
         						
         /*
@@ -322,6 +326,7 @@ namespace quake
         */
         static void Con_DebugLog(string file, string fmt)
         {
+            Debug.WriteLine("Con_DebugLog");
         }
 
 

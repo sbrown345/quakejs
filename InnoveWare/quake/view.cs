@@ -186,9 +186,9 @@ namespace quake
             // don't count small mouse motion
             if (client.cl.nodrift)
             {
-                /*if (Math.Abs(client.cl.cmd.forwardmove) < client.cl_forwardspeed.value)
+                if (Math.Abs(client.cl.cmd.forwardmove) < client.cl_forwardspeed.value)
                     client.cl.driftmove = 0;
-                else*/
+                else
                     client.cl.driftmove += host.host_frametime;
 
                 if (client.cl.driftmove > v_centermove.value)

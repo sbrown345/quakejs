@@ -211,7 +211,7 @@ namespace quake
         //==========================================================================
 
         static cvar_t cl_upspeed = new cvar_t("cl_upspeed","200");
-        static cvar_t cl_forwardspeed = new cvar_t("cl_forwardspeed", "200", true);
+        public static cvar_t cl_forwardspeed = new cvar_t("cl_forwardspeed", "200", true);
         static cvar_t cl_backspeed = new cvar_t("cl_backspeed", "200", true);
         static cvar_t cl_sidespeed = new cvar_t("cl_sidespeed", "350");
 

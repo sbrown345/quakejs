@@ -20,6 +20,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 namespace quake
 {
+    using System.Diagnostics;
+
     public partial class client
     {
         /*
@@ -65,6 +67,7 @@ namespace quake
         */
         static void CL_WriteDemoMessage ()
         {
+            Debug.WriteLine("CL_WriteDemoMessage");
         }
 
         /*
@@ -153,6 +156,7 @@ namespace quake
         */
         static void CL_Stop_f()
         {
+            Debug.WriteLine("CL_Stop_f");
         }
 
         /*
@@ -164,6 +168,7 @@ namespace quake
         */
         static void CL_Record_f ()
         {
+            Debug.WriteLine("CL_Record_f");
         }
 
         /*

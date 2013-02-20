@@ -61,6 +61,7 @@ namespace quake
         */
         void SV_CheckAllEnts ()
         {
+            Debug.WriteLine("SV_CheckAllEnts");
         }
 
         /*
@@ -170,7 +171,7 @@ returns the blocked flags (1 = floor, 2 = step / wall)
 
 private const double STOP_EPSILON = 0.1;
 
-static int ClipVelocity (double[] @in, double[] normal, double[] @out, float overbounce)
+static int ClipVelocity (double[] @in, double[] normal, double[] @out, double overbounce)
 {
     double backoff;
     double	change;
@@ -1023,7 +1024,7 @@ static void SV_PushMove (prog.edict_t pusher, Double movetime)
         */
         static void SV_Physics_Toss (prog.edict_t ent)
         {
-	        //trace_t	trace;
+	        world.trace_t	trace= new world.trace_t();
 	        double[]	move = new double[3];
 	        double      backoff;
 
@@ -1047,9 +1048,9 @@ static void SV_PushMove (prog.edict_t pusher, Double movetime)
 
         // move origin
 	        mathlib.VectorScale (ent.v.velocity, host.host_frametime, move);
-	        /*trace = SV_PushEntity (ent, move);
-	        if (trace.fraction == 1)
-		        return;*/
+            trace = SV_PushEntity (ent, move);
+            if (trace.fraction == 1)
+                return;
 	        if (ent.free)
 		        return;
         	
@@ -1058,22 +1059,22 @@ static void SV_PushMove (prog.edict_t pusher, Double movetime)
 	        else
 		        backoff = 1;
 
-	        //ClipVelocity (ent.v.velocity, trace.plane.normal, ent.v.velocity, backoff);
+            ClipVelocity(ent.v.velocity, trace.plane.normal, ent.v.velocity, backoff);
 
         // stop if on ground
-	        /*if (trace.plane.normal[2] > 0.7)
+	        if (trace.plane.normal[2] > 0.7)
 	        {		
 		        if (ent.v.velocity[2] < 60 || ent.v.movetype != MOVETYPE_BOUNCE)
 		        {
 			        ent.v.flags = (int)ent.v.flags | FL_ONGROUND;
-			        ent.v.groundentity = EDICT_TO_PROG(trace.ent);
-			        VectorCopy (vec3_origin, ent.v.velocity);
-			        VectorCopy (vec3_origin, ent.v.avelocity);
+			        ent.v.groundentity = prog.EDICT_TO_PROG(trace.ent);
+                    mathlib.VectorCopy(mathlib.vec3_origin, ent.v.velocity);
+                    mathlib.VectorCopy(mathlib.vec3_origin, ent.v.avelocity);
 		        }
-	        }*/
+	        }
         	
         // check for in water
-	        //SV_CheckWaterTransition (ent);
+            SV_CheckWaterTransition(ent);
         }
 
         static private void SV_Physics_Step(prog.edict_t ent)

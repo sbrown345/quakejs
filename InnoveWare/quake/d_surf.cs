@@ -51,6 +51,7 @@ namespace quake
         */
         static void D_FlushCaches ()
         {
+            //empty in winquake
         }
 
         /*

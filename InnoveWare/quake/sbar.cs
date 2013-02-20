@@ -24,6 +24,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 namespace quake
 {
+    using System.Diagnostics;
+
     public sealed class sbar
     {
         const int	    SBAR_HEIGHT = 24;
@@ -366,6 +368,7 @@ namespace quake
         */
         void Sbar_SortFrags ()
         {
+            Debug.WriteLine("Sbar_SortFrags");
         }
 
         int	Sbar_ColorForMap (int m)
@@ -380,6 +383,8 @@ namespace quake
         */
         void Sbar_UpdateScoreboard ()
         {
+            Debug.WriteLine("Sbar_UpdateScoreboard");
+
         }
 
         /*
@@ -389,6 +394,7 @@ namespace quake
         */
         static void Sbar_SoloScoreboard ()
         {
+            Debug.WriteLine("Sbar_SoloScoreboard");
         }
 
         /*
@@ -577,6 +583,7 @@ namespace quake
         */
         static void Sbar_DrawFrags ()
         {
+            Debug.WriteLine("Sbar_DrawFrags");
         }
 
         //=============================================================================
@@ -763,6 +770,7 @@ namespace quake
         */
         void Sbar_IntermissionNumber (int x, int y, int num, int digits, int color)
         {
+            Debug.WriteLine("Sbar_IntermissionNumber");
         }
 
         /*
@@ -773,6 +781,7 @@ namespace quake
         */
         void Sbar_DeathmatchOverlay ()
         {
+            Debug.WriteLine("Sbar_DeathmatchOverlay");
         }
 
         /*
@@ -783,6 +792,7 @@ namespace quake
         */
         static void Sbar_MiniDeathmatchOverlay ()
         {
+            Debug.WriteLine("Sbar_MiniDeathmatchOverlay");
         }
 
         /*

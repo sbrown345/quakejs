@@ -29,6 +29,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 namespace quake
 {
+    using System.Diagnostics;
+
     public sealed class vid
     {
         public const int VID_CBITS	= 6;
@@ -269,8 +271,9 @@ namespace quake
         D_BeginDirectRect
         ================
         */
-        void D_BeginDirectRect (int x, int y, byte[] pbitmap, int width, int height)
+        public static void D_BeginDirectRect (int x, int y, byte[] pbitmap, int width, int height)
         {
+            Debug.WriteLine("D_BeginDirectRect");
         }
 
         /*
@@ -280,6 +283,7 @@ namespace quake
         */
         void D_EndDirectRect (int x, int y, int width, int height)
         {
+            Debug.WriteLine("D_EndDirectRect");
         }
 
         //===========================================================================

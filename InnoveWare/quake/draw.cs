@@ -28,6 +28,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 namespace quake
 {
+    using System.Diagnostics;
+
     public partial class draw
     {
         class rectdesc_t {
@@ -612,6 +614,8 @@ namespace quake
         */
         public static void Draw_BeginDisc ()
         {
+            Debug.WriteLine("Draw_BeginDisc");
+            //vid.D_BeginDirectRect(screen.vid.width - 24, 0, draw_disc.data, 24, 24);
         }
 
         /*
