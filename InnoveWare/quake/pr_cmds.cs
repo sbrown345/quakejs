@@ -284,9 +284,10 @@ namespace quake
         */
         static void PF_bprint ()
         {
-            //var s = PF_VarString(0);
-            //host.SV_BroadcastPrintf(s); todo
-            Debug.WriteLine("PF_bprint");
+            string s;
+            
+            s = PF_VarString(0);
+            host.SV_BroadcastPrintf(s);
         }
 
         /*
@@ -358,8 +359,15 @@ namespace quake
         */
         static void PF_vlen ()
         {
-            Debug.WriteLine("PF_vlen");
-            Debug.WriteLine("todo PF_vlen");
+	        double[]	value1;
+            double @new;
+	
+	        value1 = G_VECTOR(OFS_PARM0);
+
+	        @new = value1[0] * value1[0] + value1[1] * value1[1] + value1[2]*value1[2];
+	        @new = Math.Sqrt(@new);
+	
+            pr_globals_write(OFS_RETURN, @new);
         }
 
         /*
@@ -639,7 +647,8 @@ namespace quake
                     break;
                 }
             }
-            Debug.WriteLine("PF_checkclient l: " + l);
+            //Debug.WriteLine("PF_checkclient l: " + l);
+            // todo: possible bug, on e1m1 2nd time l = 924, HOWEVER it is 921 in winquake. everything else looks ok tho
 
             if ( (l<0) || !( (checkpvs[l>>3] & (1<<(l&7))) != 0 ) )
 	        {

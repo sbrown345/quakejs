@@ -254,8 +254,22 @@ namespace quake
         =================
         */
 
-        public void SV_BroadcastPrintf (string fmt)
+        public static void SV_BroadcastPrintf(string fmt)
         {
+            //va_list		argptr;
+            //char		string[1024];
+            int i;
+
+            //va_start (argptr,fmt);
+            //vsprintf (string, fmt,argptr);
+            //va_end (argptr);    
+
+            for (i = 0; i < server.svs.maxclients; i++)
+                if (server.svs.clients[i].active && server.svs.clients[i].spawned)
+                {
+                    common.MSG_WriteByte(server.svs.clients[i].message, net.svc_print);
+                    common.MSG_WriteString(server.svs.clients[i].message, fmt);
+                }
         }
 
         /*

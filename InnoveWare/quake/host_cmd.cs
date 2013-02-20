@@ -343,7 +343,57 @@ namespace quake
         */
         static void Host_Color_f()
         {
-         Debug.WriteLine("todo Host_Color_f");
+            int top, bottom;
+            int playercolor;
+
+            if (cmd.Cmd_Argc() == 1)
+            {
+                console.Con_Printf(string.Format("\"color\" is \"{0} {1}\"\n", ((int)client.cl_color.value) >> 4, ((int)client.cl_color.value) & 0x0f));//todo: parse properly
+              console.  Con_Printf("color <0-13> [0-13]\n");
+                return;
+            }
+
+            if (cmd.Cmd_Argc() == 2)
+                top = bottom = int.Parse(cmd.Cmd_Argv(1));
+            else
+            {
+                top = int.Parse(cmd.Cmd_Argv(1));
+                bottom = int.Parse(cmd.Cmd_Argv(2));
+            }
+
+            top &= 15;
+            if (top > 13)
+                top = 13;
+            bottom &= 15;
+            if (bottom > 13)
+                bottom = 13;
+
+            playercolor = top * 16 + bottom;
+
+            if (cmd.cmd_source == cmd.cmd_source_t.src_command)
+            {
+              cvar_t.  Cvar_SetValue("_cl_color", playercolor);
+              if (client.cls.state == client.cactive_t.ca_connected)
+                  cmd.  Cmd_ForwardToServer();
+                return;
+            }
+
+            host_client.colors = playercolor;
+            host_client.edict.v.team = bottom + 1;
+
+            // send notification to all clients
+            common. MSG_WriteByte(server.sv.reliable_datagram, net.svc_updatecolors);
+            int i;
+            for ( i = 0; i < server.svs.clients.Length; i++)
+            {
+                var clientT = server.svs.clients[i];
+                if (clientT == host.host_client)
+                {
+                    break;
+                }
+            }
+            common. MSG_WriteByte(server.sv.reliable_datagram, i);
+            common. MSG_WriteByte(server.sv.reliable_datagram, host_client.colors);
         }
 
         /*

@@ -21,6 +21,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 namespace quake
 {
+    using System.Diagnostics;
+
     public partial class net
     {
         static qsocket_t    net_activeSockets = null;
@@ -270,7 +272,7 @@ namespace quake
 
         public static qsocket_t NET_CheckNewConnections ()
         {
-	        qsocket_t	ret;
+	        qsocket_t	ret=null;
 
 	        SetNetTime();
 
@@ -280,13 +282,19 @@ namespace quake
 			        continue;
 		        if (net_driverlevel != 0 && listening == false)
 			        continue;
-                ret = net_drivers[net_driverlevel].delegate_CheckNewConnections();
-		        if (ret != null)
+	            try
+	            {
+	                ret = net_drivers[net_driverlevel].delegate_CheckNewConnections();
+	            }
+	            catch
+	            {
+	                Debug.WriteLine("NET_CheckNewConnections todo");
+	            }
+	            if (ret != null)
 		        {
 			        return ret;
 		        }
 	        }
-        	
 	        return null;
         }
 
