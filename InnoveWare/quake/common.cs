@@ -118,6 +118,17 @@ namespace quake
 
 
 
+        public static void ClearLink(link_t l)
+        {
+            l.prev = l.next = l;
+        }
+
+        public static void RemoveLink(link_t l)
+        {
+            l.next.prev = l.prev;
+            l.prev.next = l.next;
+        }
+
         public static void InsertLinkBefore(link_t l, link_t before)
         {
             l.next = before;
@@ -1212,5 +1223,5 @@ namespace quake
 	        if (COM_CheckParm ("-proghack") != 0)
 		        proghack = true;
         }
-   }
+    }
 }

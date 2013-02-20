@@ -260,10 +260,8 @@ namespace quake
             anode = sv_areanodes[sv_numareanodes];
             sv_numareanodes++;
 
-            //common.ClearLink(anode.trigger_edicts);
-            anode.trigger_edicts.prev = anode.trigger_edicts.next = anode.trigger_edicts;
-            //common.ClearLink(anode.solid_edicts);
-            anode.solid_edicts.prev = anode.solid_edicts.next = anode.solid_edicts;
+            common.ClearLink(anode.trigger_edicts);
+            common.ClearLink(anode.solid_edicts);
 
             if (depth == AREA_DEPTH)
             {
@@ -317,8 +315,7 @@ namespace quake
         {
             if (ent.area.prev == null)
                 return;		// not linked in anywhere
-            //common.RemoveLink(&ent->area);
-            ent.area.prev = ent.area.next = null;
+            common.RemoveLink(ent.area);
         }
 
 
