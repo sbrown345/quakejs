@@ -378,10 +378,10 @@ namespace quake
 
        ===============
        */
-       static void SV_FindTouchedLeafs(prog.edict_t ent, model.mnode_t node)
+       static void SV_FindTouchedLeafs(prog.edict_t ent, model.node_or_leaf_t node)
        {
            model.mplane_t splitplane;
-           model.mleaf_t leaf;
+           model.node_or_leaf_t leaf;
            int sides;
            int leafnum;
 
@@ -395,7 +395,7 @@ namespace quake
                if (ent.num_leafs == prog.MAX_ENT_LEAFS)
                    return;
 
-               leaf = (model.mleaf_t)node;
+               leaf = (model.node_or_leaf_t)node;
                int i;
                for ( i = 0; i < server.sv.worldmodel.leafs.Length; i++)
                {
@@ -414,15 +414,15 @@ namespace quake
 
            // NODE_MIXED
 
-           splitplane = node.plane;
+           splitplane = ((model.mnode_t)node).plane;
            sides = mathlib.BOX_ON_PLANE_SIDE(ent.v.absmin, ent.v.absmax, splitplane);
 
            // recurse down the contacted sides
            if ((sides & 1) != 0)
-               SV_FindTouchedLeafs(ent, node.children[0]);
+               SV_FindTouchedLeafs(ent, ((model.mnode_t)node).children[0]);
 
            if ((sides & 2) !=0)
-               SV_FindTouchedLeafs(ent, node.children[1]);
+               SV_FindTouchedLeafs(ent, ((model.mnode_t)node).children[1]);
        }
 
         /*
