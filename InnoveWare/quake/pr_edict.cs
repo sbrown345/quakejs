@@ -1030,6 +1030,7 @@ namespace quake
                 case 36: globalvars.coop = cast_float(value); break;
                 case 37: globalvars.teamplay = cast_float(value); break;
                 case 38: globalvars.serverflags = cast_float(value); break;
+                case 39: globalvars.total_secrets = cast_float(value); break;
                 case 40: globalvars.total_monsters = cast_float(value); break;
                 case 41: globalvars.found_secrets = cast_float(value); break;
                 case 42: globalvars.killed_monsters = cast_float(value); break;
@@ -1082,7 +1083,9 @@ namespace quake
                 case 89: globalvars.ClientDisconnect = cast_int(value); break;
                 case 90: globalvars.SetNewParms = cast_int(value); break;
                 case 91: globalvars.SetChangeParms = cast_int(value); break;
-                default: break;
+                default:
+                    Debug.WriteLine("cant write global var offset" + offset);
+                    break;
             }
         }
 
@@ -1185,6 +1188,9 @@ namespace quake
                 case 89: return globalvars.ClientDisconnect;
                 case 90: return globalvars.SetNewParms;
                 case 91: return globalvars.SetChangeParms;
+                default:
+                    Debug.WriteLine("read write global var offset" + offset);
+                    break;
             }
             return null;
         }
