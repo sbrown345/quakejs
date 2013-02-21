@@ -452,8 +452,37 @@ namespace quake
         */
         static void PF_ambientsound ()
         {
-            //Debug.WriteLine("PF_ambientsound"); todo
-            Debug.WriteLine("PF_ambientsound");
+            string check;
+            string samp;
+            double[] pos;
+            double vol, attenuation;
+            int i, soundnum;
+
+            pos = G_VECTOR(OFS_PARM0);
+            samp = G_STRING(OFS_PARM1);
+            vol = G_FLOAT(OFS_PARM2);
+            attenuation = G_FLOAT(OFS_PARM3);
+
+            for (soundnum = 1; soundnum < quakedef.MAX_SOUNDS
+                && server.sv.sound_precache[soundnum] != null; soundnum++)
+                if (samp == server.sv.sound_precache[soundnum])
+                    break;
+
+            if (soundnum == quakedef.MAX_SOUNDS || !(server.sv.sound_precache[soundnum] != null))
+            {
+                console.Con_Printf("PF_ambientsound no precache: " + samp + "\n");
+                return;
+            }
+
+            // add an svc_spawnambient command to the level signon packet
+            common.MSG_WriteByte(server.sv.signon, net.svc_spawnstaticsound);
+            for (i = 0; i < 3; i++)
+                common.MSG_WriteCoord(server.sv.signon, pos[i]);
+
+            common.MSG_WriteByte(server.sv.signon, soundnum);
+
+            common.MSG_WriteByte(server.sv.signon,(int)vol * 255);
+            common.MSG_WriteByte(server.sv.signon, (int)attenuation * 64);
         }
 
         /*
