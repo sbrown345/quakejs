@@ -130,7 +130,7 @@ namespace quake
             org = G_VECTOR(OFS_PARM1);
             mathlib.VectorCopy(org, e.v.origin);
             //Debug.WriteLine("PF_setorigin {0} {1} {2}", org[0], org[1], org[2]);
-            //SV_LinkEdict(e, false);
+            world.SV_LinkEdict(e, false);
         }
 
         static void SetMinMaxSize (edict_t e, double[] min, double[] max, bool rotate)
@@ -1170,6 +1170,10 @@ namespace quake
             bestdist = sv_aim.value;
             bestent = null;
 
+
+            //for (i = 0; i < server.sv.num_edicts; i++) //TODO- THIS   IS FASTER CHECK THIS WORKS WHEN FIRING GUN AND ALSO SEE IF IT CAN BE USED ANYWHERE ELSE
+            //{
+            //    check = server.sv.edicts[i];
             check = NEXT_EDICT(server.sv.edicts[0]);
             for (i=1 ; i<server.sv.num_edicts ; i++, check = NEXT_EDICT(check) )
             {

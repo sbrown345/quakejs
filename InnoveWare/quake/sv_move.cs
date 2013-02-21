@@ -400,36 +400,40 @@ namespace quake
 
         ======================
         */
-       public static void SV_MoveToGoal ()
+
+        public static void SV_MoveToGoal()
         {
-            prog.edict_t		ent, goal;
-           double dist;
-
-            ent = prog.PROG_TO_EDICT(prog.pr_global_struct[0].self);
-            goal = prog.PROG_TO_EDICT(ent.v.goalentity);
-            dist =prog. G_FLOAT(prog.OFS_PARM0);
-
-            if ( !( ((int)ent.v.flags & (FL_ONGROUND|FL_FLY|FL_SWIM) ) != 0 ))
+           
+            prog.edict_t ent, goal;
+            double dist;
+            try
             {
-                //prog.G_FLOAT(prog.OFS_RETURN) = 0;
-                prog.pr_globals_write(prog.OFS_RETURN, 0);
-                return;
+                ent = prog.PROG_TO_EDICT(prog.pr_global_struct[0].self);
+                goal = prog.PROG_TO_EDICT(ent.v.goalentity);
+                dist = prog.G_FLOAT(prog.OFS_PARM0);
+
+                if (!(((int)ent.v.flags & (FL_ONGROUND | FL_FLY | FL_SWIM)) != 0))
+                {
+                    //prog.G_FLOAT(prog.OFS_RETURN) = 0;
+                    prog.pr_globals_write(prog.OFS_RETURN, 0);
+                    return;
+                }
+
+                // if the next step hits the enemy, return immediately
+
+                if (prog.PROG_TO_EDICT(ent.v.enemy) != sv.edicts[0] && SV_CloseEnough(ent, goal, dist)) 
+                    return;
+
+                // bump around...
+                if ((Helper.helper.rand() & 3) == 1 || !SV_StepDirection(ent, ent.v.ideal_yaw, dist))
+                {
+                    SV_NewChaseDir(ent, goal, dist);
+                }
             }
-
-        // if the next step hits the enemy, return immediately
-
-            if ( prog.PROG_TO_EDICT(ent.v.enemy) != sv.edicts[0] &&  SV_CloseEnough (ent, goal, dist) )
-    
-                return;
-
-        // bump around...
-            if ( (Helper.helper.rand()&3)==1 ||
-            !SV_StepDirection (ent, ent.v.ideal_yaw, dist))
+            catch
             {
-                SV_NewChaseDir (ent, goal, dist);
+                Debug.WriteLine("SV_MoveToGoal err");
             }
-        }
-
-
+        } 
     }
 }

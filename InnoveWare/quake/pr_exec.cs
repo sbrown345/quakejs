@@ -154,7 +154,7 @@ namespace quake
         private static void PR_PrintStatement(dstatement_t s)
         {
             int i;
-            if (prNum >= 5103)
+            if (prNum >= 3959)
             {
                 PR_StackTraceStr();
                 console.Con_Printf((prNum) + " ");
@@ -186,7 +186,7 @@ namespace quake
                 console.Con_Printf("\n");
                //if (prNum % 200 == 0)
                 //if (prNum == 5200)
-                    //prog.PF_coredump();
+                //prog.PF_coredump();
             }
         }
 
@@ -978,11 +978,13 @@ namespace quake
                         //==================
 
                     case opcode_t.OP_IFNOT:
-                        if (cast_int(pr_globals_read(st.a)) == 0) s += st.b - 1; // offset the s++
+                        if (cast_int(pr_globals_read(st.a)) == 0) 
+                            s += st.b - 1; // offset the s++
                         break;
 
                     case opcode_t.OP_IF:
-                        if (cast_int(pr_globals_read(st.a)) != 0) s += st.b - 1; // offset the s++
+                        if (cast_int(pr_globals_read(st.a)) != 0) 
+                            s += st.b - 1; // offset the s++
                         break;
 
                     case opcode_t.OP_GOTO:
@@ -1012,6 +1014,8 @@ namespace quake
                             if (i >= pr_numbuiltins) 
                                 PR_RunError("Bad builtin call number");
                             //Debug.WriteLine("pr_builtins " + i);
+                            if (pr_builtins[i] == null) 
+                                Debug.WriteLine("pr_builtins " + i + " does not exist");
                             pr_builtins[i]();
                             break;
                         }

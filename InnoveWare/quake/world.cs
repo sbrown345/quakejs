@@ -325,11 +325,15 @@ namespace quake
        ====================
        */
        static int tchlinks = 0;
+       static int tchlinksFunc = 0;
        static void SV_TouchLinks(prog.edict_t ent, areanode_t node)
        {
            common.link_t l, next;
            prog.edict_t touch;
            int old_self, old_other;
+
+           Debug.WriteLine(string.Format("tchlinksFunc {0} absmax[0] {1:F6}", tchlinksFunc, ent.v.absmax[0]));
+           tchlinksFunc++;
 
            // touch linked edicts
            for (l = node.trigger_edicts.next; l != node.trigger_edicts; l = next)
@@ -339,7 +343,7 @@ namespace quake
 
                next = l.next;
                touch = prog.EDICT_FROM_AREA(l);
-               Debug.WriteLine(touch.leafnums[0].ToString());
+               Debug.WriteLine("touch.leafnums[0] " + touch.leafnums[0].ToString());
                if (touch == ent)
                    continue;
                if (!(touch.v.touch != 0) || touch.v.solid != server.SOLID_TRIGGER)
@@ -441,10 +445,14 @@ namespace quake
 
         ===============
         */
+
+        private static int SV_LinkEdict_count;
         public static void SV_LinkEdict(prog.edict_t ent, bool touch_triggers)
         {
-
             areanode_t node;
+
+            Debug.WriteLine("SV_LinkEdict_count " + SV_LinkEdict_count);
+            SV_LinkEdict_count++;
 
             if (ent.area.prev != null)
                 world.SV_UnlinkEdict(ent);	// unlink from old position
@@ -468,6 +476,7 @@ namespace quake
             //
             if (((int)ent.v.flags & server.FL_ITEM) != 0)
             {
+                Debug.WriteLine("(int)ent->v.flags & FL_ITEM");
                 ent.v.absmin[0] -= 15;
                 ent.v.absmin[1] -= 15;
                 ent.v.absmax[0] += 15;
@@ -476,6 +485,7 @@ namespace quake
             else
             {	// because movement is clipped an epsilon away from an actual edge,
                 // we must fully check even when bounding boxes don't quite touch
+                Debug.WriteLine("nerp");
                 ent.v.absmin[0] -= 1;
                 ent.v.absmin[1] -= 1;
                 ent.v.absmin[2] -= 1;
