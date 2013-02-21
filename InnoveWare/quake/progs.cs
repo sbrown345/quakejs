@@ -36,7 +36,7 @@ namespace quake
         };	
 
         public const int	MAX_ENT_LEAFS	= 16;
-        public class edict_t
+        public class edict_t// :  common.link_t
         {
             public int                      index;
 	        public bool	                    free;
@@ -56,8 +56,19 @@ namespace quake
                 this.index = index;
             }
         };
-        public static edict_t EDICT_FROM_AREA(common.link_t l) { return common.STRUCT_FROM_LINK(l/*, edict_t,area*/); }
-
+        public static edict_t EDICT_FROM_AREA(common.link_t l)
+        {
+            for (int i = 0; i < server.sv.edicts.Length; i++)
+            {
+                var edict = server.sv.edicts[i];
+                if (l == edict.area && i + 1 < server.sv.edicts.Length)
+                {
+                    return edict;
+                }
+            }
+            return null;
+            //return common.STRUCT_FROM_LINK(l/*, edict_t,area*/);
+        }
 
         public const int sizeof_edict_t = 516;
 

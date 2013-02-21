@@ -324,6 +324,7 @@ namespace quake
        SV_TouchLinks
        ====================
        */
+       static int tchlinks = 0;
        static void SV_TouchLinks(prog.edict_t ent, areanode_t node)
        {
            common.link_t l, next;
@@ -333,8 +334,12 @@ namespace quake
            // touch linked edicts
            for (l = node.trigger_edicts.next; l != node.trigger_edicts; l = next)
            {
+               Debug.WriteLine("SV_TouchLinks loop "+ tchlinks);
+               tchlinks++;
+
                next = l.next;
                touch = prog.EDICT_FROM_AREA(l);
+               Debug.WriteLine(touch.leafnums[0].ToString());
                if (touch == ent)
                    continue;
                if (!(touch.v.touch != 0) || touch.v.solid != server.SOLID_TRIGGER)
@@ -360,12 +365,21 @@ namespace quake
 
            // recurse down both sides
            if (node.axis == -1)
+           {
+               Debug.WriteLine("node.axis == -1");
                return;
+           }
 
            if (ent.v.absmax[node.axis] > node.dist)
+           {
+               Debug.WriteLine("1--");
                SV_TouchLinks(ent, node.children[0]);
+           }
            if (ent.v.absmin[node.axis] < node.dist)
+           {
+               Debug.WriteLine("2--");
                SV_TouchLinks(ent, node.children[1]);
+           }
        }
 
 

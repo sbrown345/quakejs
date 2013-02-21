@@ -614,7 +614,8 @@ namespace quake
         */
         public static void Draw_BeginDisc ()
         {
-            Debug.WriteLine("Draw_BeginDisc");
+            //TODO!
+            //Debug.WriteLine("Draw_BeginDisc");
             //vid.D_BeginDirectRect(screen.vid.width - 24, 0, draw_disc.data, 24, 24);
         }
 
