@@ -866,6 +866,12 @@ namespace quake
                                  ? 1
                                  : 0));
                         break;
+                    case   opcode_t. OP_EQ_E:
+                        // 		c->_float = a->_int == b->_int;
+                        pr_globals_write(
+                            st.c,
+                            (double)(cast_int(pr_globals_read(st.a)) == cast_int(pr_globals_read(st.b)) ? 1 : 0));
+                        break;
 
                     case opcode_t.OP_NE_F:
                         eval = cast_float(pr_globals_read(st.a)) != cast_float(pr_globals_read(st.b));
