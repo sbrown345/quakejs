@@ -416,8 +416,7 @@ namespace quake
                        break;
                    }
                }
-               leafnum = i; //leaf - server.sv.worldmodel.leafs[0] - 1; //todo: test this is correct
-
+               leafnum = i - 1;
                ent.leafnums[ent.num_leafs] = (short)leafnum;
                ent.num_leafs++;
                return;
