@@ -120,7 +120,7 @@ namespace quake
         */
         static void ED_Free(edict_t ed)
         {
-            //SV_UnlinkEdict (ed);		// unlink from world bsp
+            world.SV_UnlinkEdict(ed);		// unlink from world bsp
 
             ed.free = true;
             ed.v.model = 0;
@@ -923,8 +923,8 @@ namespace quake
                     ent = EDICT_NUM(0);
                 else
                     ent = ED_Alloc();
-                if (ent.index == 49)
-                    ent.index = ent.index;
+                //if (ent.index == 49)
+                //    ent.index = ent.index;
                 ED_ParseEdict(data, ref ofs, ent);
 
                 // remove things from different skill levels or deathmatch
@@ -968,8 +968,8 @@ namespace quake
                     continue;
                 }
 
-                if (pr_string(ent.v.classname) == "trigger_teleport")
-                    inhibit = inhibit;
+                //if (pr_string(ent.v.classname) == "trigger_teleport")
+                //    inhibit = inhibit;
                 pr_global_struct[0].self = EDICT_TO_PROG(ent);
                 PR_ExecuteProgram(func);
             }
