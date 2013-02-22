@@ -396,6 +396,15 @@
 		this.$infotableofs = 0;
 	};
 	////////////////////////////////////////////////////////////////////////////////
+	// quake.world.areanode_t
+	var $quake_$world$areanode_t = function() {
+		this.$axis = 0;
+		this.$dist = 0;
+		this.$children = new Array(2);
+		this.$trigger_edicts = new $quake_common$link_t();
+		this.$solid_edicts = new $quake_common$link_t();
+	};
+	////////////////////////////////////////////////////////////////////////////////
 	// quake.bspfile
 	var $quake_bspfile = function() {
 	};
@@ -410,8 +419,20 @@
 	////////////////////////////////////////////////////////////////////////////////
 	// quake.bspfile.dclipnode_t
 	var $quake_bspfile$dclipnode_t = function() {
-		this.$planenum = 0;
-		this.$children = new Array(2);
+		this.planenum = 0;
+		this.children = new Array(2);
+	};
+	$quake_bspfile$dclipnode_t.op_Implicit = function(buf) {
+		var i;
+		var ofs = { $: buf.ofs };
+		var dclipnode = new $quake_bspfile$dclipnode_t();
+		dclipnode.planenum = $quake_common.parseInt(buf.buffer, ofs);
+		for (i = 0; i < 2; i++) {
+			dclipnode.children[i] = BitConverter.toInt16(buf.buffer, ofs.$);
+			ofs.$ += 2;
+		}
+		ofs.$ += 2;
+		return dclipnode;
 	};
 	////////////////////////////////////////////////////////////////////////////////
 	// quake.bspfile.dedge_t
@@ -752,6 +773,7 @@
 		}
 	};
 	$quake_client.$cL_WriteDemoMessage = function() {
+		ss.Debug.writeln('CL_WriteDemoMessage');
 	};
 	$quake_client.$cL_GetMessage = function() {
 		var r, i;
@@ -815,8 +837,10 @@
 		return r;
 	};
 	$quake_client.$cL_Stop_f = function() {
+		ss.Debug.writeln('CL_Stop_f');
 	};
 	$quake_client.$cL_Record_f = function() {
+		ss.Debug.writeln('CL_Record_f');
 	};
 	$quake_client.$cL_PlayDemo_f = function() {
 		var name = {};
@@ -1167,11 +1191,11 @@
 			cmd.sidemove -= $quake_client.$cl_sidespeed.value * $quake_client.$cL_KeyState($quake_client.$in_left);
 		}
 		cmd.sidemove += $quake_client.$cl_sidespeed.value * $quake_client.$cL_KeyState($quake_client.$in_moveright);
-		cmd.sidemove -= 350 * $quake_client.$cL_KeyState($quake_client.$in_moveleft);
+		cmd.sidemove -= $quake_client.$cl_sidespeed.value * $quake_client.$cL_KeyState($quake_client.$in_moveleft);
 		cmd.upmove += $quake_client.$cl_upspeed.value * $quake_client.$cL_KeyState($quake_client.$in_up);
 		cmd.upmove -= $quake_client.$cl_upspeed.value * $quake_client.$cL_KeyState($quake_client.$in_down);
 		if (($quake_client.$in_klook.$state & 1) === 0) {
-			cmd.forwardmove += $quake_client.$cl_forwardspeed.value * $quake_client.$cL_KeyState($quake_client.$in_forward);
+			cmd.forwardmove += $quake_client.cl_forwardspeed.value * $quake_client.$cL_KeyState($quake_client.$in_forward);
 			cmd.forwardmove -= $quake_client.$cl_backspeed.value * $quake_client.$cL_KeyState($quake_client.$in_back);
 		}
 		//
@@ -3224,6 +3248,25 @@
 			return $quake_common.coM_LoadFile(path, 2);
 		}
 	};
+	$quake_common.clearLink = function(l) {
+		l.prev = l.next = l;
+	};
+	$quake_common.removeLink = function(l) {
+		l.next.prev = l.prev;
+		l.prev.next = l.next;
+	};
+	$quake_common.insertLinkBefore = function(l, before) {
+		l.next = before;
+		l.prev = before.prev;
+		l.prev.next = l;
+		l.next.prev = l;
+	};
+	$quake_common.insertLinkAfter = function(l, after) {
+		l.next = after.next;
+		l.prev = after;
+		l.prev.next = l;
+		l.next.prev = l;
+	};
 	$quake_common.q_atof = function(str) {
 		try {
 			return parseFloat(str);
@@ -3425,6 +3468,10 @@
 			}
 			// write over trailing 0
 		}
+	};
+	$quake_common.strucT_FROM_LINK = function(l) {
+		ss.Debug.writeln('STRUCT_FROM_LINK !!');
+		throw new $System_NotImplementedException.$ctor1('STRUCT_FROM_LINK !!');
 	};
 	$quake_common.coM_FileBase = function(in1) {
 		var s, s2;
@@ -3868,6 +3915,12 @@
 		}
 	};
 	////////////////////////////////////////////////////////////////////////////////
+	// quake.common.link_t
+	var $quake_common$link_t = function() {
+		this.prev = null;
+		this.next = null;
+	};
+	////////////////////////////////////////////////////////////////////////////////
 	// quake.common.sizebuf_t
 	var $quake_common$sizebuf_t = function() {
 		this.allowoverflow = false;
@@ -3943,8 +3996,10 @@
 		}
 	};
 	$quake_console.$con_MessageMode_f = function() {
+		ss.Debug.writeln('Con_MessageMode_f');
 	};
 	$quake_console.$con_MessageMode2_f = function() {
+		ss.Debug.writeln('Con_MessageMode2_f');
 	};
 	$quake_console.con_CheckResize = function() {
 		var i, j, width, oldwidth, oldtotallines, numlines, numchars;
@@ -4086,6 +4141,7 @@
 		}
 	};
 	$quake_console.$con_DebugLog = function(file, fmt) {
+		ss.Debug.writeln('Con_DebugLog');
 	};
 	$quake_console.con_Printf = function(fmt) {
 		var msg = fmt;
@@ -4247,6 +4303,11 @@
 		this._string = _string;
 		this.$archive = archive;
 		this.$server = server;
+		try {
+			this.value = parseFloat(_string);
+		}
+		catch ($t1) {
+		}
 	};
 	$quake_cvar_t.$ctor1.prototype = $quake_cvar_t.$ctor2.prototype = $quake_cvar_t.prototype;
 	$quake_cvar_t.$cvar_FindVar = function(var_name) {
@@ -4734,6 +4795,9 @@
 		}
 	};
 	$quake_draw.draw_BeginDisc = function() {
+		//TODO!
+		//Debug.WriteLine("Draw_BeginDisc");
+		//vid.D_BeginDirectRect(screen.vid.width - 24, 0, draw_disc.data, 24, 24);
 	};
 	$quake_draw.draw_EndDisc = function() {
 	};
@@ -6494,6 +6558,7 @@
 		$quake_draw.$sc_size = size - $quake_draw.GUARDSIZE;
 	};
 	$quake_draw.$d_FlushCaches = function() {
+		//empty in winquake
 	};
 	$quake_draw.$d_SCAlloc = function(width, size) {
 		var new1;
@@ -6758,16 +6823,19 @@
 			//todo
 			throw new $System_NotImplementedException();
 		},
-		$sV_ClientPrintf: function(fmt) {
-		},
-		sV_BroadcastPrintf: function(fmt) {
-		},
 		$host_ClientCommands: function(fmt) {
 			throw new $System_NotImplementedException();
 		},
-		$sV_DropClient: function(crash) {
-		},
 		$host_GetConsoleCommands: function() {
+			//char	*cmd;
+			//while (1)
+			//{
+			//    cmd = Sys_ConsoleInput ();
+			//    if (!cmd)
+			//        break;
+			//    Cbuf_AddText (cmd);
+			//}
+			ss.Debug.writeln('Host_GetConsoleCommands');
 		},
 		$host_Shutdown: function() {
 			if ($quake_host.$isdown) {
@@ -6857,9 +6925,9 @@
 		$quake_cvar_t.cvar_RegisterVariable($quake_host.$host_speeds);
 		$quake_cvar_t.cvar_RegisterVariable($quake_host.$sys_ticrate);
 		$quake_cvar_t.cvar_RegisterVariable($quake_host.$serverprofile);
-		$quake_cvar_t.cvar_RegisterVariable($quake_host.$fraglimit);
-		$quake_cvar_t.cvar_RegisterVariable($quake_host.$timelimit);
-		$quake_cvar_t.cvar_RegisterVariable($quake_host.$teamplay);
+		$quake_cvar_t.cvar_RegisterVariable($quake_host.fraglimit);
+		$quake_cvar_t.cvar_RegisterVariable($quake_host.timelimit);
+		$quake_cvar_t.cvar_RegisterVariable($quake_host.teamplay);
 		$quake_cvar_t.cvar_RegisterVariable($quake_host.$samelevel);
 		$quake_cvar_t.cvar_RegisterVariable($quake_host.$noexit);
 		$quake_cvar_t.cvar_RegisterVariable($quake_host.skill);
@@ -6871,6 +6939,32 @@
 		$quake_host.$host_FindMaxClients();
 		$quake_host.host_time = 1;
 		// so a think at time 0 won't get called
+	};
+	$quake_host.$sV_ClientPrintf = function(fmt) {
+		//va_list		argptr;
+		//char		string[1024];
+		//va_start (argptr,fmt);
+		//vsprintf (string, fmt,argptr);
+		//va_end (argptr);
+		$quake_common.msG_WriteByte($quake_host.host_client.message, $quake_net.svc_print);
+		$quake_common.msG_WriteString($quake_host.host_client.message, fmt);
+	};
+	$quake_host.sV_BroadcastPrintf = function(fmt) {
+		//va_list		argptr;
+		//char		string[1024];
+		var i;
+		//va_start (argptr,fmt);
+		//vsprintf (string, fmt,argptr);
+		//va_end (argptr);    
+		for (i = 0; i < $quake_server.svs.maxclients; i++) {
+			if ($quake_server.svs.clients[i].active && $quake_server.svs.clients[i].spawned) {
+				$quake_common.msG_WriteByte($quake_server.svs.clients[i].message, $quake_net.svc_print);
+				$quake_common.msG_WriteString($quake_server.svs.clients[i].message, fmt);
+			}
+		}
+	};
+	$quake_host.sV_DropClient = function(crash) {
+		ss.Debug.writeln('SV_DropClient');
 	};
 	$quake_host.host_ShutdownServer = function(crash) {
 		if (!$quake_server.sv.active) {
@@ -6897,6 +6991,8 @@
 		}
 		// framerate is too high
 		$quake_host.host_frametime = $quake_host.realtime - $quake_host.$oldrealtime;
+		//TODO: USE THIS WHEN NOT DEBUGGING
+		//host_frametime = 0.1;
 		$quake_host.$oldrealtime = $quake_host.realtime;
 		if ($quake_host.$host_framerate.value > 0) {
 			$quake_host.host_frametime = $quake_host.$host_framerate.value;
@@ -7111,7 +7207,17 @@
 		ss.Debug.writeln('todo Host_Changelevel_f');
 	};
 	$quake_host.$host_Restart_f = function() {
-		ss.Debug.writeln('todo Host_Restart_f');
+		var mapname;
+		if ($quake_client.cls.demoplayback || !$quake_server.sv.active) {
+			return;
+		}
+		if ($quake_cmd.cmd_source !== 1) {
+			return;
+		}
+		mapname = $quake_server.sv.name;
+		// must copy out, because it gets cleared
+		// in sv_spawnserver
+		$quake_server.sV_SpawnServer(mapname);
 	};
 	$quake_host.$host_Reconnect_f = function() {
 		$quake_screen.scR_BeginLoadingPlaque();
@@ -7187,15 +7293,63 @@
 		ss.Debug.writeln('todo Host_Tell_f');
 	};
 	$quake_host.$host_Color_f = function() {
-		ss.Debug.writeln('todo Host_Color_f');
+		var top, bottom;
+		var playercolor;
+		if ($quake_cmd.cmd_Argc() === 1) {
+			$quake_console.con_Printf(ss.formatString('"color" is "{0} {1}"\n', ss.Int32.trunc($quake_client.cl_color.value) >> 4, ss.Int32.trunc($quake_client.cl_color.value) & 15));
+			//todo: parse properly
+			$quake_console.con_Printf('color <0-13> [0-13]\n');
+			return;
+		}
+		if ($quake_cmd.cmd_Argc() === 2) {
+			top = bottom = parseInt($quake_cmd.cmd_Argv(1));
+		}
+		else {
+			top = parseInt($quake_cmd.cmd_Argv(1));
+			bottom = parseInt($quake_cmd.cmd_Argv(2));
+		}
+		top &= 15;
+		if (top > 13) {
+			top = 13;
+		}
+		bottom &= 15;
+		if (bottom > 13) {
+			bottom = 13;
+		}
+		playercolor = top * 16 + bottom;
+		if ($quake_cmd.cmd_source === 1) {
+			$quake_cvar_t.cvar_SetValue('_cl_color', playercolor);
+			if ($quake_client.cls.state === 2) {
+				$quake_cmd.cmd_ForwardToServer();
+			}
+			return;
+		}
+		$quake_host.host_client.colors = playercolor;
+		$quake_host.host_client.edict.v.team = bottom + 1;
+		// send notification to all clients
+		$quake_common.msG_WriteByte($quake_server.sv.reliable_datagram, $quake_net.svc_updatecolors);
+		var i;
+		for (i = 0; i < $quake_server.svs.clients.length; i++) {
+			var clientT = $quake_server.svs.clients[i];
+			if (ss.referenceEquals(clientT, $quake_host.host_client)) {
+				break;
+			}
+		}
+		$quake_common.msG_WriteByte($quake_server.sv.reliable_datagram, i);
+		$quake_common.msG_WriteByte($quake_server.sv.reliable_datagram, $quake_host.host_client.colors);
 	};
 	$quake_host.$host_Kill_f = function() {
-		$quake_server.sv_player.v.origin[0] = 544;
-		$quake_server.sv_player.v.origin[1] = 288;
-		$quake_server.sv_player.v.origin[2] = 66;
-		$quake_cmd.cbuf_AddText('toggleconsole;\n');
-		$quake_cmd.cbuf_AddText('+back;\n');
-		//cmd.Cbuf_AddText("+attack;\n"); //PDF_Aim not implemetned?
+		if ($quake_cmd.cmd_source === 1) {
+			$quake_cmd.cmd_ForwardToServer();
+			return;
+		}
+		if ($quake_server.sv_player.v.health <= 0) {
+			$quake_host.$sV_ClientPrintf('Can\'t suicide -- allready dead!\n');
+			return;
+		}
+		$quake_prog.pr_global_struct[0].time = $quake_server.sv.time;
+		$quake_prog.pr_global_struct[0].self = $quake_prog.edicT_TO_PROG($quake_server.sv_player);
+		$quake_prog.pR_ExecuteProgram($quake_prog.pr_functions[$quake_prog.pr_global_struct[0].clientKill]);
 	};
 	$quake_host.$host_Pause_f = function() {
 		ss.Debug.writeln('todo Host_Pause_f');
@@ -7368,6 +7522,7 @@
 		$quake_client.cL_NextDemo();
 	};
 	$quake_host.$host_Stopdemo_f = function() {
+		ss.Debug.writeln('Host_Stopdemo_f');
 	};
 	$quake_host.host_InitCommands = function() {
 		$quake_cmd.cmd_AddCommand('status', $quake_host.$host_Status_f);
@@ -7740,11 +7895,6 @@
 				}
 			}
 			return 1;
-		},
-		$crossProduct: function(v1, v2, cross) {
-			cross[0] = v1[1] * v2[2] - v1[2] * v2[1];
-			cross[1] = v1[2] * v2[0] - v1[0] * v2[2];
-			cross[2] = v1[0] * v2[1] - v1[1] * v2[0];
 		}
 	};
 	$quake_mathlib.dotProduct$1 = function(x, y) {
@@ -7876,6 +8026,11 @@
 		vecc[0] = veca[0] + scale * vecb[0];
 		vecc[1] = veca[1] + scale * vecb[1];
 		vecc[2] = veca[2] + scale * vecb[2];
+	};
+	$quake_mathlib.crossProduct = function(v1, v2, cross) {
+		cross[0] = v1[1] * v2[2] - v1[2] * v2[1];
+		cross[1] = v1[2] * v2[0] - v1[0] * v2[2];
+		cross[2] = v1[0] * v2[1] - v1[1] * v2[0];
 	};
 	$quake_mathlib.length$1 = function(v) {
 		var i;
@@ -9727,8 +9882,108 @@
 		}
 	};
 	$quake_model.$mod_LoadClipnodes = function(l) {
+		var in1, out;
+		var i, count;
+		var hull;
+		if (l.filelen % $quake_bspfile.sizeof_dclipnode_t !== 0) {
+			$quake_sys_linux.sys_Error('MOD_LoadBmodel: funny lump size in ' + $quake_model.$loadmodel.name);
+		}
+		count = ss.Int32.div(l.filelen, $quake_bspfile.sizeof_dclipnode_t);
+		var buf = new $quake_bspfile$ByteBuffer($quake_model.$mod_base, l.fileofs);
+		in1 = new Array(count);
+		out = new Array(count);
+		for (var kk = 0; kk < count; kk++) {
+			in1[kk] = $quake_bspfile$dclipnode_t.op_Implicit(buf);
+			buf.ofs += $quake_bspfile.sizeof_dclipnode_t;
+			out[kk] = new $quake_bspfile$dclipnode_t();
+		}
+		$quake_model.$loadmodel.clipnodes = out;
+		$quake_model.$loadmodel.numclipnodes = count;
+		hull = $quake_model.$loadmodel.hulls[1];
+		hull.clipnodes = out;
+		hull.firstclipnode = 0;
+		hull.lastclipnode = count - 1;
+		hull.planes = $quake_model.$loadmodel.planes;
+		hull.clip_mins[0] = -16;
+		hull.clip_mins[1] = -16;
+		hull.clip_mins[2] = -24;
+		hull.clip_maxs[0] = 16;
+		hull.clip_maxs[1] = 16;
+		hull.clip_maxs[2] = 32;
+		//Debug.WriteLine("@hull1 firstclipnode: " + hull.firstclipnode);
+		hull = $quake_model.$loadmodel.hulls[2];
+		hull.clipnodes = out;
+		hull.firstclipnode = 0;
+		hull.lastclipnode = count - 1;
+		hull.planes = $quake_model.$loadmodel.planes;
+		hull.clip_mins[0] = -32;
+		hull.clip_mins[1] = -32;
+		hull.clip_mins[2] = -24;
+		hull.clip_maxs[0] = 32;
+		hull.clip_maxs[1] = 32;
+		hull.clip_maxs[2] = 64;
+		//Debug.WriteLine("@hull2 firstclipnode: "+ hull.firstclipnode);
+		for (i = 0; i < count; i++) {
+			out[i].planenum = in1[i].planenum;
+			out[i].children[0] = in1[i].children[0];
+			//LittleShort
+			out[i].children[1] = in1[i].children[1];
+			//Debug.WriteLine(
+			//string.Format(
+			//" @planenum: {0}, @children[0]: {1}, @children[1]: {2}",
+			//@in[i].planenum,
+			//@in[i].children[0],
+			//@in[i].children[1]));
+		}
 	};
 	$quake_model.$mod_MakeHull0 = function() {
+		var in1;
+		var child;
+		var out;
+		var i, j, count;
+		var hull;
+		hull = $quake_model.$loadmodel.hulls[0];
+		in1 = $quake_model.$loadmodel.nodes;
+		count = $quake_model.$loadmodel.numnodes;
+		//@out = Hunk_AllocName ( count*sizeof(*@out), loadname);	
+		out = new Array(count);
+		for (var kk = 0; kk < count; kk++) {
+			//@in[kk] = (bspfile.dleaf_t)buf;
+			//buf.ofs += bspfile.sizeof_dleaf_t;
+			out[kk] = new $quake_bspfile$dclipnode_t();
+		}
+		hull.clipnodes = out;
+		hull.firstclipnode = 0;
+		hull.lastclipnode = count - 1;
+		hull.planes = $quake_model.$loadmodel.planes;
+		for (i = 0; i < count; i++) {
+			for (var k = 0; k < $quake_model.$loadmodel.planes.length; k++) {
+				var plane = $quake_model.$loadmodel.planes[k];
+				if (ss.referenceEquals(in1[i].plane, plane)) {
+					out[i].planenum = k;
+					break;
+				}
+			}
+			//Debug.WriteLine("out.planeum " + @out[i].planenum);
+			for (j = 0; j < 2; j++) {
+				child = in1[i].children[j];
+				if (child.contents < 0) {
+					//Debug.WriteLine("1");
+					out[i].children[j] = child.contents;
+				}
+				else {
+					//Debug.WriteLine("2");
+					for (var k1 = 0; k1 < $quake_model.$loadmodel.nodes.length; k1++) {
+						var node = $quake_model.$loadmodel.nodes[k1];
+						if (ss.referenceEquals(child, node)) {
+							out[i].children[j] = k1;
+							break;
+						}
+					}
+				}
+				//Debug.WriteLine("out[i].children[j] " + @out[i].children[j]);
+			}
+		}
 	};
 	$quake_model.$mod_LoadMarksurfaces = function(l) {
 		var i, j, count;
@@ -9850,8 +10105,11 @@
 		for (i = 0; i < mod.numsubmodels; i++) {
 			bm = mod.submodels[i];
 			mod.hulls[0].firstclipnode = bm.headnode[0];
+			//Debug.WriteLine("mod " + mod.name);
+			//Debug.WriteLine("0 firstclipnode " + mod.hulls[0].firstclipnode);
 			for (j = 1; j < $quake_bspfile.maX_MAP_HULLS; j++) {
 				mod.hulls[j].firstclipnode = bm.headnode[j];
+				//Debug.WriteLine("firstclipnode " + mod.hulls[j].firstclipnode);
 				mod.hulls[j].lastclipnode = mod.numclipnodes - 1;
 			}
 			mod.firstmodelsurface = bm.firstface;
@@ -9868,6 +10126,7 @@
 				//			        *loadmodel = *mod;
 				$quake_model.$loadmodel.clone(mod);
 				$quake_model.$loadmodel.name = name;
+				//Debug.WriteLine("loadmodel firstclipnode " + loadmodel.hulls[0].firstclipnode);
 				mod = $quake_model.$loadmodel;
 			}
 		}
@@ -10458,11 +10717,12 @@
 	////////////////////////////////////////////////////////////////////////////////
 	// quake.model.hull_t
 	var $quake_model$hull_t = function() {
-		this.$planes = null;
+		this.clipnodes = null;
+		this.planes = null;
 		this.firstclipnode = 0;
 		this.lastclipnode = 0;
-		this.$clip_mins = new Array(3);
-		this.$clip_maxs = new Array(3);
+		this.clip_mins = new Array(3);
+		this.clip_maxs = new Array(3);
 	};
 	////////////////////////////////////////////////////////////////////////////////
 	// quake.model.maliasframedesc_t
@@ -10659,7 +10919,20 @@
 			this.clipnodes = model.clipnodes;
 			this.nummarksurfaces = model.nummarksurfaces;
 			this.marksurfaces = model.marksurfaces;
-			this.hulls = model.hulls;
+			//this.hulls = model.hulls; //dodgey clone! firstclipnode breaks for world
+			this.hulls = new Array($quake_bspfile.maX_MAP_HULLS);
+			for (var i = 0; i < model.hulls.length; i++) {
+				var h = model.hulls[i];
+				var $t2 = this.hulls;
+				var $t1 = new $quake_model$hull_t();
+				$t1.clipnodes = h.clipnodes;
+				$t1.firstclipnode = h.firstclipnode;
+				$t1.clip_maxs = h.clip_maxs;
+				$t1.clip_mins = h.clip_mins;
+				$t1.lastclipnode = h.lastclipnode;
+				$t1.planes = h.planes;
+				$t2[i] = $t1;
+			}
 			this.numtextures = model.numtextures;
 			this.textures = model.textures;
 			this.visdata = model.visdata;
@@ -11113,8 +11386,10 @@
 		}
 	};
 	$quake_net.$neT_Port_f = function() {
+		ss.Debug.writeln('NET_Port_f');
 	};
 	$quake_net.$neT_Slist_f = function() {
+		ss.Debug.writeln('NET_Slist_f');
 	};
 	$quake_net.neT_Connect = function(host) {
 		var $state = 0, ret, n, numdrivers;
@@ -11171,7 +11446,7 @@
 		}
 	};
 	$quake_net.neT_CheckNewConnections = function() {
-		var ret;
+		var ret = null;
 		$quake_net.$setNetTime();
 		for ($quake_net.$net_driverlevel = 0; $quake_net.$net_driverlevel < $quake_net.$net_numdrivers; $quake_net.$net_driverlevel++) {
 			if ($quake_net.$net_drivers[$quake_net.$net_driverlevel].initialized === false) {
@@ -11180,7 +11455,12 @@
 			if ($quake_net.$net_driverlevel !== 0 && $quake_net.$listening === false) {
 				continue;
 			}
-			ret = $quake_net.$net_drivers[$quake_net.$net_driverlevel].delegate_CheckNewConnections();
+			try {
+				ret = $quake_net.$net_drivers[$quake_net.$net_driverlevel].delegate_CheckNewConnections();
+			}
+			catch ($t1) {
+				ss.Debug.writeln('NET_CheckNewConnections todo');
+			}
 			if (ss.isValue(ret)) {
 				return ret;
 			}
@@ -11459,13 +11739,38 @@
 	// quake.prog
 	var $quake_prog = function() {
 	};
+	$quake_prog.edicT_FROM_AREA = function(l) {
+		for (var i = 0; i < $quake_server.sv.edicts.length; i++) {
+			var edict = $quake_server.sv.edicts[i];
+			if (ss.referenceEquals(l, edict.area) && i + 1 < $quake_server.sv.edicts.length) {
+				return edict;
+			}
+		}
+		return null;
+		//return common.STRUCT_FROM_LINK(l/*, edict_t,area*/);
+	};
+	$quake_prog.nexT_EDICT = function(e) {
+		for (var i = 0; i < $quake_server.sv.edicts.length; i++) {
+			var edict = $quake_server.sv.edicts[i];
+			if (ss.referenceEquals(e, edict) && i + 1 < $quake_server.sv.edicts.length) {
+				return edict;
+			}
+		}
+		return null;
+	};
 	$quake_prog.edicT_TO_PROG = function(e) {
 		return e.index * $quake_prog.pr_edict_size;
 	};
 	$quake_prog.proG_TO_EDICT = function(e) {
-		return $quake_server.sv.edicts[ss.Int32.div(e, $quake_prog.pr_edict_size)];
+		try {
+			return $quake_server.sv.edicts[ss.Int32.div(e, $quake_prog.pr_edict_size)];
+		}
+		catch ($t1) {
+			ss.Debug.writeln('bad! ' + e);
+			throw $t1;
+		}
 	};
-	$quake_prog.$g_FLOAT = function(o) {
+	$quake_prog.g_FLOAT = function(o) {
 		return $quake_prog.cast_float($quake_prog.pr_globals_read(o));
 	};
 	$quake_prog.$g_INT = function(o) {
@@ -11530,7 +11835,7 @@
 		org = $quake_prog.$g_VECTOR($quake_prog.ofS_PARM1);
 		$quake_mathlib.vectorCopy(org, e.v.origin);
 		//Debug.WriteLine("PF_setorigin {0} {1} {2}", org[0], org[1], org[2]);
-		//SV_LinkEdict(e, false);
+		$quake_world.sV_LinkEdict(e, false);
 	};
 	$quake_prog.$setMinMaxSize = function(e, min, max, rotate) {
 		var angles;
@@ -11630,35 +11935,61 @@
 		else {
 			$quake_prog.$setMinMaxSize(e, $quake_mathlib.vec3_origin, $quake_mathlib.vec3_origin, true);
 		}
-		//if (mod != null)
-		//SetMinMaxSize (e, mod->mins, mod->maxs, true);
-		//else
-		//SetMinMaxSize (e, vec3_origin, vec3_origin, true);
 	};
 	$quake_prog.$pF_bprint = function() {
-		//var s = PF_VarString(0);
-		//host.SV_BroadcastPrintf(s); todo
+		var s;
+		s = $quake_prog.$pF_VarString(0);
+		$quake_host.sV_BroadcastPrintf(s);
 	};
 	$quake_prog.$pF_sprint = function() {
-		//todo
+		ss.Debug.writeln('PF_sprint');
 	};
 	$quake_prog.$pF_centerprint = function() {
-		//todo
+		ss.Debug.writeln('PF_centerprint');
 	};
 	$quake_prog.$pF_normalize = function() {
-		throw new $System_NotImplementedException();
-		ss.Debug.writeln('todo PF_normalize');
+		var value1;
+		var newvalue = new Array(3);
+		var new1;
+		value1 = $quake_prog.$g_VECTOR($quake_prog.ofS_PARM0);
+		new1 = value1[0] * value1[0] + value1[1] * value1[1] + value1[2] * value1[2];
+		new1 = Math.sqrt(new1);
+		if (new1 === 0) {
+			newvalue[0] = newvalue[1] = newvalue[2] = 0;
+		}
+		else {
+			new1 = 1 / new1;
+			newvalue[0] = value1[0] * new1;
+			newvalue[1] = value1[1] * new1;
+			newvalue[2] = value1[2] * new1;
+		}
+		$quake_mathlib.vectorCopy(newvalue, $quake_prog.$g_VECTOR($quake_prog.ofS_RETURN));
 	};
 	$quake_prog.$pF_vlen = function() {
-		throw new $System_NotImplementedException();
-		ss.Debug.writeln('todo PF_vlen');
+		var value1;
+		var new1;
+		value1 = $quake_prog.$g_VECTOR($quake_prog.ofS_PARM0);
+		new1 = value1[0] * value1[0] + value1[1] * value1[1] + value1[2] * value1[2];
+		new1 = Math.sqrt(new1);
+		$quake_prog.pr_globals_write($quake_prog.ofS_RETURN, new1);
 	};
 	$quake_prog.$pF_vectoyaw = function() {
-		throw new $System_NotImplementedException();
-		ss.Debug.writeln('todo PF_vectoyaw');
+		var value1;
+		var yaw;
+		value1 = $quake_prog.$g_VECTOR($quake_prog.ofS_PARM0);
+		if (value1[1] === 0 && value1[0] === 0) {
+			yaw = 0;
+		}
+		else {
+			yaw = ss.Int32.trunc(Math.atan2(value1[1], value1[0]) * 180 / $quake_mathlib.m_PI);
+			if (yaw < 0) {
+				yaw += 360;
+			}
+		}
+		$quake_prog.pr_globals_write($quake_prog.ofS_RETURN, yaw);
 	};
 	$quake_prog.$pF_vectoangles = function() {
-		throw new $System_NotImplementedException();
+		ss.Debug.writeln('PF_vectoangles');
 		ss.Debug.writeln('todo PF_vectoangles');
 	};
 	$quake_prog.$pF_random = function() {
@@ -11670,30 +12001,183 @@
 	};
 	$quake_prog.$pF_particle = function() {
 		//todo
+		ss.Debug.writeln('PF_particle');
 	};
 	$quake_prog.$pF_ambientsound = function() {
-		//throw new NotImplementedException(); todo
+		var check;
+		var samp;
+		var pos;
+		var vol, attenuation;
+		var i, soundnum;
+		pos = $quake_prog.$g_VECTOR($quake_prog.ofS_PARM0);
+		samp = $quake_prog.$g_STRING($quake_prog.ofS_PARM1);
+		vol = $quake_prog.g_FLOAT($quake_prog.ofS_PARM2);
+		attenuation = $quake_prog.g_FLOAT($quake_prog.ofS_PARM3);
+		for (soundnum = 1; soundnum < $quake_quakedef.maX_SOUNDS && ss.isValue($quake_server.sv.sound_precache[soundnum]); soundnum++) {
+			if (ss.referenceEquals(samp, $quake_server.sv.sound_precache[soundnum])) {
+				break;
+			}
+		}
+		if (soundnum === $quake_quakedef.maX_SOUNDS || !ss.isValue($quake_server.sv.sound_precache[soundnum])) {
+			$quake_console.con_Printf('PF_ambientsound no precache: ' + samp + '\n');
+			return;
+		}
+		// add an svc_spawnambient command to the level signon packet
+		$quake_common.msG_WriteByte($quake_server.sv.signon, $quake_net.svc_spawnstaticsound);
+		for (i = 0; i < 3; i++) {
+			$quake_common.msG_WriteCoord($quake_server.sv.signon, pos[i]);
+		}
+		$quake_common.msG_WriteByte($quake_server.sv.signon, soundnum);
+		$quake_common.msG_WriteByte($quake_server.sv.signon, ss.Int32.trunc(vol) * 255);
+		$quake_common.msG_WriteByte($quake_server.sv.signon, ss.Int32.trunc(attenuation) * 64);
 	};
 	$quake_prog.$pF_sound = function() {
-		//todo
+		var sample;
+		var channel;
+		var entity;
+		var volume;
+		var attenuation;
+		entity = $quake_prog.$g_EDICT($quake_prog.ofS_PARM0);
+		channel = ss.Int32.trunc($quake_prog.g_FLOAT($quake_prog.ofS_PARM1));
+		sample = $quake_prog.$g_STRING($quake_prog.ofS_PARM2);
+		volume = ss.Int32.trunc($quake_prog.g_FLOAT($quake_prog.ofS_PARM3)) * 255;
+		attenuation = $quake_prog.g_FLOAT($quake_prog.ofS_PARM4);
+		if (volume < 0 || volume > 255) {
+			$quake_sys_linux.sys_Error('SV_StartSound: volume = ' + volume);
+		}
+		if (attenuation < 0 || attenuation > 4) {
+			$quake_sys_linux.sys_Error('SV_StartSound: attenuation ' + attenuation);
+		}
+		if (channel < 0 || channel > 7) {
+			$quake_sys_linux.sys_Error('SV_StartSound: channel = ' + channel);
+		}
+		$quake_server.sV_StartSound(entity, channel, sample, volume, attenuation);
 	};
 	$quake_prog.$pF_break = function() {
-		throw new $System_NotImplementedException();
+		ss.Debug.writeln('PF_break');
 	};
 	$quake_prog.$pF_traceline = function() {
-		throw new $System_NotImplementedException();
+		var v1, v2;
+		var trace;
+		var nomonsters;
+		var ent;
+		v1 = $quake_prog.$g_VECTOR($quake_prog.ofS_PARM0);
+		v2 = $quake_prog.$g_VECTOR($quake_prog.ofS_PARM1);
+		nomonsters = ss.Int32.trunc($quake_prog.g_FLOAT($quake_prog.ofS_PARM2));
+		ent = $quake_prog.$g_EDICT($quake_prog.ofS_PARM3);
+		trace = $quake_world.sV_Move(v1, $quake_mathlib.vec3_origin, $quake_mathlib.vec3_origin, v2, nomonsters, ent);
+		$quake_prog.pr_global_struct[0].trace_allsolid = (trace.allsolid ? 1 : 0);
+		$quake_prog.pr_global_struct[0].trace_startsolid = (trace.startsolid ? 1 : 0);
+		$quake_prog.pr_global_struct[0].trace_fraction = trace.fraction;
+		$quake_prog.pr_global_struct[0].trace_inwater = (trace.inwater ? 1 : 0);
+		$quake_prog.pr_global_struct[0].trace_inopen = (trace.inopen ? 1 : 0);
+		$quake_mathlib.vectorCopy(trace.endpos, $quake_prog.pr_global_struct[0].trace_endpos);
+		$quake_mathlib.vectorCopy(trace.plane.normal, $quake_prog.pr_global_struct[0].trace_plane_normal);
+		$quake_prog.pr_global_struct[0].trace_plane_dist = trace.plane.dist;
+		if (ss.isValue(trace.ent)) {
+			$quake_prog.pr_global_struct[0].trace_ent = $quake_prog.edicT_TO_PROG(trace.ent);
+		}
+		else {
+			$quake_prog.pr_global_struct[0].trace_ent = $quake_prog.edicT_TO_PROG($quake_server.sv.edicts[0]);
+		}
 	};
 	$quake_prog.$pF_checkpos = function() {
-		throw new $System_NotImplementedException();
+		//not implemented in winquake
+	};
+	$quake_prog.$pF_newcheckclient = function(check) {
+		var i;
+		var pvs;
+		var ent;
+		var leaf;
+		var org = $Missing_ArrayHelpers.explcitDoubleArray(3);
+		// cycle to the next one
+		if (check < 1) {
+			check = 1;
+		}
+		if (check > $quake_server.svs.maxclients) {
+			check = $quake_server.svs.maxclients;
+		}
+		if (check === $quake_server.svs.maxclients) {
+			i = 1;
+		}
+		else {
+			i = check + 1;
+		}
+		for (;; i++) {
+			if (i === $quake_server.svs.maxclients + 1) {
+				i = 1;
+			}
+			ent = $quake_prog.edicT_NUM(i);
+			if (i === check) {
+				break;
+			}
+			// didn't find anything else
+			if (ent.free) {
+				continue;
+			}
+			if (ent.v.health <= 0) {
+				continue;
+			}
+			if ((ss.Int32.trunc(ent.v.flags) & $quake_server.fL_NOTARGET) !== 0) {
+				continue;
+			}
+			// anything that is a client, or has a client as an enemy
+			break;
+		}
+		// get the PVS for the entity
+		$quake_mathlib.vectorAdd(ent.v.origin, ent.v.view_ofs, org);
+		leaf = $quake_model.mod_PointInLeaf(org, $quake_server.sv.worldmodel);
+		pvs = $quake_model.mod_LeafPVS(leaf, $quake_server.sv.worldmodel);
+		$System_Buffer.blockCopy$1($quake_prog.$checkpvs, 0, pvs, 0, $quake_server.sv.worldmodel.numleafs + 7 >> 3);
+		return i;
 	};
 	$quake_prog.$pF_checkclient = function() {
-		throw new $System_NotImplementedException();
+		var ent, self;
+		var leaf;
+		var l = 0;
+		var view = $Missing_ArrayHelpers.explcitDoubleArray(3);
+		// find a new check if on a new frame
+		if ($quake_server.sv.time - $quake_server.sv.lastchecktime >= 0.1) {
+			$quake_server.sv.lastcheck = $quake_prog.$pF_newcheckclient($quake_server.sv.lastcheck);
+			$quake_server.sv.lastchecktime = $quake_server.sv.time;
+		}
+		// return check if it might be visible	
+		ent = $quake_prog.edicT_NUM($quake_server.sv.lastcheck);
+		if (ent.free || ent.v.health <= 0) {
+			$quake_prog.$returN_EDICT($quake_server.sv.edicts[0]);
+			return;
+		}
+		// if current entity can't possibly see the check entity, return 0
+		self = $quake_prog.proG_TO_EDICT($quake_prog.pr_global_struct[0].self);
+		$quake_mathlib.vectorAdd(self.v.origin, self.v.view_ofs, view);
+		leaf = $quake_model.mod_PointInLeaf(view, $quake_server.sv.worldmodel);
+		//l = (leaf - server.sv.worldmodel.leafs) - 1;
+		for (var i = 0; i < $quake_server.sv.worldmodel.leafs.length; i++) {
+			var mleafT = $quake_server.sv.worldmodel.leafs[i];
+			if (ss.referenceEquals(mleafT, leaf)) {
+				l = i - 1;
+				break;
+			}
+		}
+		ss.Debug.writeln('PF_checkclient l: ' + l);
+		// todo: possible bug, on e1m1 2nd time l = 924, HOWEVER it is 921 in winquake. everything else looks ok tho
+		if (l < 0 || !(($quake_prog.$checkpvs[l >> 3] & 1 << (l & 7)) !== 0)) {
+			$quake_prog.$c_notvis++;
+			$quake_prog.$returN_EDICT($quake_server.sv.edicts[0]);
+			ss.Debug.writeln('RETURN_EDICT(server.sv.edicts[0])\n');
+			return;
+		}
+		// might be able to see it
+		$quake_prog.$c_invis++;
+		$quake_prog.$returN_EDICT(ent);
 	};
 	$quake_prog.$pF_stuffcmd = function() {
-		throw new $System_NotImplementedException();
+		ss.Debug.writeln('PF_stuffcmd');
 	};
 	$quake_prog.$pF_localcmd = function() {
-		throw new $System_NotImplementedException();
+		var str;
+		str = $quake_prog.$g_STRING($quake_prog.ofS_PARM0);
+		$quake_cmd.cbuf_AddText(str);
 	};
 	$quake_prog.$pF_cvar = function() {
 		var str;
@@ -11707,21 +12191,29 @@
 		$quake_cvar_t.cvar_Set(var1, val);
 	};
 	$quake_prog.$pF_findradius = function() {
-		throw new $System_NotImplementedException();
+		ss.Debug.writeln('PF_findradius');
 	};
 	$quake_prog.$pF_dprint = function() {
-		ss.Debug.writeln('todo PF_dprint');
+		try {
+			$quake_console.con_DPrintf($quake_prog.$pF_VarString(0));
+		}
+		catch ($t1) {
+			ss.Debug.writeln('todo PF_dprint - crashes');
+		}
 	};
 	$quake_prog.$pF_ftos = function() {
 		ss.Debug.writeln('todo PF_ftos');
 	};
 	$quake_prog.$pF_fabs = function() {
 		var v;
-		v = $quake_prog.$g_FLOAT($quake_prog.ofS_PARM0);
+		v = $quake_prog.g_FLOAT($quake_prog.ofS_PARM0);
 		$quake_prog.pr_globals_write($quake_prog.ofS_RETURN, Math.abs(v));
 	};
 	$quake_prog.$pF_vtos = function() {
 		ss.Debug.writeln('todo PF_vtos');
+		//sprintf (pr_string_temp, "'%5.1f %5.1f %5.1f'", G_VECTOR(OFS_PARM0)[0], G_VECTOR(OFS_PARM0)[1], G_VECTOR(OFS_PARM0)[2]);
+		//pr_string_temp= string.Format("{0:F5} {1:F5} {2:F5} ", G_VECTOR(OFS_PARM0)[0], G_VECTOR(OFS_PARM0)[1], G_VECTOR(OFS_PARM0)[2]);
+		//pr_globals_write(OFS_RETURN, pr_string_temp - pr_strings;); //todo: check - how to get it from array?
 	};
 	$quake_prog.$pF_Spawn = function() {
 		var ed;
@@ -11766,7 +12258,8 @@
 		}
 	};
 	$quake_prog.$pF_precache_file = function() {
-		throw new $System_NotImplementedException();
+		ss.Debug.writeln('PF_precache_file');
+		ss.Debug.writeln('PF_precache_file');
 	};
 	$quake_prog.$pF_precache_sound = function() {
 		var s;
@@ -11813,29 +12306,66 @@
 		$quake_prog.eD_PrintEdicts();
 	};
 	$quake_prog.$pF_traceon = function() {
-		throw new $System_NotImplementedException();
 		$quake_prog.$pr_trace = true;
 	};
 	$quake_prog.$pF_traceoff = function() {
-		throw new $System_NotImplementedException();
 		$quake_prog.$pr_trace = false;
 	};
 	$quake_prog.$pF_eprint = function() {
-		throw new $System_NotImplementedException();
+		ss.Debug.writeln('PF_eprint');
 		//ED_PrintNum(G_EDICTNUM(OFS_PARM0));
 	};
 	$quake_prog.$pF_walkmove = function() {
-		throw new $System_NotImplementedException();
+		var ent;
+		var yaw, dist;
+		var move = new Array(3);
+		var oldf;
+		var oldself;
+		ent = $quake_prog.proG_TO_EDICT($quake_prog.pr_global_struct[0].self);
+		yaw = $quake_prog.g_FLOAT($quake_prog.ofS_PARM0);
+		dist = $quake_prog.g_FLOAT($quake_prog.ofS_PARM1);
+		if (!((ss.Int32.trunc(ent.v.flags) & 515) !== 0)) {
+			$quake_prog.pr_globals_write($quake_prog.ofS_RETURN, 0);
+			return;
+		}
+		yaw = yaw * $quake_mathlib.m_PI * 2 / 360;
+		move[0] = Math.cos(yaw) * dist;
+		move[1] = Math.sin(yaw) * dist;
+		move[2] = 0;
+		// save program state, because SV_movestep may call other progs
+		oldf = $quake_prog.$pr_xfunction;
+		oldself = $quake_prog.pr_global_struct[0].self;
+		$quake_prog.pr_globals_write($quake_prog.ofS_RETURN, ($quake_server.sV_Movestep(ent, move, true) ? 1 : 0));
+		// restore program state
+		$quake_prog.$pr_xfunction = oldf;
+		$quake_prog.pr_global_struct[0].self = oldself;
 	};
 	$quake_prog.$pF_droptofloor = function() {
-		throw new $System_NotImplementedException();
+		var ent;
+		var end = new Array(3);
+		var trace;
+		ent = $quake_prog.proG_TO_EDICT($quake_prog.pr_global_struct[0].self);
+		$quake_mathlib.vectorCopy(ent.v.origin, end);
+		end[2] -= 256;
+		trace = $quake_world.sV_Move(ent.v.origin, ent.v.mins, ent.v.maxs, end, 0, ent);
+		if (trace.fraction === 1 || trace.allsolid) {
+			$quake_prog.pr_globals_write($quake_prog.ofS_RETURN, 0);
+		}
+		else {
+			$quake_mathlib.vectorCopy(trace.endpos, ent.v.origin);
+			$quake_world.sV_LinkEdict(ent, false);
+			ent.v.flags = ss.Int32.trunc(ent.v.flags) | $quake_server.fL_ONGROUND;
+			ent.v.groundentity = $quake_prog.edicT_TO_PROG(trace.ent);
+			$quake_prog.pr_globals_write($quake_prog.ofS_RETURN, 1);
+			//G_FLOAT(OFS_RETURN) = 1;
+		}
 	};
 	$quake_prog.$pF_lightstyle = function() {
 		var style;
 		var val;
 		var client;
 		var j;
-		style = ss.Int32.trunc($quake_prog.$g_FLOAT($quake_prog.ofS_PARM0));
+		style = ss.Int32.trunc($quake_prog.g_FLOAT($quake_prog.ofS_PARM0));
 		val = $quake_prog.$g_STRING($quake_prog.ofS_PARM1);
 		// change the string in sv
 		$quake_server.sv.lightstyles[style] = val;
@@ -11854,7 +12384,7 @@
 	};
 	$quake_prog.$pF_rint = function() {
 		var f;
-		f = $quake_prog.$g_FLOAT($quake_prog.ofS_PARM0);
+		f = $quake_prog.g_FLOAT($quake_prog.ofS_PARM0);
 		if (f > 0) {
 			$quake_prog.pr_globals_write($quake_prog.ofS_RETURN, ss.Int32.trunc(f + 0.5));
 		}
@@ -11863,49 +12393,139 @@
 		}
 	};
 	$quake_prog.$pF_floor = function() {
-		$quake_prog.pr_globals_write($quake_prog.ofS_RETURN, Math.floor($quake_prog.$g_FLOAT($quake_prog.ofS_PARM0)));
+		$quake_prog.pr_globals_write($quake_prog.ofS_RETURN, Math.floor($quake_prog.g_FLOAT($quake_prog.ofS_PARM0)));
 	};
 	$quake_prog.$pF_ceil = function() {
-		$quake_prog.pr_globals_write($quake_prog.ofS_RETURN, Math.ceil($quake_prog.$g_FLOAT($quake_prog.ofS_PARM0)));
+		$quake_prog.pr_globals_write($quake_prog.ofS_RETURN, Math.ceil($quake_prog.g_FLOAT($quake_prog.ofS_PARM0)));
 	};
 	$quake_prog.$pF_checkbottom = function() {
-		throw new $System_NotImplementedException();
+		ss.Debug.writeln('PF_checkbottom');
 	};
 	$quake_prog.$pF_pointcontents = function() {
-		throw new $System_NotImplementedException();
+		ss.Debug.writeln('PF_pointcontents');
 	};
 	$quake_prog.$pF_nextent = function() {
-		throw new $System_NotImplementedException();
+		ss.Debug.writeln('PF_nextent');
 	};
 	$quake_prog.$pF_aim = function() {
-		throw new $System_NotImplementedException();
+		var ent, check, bestent;
+		var start = new Array(3), dir = new Array(3), end = new Array(3), bestdir = new Array(3);
+		var i, j;
+		var tr;
+		var dist, bestdist;
+		var speed;
+		ent = $quake_prog.$g_EDICT($quake_prog.ofS_PARM0);
+		speed = $quake_prog.g_FLOAT($quake_prog.ofS_PARM1);
+		$quake_mathlib.vectorCopy(ent.v.origin, start);
+		start[2] += 20;
+		// try sending a trace straight
+		$quake_mathlib.vectorCopy($quake_prog.pr_global_struct[0].v_forward, dir);
+		$quake_mathlib.vectorMA(start, 2048, dir, end);
+		tr = $quake_world.sV_Move(start, $quake_mathlib.vec3_origin, $quake_mathlib.vec3_origin, end, 0, ent);
+		if (ss.isValue(tr.ent) && tr.ent.v.takedamage === 2 && (!($quake_host.teamplay.value !== 0) || ent.v.team <= 0 || ent.v.team !== tr.ent.v.team)) {
+			$quake_mathlib.vectorCopy($quake_prog.pr_global_struct[0].v_forward, $quake_prog.$g_VECTOR($quake_prog.ofS_RETURN));
+			return;
+		}
+		// try all possible entities
+		$quake_mathlib.vectorCopy(dir, bestdir);
+		bestdist = $quake_prog.sv_aim.value;
+		bestent = null;
+		//for (i = 0; i < server.sv.num_edicts; i++) //TODO- THIS   IS FASTER CHECK THIS WORKS WHEN FIRING GUN AND ALSO SEE IF IT CAN BE USED ANYWHERE ELSE
+		//{
+		//    check = server.sv.edicts[i];
+		check = $quake_prog.nexT_EDICT($quake_server.sv.edicts[0]);
+		for (i = 1; i < $quake_server.sv.num_edicts; i++, check = $quake_prog.nexT_EDICT(check)) {
+			if (check.v.takedamage !== 2) {
+				continue;
+			}
+			if (ss.referenceEquals(check, ent)) {
+				continue;
+			}
+			if ($quake_host.teamplay.value !== 0 && ent.v.team > 0 && ent.v.team === check.v.team) {
+				continue;
+			}
+			// don't aim at teammate
+			for (j = 0; j < 3; j++) {
+				end[j] = check.v.origin[j] + 0.5 * (check.v.mins[j] + check.v.maxs[j]);
+			}
+			$quake_mathlib.vectorSubtract(end, start, dir);
+			$quake_mathlib.vectorNormalize(dir);
+			dist = $quake_mathlib.dotProduct$1(dir, $quake_prog.pr_global_struct[0].v_forward);
+			if (dist < bestdist) {
+				continue;
+			}
+			// to far to turn
+			tr = $quake_world.sV_Move(start, $quake_mathlib.vec3_origin, $quake_mathlib.vec3_origin, end, 0, ent);
+			if (ss.referenceEquals(tr.ent, check)) {
+				// can shoot at this one
+				bestdist = dist;
+				bestent = check;
+			}
+		}
+		if (ss.isValue(bestent)) {
+			$quake_mathlib.vectorSubtract(bestent.v.origin, ent.v.origin, dir);
+			dist = $quake_mathlib.dotProduct$1(dir, $quake_prog.pr_global_struct[0].v_forward);
+			$quake_mathlib.vectorScale($quake_prog.pr_global_struct[0].v_forward, dist, end);
+			end[2] = dir[2];
+			$quake_mathlib.vectorNormalize(end);
+			$quake_mathlib.vectorCopy(end, $quake_prog.$g_VECTOR($quake_prog.ofS_RETURN));
+		}
+		else {
+			$quake_mathlib.vectorCopy(bestdir, $quake_prog.$g_VECTOR($quake_prog.ofS_RETURN));
+		}
 	};
-	$quake_prog.$pF_changeyaw = function() {
-		throw new $System_NotImplementedException();
+	$quake_prog.pF_changeyaw = function() {
+		var ent;
+		var ideal, current, move, speed;
+		ent = $quake_prog.proG_TO_EDICT($quake_prog.pr_global_struct[0].self);
+		current = $quake_mathlib.anglemod(ent.v.angles[1]);
+		ideal = ent.v.ideal_yaw;
+		speed = ent.v.yaw_speed;
+		if (current === ideal) {
+			return;
+		}
+		move = ideal - current;
+		if (ideal > current) {
+			if (move >= 180) {
+				move = move - 360;
+			}
+		}
+		else if (move <= -180) {
+			move = move + 360;
+		}
+		if (move > 0) {
+			if (move > speed) {
+				move = speed;
+			}
+		}
+		else if (move < -speed) {
+			move = -speed;
+		}
+		ent.v.angles[1] = $quake_mathlib.anglemod(current + move);
 	};
 	$quake_prog.$pF_WriteByte = function() {
-		throw new $System_NotImplementedException();
+		ss.Debug.writeln('PF_WriteByte');
 	};
 	$quake_prog.$pF_WriteChar = function() {
-		throw new $System_NotImplementedException();
+		ss.Debug.writeln('PF_WriteChar');
 	};
 	$quake_prog.$pF_WriteShort = function() {
-		throw new $System_NotImplementedException();
+		ss.Debug.writeln('PF_WriteShort');
 	};
 	$quake_prog.$pF_WriteLong = function() {
-		throw new $System_NotImplementedException();
+		ss.Debug.writeln('PF_WriteLong');
 	};
 	$quake_prog.$pF_WriteAngle = function() {
-		throw new $System_NotImplementedException();
+		ss.Debug.writeln('PF_WriteAngle');
 	};
 	$quake_prog.$pF_WriteCoord = function() {
-		throw new $System_NotImplementedException();
+		ss.Debug.writeln('PF_WriteCoord');
 	};
 	$quake_prog.$pF_WriteString = function() {
-		throw new $System_NotImplementedException();
+		ss.Debug.writeln('PF_WriteString');
 	};
 	$quake_prog.$pF_WriteEntity = function() {
-		throw new $System_NotImplementedException();
+		ss.Debug.writeln('PF_WriteEntity');
 	};
 	$quake_prog.$pF_makestatic = function() {
 		var ent;
@@ -11924,10 +12544,10 @@
 		$quake_prog.$eD_Free(ent);
 	};
 	$quake_prog.$pF_setspawnparms = function() {
-		throw new $System_NotImplementedException();
+		ss.Debug.writeln('PF_setspawnparms');
 	};
 	$quake_prog.$pF_changelevel = function() {
-		throw new $System_NotImplementedException();
+		ss.Debug.writeln('PF_changelevel');
 	};
 	$quake_prog.$pF_Fixme = function() {
 		$quake_prog.$pR_RunError('unimplemented bulitin');
@@ -11958,7 +12578,8 @@
 		return e;
 	};
 	$quake_prog.$eD_Free = function(ed) {
-		//SV_UnlinkEdict (ed);		// unlink from world bsp
+		$quake_world.sV_UnlinkEdict(ed);
+		// unlink from world bsp
 		ed.free = true;
 		ed.v.model = 0;
 		ed.v.takedamage = 0;
@@ -12078,9 +12699,7 @@
 			if (3 === (def.type & -32769)) {
 				var val2 = $quake_prog.pr_globals_read(ofs + 1);
 				var val3 = $quake_prog.pr_globals_read(ofs + 2);
-				s = '\'   ' + $quake_prog.cast_float(val) + '   ' + $quake_prog.cast_float(val2) + '   ' + $quake_prog.cast_float(val3) + '\'';
-				//s = "'   " + PR_ValueString(def.type, val) + "   " + PR_ValueString(def.type, val2) + "   "
-				//    + PR_ValueString(def.type, val3) + "'";
+				s = ss.formatString('\'{0:F1} {1:F1} {2:F1}\'', $quake_prog.cast_float(val), $quake_prog.cast_float(val2), $quake_prog.cast_float(val3));
 			}
 			else {
 				s = $quake_prog.$pR_ValueString(def.type, val);
@@ -12146,6 +12765,56 @@
 		}
 		//console.Con_Printf(output);
 		ss.Debug.writeln(output);
+	};
+	$quake_prog.$eD_Count = function() {
+		var i;
+		var ent;
+		var active, models, solid, step;
+		active = models = solid = step = 0;
+		for (i = 0; i < $quake_server.sv.num_edicts; i++) {
+			ent = $quake_prog.edicT_NUM(i);
+			if (ent.free) {
+				continue;
+			}
+			active++;
+			if (ent.v.solid !== 0) {
+				solid++;
+			}
+			if (ent.v.model !== 0) {
+				models++;
+			}
+			if (ent.v.movetype === 4) {
+				step++;
+			}
+		}
+		$quake_console.con_Printf('num_edicts:%3i' + $quake_server.sv.num_edicts + '\n');
+		$quake_console.con_Printf('active    :' + active + '\n');
+		$quake_console.con_Printf('view      :' + models + '\n');
+		$quake_console.con_Printf('touch     :' + solid + '\n');
+		$quake_console.con_Printf('step      :' + step + '\n');
+	};
+	$quake_prog.$eD_Count_str = function() {
+		var i;
+		var ent;
+		var active, models, solid, step;
+		active = models = solid = step = 0;
+		for (i = 0; i < $quake_server.sv.num_edicts; i++) {
+			ent = $quake_prog.edicT_NUM(i);
+			if (ent.free) {
+				continue;
+			}
+			active++;
+			if (ent.v.solid !== 0) {
+				solid++;
+			}
+			if (ent.v.model !== 0) {
+				models++;
+			}
+			if (ent.v.movetype === 4) {
+				step++;
+			}
+		}
+		return 'num_edicts:' + $quake_server.sv.num_edicts + '\n' + 'active    :' + active + '\n' + 'view      :' + models + '\n' + 'touch     :' + solid + '\n' + 'step      :' + step;
 	};
 	$quake_prog.eD_NewString = function(string) {
 		var new1 = '';
@@ -12265,9 +12934,8 @@
 			else {
 				ent = $quake_prog.$eD_Alloc();
 			}
-			if (ent.index === 49) {
-				ent.index = ent.index;
-			}
+			//if (ent.index == 49)
+			//    ent.index = ent.index;
 			$quake_prog.eD_ParseEdict(data, ofs, ent);
 			// remove things from different skill levels or deathmatch
 			if ($quake_host.deathmatch.value !== 0) {
@@ -12299,9 +12967,8 @@
 				$quake_prog.$eD_Free(ent);
 				continue;
 			}
-			if ($quake_prog.pr_string(ent.v.classname) === 'trigger_teleport') {
-				inhibit = inhibit;
-			}
+			//if (pr_string(ent.v.classname) == "trigger_teleport")
+			//    inhibit = inhibit;
 			$quake_prog.pr_global_struct[0].self = $quake_prog.edicT_TO_PROG(ent);
 			$quake_prog.pR_ExecuteProgram(func);
 		}
@@ -12390,6 +13057,10 @@
 			}
 			case 38: {
 				globalvars.serverflags = $quake_prog.cast_float(value);
+				break;
+			}
+			case 39: {
+				globalvars.total_secrets = $quake_prog.cast_float(value);
 				break;
 			}
 			case 40: {
@@ -12601,6 +13272,7 @@
 				break;
 			}
 			default: {
+				ss.Debug.writeln('cant write global var offset' + offset);
 				break;
 			}
 		}
@@ -12831,6 +13503,10 @@
 			case 91: {
 				return globalvars.setChangeParms;
 			}
+			default: {
+				ss.Debug.writeln('read write global var offset' + offset);
+				break;
+			}
 		}
 		return null;
 	};
@@ -12939,7 +13615,7 @@
 	$quake_prog.pR_Init = function() {
 		//Cmd_AddCommand ("edict", ED_PrintEdict_f);
 		//Cmd_AddCommand ("edicts", ED_PrintEdicts);
-		//Cmd_AddCommand ("edictcount", ED_Count);
+		$quake_cmd.cmd_AddCommand('edictcount', $quake_prog.$eD_Count);
 		//Cmd_AddCommand ("profile", PR_Profile_f);
 		$quake_cvar_t.cvar_RegisterVariable($quake_prog.$nomonsters);
 		$quake_cvar_t.cvar_RegisterVariable($quake_prog.$gamecfg);
@@ -12969,9 +13645,9 @@
 	};
 	$quake_prog.$pR_PrintStatement = function(s) {
 		var i;
-		if ($quake_prog.$prNum >= 5000) {
+		if ($quake_prog.prNum >= 3959) {
 			$quake_prog.$pR_StackTraceStr();
-			$quake_console.con_Printf($quake_prog.$prNum + ' ');
+			$quake_console.con_Printf($quake_prog.prNum + ' ');
 			if (s.op < $quake_prog.$pr_opnames.length) {
 				$quake_console.con_Printf($quake_prog.$pr_opnames[s.op] + ' ');
 				i = $quake_prog.$pr_opnames[s.op].length;
@@ -13001,8 +13677,10 @@
 				}
 			}
 			$quake_console.con_Printf('\n');
+			//if (prNum % 200 == 0)
+			//if (prNum == 5200)
+			//prog.PF_coredump();
 		}
-		$quake_prog.$pF_coredump();
 	};
 	$quake_prog.$pR_StackTrace = function() {
 		var f;
@@ -13132,6 +13810,24 @@
 			case 0: {
 				return entvars.modelindex;
 			}
+			case 1: {
+				return entvars.absmin[0];
+			}
+			case 2: {
+				return entvars.absmin[1];
+			}
+			case 3: {
+				return entvars.absmin[2];
+			}
+			case 4: {
+				return entvars.absmax[0];
+			}
+			case 5: {
+				return entvars.absmax[1];
+			}
+			case 6: {
+				return entvars.absmax[2];
+			}
 			case 7: {
 				return entvars.ltime;
 			}
@@ -13149,6 +13845,15 @@
 			}
 			case 12: {
 				return entvars.origin[2];
+			}
+			case 13: {
+				return entvars.oldorigin[0];
+			}
+			case 14: {
+				return entvars.oldorigin[1];
+			}
+			case 15: {
+				return entvars.oldorigin[2];
 			}
 			case 16: {
 				return entvars.velocity[0];
@@ -13168,11 +13873,38 @@
 			case 21: {
 				return entvars.angles[2];
 			}
+			case 22: {
+				return entvars.avelocity[0];
+			}
+			case 23: {
+				return entvars.avelocity[1];
+			}
+			case 24: {
+				return entvars.avelocity[2];
+			}
+			case 25: {
+				return entvars.punchangle[0];
+			}
+			case 26: {
+				return entvars.punchangle[1];
+			}
+			case 27: {
+				return entvars.punchangle[2];
+			}
 			case 28: {
 				return entvars.classname;
 			}
 			case 29: {
 				return entvars.model;
+			}
+			case 30: {
+				return entvars.frame;
+			}
+			case 31: {
+				return entvars.skin;
+			}
+			case 32: {
+				return entvars.effects;
 			}
 			case 33: {
 				return entvars.mins[0];
@@ -13201,6 +13933,24 @@
 			case 41: {
 				return entvars.size[2];
 			}
+			case 42: {
+				return entvars.touch;
+			}
+			case 43: {
+				return entvars.use$1;
+			}
+			case 44: {
+				return entvars.think;
+			}
+			case 45: {
+				return entvars.blocked;
+			}
+			case 46: {
+				return entvars.nextthink;
+			}
+			case 47: {
+				return entvars.groundentity;
+			}
 			case 48: {
 				return entvars.health;
 			}
@@ -13209,6 +13959,9 @@
 			}
 			case 50: {
 				return entvars.weapon;
+			}
+			case 51: {
+				return entvars.weaponmodel;
 			}
 			case 52: {
 				return entvars.weaponframe;
@@ -13234,6 +13987,9 @@
 			case 59: {
 				return entvars.takedamage;
 			}
+			case 60: {
+				return entvars.chain;
+			}
 			case 61: {
 				return entvars.deadflag;
 			}
@@ -13258,6 +14014,9 @@
 			case 68: {
 				return entvars.impulse;
 			}
+			case 69: {
+				return entvars.fixangle;
+			}
 			case 70: {
 				return entvars.v_angle[0];
 			}
@@ -13267,17 +14026,29 @@
 			case 72: {
 				return entvars.v_angle[2];
 			}
+			case 73: {
+				return entvars.idealpitch;
+			}
 			case 74: {
 				return entvars.netname;
 			}
+			case 75: {
+				return entvars.enemy;
+			}
 			case 76: {
 				return entvars.flags;
+			}
+			case 77: {
+				return entvars.colormap;
 			}
 			case 78: {
 				return entvars.team;
 			}
 			case 79: {
 				return entvars.max_health;
+			}
+			case 80: {
+				return entvars.teleport_time;
 			}
 			case 81: {
 				return entvars.armortype;
@@ -13290,6 +14061,18 @@
 			}
 			case 84: {
 				return entvars.watertype;
+			}
+			case 85: {
+				return entvars.ideal_yaw;
+			}
+			case 86: {
+				return entvars.yaw_speed;
+			}
+			case 87: {
+				return entvars.aiment;
+			}
+			case 88: {
+				return entvars.goalentity;
 			}
 			case 89: {
 				return entvars.spawnflags;
@@ -13306,6 +14089,9 @@
 			case 93: {
 				return entvars.dmg_save;
 			}
+			case 94: {
+				return entvars.dmg_inflictor;
+			}
 			case 95: {
 				return entvars.owner;
 			}
@@ -13318,13 +14104,26 @@
 			case 98: {
 				return entvars.movedir[2];
 			}
+			case 99: {
+				return entvars.message;
+			}
 			case 100: {
 				return entvars.sounds;
 			}
 			case 101: {
 				return entvars.noise;
 			}
+			case 102: {
+				return entvars.noise1;
+			}
+			case 103: {
+				return entvars.noise2;
+			}
+			case 104: {
+				return entvars.noise3;
+			}
 		}
+		ss.Debug.writeln('cant read offset ' + offset);
 		return null;
 	};
 	$quake_prog.$readptr = function(address) {
@@ -13332,9 +14131,10 @@
 		var offset = ss.Int32.div(address % $quake_prog.pr_edict_size - 96, 4);
 		return $quake_prog.$readentvar(entvars, offset);
 	};
-	$quake_prog.$writeptr = function(address, value) {
+	$quake_prog.$writeptr = function(address, value, addressOffset) {
 		var entvars = $quake_server.sv.edicts[ss.Int32.div(address, $quake_prog.pr_edict_size)].v;
 		var offset = ss.Int32.div(address % $quake_prog.pr_edict_size - 96, 4);
+		offset += addressOffset;
 		if (offset > 104) {
 			entvars.variables[offset - 105] = value;
 			return;
@@ -13342,6 +14142,34 @@
 		switch (offset) {
 			case 0: {
 				entvars.modelindex = $quake_prog.cast_float(value);
+				break;
+			}
+			case 1: {
+				entvars.absmin[0] = $quake_prog.cast_float(value);
+				break;
+			}
+			case 2: {
+				entvars.absmin[1] = $quake_prog.cast_float(value);
+				break;
+			}
+			case 3: {
+				entvars.absmin[2] = $quake_prog.cast_float(value);
+				break;
+			}
+			case 4: {
+				entvars.absmax[0] = $quake_prog.cast_float(value);
+				break;
+			}
+			case 5: {
+				entvars.absmax[1] = $quake_prog.cast_float(value);
+				break;
+			}
+			case 6: {
+				entvars.absmax[2] = $quake_prog.cast_float(value);
+				break;
+			}
+			case 7: {
+				entvars.ltime = $quake_prog.cast_float(value);
 				break;
 			}
 			case 8: {
@@ -13364,6 +14192,30 @@
 				entvars.origin[2] = $quake_prog.cast_float(value);
 				break;
 			}
+			case 13: {
+				entvars.oldorigin[0] = $quake_prog.cast_float(value);
+				break;
+			}
+			case 14: {
+				entvars.oldorigin[1] = $quake_prog.cast_float(value);
+				break;
+			}
+			case 15: {
+				entvars.oldorigin[2] = $quake_prog.cast_float(value);
+				break;
+			}
+			case 16: {
+				entvars.velocity[0] = $quake_prog.cast_float(value);
+				break;
+			}
+			case 17: {
+				entvars.velocity[1] = $quake_prog.cast_float(value);
+				break;
+			}
+			case 18: {
+				entvars.velocity[2] = $quake_prog.cast_float(value);
+				break;
+			}
 			case 19: {
 				entvars.angles[0] = $quake_prog.cast_float(value);
 				break;
@@ -13374,6 +14226,30 @@
 			}
 			case 21: {
 				entvars.angles[2] = $quake_prog.cast_float(value);
+				break;
+			}
+			case 22: {
+				entvars.avelocity[0] = $quake_prog.cast_float(value);
+				break;
+			}
+			case 23: {
+				entvars.avelocity[1] = $quake_prog.cast_float(value);
+				break;
+			}
+			case 24: {
+				entvars.avelocity[2] = $quake_prog.cast_float(value);
+				break;
+			}
+			case 25: {
+				entvars.punchangle[0] = $quake_prog.cast_float(value);
+				break;
+			}
+			case 26: {
+				entvars.punchangle[1] = $quake_prog.cast_float(value);
+				break;
+			}
+			case 27: {
+				entvars.punchangle[2] = $quake_prog.cast_float(value);
 				break;
 			}
 			case 28: {
@@ -13388,8 +14264,36 @@
 				entvars.frame = $quake_prog.cast_float(value);
 				break;
 			}
+			case 31: {
+				entvars.skin = $quake_prog.cast_float(value);
+				break;
+			}
 			case 32: {
 				entvars.effects = $quake_prog.cast_float(value);
+				break;
+			}
+			case 33: {
+				entvars.mins[0] = $quake_prog.cast_float(value);
+				break;
+			}
+			case 34: {
+				entvars.mins[1] = $quake_prog.cast_float(value);
+				break;
+			}
+			case 35: {
+				entvars.mins[2] = $quake_prog.cast_float(value);
+				break;
+			}
+			case 36: {
+				entvars.maxs[0] = $quake_prog.cast_float(value);
+				break;
+			}
+			case 37: {
+				entvars.maxs[1] = $quake_prog.cast_float(value);
+				break;
+			}
+			case 38: {
+				entvars.maxs[2] = $quake_prog.cast_float(value);
 				break;
 			}
 			case 39: {
@@ -13424,8 +14328,16 @@
 				entvars.nextthink = $quake_prog.cast_float(value);
 				break;
 			}
+			case 47: {
+				entvars.groundentity = $quake_prog.cast_int(value);
+				break;
+			}
 			case 48: {
 				entvars.health = $quake_prog.cast_float(value);
+				break;
+			}
+			case 49: {
+				entvars.frags = $quake_prog.cast_float(value);
 				break;
 			}
 			case 50: {
@@ -13468,6 +14380,10 @@
 				entvars.takedamage = $quake_prog.cast_float(value);
 				break;
 			}
+			case 60: {
+				entvars.chain = $quake_prog.cast_int(value);
+				break;
+			}
 			case 61: {
 				entvars.deadflag = $quake_prog.cast_float(value);
 				break;
@@ -13484,16 +14400,68 @@
 				entvars.view_ofs[2] = $quake_prog.cast_float(value);
 				break;
 			}
+			case 65: {
+				entvars.button0 = $quake_prog.cast_float(value);
+				break;
+			}
+			case 66: {
+				entvars.button1 = $quake_prog.cast_float(value);
+				break;
+			}
+			case 67: {
+				entvars.button2 = $quake_prog.cast_float(value);
+				break;
+			}
+			case 68: {
+				entvars.impulse = $quake_prog.cast_float(value);
+				break;
+			}
 			case 69: {
 				entvars.fixangle = $quake_prog.cast_float(value);
+				break;
+			}
+			case 70: {
+				entvars.v_angle[0] = $quake_prog.cast_float(value);
+				break;
+			}
+			case 71: {
+				entvars.v_angle[1] = $quake_prog.cast_float(value);
+				break;
+			}
+			case 72: {
+				entvars.v_angle[2] = $quake_prog.cast_float(value);
+				break;
+			}
+			case 73: {
+				entvars.idealpitch = $quake_prog.cast_int(value);
+				break;
+			}
+			case 74: {
+				entvars.netname = $quake_prog.cast_int(value);
+				break;
+			}
+			case 75: {
+				entvars.enemy = $quake_prog.cast_int(value);
 				break;
 			}
 			case 76: {
 				entvars.flags = $quake_prog.cast_float(value);
 				break;
 			}
+			case 77: {
+				entvars.colormap = $quake_prog.cast_float(value);
+				break;
+			}
+			case 78: {
+				entvars.team = $quake_prog.cast_float(value);
+				break;
+			}
 			case 79: {
 				entvars.max_health = $quake_prog.cast_float(value);
+				break;
+			}
+			case 80: {
+				entvars.teleport_time = $quake_prog.cast_float(value);
 				break;
 			}
 			case 81: {
@@ -13504,8 +14472,52 @@
 				entvars.armorvalue = $quake_prog.cast_float(value);
 				break;
 			}
+			case 83: {
+				entvars.waterlevel = $quake_prog.cast_float(value);
+				break;
+			}
+			case 84: {
+				entvars.watertype = $quake_prog.cast_float(value);
+				break;
+			}
+			case 85: {
+				entvars.ideal_yaw = $quake_prog.cast_float(value);
+				break;
+			}
+			case 86: {
+				entvars.yaw_speed = $quake_prog.cast_float(value);
+				break;
+			}
+			case 87: {
+				entvars.aiment = $quake_prog.cast_int(value);
+				break;
+			}
+			case 88: {
+				entvars.goalentity = $quake_prog.cast_int(value);
+				break;
+			}
 			case 89: {
 				entvars.spawnflags = $quake_prog.cast_float(value);
+				break;
+			}
+			case 90: {
+				entvars.target = $quake_prog.cast_int(value);
+				break;
+			}
+			case 91: {
+				entvars.targetname = $quake_prog.cast_int(value);
+				break;
+			}
+			case 92: {
+				entvars.dmg_take = $quake_prog.cast_float(value);
+				break;
+			}
+			case 93: {
+				entvars.dmg_save = $quake_prog.cast_float(value);
+				break;
+			}
+			case 94: {
+				entvars.dmg_inflictor = $quake_prog.cast_int(value);
 				break;
 			}
 			case 95: {
@@ -13522,6 +14534,10 @@
 			}
 			case 98: {
 				entvars.movedir[2] = $quake_prog.cast_float(value);
+				break;
+			}
+			case 99: {
+				entvars.message = $quake_prog.cast_int(value);
 				break;
 			}
 			case 100: {
@@ -13545,6 +14561,7 @@
 				break;
 			}
 			default: {
+				ss.Debug.writeln('cant write offset ' + offset);
 				break;
 			}
 		}
@@ -13560,331 +14577,374 @@
 		var ed;
 		var exitdepth;
 		//eval_t	*ptr;
-		//if (!fnum || fnum >= progs.numfunctions)
-		//{
-		//if (pr_global_struct.self)
-		//ED_Print (PROG_TO_EDICT(pr_global_struct.self));
-		//Host_Error ("PR_ExecuteProgram: NULL function");
-		//}
-		//
-		//f = &pr_functions[fnum];
-		runaway = 100000;
-		$quake_prog.$pr_trace = true;
-		// make a stack frame
-		exitdepth = $quake_prog.$pr_depth;
-		s = $quake_prog.pR_EnterFunction(fnum);
-		while (true) {
-			s++;
-			// next statement
-			$quake_prog.$prNum++;
-			st = $quake_prog.$pr_statements[s];
-			if (--runaway === 0) {
-				$quake_prog.$pR_RunError('runaway loop error');
-			}
-			$quake_prog.$pr_xfunction.profile++;
-			$quake_prog.$pr_xstatement = s;
-			if ($quake_prog.$pr_trace) {
-				//PR_PrintStatement(st);
-				//Debug.WriteLine(string.Format("a {0}: {1} {2} {3}", st.a, pr_globals_read(st.a), pr_globals_read(st.a + 1), pr_globals_read(st.a + 2)));
-				//Debug.WriteLine(string.Format("b {0}: {1} {2} {3}", st.b, pr_globals_read(st.b), pr_globals_read(st.b + 1), pr_globals_read(st.b + 2)));
-				//Debug.WriteLine(string.Format("c {0}: {1} {2} {3}", st.c, pr_globals_read(st.c), pr_globals_read(st.c + 1), pr_globals_read(st.c + 2)));
-				//PR_StackTraceStr();
-			}
-			if (st.c === 7505) {
-				st.c = st.c;
-			}
-			var eval;
-			switch (st.op) {
-				case 6: {
-					//c->_float = a->_float + b->_float;
-					$quake_prog.pr_globals_write(st.c, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) + $quake_prog.cast_float($quake_prog.pr_globals_read(st.b)));
-					break;
+		try {
+			//if (!fnum || fnum >= progs.numfunctions)
+			//{
+			//if (pr_global_struct.self)
+			//ED_Print (PROG_TO_EDICT(pr_global_struct.self));
+			//Host_Error ("PR_ExecuteProgram: NULL function");
+			//}
+			//
+			//f = &pr_functions[fnum];
+			runaway = 100000;
+			$quake_prog.$pr_trace = true;
+			// make a stack frame
+			exitdepth = $quake_prog.$pr_depth;
+			s = $quake_prog.pR_EnterFunction(fnum);
+			while (true) {
+				s++;
+				// next statement
+				$quake_prog.prNum++;
+				st = $quake_prog.$pr_statements[s];
+				if (--runaway === 0) {
+					$quake_prog.$pR_RunError('runaway loop error');
 				}
-				case 7: {
-					//c->vector[0] = a->vector[0] + b->vector[0];
-					//c->vector[1] = a->vector[1] + b->vector[1];
-					//c->vector[2] = a->vector[2] + b->vector[2];
-					$quake_prog.pr_globals_write(st.c, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) + $quake_prog.cast_float($quake_prog.pr_globals_read(st.b)));
-					$quake_prog.pr_globals_write(st.c + 1, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 1)) + $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 1)));
-					$quake_prog.pr_globals_write(st.c + 2, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 2)) + $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 2)));
-					break;
+				$quake_prog.$pr_xfunction.profile++;
+				$quake_prog.$pr_xstatement = s;
+				if ($quake_prog.$pr_trace) {
+					//PR_PrintStatement(st);
+					//Debug.WriteLine(string.Format("a {0}: {1} {2} {3}", st.a, pr_globals_read(st.a), pr_globals_read(st.a + 1), pr_globals_read(st.a + 2)));
+					//Debug.WriteLine(string.Format("b {0}: {1} {2} {3}", st.b, pr_globals_read(st.b), pr_globals_read(st.b + 1), pr_globals_read(st.b + 2)));
+					//Debug.WriteLine(string.Format("c {0}: {1} {2} {3}", st.c, pr_globals_read(st.c), pr_globals_read(st.c + 1), pr_globals_read(st.c + 2)));
+					//PR_StackTraceStr();
 				}
-				case 8: {
-					//c->_float = a->_float - b->_float;
-					$quake_prog.pr_globals_write(st.c, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) - $quake_prog.cast_float($quake_prog.pr_globals_read(st.b)));
-					break;
+				if (st.c === 7505) {
+					st.c = st.c;
 				}
-				case 9: {
-					//c->vector[0] = a->vector[0] - b->vector[0];
-					//c->vector[1] = a->vector[1] - b->vector[1];
-					//c->vector[2] = a->vector[2] - b->vector[2];
-					$quake_prog.pr_globals_write(st.c, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) - $quake_prog.cast_float($quake_prog.pr_globals_read(st.b)));
-					$quake_prog.pr_globals_write(st.c + 1, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 1)) - $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 1)));
-					$quake_prog.pr_globals_write(st.c + 2, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 2)) - $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 2)));
-					break;
-				}
-				case 1: {
-					//c->_float = a->_float * b->_float;
-					$quake_prog.pr_globals_write(st.c, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) * $quake_prog.cast_float($quake_prog.pr_globals_read(st.b)));
-					break;
-				}
-				case 2: {
-					//c->_float = a->vector[0] * b->vector[0]
-					//+ a->vector[1] * b->vector[1]
-					//+ a->vector[2] * b->vector[2];
-					var res = $quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) * $quake_prog.cast_float($quake_prog.pr_globals_read(st.b)) + $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 1)) * $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 1)) + $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 2)) * $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 2));
-					$quake_prog.pr_globals_write(st.c, res);
-					break;
-				}
-				case 3: {
-					//c->vector[0] = a->_float * b->vector[0];
-					//c->vector[1] = a->_float * b->vector[1];
-					//c->vector[2] = a->_float * b->vector[2];
-					throw new $System_NotImplementedException();
-					break;
-				}
-				case 4: {
-					//c->vector[0] = b->_float * a->vector[0];
-					//c->vector[1] = b->_float * a->vector[1];
-					//c->vector[2] = b->_float * a->vector[2];
-					var b_float = $quake_prog.cast_float($quake_prog.pr_globals_read(st.b));
-					$quake_prog.pr_globals_write(st.c, b_float * $quake_prog.cast_float($quake_prog.pr_globals_read(st.a)));
-					$quake_prog.pr_globals_write(st.c + 1, b_float * $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 1)));
-					$quake_prog.pr_globals_write(st.c + 2, b_float * $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 2)));
-					break;
-				}
-				case 64: {
-					//c->_float = (int)a->_float & (int)b->_float;
-					$quake_prog.pr_globals_write(st.c, ss.Int32.trunc($quake_prog.cast_float($quake_prog.pr_globals_read(st.a))) & ss.Int32.trunc($quake_prog.cast_float($quake_prog.pr_globals_read(st.b))));
-					break;
-				}
-				case 65: {
-					//c->_float = (int)a->_float | (int)b->_float;
-					$quake_prog.pr_globals_write(st.c, ss.Int32.trunc($quake_prog.cast_float($quake_prog.pr_globals_read(st.a))) | ss.Int32.trunc($quake_prog.cast_float($quake_prog.pr_globals_read(st.b))));
-					break;
-				}
-				case 21: {
-					//c->_float = a->_float >= b->_float;
-					$quake_prog.pr_globals_write(st.c, (($quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) >= $quake_prog.cast_float($quake_prog.pr_globals_read(st.b))) ? 1 : 0));
-					break;
-				}
-				case 20: {
-					//c->_float = a->_float <= b->_float;
-					$quake_prog.pr_globals_write(st.c, (($quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) <= $quake_prog.cast_float($quake_prog.pr_globals_read(st.b))) ? 1 : 0));
-					break;
-				}
-				case 23: {
-					//c->_float = a->_float > b->_float;
-					$quake_prog.pr_globals_write(st.c, (($quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) > $quake_prog.cast_float($quake_prog.pr_globals_read(st.b))) ? 1 : 0));
-					break;
-				}
-				case 22: {
-					//c->_float = a->_float < b->_float;
-					$quake_prog.pr_globals_write(st.c, (($quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) < $quake_prog.cast_float($quake_prog.pr_globals_read(st.b))) ? 1 : 0));
-					break;
-				}
-				case 62: {
-					//c->_float = a->_float && b->_float;
-					$quake_prog.pr_globals_write(st.c, (($quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) !== 0 && $quake_prog.cast_float($quake_prog.pr_globals_read(st.b)) !== 0) ? 1 : 0));
-					break;
-				}
-				case 63: {
-					//c->_float = a->_float || b->_float;
-					$quake_prog.pr_globals_write(st.c, (($quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) !== 0 || $quake_prog.cast_float($quake_prog.pr_globals_read(st.b)) !== 0) ? 1 : 0));
-					break;
-				}
-				case 44: {
-					//c->_float = !a->_float;
-					$quake_prog.pr_globals_write(st.c, (($quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) === 0) ? 1 : 0));
-					break;
-				}
-				case 46: {
-					//c->_float = !a->string || !pr_strings[a->string];
-					var astring = $quake_prog.cast_int($quake_prog.pr_globals_read(st.a));
-					$quake_prog.pr_globals_write(st.c, ((astring === 0 || ss.isNullOrUndefined($quake_prog.pr_string(astring))) ? 1 : 0));
-					break;
-				}
-				case 48: {
-					//c->_float = !a->function;
-					$quake_prog.pr_globals_write(st.c, (($quake_prog.cast_int($quake_prog.pr_globals_read(st.a)) === 0) ? 1 : 0));
-					break;
-				}
-				case 47: {
-					//c->_float = (PROG_TO_EDICT(a->edict) == sv.edicts);
-					$quake_prog.pr_globals_write(st.c, (ss.referenceEquals($quake_prog.proG_TO_EDICT($quake_prog.cast_int($quake_prog.pr_globals_read(st.a))), $quake_server.sv.edicts[0]) ? 1 : 0));
-					break;
-				}
-				case 10: {
-					//c->_float = a->_float == b->_float;
-					$quake_prog.pr_globals_write(st.c, (($quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) === $quake_prog.cast_float($quake_prog.pr_globals_read(st.b))) ? 1 : 0));
-					break;
-				}
-				case 11: {
-					//c->_float = (a->vector[0] == b->vector[0]) &&
-					//(a->vector[1] == b->vector[1]) &&
-					//(a->vector[2] == b->vector[2]);
-					eval = $quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) === $quake_prog.cast_float($quake_prog.pr_globals_read(st.b)) && $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 1)) === $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 1)) && $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 2)) === $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 2));
-					$quake_prog.pr_globals_write(st.c, (eval ? 1 : 0));
-					break;
-				}
-				case 12: {
-					//c->_float = !strcmp(pr_strings+a->string,pr_strings+b->string);
-					$quake_prog.pr_globals_write(st.c, ((ss.compare($quake_prog.pr_string($quake_prog.cast_int($quake_prog.pr_globals_read(st.a))), $quake_prog.pr_string($quake_prog.cast_int($quake_prog.pr_globals_read(st.b)))) === 0) ? 1 : 0));
-					break;
-				}
-				case 16: {
-					//c->_float = (a->vector[0] != b->vector[0]) ||
-					//(a->vector[1] != b->vector[1]) ||
-					//(a->vector[2] != b->vector[2]);
-					eval = $quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) !== $quake_prog.cast_float($quake_prog.pr_globals_read(st.b)) || $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 1)) !== $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 1)) || $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 2)) !== $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 2));
-					$quake_prog.pr_globals_write(st.c, (eval ? 1 : 0));
-					break;
-				}
-				case 31:
-				case 34:
-				case 35:
-				case 33:
-				case 36: {
-					// integers
-					// pointers
-					$quake_prog.pr_globals_write(st.b, $quake_prog.pr_globals_read(st.a));
-					break;
-				}
-				case 32: {
-					//b->vector[0] = a->vector[0];
-					//b->vector[1] = a->vector[1];
-					//b->vector[2] = a->vector[2];
-					$quake_prog.pr_globals_write(st.b, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a)));
-					$quake_prog.pr_globals_write(st.b + 1, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 1)));
-					$quake_prog.pr_globals_write(st.b + 2, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 2)));
-					break;
-				}
-				case 37:
-				case 40:
-				case 41:
-				case 39:
-				case 42: {
-					// integers
-					// pointers
-					//ptr = (eval_t*)((byte*)sv.edicts + b->_int);
-					//ptr->_int = a->_int;
-					$quake_prog.$writeptr($quake_prog.cast_int($quake_prog.pr_globals_read(st.b)), $quake_prog.cast_int($quake_prog.pr_globals_read(st.a)));
-					break;
-				}
-				case 38: {
-					//ptr = (eval_t*)((byte*)sv.edicts + b->_int);
-					//ptr->vector[0] = a->vector[0];
-					//ptr->vector[1] = a->vector[1];
-					//ptr->vector[2] = a->vector[2];
-					$quake_prog.$writeptr($quake_prog.cast_int($quake_prog.pr_globals_read(st.b)), $quake_prog.cast_int($quake_prog.pr_globals_read(st.a)));
-					$quake_prog.$writeptr($quake_prog.cast_int($quake_prog.pr_globals_read(st.b)) + 1, $quake_prog.cast_int($quake_prog.pr_globals_read(st.a + 1)));
-					$quake_prog.$writeptr($quake_prog.cast_int($quake_prog.pr_globals_read(st.b)) + 2, $quake_prog.cast_int($quake_prog.pr_globals_read(st.a + 2)));
-					break;
-				}
-				case 30: {
-					ed = $quake_prog.proG_TO_EDICT($quake_prog.cast_int($quake_prog.pr_globals_read(st.a)));
-					if (ss.referenceEquals(ed, $quake_server.sv.edicts[0]) && $quake_server.sv.state === 1) {
-						$quake_prog.$pR_RunError('assignment to world entity');
-					}
-					//c->_int = (byte *)((int *)&ed->v + b->_int) - (byte *)sv.edicts;
-					$quake_prog.pr_globals_write(st.c, ed.index * $quake_prog.pr_edict_size + 96 + $quake_prog.cast_int($quake_prog.pr_globals_read(st.b)) * 4);
-					break;
-				}
-				case 24:
-				case 28:
-				case 27:
-				case 26:
-				case 29: {
-					ed = $quake_prog.proG_TO_EDICT($quake_prog.cast_int($quake_prog.pr_globals_read(st.a)));
-					//a = (eval_t *)((int *)&ed->v + b->_int);
-					//c->_int = a->_int;
-					$quake_prog.pr_globals_write(st.c, $quake_prog.cast_int($quake_prog.$readptr(ed.index * $quake_prog.pr_edict_size + 96 + $quake_prog.cast_int($quake_prog.pr_globals_read(st.b)) * 4)));
-					break;
-				}
-				case 25: {
-					ed = $quake_prog.proG_TO_EDICT($quake_prog.cast_int($quake_prog.pr_globals_read(st.a)));
-					//a = (eval_t *)((int *)&ed->v + b->_int);
-					//c->vector[0] = a->vector[0];
-					//c->vector[1] = a->vector[1];
-					//c->vector[2] = a->vector[2];
-					$quake_prog.pr_globals_write(st.c, $quake_prog.cast_float($quake_prog.$readptr(ed.index * $quake_prog.pr_edict_size + 96 + $quake_prog.cast_int($quake_prog.pr_globals_read(st.b)) * 4)));
-					$quake_prog.pr_globals_write(st.c + 1, $quake_prog.cast_float($quake_prog.$readptr(ed.index * $quake_prog.pr_edict_size + 96 + ($quake_prog.cast_int($quake_prog.pr_globals_read(st.b)) + 1) * 4)));
-					$quake_prog.pr_globals_write(st.c + 2, $quake_prog.cast_float($quake_prog.$readptr(ed.index * $quake_prog.pr_edict_size + 96 + ($quake_prog.cast_int($quake_prog.pr_globals_read(st.b)) + 2) * 4)));
-					break;
-				}
-				case 50: {
-					if ($quake_prog.cast_int($quake_prog.pr_globals_read(st.a)) === 0) {
-						s += st.b - 1;
-					}
-					// offset the s++
-					break;
-				}
-				case 49: {
-					if ($quake_prog.cast_int($quake_prog.pr_globals_read(st.a)) !== 0) {
-						s += st.b - 1;
-					}
-					// offset the s++
-					break;
-				}
-				case 61: {
-					s += st.a - 1;
-					// offset the s++
-					break;
-				}
-				case 51:
-				case 52:
-				case 53:
-				case 54:
-				case 55:
-				case 56:
-				case 57:
-				case 58:
-				case 59: {
-					$quake_prog.$pr_argc = st.op - 51;
-					var afunction = $quake_prog.cast_int($quake_prog.pr_globals_read(st.a));
-					if (afunction === 0) {
-						$quake_prog.$pR_RunError('NULL function');
-					}
-					newf = $quake_prog.pr_functions[afunction];
-					if (newf.first_statement < 0) {
-						// negative statements are built in functions
-						i = -newf.first_statement;
-						if (i >= $quake_prog.$pr_numbuiltins) {
-							$quake_prog.$pR_RunError('Bad builtin call number');
-						}
-						//Debug.WriteLine("pr_builtins " + i);
-						$quake_prog.$pr_builtins[i]();
+				var eval;
+				switch (st.op) {
+					case 6: {
+						//c->_float = a->_float + b->_float;
+						$quake_prog.pr_globals_write(st.c, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) + $quake_prog.cast_float($quake_prog.pr_globals_read(st.b)));
 						break;
 					}
-					s = $quake_prog.pR_EnterFunction(newf);
-					break;
-				}
-				case 0:
-				case 43: {
-					$quake_prog.pr_globals_write($quake_prog.ofS_RETURN, $quake_prog.pr_globals_read(st.a));
-					$quake_prog.pr_globals_write(2, $quake_prog.pr_globals_read(st.a + 1));
-					$quake_prog.pr_globals_write(3, $quake_prog.pr_globals_read(st.a + 2));
-					s = $quake_prog.$pR_LeaveFunction();
-					if ($quake_prog.$pr_depth === exitdepth) {
-						return;
+					case 7: {
+						//c->vector[0] = a->vector[0] + b->vector[0];
+						//c->vector[1] = a->vector[1] + b->vector[1];
+						//c->vector[2] = a->vector[2] + b->vector[2];
+						$quake_prog.pr_globals_write(st.c, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) + $quake_prog.cast_float($quake_prog.pr_globals_read(st.b)));
+						$quake_prog.pr_globals_write(st.c + 1, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 1)) + $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 1)));
+						$quake_prog.pr_globals_write(st.c + 2, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 2)) + $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 2)));
+						break;
 					}
-					// all done
-					break;
-				}
-				case 60: {
-					ed = $quake_prog.proG_TO_EDICT($quake_prog.pr_global_struct[0].self);
-					ed.v.nextthink = $quake_prog.pr_global_struct[0].time + 0.1;
-					if ($quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) !== ed.v.frame) {
-						ed.v.frame = $quake_prog.cast_float($quake_prog.pr_globals_read(st.a));
+					case 8: {
+						//c->_float = a->_float - b->_float;
+						$quake_prog.pr_globals_write(st.c, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) - $quake_prog.cast_float($quake_prog.pr_globals_read(st.b)));
+						break;
 					}
-					ed.v.think = $quake_prog.cast_int($quake_prog.pr_globals_read(st.b));
-					break;
-				}
-				default: {
-					//PR_RunError("Bad opcode " + st.op); - breaks
-					break;
+					case 9: {
+						//c->vector[0] = a->vector[0] - b->vector[0];
+						//c->vector[1] = a->vector[1] - b->vector[1];
+						//c->vector[2] = a->vector[2] - b->vector[2];
+						$quake_prog.pr_globals_write(st.c, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) - $quake_prog.cast_float($quake_prog.pr_globals_read(st.b)));
+						$quake_prog.pr_globals_write(st.c + 1, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 1)) - $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 1)));
+						$quake_prog.pr_globals_write(st.c + 2, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 2)) - $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 2)));
+						break;
+					}
+					case 1: {
+						//c->_float = a->_float * b->_float;
+						$quake_prog.pr_globals_write(st.c, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) * $quake_prog.cast_float($quake_prog.pr_globals_read(st.b)));
+						break;
+					}
+					case 2: {
+						//c->_float = a->vector[0] * b->vector[0]
+						//+ a->vector[1] * b->vector[1]
+						//+ a->vector[2] * b->vector[2];
+						var res = $quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) * $quake_prog.cast_float($quake_prog.pr_globals_read(st.b)) + $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 1)) * $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 1)) + $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 2)) * $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 2));
+						$quake_prog.pr_globals_write(st.c, res);
+						break;
+					}
+					case 3: {
+						//c->vector[0] = a->_float * b->vector[0];
+						//c->vector[1] = a->_float * b->vector[1];
+						//c->vector[2] = a->_float * b->vector[2];
+						var a_float = $quake_prog.cast_float($quake_prog.pr_globals_read(st.a));
+						$quake_prog.pr_globals_write(st.c, a_float * $quake_prog.cast_float($quake_prog.pr_globals_read(st.b)));
+						$quake_prog.pr_globals_write(st.c + 1, a_float * $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 1)));
+						$quake_prog.pr_globals_write(st.c + 2, a_float * $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 2)));
+						break;
+					}
+					case 4: {
+						//c->vector[0] = b->_float * a->vector[0];
+						//c->vector[1] = b->_float * a->vector[1];
+						//c->vector[2] = b->_float * a->vector[2];
+						var b_float = $quake_prog.cast_float($quake_prog.pr_globals_read(st.b));
+						$quake_prog.pr_globals_write(st.c, b_float * $quake_prog.cast_float($quake_prog.pr_globals_read(st.a)));
+						$quake_prog.pr_globals_write(st.c + 1, b_float * $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 1)));
+						$quake_prog.pr_globals_write(st.c + 2, b_float * $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 2)));
+						break;
+					}
+					case 5: {
+						//c->_float = a->_float / b->_float;
+						$quake_prog.pr_globals_write(st.c, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) / $quake_prog.cast_float($quake_prog.pr_globals_read(st.b)));
+						break;
+					}
+					case 64: {
+						//c->_float = (int)a->_float & (int)b->_float;
+						$quake_prog.pr_globals_write(st.c, ss.Int32.trunc($quake_prog.cast_float($quake_prog.pr_globals_read(st.a))) & ss.Int32.trunc($quake_prog.cast_float($quake_prog.pr_globals_read(st.b))));
+						break;
+					}
+					case 65: {
+						//c->_float = (int)a->_float | (int)b->_float;
+						$quake_prog.pr_globals_write(st.c, ss.Int32.trunc($quake_prog.cast_float($quake_prog.pr_globals_read(st.a))) | ss.Int32.trunc($quake_prog.cast_float($quake_prog.pr_globals_read(st.b))));
+						break;
+					}
+					case 21: {
+						//c->_float = a->_float >= b->_float;
+						$quake_prog.pr_globals_write(st.c, (($quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) >= $quake_prog.cast_float($quake_prog.pr_globals_read(st.b))) ? 1 : 0));
+						break;
+					}
+					case 20: {
+						//c->_float = a->_float <= b->_float;
+						$quake_prog.pr_globals_write(st.c, (($quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) <= $quake_prog.cast_float($quake_prog.pr_globals_read(st.b))) ? 1 : 0));
+						break;
+					}
+					case 23: {
+						//c->_float = a->_float > b->_float;
+						$quake_prog.pr_globals_write(st.c, (($quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) > $quake_prog.cast_float($quake_prog.pr_globals_read(st.b))) ? 1 : 0));
+						break;
+					}
+					case 22: {
+						//c->_float = a->_float < b->_float;
+						$quake_prog.pr_globals_write(st.c, (($quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) < $quake_prog.cast_float($quake_prog.pr_globals_read(st.b))) ? 1 : 0));
+						break;
+					}
+					case 62: {
+						//c->_float = a->_float && b->_float;
+						$quake_prog.pr_globals_write(st.c, (($quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) !== 0 && $quake_prog.cast_float($quake_prog.pr_globals_read(st.b)) !== 0) ? 1 : 0));
+						break;
+					}
+					case 63: {
+						//c->_float = a->_float || b->_float;
+						$quake_prog.pr_globals_write(st.c, (($quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) !== 0 || $quake_prog.cast_float($quake_prog.pr_globals_read(st.b)) !== 0) ? 1 : 0));
+						break;
+					}
+					case 44: {
+						//c->_float = !a->_float;
+						$quake_prog.pr_globals_write(st.c, (($quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) === 0) ? 1 : 0));
+						break;
+					}
+					case 46: {
+						//c->_float = !a->string || !pr_strings[a->string];
+						var astring = $quake_prog.cast_int($quake_prog.pr_globals_read(st.a));
+						$quake_prog.pr_globals_write(st.c, ((astring === 0 || ss.isNullOrUndefined($quake_prog.pr_string(astring))) ? 1 : 0));
+						break;
+					}
+					case 48: {
+						//c->_float = !a->function;
+						$quake_prog.pr_globals_write(st.c, (($quake_prog.cast_int($quake_prog.pr_globals_read(st.a)) === 0) ? 1 : 0));
+						break;
+					}
+					case 47: {
+						//c->_float = (PROG_TO_EDICT(a->edict) == sv.edicts);
+						$quake_prog.pr_globals_write(st.c, (ss.referenceEquals($quake_prog.proG_TO_EDICT($quake_prog.cast_int($quake_prog.pr_globals_read(st.a))), $quake_server.sv.edicts[0]) ? 1 : 0));
+						break;
+					}
+					case 10: {
+						//c->_float = a->_float == b->_float;
+						$quake_prog.pr_globals_write(st.c, (($quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) === $quake_prog.cast_float($quake_prog.pr_globals_read(st.b))) ? 1 : 0));
+						break;
+					}
+					case 11: {
+						//c->_float = (a->vector[0] == b->vector[0]) &&
+						//(a->vector[1] == b->vector[1]) &&
+						//(a->vector[2] == b->vector[2]);
+						eval = $quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) === $quake_prog.cast_float($quake_prog.pr_globals_read(st.b)) && $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 1)) === $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 1)) && $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 2)) === $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 2));
+						$quake_prog.pr_globals_write(st.c, (eval ? 1 : 0));
+						break;
+					}
+					case 12: {
+						//c->_float = !strcmp(pr_strings+a->string,pr_strings+b->string);
+						$quake_prog.pr_globals_write(st.c, ((ss.compare($quake_prog.pr_string($quake_prog.cast_int($quake_prog.pr_globals_read(st.a))), $quake_prog.pr_string($quake_prog.cast_int($quake_prog.pr_globals_read(st.b)))) === 0) ? 1 : 0));
+						break;
+					}
+					case 13: {
+						// 		c->_float = a->_int == b->_int;
+						$quake_prog.pr_globals_write(st.c, (($quake_prog.cast_int($quake_prog.pr_globals_read(st.a)) === $quake_prog.cast_int($quake_prog.pr_globals_read(st.b))) ? 1 : 0));
+						break;
+					}
+					case 15: {
+						eval = $quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) !== $quake_prog.cast_float($quake_prog.pr_globals_read(st.b));
+						$quake_prog.pr_globals_write(st.c, (eval ? 1 : 0));
+						break;
+					}
+					case 16: {
+						//c->_float = (a->vector[0] != b->vector[0]) ||
+						//(a->vector[1] != b->vector[1]) ||
+						//(a->vector[2] != b->vector[2]);
+						eval = $quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) !== $quake_prog.cast_float($quake_prog.pr_globals_read(st.b)) || $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 1)) !== $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 1)) || $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 2)) !== $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 2));
+						$quake_prog.pr_globals_write(st.c, (eval ? 1 : 0));
+						break;
+					}
+					case 17: {
+						eval = ss.referenceEquals($quake_prog.pr_string(st.a), $quake_prog.pr_string(st.b));
+						$quake_prog.pr_globals_write(st.c, (eval ? 1 : 0));
+						break;
+					}
+					case 18: {
+						//c->_float = a->_int != b->_int;
+						eval = $quake_prog.cast_int($quake_prog.pr_globals_read(st.a)) !== $quake_prog.cast_int($quake_prog.pr_globals_read(st.b));
+						$quake_prog.pr_globals_write(st.c, (eval ? 1 : 0));
+						break;
+					}
+					case 19: {
+						//c->_float = a->function != b->function;
+						break;
+					}
+					case 31:
+					case 34:
+					case 35:
+					case 33:
+					case 36: {
+						// integers
+						// pointers
+						$quake_prog.pr_globals_write(st.b, $quake_prog.pr_globals_read(st.a));
+						break;
+					}
+					case 32: {
+						//b->vector[0] = a->vector[0];
+						//b->vector[1] = a->vector[1];
+						//b->vector[2] = a->vector[2];
+						$quake_prog.pr_globals_write(st.b, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a)));
+						$quake_prog.pr_globals_write(st.b + 1, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 1)));
+						$quake_prog.pr_globals_write(st.b + 2, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 2)));
+						break;
+					}
+					case 37:
+					case 40:
+					case 41:
+					case 39:
+					case 42: {
+						// integers
+						// pointers
+						//ptr = (eval_t*)((byte*)sv.edicts + b->_int);
+						//ptr->_int = a->_int;
+						$quake_prog.$writeptr($quake_prog.cast_int($quake_prog.pr_globals_read(st.b)), $quake_prog.cast_int($quake_prog.pr_globals_read(st.a)), 0);
+						break;
+					}
+					case 38: {
+						//ptr = (eval_t*)((byte*)sv.edicts + b->_int);
+						//ptr->vector[0] = a->vector[0];
+						//ptr->vector[1] = a->vector[1];
+						//ptr->vector[2] = a->vector[2];
+						$quake_prog.$writeptr($quake_prog.cast_int($quake_prog.pr_globals_read(st.b)), $quake_prog.cast_int($quake_prog.pr_globals_read(st.a)), 0);
+						$quake_prog.$writeptr($quake_prog.cast_int($quake_prog.pr_globals_read(st.b)), $quake_prog.cast_int($quake_prog.pr_globals_read(st.a + 1)), 1);
+						$quake_prog.$writeptr($quake_prog.cast_int($quake_prog.pr_globals_read(st.b)), $quake_prog.cast_int($quake_prog.pr_globals_read(st.a + 2)), 2);
+						break;
+					}
+					case 30: {
+						ed = $quake_prog.proG_TO_EDICT($quake_prog.cast_int($quake_prog.pr_globals_read(st.a)));
+						if (ss.referenceEquals(ed, $quake_server.sv.edicts[0]) && $quake_server.sv.state === 1) {
+							$quake_prog.$pR_RunError('assignment to world entity');
+						}
+						//c->_int = (byte *)((int *)&ed->v + b->_int) - (byte *)sv.edicts;
+						$quake_prog.pr_globals_write(st.c, ed.index * $quake_prog.pr_edict_size + 96 + $quake_prog.cast_int($quake_prog.pr_globals_read(st.b)) * 4);
+						break;
+					}
+					case 24:
+					case 28:
+					case 27:
+					case 26:
+					case 29: {
+						ed = $quake_prog.proG_TO_EDICT($quake_prog.cast_int($quake_prog.pr_globals_read(st.a)));
+						//a = (eval_t *)((int *)&ed->v + b->_int);
+						//c->_int = a->_int;
+						$quake_prog.pr_globals_write(st.c, $quake_prog.cast_int($quake_prog.$readptr(ed.index * $quake_prog.pr_edict_size + 96 + $quake_prog.cast_int($quake_prog.pr_globals_read(st.b)) * 4)));
+						break;
+					}
+					case 25: {
+						ed = $quake_prog.proG_TO_EDICT($quake_prog.cast_int($quake_prog.pr_globals_read(st.a)));
+						//a = (eval_t *)((int *)&ed->v + b->_int);
+						//c->vector[0] = a->vector[0];
+						//c->vector[1] = a->vector[1];
+						//c->vector[2] = a->vector[2];
+						$quake_prog.pr_globals_write(st.c, $quake_prog.cast_float($quake_prog.$readptr(ed.index * $quake_prog.pr_edict_size + 96 + $quake_prog.cast_int($quake_prog.pr_globals_read(st.b)) * 4)));
+						$quake_prog.pr_globals_write(st.c + 1, $quake_prog.cast_float($quake_prog.$readptr(ed.index * $quake_prog.pr_edict_size + 96 + ($quake_prog.cast_int($quake_prog.pr_globals_read(st.b)) + 1) * 4)));
+						$quake_prog.pr_globals_write(st.c + 2, $quake_prog.cast_float($quake_prog.$readptr(ed.index * $quake_prog.pr_edict_size + 96 + ($quake_prog.cast_int($quake_prog.pr_globals_read(st.b)) + 2) * 4)));
+						break;
+					}
+					case 50: {
+						if ($quake_prog.cast_int($quake_prog.pr_globals_read(st.a)) === 0) {
+							s += st.b - 1;
+						}
+						// offset the s++
+						break;
+					}
+					case 49: {
+						if ($quake_prog.cast_int($quake_prog.pr_globals_read(st.a)) !== 0) {
+							s += st.b - 1;
+						}
+						// offset the s++
+						break;
+					}
+					case 61: {
+						s += st.a - 1;
+						// offset the s++
+						break;
+					}
+					case 51:
+					case 52:
+					case 53:
+					case 54:
+					case 55:
+					case 56:
+					case 57:
+					case 58:
+					case 59: {
+						$quake_prog.$pr_argc = st.op - 51;
+						var afunction = $quake_prog.cast_int($quake_prog.pr_globals_read(st.a));
+						if (afunction === 0) {
+							$quake_prog.$pR_RunError('NULL function');
+						}
+						newf = $quake_prog.pr_functions[afunction];
+						if (newf.first_statement < 0) {
+							// negative statements are built in functions
+							i = -newf.first_statement;
+							if (i >= $quake_prog.$pr_numbuiltins) {
+								$quake_prog.$pR_RunError('Bad builtin call number');
+							}
+							//Debug.WriteLine("pr_builtins " + i);
+							if (ss.staticEquals($quake_prog.$pr_builtins[i], null)) {
+								ss.Debug.writeln('pr_builtins ' + i + ' does not exist');
+							}
+							$quake_prog.$pr_builtins[i]();
+							break;
+						}
+						s = $quake_prog.pR_EnterFunction(newf);
+						break;
+					}
+					case 0:
+					case 43: {
+						$quake_prog.pr_globals_write($quake_prog.ofS_RETURN, $quake_prog.pr_globals_read(st.a));
+						$quake_prog.pr_globals_write(2, $quake_prog.pr_globals_read(st.a + 1));
+						$quake_prog.pr_globals_write(3, $quake_prog.pr_globals_read(st.a + 2));
+						s = $quake_prog.$pR_LeaveFunction();
+						if ($quake_prog.$pr_depth === exitdepth) {
+							return;
+						}
+						// all done
+						break;
+					}
+					case 60: {
+						ed = $quake_prog.proG_TO_EDICT($quake_prog.pr_global_struct[0].self);
+						ed.v.nextthink = $quake_prog.pr_global_struct[0].time + 0.1;
+						if ($quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) !== ed.v.frame) {
+							ed.v.frame = $quake_prog.cast_float($quake_prog.pr_globals_read(st.a));
+						}
+						ed.v.think = $quake_prog.cast_int($quake_prog.pr_globals_read(st.b));
+						break;
+					}
+					default: {
+						ss.Debug.writeln('******Bad opcode ' + st.op + ' prNum: ' + $quake_prog.prNum);
+						// todo: this works fine on winquake. need to comment out here
+						//PR_RunError("Bad opcode " + st.op); 
+						break;
+					}
 				}
 			}
+		}
+		catch ($t1) {
+			ss.Debug.writeln('broked');
 		}
 	};
 	////////////////////////////////////////////////////////////////////////////////
@@ -14019,6 +15079,7 @@
 	var $quake_prog$edict_t = function(index) {
 		this.index = 0;
 		this.free = false;
+		this.area = new $quake_common$link_t();
 		this.num_leafs = 0;
 		this.leafnums = new Array($quake_prog.maX_ENT_LEAFS);
 		this.baseline = new $quake_quakedef$entity_state_t();
@@ -17068,22 +18129,22 @@
 		$quake_render.$screenedge[0].normal[0] = -1 / ($quake_render.$xOrigin * $quake_render.r_refdef.horizontalFieldOfView);
 		$quake_render.$screenedge[0].normal[1] = 0;
 		$quake_render.$screenedge[0].normal[2] = 1;
-		$quake_render.$screenedge[0].type = 5;
+		$quake_render.$screenedge[0].type = $quake_bspfile.planE_ANYZ;
 		// right side clip
 		$quake_render.$screenedge[1].normal[0] = 1 / ((1 - $quake_render.$xOrigin) * $quake_render.r_refdef.horizontalFieldOfView);
 		$quake_render.$screenedge[1].normal[1] = 0;
 		$quake_render.$screenedge[1].normal[2] = 1;
-		$quake_render.$screenedge[1].type = 5;
+		$quake_render.$screenedge[1].type = $quake_bspfile.planE_ANYZ;
 		// top side clip
 		$quake_render.$screenedge[2].normal[0] = 0;
 		$quake_render.$screenedge[2].normal[1] = -1 / ($quake_render.$yOrigin * $quake_render.$verticalFieldOfView);
 		$quake_render.$screenedge[2].normal[2] = 1;
-		$quake_render.$screenedge[2].type = 5;
+		$quake_render.$screenedge[2].type = $quake_bspfile.planE_ANYZ;
 		// bottom side clip
 		$quake_render.$screenedge[3].normal[0] = 0;
 		$quake_render.$screenedge[3].normal[1] = 1 / ((1 - $quake_render.$yOrigin) * $quake_render.$verticalFieldOfView);
 		$quake_render.$screenedge[3].normal[2] = 1;
-		$quake_render.$screenedge[3].type = 5;
+		$quake_render.$screenedge[3].type = $quake_bspfile.planE_ANYZ;
 		for (i = 0; i < 4; i++) {
 			$quake_mathlib.vectorNormalize($quake_render.$screenedge[i].normal);
 		}
@@ -18963,15 +20024,19 @@
 			return -1;
 		},
 		$sbar_SortFrags: function() {
+			ss.Debug.writeln('Sbar_SortFrags');
 		},
 		$sbar_ColorForMap: function(m) {
 			return ((m < 128) ? (m + 8) : (m + 8));
 		},
 		$sbar_UpdateScoreboard: function() {
+			ss.Debug.writeln('Sbar_UpdateScoreboard');
 		},
 		$sbar_IntermissionNumber: function(x, y, num, digits, color) {
+			ss.Debug.writeln('Sbar_IntermissionNumber');
 		},
 		$sbar_DeathmatchOverlay: function() {
+			ss.Debug.writeln('Sbar_DeathmatchOverlay');
 		}
 	};
 	$quake_sbar.$sbar_ShowScores = function() {
@@ -19149,6 +20214,7 @@
 		}
 	};
 	$quake_sbar.$sbar_SoloScoreboard = function() {
+		ss.Debug.writeln('Sbar_SoloScoreboard');
 	};
 	$quake_sbar.$sbar_DrawScoreboard = function() {
 		$quake_sbar.$sbar_SoloScoreboard();
@@ -19298,6 +20364,7 @@
 		}
 	};
 	$quake_sbar.$sbar_DrawFrags = function() {
+		ss.Debug.writeln('Sbar_DrawFrags');
 	};
 	$quake_sbar.$sbar_DrawFace = function() {
 		var f, anim;
@@ -19447,6 +20514,7 @@
 		}
 	};
 	$quake_sbar.$sbar_MiniDeathmatchOverlay = function() {
+		ss.Debug.writeln('Sbar_MiniDeathmatchOverlay');
 	};
 	$quake_sbar.sbar_IntermissionOverlay = function() {
 		var pic;
@@ -19949,10 +21017,6 @@
 	// quake.server
 	var $quake_server = function() {
 	};
-	$quake_server.prototype = {
-		$sV_CheckAllEnts: function() {
-		}
-	};
 	$quake_server.sV_Init = function() {
 		var i;
 		$quake_cvar_t.cvar_RegisterVariable($quake_server.$sv_maxvelocity);
@@ -19963,10 +21027,83 @@
 		$quake_cvar_t.cvar_RegisterVariable($quake_server.$sv_maxspeed);
 		$quake_cvar_t.cvar_RegisterVariable($quake_server.$sv_accelerate);
 		$quake_cvar_t.cvar_RegisterVariable($quake_server.$sv_idealpitchscale);
-		//cvar_t.Cvar_RegisterVariable(sv_aim);
+		$quake_cvar_t.cvar_RegisterVariable($quake_prog.sv_aim);
 		$quake_cvar_t.cvar_RegisterVariable($quake_server.$sv_nostep);
 		for (i = 0; i < $quake_quakedef.maX_MODELS; i++) {
 			$quake_server.$localmodels[i] = '*' + i;
+		}
+	};
+	$quake_server.sV_StartParticle = function(org, dir, color, count) {
+		var i, v;
+		if ($quake_server.sv.datagram.cursize > 1008) {
+			return;
+		}
+		$quake_common.msG_WriteByte($quake_server.sv.datagram, $quake_net.svc_particle);
+		$quake_common.msG_WriteCoord($quake_server.sv.datagram, org[0]);
+		$quake_common.msG_WriteCoord($quake_server.sv.datagram, org[1]);
+		$quake_common.msG_WriteCoord($quake_server.sv.datagram, org[2]);
+		for (i = 0; i < 3; i++) {
+			v = ss.Int32.trunc(dir[i]) * 16;
+			if (v > 127) {
+				v = 127;
+			}
+			else if (v < -128) {
+				v = -128;
+			}
+			$quake_common.msG_WriteChar($quake_server.sv.datagram, v);
+		}
+		$quake_common.msG_WriteByte($quake_server.sv.datagram, count);
+		$quake_common.msG_WriteByte($quake_server.sv.datagram, color);
+	};
+	$quake_server.sV_StartSound = function(entity, channel, sample, volume, attenuation) {
+		var sound_num;
+		var field_mask;
+		var i;
+		var ent;
+		if (volume < 0 || volume > 255) {
+			$quake_sys_linux.sys_Error('SV_StartSound: volume = ' + volume);
+		}
+		if (attenuation < 0 || attenuation > 4) {
+			$quake_sys_linux.sys_Error('SV_StartSound: attenuation = ' + attenuation);
+		}
+		if (channel < 0 || channel > 7) {
+			$quake_sys_linux.sys_Error('SV_StartSound: channel = ' + channel);
+		}
+		if ($quake_server.sv.datagram.cursize > 1008) {
+			return;
+		}
+		// find precache number for sound
+		for (sound_num = 1; sound_num < $quake_quakedef.maX_SOUNDS && ss.isValue($quake_server.sv.sound_precache[sound_num]); sound_num++) {
+			if (ss.referenceEquals(sample, $quake_server.sv.sound_precache[sound_num])) {
+				break;
+			}
+		}
+		if (sound_num === $quake_quakedef.maX_SOUNDS || !ss.isValue($quake_server.sv.sound_precache[sound_num])) {
+			$quake_console.con_Printf('SV_StartSound: not precacheed' + sample + '\n');
+			return;
+		}
+		ent = $quake_prog.nuM_FOR_EDICT(entity);
+		channel = ent << 3 | channel;
+		field_mask = 0;
+		if (volume !== $quake_sound.defaulT_SOUND_PACKET_VOLUME) {
+			field_mask |= $quake_net.snD_VOLUME;
+		}
+		if (attenuation !== $quake_sound.defaulT_SOUND_PACKET_ATTENUATION) {
+			field_mask |= $quake_net.snD_ATTENUATION;
+		}
+		// directed messages go only to the entity the are targeted on
+		$quake_common.msG_WriteByte($quake_server.sv.datagram, $quake_net.svc_sound);
+		$quake_common.msG_WriteByte($quake_server.sv.datagram, field_mask);
+		if ((field_mask & $quake_net.snD_VOLUME) !== 0) {
+			$quake_common.msG_WriteByte($quake_server.sv.datagram, volume);
+		}
+		if ((field_mask & $quake_net.snD_ATTENUATION) !== 0) {
+			$quake_common.msG_WriteByte($quake_server.sv.datagram, ss.Int32.trunc(attenuation) * 64);
+		}
+		$quake_common.msG_WriteShort($quake_server.sv.datagram, channel);
+		$quake_common.msG_WriteByte($quake_server.sv.datagram, sound_num);
+		for (i = 0; i < 3; i++) {
+			$quake_common.msG_WriteCoord($quake_server.sv.datagram, entity.v.origin[i] + 0.5 * (entity.v.mins[i] + entity.v.maxs[i]));
 		}
 	};
 	$quake_server.$sV_SendServerinfo = function(client) {
@@ -20024,6 +21161,9 @@
 		ent = $quake_prog.edicT_NUM(edictnum);
 		// set up the client_t
 		netconnection = client.netconnection;
+		if ($quake_server.sv.loadgame) {
+			//memcpy(spawn_parms, client->spawn_parms, sizeof(spawn_parms));
+		}
 		client.netconnection = netconnection;
 		client.name = 'unconnected';
 		client.active = true;
@@ -20034,7 +21174,12 @@
 		client.message.allowoverflow = true;
 		// we can catch it*/
 		client.privileged = false;
-		{
+		if ($quake_server.sv.loadgame) {
+			ss.Debug.writeln('sv.load game need to test');
+			throw new ss.Exception('sv.load game need to test');
+			//memcpy(client->spawn_parms, spawn_parms, sizeof(spawn_parms));
+		}
+		else {
 			// call the progs to get default spawn parms for the new client
 			$quake_prog.pR_ExecuteProgram($quake_prog.pr_functions[$quake_prog.pr_global_struct[0].setNewParms]);
 			for (i = 0; i < $quake_server.nuM_SPAWN_PARMS; i++) {
@@ -20088,6 +21233,7 @@
 				if (ent.v.modelindex === 0 || ss.isNullOrUndefined($quake_prog.pr_string(ent.v.model))) {
 					continue;
 				}
+				//todo: winquake has some PVS stuff here, is it important?
 			}
 			if (msg.maxsize - msg.cursize < 16) {
 				$quake_console.con_Printf('packet overflow\n');
@@ -20233,7 +21379,7 @@
 		// stuff the sigil bits into the high bits of items for sbar, or else
 		// mix in items2
 		//val = GetEdictFieldValue(ent, "items2");
-		//if (val)
+		//todo if (val)
 		//items = (int)ent->v.items | ((int)val->_float << 23);
 		//else
 		items = ss.Int32.trunc(ent.v.items) | ss.Int32.trunc($quake_prog.pr_global_struct[0].serverflags) << 28;
@@ -20323,6 +21469,8 @@
 		}
 		// send the datagram
 		if ($quake_net.neT_SendUnreliableMessage(client.netconnection, msg) === -1) {
+			$quake_host.sV_DropClient(true);
+			// if the message couldn't send, kick off
 			return false;
 		}
 		return true;
@@ -20362,7 +21510,10 @@
 		msg.maxsize = buf.length;
 		msg.cursize = 0;
 		$quake_common.msG_WriteChar(msg, $quake_net.svc_nop);
-		$quake_net.neT_SendUnreliableMessage(client.netconnection, msg);
+		if ($quake_net.neT_SendUnreliableMessage(client.netconnection, msg) === -1) {
+			$quake_host.sV_DropClient(true);
+		}
+		// if the message couldn't send, kick off
 		client.last_message = $quake_host.realtime;
 	};
 	$quake_server.sV_SendClientMessages = function() {
@@ -20398,6 +21549,7 @@
 			// on a very fucked up connection that backs up a lot, then
 			// changes level
 			if ($quake_host.host_client.message.overflowed) {
+				$quake_host.sV_DropClient(true);
 				$quake_host.host_client.message.overflowed = false;
 				continue;
 			}
@@ -20407,7 +21559,10 @@
 					continue;
 				}
 				if (!$quake_host.host_client.dropasap) {
-					$quake_net.neT_SendMessage($quake_host.host_client.netconnection, $quake_host.host_client.message);
+					if ($quake_net.neT_SendMessage($quake_host.host_client.netconnection, $quake_host.host_client.message) === -1) {
+						$quake_host.sV_DropClient(true);
+					}
+					// if the message couldn't send, kick off
 					$quake_common.sZ_Clear($quake_host.host_client.message);
 					$quake_host.host_client.last_message = $quake_host.realtime;
 					$quake_host.host_client.sendsignon = false;
@@ -20560,10 +21715,11 @@
 			return;
 		}
 		$quake_server.sv.models[1] = $quake_server.sv.worldmodel;
+		ss.Debug.writeln('world firstclipnode ' + $quake_server.sv.worldmodel.hulls[0].firstclipnode);
 		//
 		// clear world interaction links
 		//
-		//SV_ClearWorld();
+		$quake_world.sV_ClearWorld();
 		//sv.model_precache[0] = pr_strings;
 		$quake_server.sv.model_precache[0] = '';
 		$quake_server.sv.model_precache[1] = $quake_server.sv.modelname;
@@ -20610,6 +21766,328 @@
 		}
 		$quake_console.con_DPrintf('Server spawned.\n');
 	};
+	$quake_server.$sV_CheckBottom = function(ent) {
+		var $state = 0, mins, maxs, start, stop, trace, x, y, mid, bottom;
+		$sm1:
+		for (;;) {
+			switch ($state) {
+				case 0: {
+					mins = $Missing_ArrayHelpers.explcitDoubleArray(3), maxs = $Missing_ArrayHelpers.explcitDoubleArray(3), start = $Missing_ArrayHelpers.explcitDoubleArray(3), stop = $Missing_ArrayHelpers.explcitDoubleArray(3);
+					$quake_mathlib.vectorAdd(ent.v.origin, ent.v.mins, mins);
+					$quake_mathlib.vectorAdd(ent.v.origin, ent.v.maxs, maxs);
+					// if all of the points under the corners are solid world, don't bother
+					// with the tougher checks
+					// the corners must be within 16 of the midpoint
+					start[2] = mins[2] - 1;
+					for (x = 0; x <= 1; x++) {
+						for (y = 0; y <= 1; y++) {
+							start[0] = ((x !== 0) ? maxs[0] : mins[0]);
+							start[1] = ((y !== 0) ? maxs[1] : mins[1]);
+							if ($quake_world.sV_PointContents(start) !== $quake_bspfile.contentS_SOLID) {
+								$state = 1;
+								continue $sm1;
+							}
+						}
+					}
+					$quake_server.$c_yes++;
+					return true;
+					// we got out easy
+					$state = 1;
+					continue $sm1;
+				}
+				case 1: {
+					$quake_server.$c_no++;
+					//
+					// check it for real...
+					//
+					start[2] = mins[2];
+					// the midpoint must be within 16 of the bottom
+					start[0] = stop[0] = (mins[0] + maxs[0]) * 0.5;
+					start[1] = stop[1] = (mins[1] + maxs[1]) * 0.5;
+					stop[2] = start[2] - 36;
+					trace = $quake_world.sV_Move(start, $quake_mathlib.vec3_origin, $quake_mathlib.vec3_origin, stop, 1, ent);
+					if (trace.fraction === 1) {
+						return false;
+					}
+					mid = bottom = trace.endpos[2];
+					// the corners must be within 16 of the midpoint	
+					for (x = 0; x <= 1; x++) {
+						for (y = 0; y <= 1; y++) {
+							start[0] = stop[0] = ((x !== 0) ? maxs[0] : mins[0]);
+							start[1] = stop[1] = ((y !== 0) ? maxs[1] : mins[1]);
+							trace = $quake_world.sV_Move(start, $quake_mathlib.vec3_origin, $quake_mathlib.vec3_origin, stop, 1, ent);
+							if (trace.fraction !== 1 && trace.endpos[2] > bottom) {
+								bottom = trace.endpos[2];
+							}
+							if (trace.fraction === 1 || mid - trace.endpos[2] > 18) {
+								return false;
+							}
+						}
+					}
+					$quake_server.$c_yes++;
+					return true;
+				}
+				default: {
+					break $sm1;
+				}
+			}
+		}
+	};
+	$quake_server.sV_Movestep = function(ent, move, relink) {
+		var dz;
+		var oldorg = $Missing_ArrayHelpers.explcitDoubleArray(3), neworg = $Missing_ArrayHelpers.explcitDoubleArray(3), end = $Missing_ArrayHelpers.explcitDoubleArray(3);
+		var trace;
+		var i;
+		var enemy;
+		// try the move	
+		$quake_mathlib.vectorCopy(ent.v.origin, oldorg);
+		$quake_mathlib.vectorAdd(ent.v.origin, move, neworg);
+		// flying monsters don't step up
+		if ((ss.Int32.trunc(ent.v.flags) & 3) !== 0) {
+			// try one move with vertical motion, then one without
+			for (i = 0; i < 2; i++) {
+				$quake_mathlib.vectorAdd(ent.v.origin, move, neworg);
+				enemy = $quake_prog.proG_TO_EDICT(ent.v.enemy);
+				if (i === 0 && !ss.referenceEquals(enemy, $quake_server.sv.edicts[0])) {
+					dz = ent.v.origin[2] - $quake_prog.proG_TO_EDICT(ent.v.enemy).v.origin[2];
+					if (dz > 40) {
+						neworg[2] -= 8;
+					}
+					if (dz < 30) {
+						neworg[2] += 8;
+					}
+				}
+				trace = $quake_world.sV_Move(ent.v.origin, ent.v.mins, ent.v.maxs, neworg, 0, ent);
+				if (trace.fraction === 1) {
+					if ((ss.Int32.trunc(ent.v.flags) & $quake_server.fL_SWIM) !== 0 && $quake_world.sV_PointContents(trace.endpos) === $quake_bspfile.contentS_EMPTY) {
+						return false;
+					}
+					// swim monster left water
+					$quake_mathlib.vectorCopy(trace.endpos, ent.v.origin);
+					if (ss.Nullable.ne(relink, null)) {
+						$quake_world.sV_LinkEdict(ent, true);
+					}
+					return true;
+				}
+				if (ss.referenceEquals(enemy, $quake_server.sv.edicts[0])) {
+					break;
+				}
+			}
+			return false;
+		}
+		// push down from a step height above the wished position
+		neworg[2] += 18;
+		$quake_mathlib.vectorCopy(neworg, end);
+		end[2] -= 36;
+		trace = $quake_world.sV_Move(neworg, ent.v.mins, ent.v.maxs, end, 0, ent);
+		if (trace.allsolid) {
+			return false;
+		}
+		if (trace.startsolid) {
+			neworg[2] -= 18;
+			trace = $quake_world.sV_Move(neworg, ent.v.mins, ent.v.maxs, end, 0, ent);
+			if (trace.allsolid || trace.startsolid) {
+				return false;
+			}
+		}
+		if (trace.fraction === 1) {
+			// if monster had the ground pulled out, go ahead and fall
+			if ((ss.Int32.trunc(ent.v.flags) & $quake_server.fL_PARTIALGROUND) !== 0) {
+				$quake_mathlib.vectorAdd(ent.v.origin, move, ent.v.origin);
+				if (relink) {
+					$quake_world.sV_LinkEdict(ent, true);
+				}
+				ent.v.flags = ss.Int32.trunc(ent.v.flags) & -513;
+				//	Con_Printf ("fall down\n"); 
+				return true;
+			}
+			return false;
+			// walked off an edge
+		}
+		// check point traces down for dangling corners
+		$quake_mathlib.vectorCopy(trace.endpos, ent.v.origin);
+		if (!$quake_server.$sV_CheckBottom(ent)) {
+			if ((ss.Int32.trunc(ent.v.flags) & $quake_server.fL_PARTIALGROUND) !== 0) {
+				// entity had floor mostly pulled out from underneath it
+				// and is trying to correct
+				if (relink) {
+					$quake_world.sV_LinkEdict(ent, true);
+				}
+				return true;
+			}
+			$quake_mathlib.vectorCopy(oldorg, ent.v.origin);
+			return false;
+		}
+		if ((ss.Int32.trunc(ent.v.flags) & $quake_server.fL_PARTIALGROUND) !== 0) {
+			//		Con_Printf ("back on ground\n"); 
+			ent.v.flags = ss.Int32.trunc(ent.v.flags) & -1025;
+		}
+		ent.v.groundentity = $quake_prog.edicT_TO_PROG(trace.ent);
+		// the move is ok
+		if (relink) {
+			$quake_world.sV_LinkEdict(ent, true);
+		}
+		return true;
+	};
+	$quake_server.$sV_StepDirection = function(ent, yaw, dist) {
+		var move = new Array(3), oldorigin = new Array(3);
+		var delta;
+		ent.v.ideal_yaw = yaw;
+		$quake_prog.pF_changeyaw();
+		yaw = yaw * $quake_mathlib.m_PI * 2 / 360;
+		move[0] = Math.cos(yaw) * dist;
+		move[1] = Math.sin(yaw) * dist;
+		move[2] = 0;
+		$quake_mathlib.vectorCopy(ent.v.origin, oldorigin);
+		if ($quake_server.sV_Movestep(ent, move, false)) {
+			delta = ent.v.angles[$quake_quakedef.YAW] - ent.v.ideal_yaw;
+			if (delta > 45 && delta < 315) {
+				// not turned far enough, so don't take the step
+				$quake_mathlib.vectorCopy(oldorigin, ent.v.origin);
+			}
+			$quake_world.sV_LinkEdict(ent, true);
+			return true;
+		}
+		$quake_world.sV_LinkEdict(ent, true);
+		return false;
+	};
+	$quake_server.$sV_FixCheckBottom = function(ent) {
+		//	Con_Printf ("SV_FixCheckBottom\n");
+		ent.v.flags = ss.Int32.trunc(ent.v.flags) | $quake_server.fL_PARTIALGROUND;
+	};
+	$quake_server.sV_NewChaseDir = function(actor, enemy, dist) {
+		var deltax, deltay;
+		var d = new Array(3);
+		var tdir, olddir, turnaround;
+		olddir = $quake_mathlib.anglemod(ss.Int32.trunc(actor.v.ideal_yaw / 45) * 45);
+		turnaround = $quake_mathlib.anglemod(olddir - 180);
+		deltax = enemy.v.origin[0] - actor.v.origin[0];
+		deltay = enemy.v.origin[1] - actor.v.origin[1];
+		if (deltax > 10) {
+			d[1] = 0;
+		}
+		else if (deltax < -10) {
+			d[1] = 180;
+		}
+		else {
+			d[1] = -1;
+		}
+		if (deltay < -10) {
+			d[2] = 270;
+		}
+		else if (deltay > 10) {
+			d[2] = 90;
+		}
+		else {
+			d[2] = -1;
+		}
+		// try direct route
+		if (d[1] !== -1 && d[2] !== -1) {
+			if (d[1] === 0) {
+				tdir = ((d[2] === 90) ? 45 : 315);
+			}
+			else {
+				tdir = ((d[2] === 90) ? 135 : 215);
+			}
+			if (tdir !== turnaround && $quake_server.$sV_StepDirection(actor, tdir, dist)) {
+				return;
+			}
+		}
+		// try other directions
+		if (($Helper_helper.rand() & 3 & 1) !== 0 || Math.abs(deltay) > Math.abs(deltax)) {
+			tdir = d[1];
+			d[1] = d[2];
+			d[2] = tdir;
+		}
+		if (d[1] !== -1 && d[1] !== turnaround && $quake_server.$sV_StepDirection(actor, d[1], dist)) {
+			return;
+		}
+		if (d[2] !== -1 && d[2] !== turnaround && $quake_server.$sV_StepDirection(actor, d[2], dist)) {
+			return;
+		}
+		// there is no direct path to the player, so pick another direction
+		if (olddir !== -1 && $quake_server.$sV_StepDirection(actor, olddir, dist)) {
+			return;
+		}
+		if (($Helper_helper.rand() & 1) !== 0) {
+			for (tdir = 0; tdir <= 315; tdir += 45) {
+				if (tdir !== turnaround && $quake_server.$sV_StepDirection(actor, tdir, dist)) {
+					return;
+				}
+			}
+		}
+		else {
+			for (tdir = 315; tdir >= 0; tdir -= 45) {
+				if (tdir !== turnaround && $quake_server.$sV_StepDirection(actor, tdir, dist)) {
+					return;
+				}
+			}
+		}
+		if (turnaround !== -1 && $quake_server.$sV_StepDirection(actor, turnaround, dist)) {
+			return;
+		}
+		actor.v.ideal_yaw = olddir;
+		// can't move
+		// if a bridge was pulled out from underneath a monster, it may not have
+		// a valid standing position at all
+		if (!$quake_server.$sV_CheckBottom(actor)) {
+			$quake_server.$sV_FixCheckBottom(actor);
+		}
+	};
+	$quake_server.$sV_CloseEnough = function(ent, goal, dist) {
+		var i;
+		for (i = 0; i < 3; i++) {
+			if (goal.v.absmin[i] > ent.v.absmax[i] + dist) {
+				return false;
+			}
+			if (goal.v.absmax[i] < ent.v.absmin[i] - dist) {
+				return false;
+			}
+		}
+		return true;
+	};
+	$quake_server.sV_MoveToGoal = function() {
+		var ent, goal;
+		var dist;
+		try {
+			ent = $quake_prog.proG_TO_EDICT($quake_prog.pr_global_struct[0].self);
+			goal = $quake_prog.proG_TO_EDICT(ent.v.goalentity);
+			dist = $quake_prog.g_FLOAT($quake_prog.ofS_PARM0);
+			if (!((ss.Int32.trunc(ent.v.flags) & 515) !== 0)) {
+				//prog.G_FLOAT(prog.OFS_RETURN) = 0;
+				$quake_prog.pr_globals_write($quake_prog.ofS_RETURN, 0);
+				return;
+			}
+			// if the next step hits the enemy, return immediately
+			if (!ss.referenceEquals($quake_prog.proG_TO_EDICT(ent.v.enemy), $quake_server.sv.edicts[0]) && $quake_server.$sV_CloseEnough(ent, goal, dist)) {
+				return;
+			}
+			// bump around...
+			if (($Helper_helper.rand() & 3) === 1 || !$quake_server.$sV_StepDirection(ent, ent.v.ideal_yaw, dist)) {
+				$quake_server.sV_NewChaseDir(ent, goal, dist);
+			}
+		}
+		catch ($t1) {
+			ss.Debug.writeln('SV_MoveToGoal err');
+		}
+	};
+	$quake_server.sV_CheckAllEnts = function() {
+		var e;
+		var check;
+		// see if any solid entities are inside the final position
+		check = $quake_prog.nexT_EDICT($quake_server.sv.edicts[0]);
+		for (e = 1; e < $quake_server.sv.num_edicts; e++, check = $quake_prog.nexT_EDICT(check)) {
+			if (check.free) {
+				continue;
+			}
+			if (check.v.movetype === 7 || check.v.movetype === 0 || check.v.movetype === 8) {
+				continue;
+			}
+			if (ss.isValue($quake_world.sV_TestEntityPosition(check))) {
+				$quake_console.con_Printf('entity in invalid position\n');
+			}
+		}
+	};
 	$quake_server.$sV_CheckVelocity = function(ent) {
 		var i;
 		//
@@ -20633,6 +22111,7 @@
 		}
 	};
 	$quake_server.$sV_RunThink = function(ent) {
+		//Debug.WriteLine("SV_RunThink");
 		var thinktime;
 		thinktime = ent.v.nextthink;
 		if (thinktime <= 0 || thinktime > $quake_server.sv.time + $quake_host.host_frametime) {
@@ -20651,16 +22130,286 @@
 		$quake_prog.pR_ExecuteProgram($quake_prog.pr_functions[ent.v.think]);
 		return !ent.free;
 	};
+	$quake_server.$sV_Impact = function(e1, e2) {
+		var old_self, old_other;
+		old_self = $quake_prog.pr_global_struct[0].self;
+		old_other = $quake_prog.pr_global_struct[0].other;
+		$quake_prog.pr_global_struct[0].time = $quake_server.sv.time;
+		if (e1.v.touch !== 0 && e1.v.solid !== 0) {
+			$quake_prog.pr_global_struct[0].self = $quake_prog.edicT_TO_PROG(e1);
+			$quake_prog.pr_global_struct[0].other = $quake_prog.edicT_TO_PROG(e2);
+			$quake_prog.pR_ExecuteProgram($quake_prog.pr_functions[e1.v.touch]);
+		}
+		if (e2.v.touch !== 0 && e2.v.solid !== 0) {
+			$quake_prog.pr_global_struct[0].self = $quake_prog.edicT_TO_PROG(e2);
+			$quake_prog.pr_global_struct[0].other = $quake_prog.edicT_TO_PROG(e1);
+			$quake_prog.pR_ExecuteProgram($quake_prog.pr_functions[e2.v.touch]);
+		}
+		$quake_prog.pr_global_struct[0].self = old_self;
+		$quake_prog.pr_global_struct[0].other = old_other;
+	};
+	$quake_server.$clipVelocity = function(in1, normal, out, overbounce) {
+		var backoff;
+		var change;
+		var i, blocked;
+		blocked = 0;
+		if (normal[2] > 0) {
+			blocked |= 1;
+		}
+		// floor
+		if (!(normal[2] !== 0)) {
+			blocked |= 2;
+		}
+		// step
+		backoff = $quake_mathlib.dotProduct$1(in1, normal) * overbounce;
+		for (i = 0; i < 3; i++) {
+			change = normal[i] * backoff;
+			out[i] = in1[i] - change;
+			if (out[i] > -0.1 && out[i] < $quake_server.$stoP_EPSILON) {
+				out[i] = 0;
+			}
+		}
+		return blocked;
+	};
+	$quake_server.$sV_FlyMove = function(ent, time, steptrace) {
+		var bumpcount, numbumps;
+		var dir = new Array(3);
+		var d;
+		var numplanes;
+		var planes = [$Missing_ArrayHelpers.explcitDoubleArray(3), $Missing_ArrayHelpers.explcitDoubleArray(3), $Missing_ArrayHelpers.explcitDoubleArray(3), $Missing_ArrayHelpers.explcitDoubleArray(3), $Missing_ArrayHelpers.explcitDoubleArray(3)];
+		var primal_velocity = new Array(3), original_velocity = new Array(3), new_velocity = new Array(3);
+		var i, j;
+		var trace;
+		var end = new Array(3);
+		var time_left;
+		var blocked;
+		numbumps = 4;
+		blocked = 0;
+		$quake_mathlib.vectorCopy(ent.v.velocity, original_velocity);
+		$quake_mathlib.vectorCopy(ent.v.velocity, primal_velocity);
+		numplanes = 0;
+		time_left = time;
+		for (bumpcount = 0; bumpcount < numbumps; bumpcount++) {
+			if (ent.v.velocity[0] === 0 && ent.v.velocity[1] === 0 && ent.v.velocity[2] === 0) {
+				break;
+			}
+			for (i = 0; i < 3; i++) {
+				end[i] = ent.v.origin[i] + time_left * ent.v.velocity[i];
+			}
+			trace = $quake_world.sV_Move(ent.v.origin, ent.v.mins, ent.v.maxs, end, 0, ent);
+			if (trace.allsolid) {
+				// entity is trapped in another solid
+				$quake_mathlib.vectorCopy($quake_mathlib.vec3_origin, ent.v.velocity);
+				return 3;
+			}
+			if (trace.fraction > 0) {
+				// actually covered some distance
+				$quake_mathlib.vectorCopy(trace.endpos, ent.v.origin);
+				$quake_mathlib.vectorCopy(ent.v.velocity, original_velocity);
+				numplanes = 0;
+			}
+			if (trace.fraction === 1) {
+				break;
+			}
+			// moved the entire distance
+			if (ss.isNullOrUndefined(trace.ent)) {
+				$quake_sys_linux.sys_Error('SV_FlyMove: !trace.ent');
+			}
+			if (trace.plane.normal[2] > 0.7) {
+				blocked |= 1;
+				// floor
+				if (trace.ent.v.solid === 4) {
+					ent.v.flags = ss.Int32.trunc(ent.v.flags) | $quake_server.fL_ONGROUND;
+					ent.v.groundentity = $quake_prog.edicT_TO_PROG(trace.ent);
+				}
+			}
+			if (!(trace.plane.normal[2] !== 0)) {
+				blocked |= 2;
+				// step
+				if (ss.isValue(steptrace)) {
+					steptrace = trace;
+				}
+				// save for player extrafriction
+			}
+			//
+			// run the impact function
+			//
+			$quake_server.$sV_Impact(ent, trace.ent);
+			if (ent.free) {
+				break;
+			}
+			// removed by the impact function
+			time_left -= time_left * trace.fraction;
+			// cliped to another plane
+			if (numplanes >= $quake_server.$maX_CLIP_PLANES) {
+				// this shouldn't really happen
+				$quake_mathlib.vectorCopy($quake_mathlib.vec3_origin, ent.v.velocity);
+				return 3;
+			}
+			$quake_mathlib.vectorCopy(trace.plane.normal, planes[numplanes]);
+			numplanes++;
+			//
+			// modify original_velocity so it parallels all of the clip planes
+			//
+			for (i = 0; i < numplanes; i++) {
+				$quake_server.$clipVelocity(original_velocity, planes[i], new_velocity, 1);
+				for (j = 0; j < numplanes; j++) {
+					if (j !== i) {
+						if ($quake_mathlib.dotProduct$1(new_velocity, planes[j]) < 0) {
+							break;
+						}
+						// not ok
+					}
+				}
+				if (j === numplanes) {
+					break;
+				}
+			}
+			if (i !== numplanes) {
+				// go along this plane
+				$quake_mathlib.vectorCopy(new_velocity, ent.v.velocity);
+			}
+			else {
+				// go along the crease
+				if (numplanes !== 2) {
+					//				Con_Printf ("clip velocity, numplanes == %i\n",numplanes);
+					$quake_mathlib.vectorCopy($quake_mathlib.vec3_origin, ent.v.velocity);
+					return 7;
+				}
+				$quake_mathlib.crossProduct(planes[0], planes[1], dir);
+				d = $quake_mathlib.dotProduct$1(dir, ent.v.velocity);
+				$quake_mathlib.vectorScale(dir, d, ent.v.velocity);
+			}
+			//
+			// if original velocity is against the original velocity, stop dead
+			// to avoid tiny occilations in sloping corners
+			//
+			if ($quake_mathlib.dotProduct$1(ent.v.velocity, primal_velocity) <= 0) {
+				$quake_mathlib.vectorCopy($quake_mathlib.vec3_origin, ent.v.velocity);
+				return blocked;
+			}
+		}
+		return blocked;
+	};
 	$quake_server.$sV_AddGravity = function(ent) {
 		var ent_gravity;
 		//eval_t	*val;
 		//
-		//val = GetEdictFieldValue(ent, "gravity");
+		//val = GetEdictFieldValue(ent, "gravity"); //TODO GetEdictFieldValue and gravity
 		//if (val && val._float)
 		//ent_gravity = val._float;
 		//else
 		ent_gravity = 1;
 		ent.v.velocity[2] -= ent_gravity * $quake_server.sv_gravity.value * $quake_host.host_frametime;
+	};
+	$quake_server.$sV_PushEntity = function(ent, push) {
+		var trace;
+		var end = new Array(3);
+		$quake_mathlib.vectorAdd(ent.v.origin, push, end);
+		if (ent.v.movetype === 9) {
+			trace = $quake_world.sV_Move(ent.v.origin, ent.v.mins, ent.v.maxs, end, $quake_world.movE_MISSILE, ent);
+		}
+		else if (ent.v.solid === 1 || ent.v.solid === 0) {
+			trace = $quake_world.sV_Move(ent.v.origin, ent.v.mins, ent.v.maxs, end, $quake_world.movE_NOMONSTERS, ent);
+		}
+		else {
+			trace = $quake_world.sV_Move(ent.v.origin, ent.v.mins, ent.v.maxs, end, $quake_world.movE_NORMAL, ent);
+		}
+		$quake_mathlib.vectorCopy(trace.endpos, ent.v.origin);
+		$quake_world.sV_LinkEdict(ent, true);
+		if (ss.isValue(trace.ent)) {
+			$quake_server.$sV_Impact(ent, trace.ent);
+		}
+		return trace;
+	};
+	$quake_server.$sV_PushMove = function(pusher, movetime) {
+		var i, e;
+		var check, block;
+		var mins = new Array(3), maxs = new Array(3), move = new Array(3);
+		var entorig = new Array(3), pushorig = new Array(3);
+		var num_moved;
+		var moved_edict = new Array($quake_quakedef.maX_EDICTS);
+		var moved_from = new Array($quake_quakedef.maX_EDICTS);
+		if (pusher.v.velocity[0] === 0 && pusher.v.velocity[1] === 0 && pusher.v.velocity[2] === 0) {
+			pusher.v.ltime += movetime;
+			return;
+		}
+		for (i = 0; i < 3; i++) {
+			move[i] = pusher.v.velocity[i] * movetime;
+			mins[i] = pusher.v.absmin[i] + move[i];
+			maxs[i] = pusher.v.absmax[i] + move[i];
+		}
+		$quake_mathlib.vectorCopy(pusher.v.origin, pushorig);
+		// move the pusher to it's final position
+		$quake_mathlib.vectorAdd(pusher.v.origin, move, pusher.v.origin);
+		pusher.v.ltime += movetime;
+		$quake_world.sV_LinkEdict(pusher, false);
+		// see if any solid entities are inside the final position
+		num_moved = 0;
+		check = $quake_prog.nexT_EDICT($quake_server.sv.edicts[0]);
+		for (e = 1; e < $quake_server.sv.num_edicts; e++, check = $quake_prog.nexT_EDICT(check)) {
+			if (check.free) {
+				continue;
+			}
+			if (check.v.movetype === 7 || check.v.movetype === 0 || check.v.movetype === 8) {
+				continue;
+			}
+			// if the entity is standing on the pusher, it will definately be moved
+			if (!((ss.Int32.trunc(check.v.flags) & $quake_server.fL_ONGROUND) !== 0 && ss.referenceEquals($quake_prog.proG_TO_EDICT(check.v.groundentity), pusher))) {
+				if (check.v.absmin[0] >= maxs[0] || check.v.absmin[1] >= maxs[1] || check.v.absmin[2] >= maxs[2] || check.v.absmax[0] <= mins[0] || check.v.absmax[1] <= mins[1] || check.v.absmax[2] <= mins[2]) {
+					continue;
+				}
+				// see if the ent's bbox is inside the pusher's final position
+				if (ss.isValue($quake_world.sV_TestEntityPosition(check))) {
+					continue;
+				}
+			}
+			// remove the onground flag for non-players
+			if (check.v.movetype !== 3) {
+				check.v.flags = ss.Int32.trunc(check.v.flags) & -513;
+			}
+			$quake_mathlib.vectorCopy(check.v.origin, entorig);
+			$quake_mathlib.vectorCopy(check.v.origin, moved_from[num_moved]);
+			moved_edict[num_moved] = check;
+			num_moved++;
+			// try moving the contacted entity 
+			pusher.v.solid = 0;
+			$quake_server.$sV_PushEntity(check, move);
+			pusher.v.solid = 4;
+			// if it is still inside the pusher, block
+			block = $quake_world.sV_TestEntityPosition(check);
+			if (ss.isValue(block)) {
+				// fail the move
+				if (check.v.mins[0] === check.v.maxs[0]) {
+					continue;
+				}
+				if (check.v.solid === 0 || check.v.solid === 1) {
+					// corpse
+					check.v.mins[0] = check.v.mins[1] = 0;
+					$quake_mathlib.vectorCopy(check.v.mins, check.v.maxs);
+					continue;
+				}
+				$quake_mathlib.vectorCopy(entorig, check.v.origin);
+				$quake_world.sV_LinkEdict(check, true);
+				$quake_mathlib.vectorCopy(pushorig, pusher.v.origin);
+				$quake_world.sV_LinkEdict(pusher, false);
+				pusher.v.ltime -= movetime;
+				// if the pusher has a "blocked" function, call it
+				// otherwise, just stay in place until the obstacle is gone
+				if (ss.Nullable.ne(pusher.v.blocked, null)) {
+					$quake_prog.pr_global_struct[0].self = $quake_prog.edicT_TO_PROG(pusher);
+					//todo [0] is this right??
+					$quake_prog.pr_global_struct[0].other = $quake_prog.edicT_TO_PROG(check);
+					$quake_prog.pR_ExecuteProgram($quake_prog.pr_functions[pusher.v.blocked]);
+				}
+				// move back any entities we already moved
+				for (i = 0; i < num_moved; i++) {
+					$quake_mathlib.vectorCopy(moved_from[i], moved_edict[i].v.origin);
+					$quake_world.sV_LinkEdict(moved_edict[i], false);
+				}
+				return;
+			}
+		}
 	};
 	$quake_server.$sV_Physics_Pusher = function(ent) {
 		var thinktime;
@@ -20678,8 +22427,10 @@
 			movetime = $quake_host.host_frametime;
 		}
 		if (movetime !== 0) {
-			//SV_PushMove (ent, movetime);	// advances ent.v.ltime if not blocked
+			$quake_server.$sV_PushMove(ent, movetime);
+			// advances ent.v.ltime if not blocked
 		}
+		// todo: this float thing may have issues with JS!
 		if (thinktime > oldltime && thinktime <= ent.v.ltime) {
 			ent.v.nextthink = 0;
 			$quake_prog.pr_global_struct[0].time = $quake_server.sv.time;
@@ -20691,7 +22442,234 @@
 			}
 		}
 	};
+	$quake_server.$sV_CheckStuck = function(ent) {
+		//Debug.WriteLine("SV_CheckStuck");
+		var i, j;
+		var z;
+		var org = new Array(3);
+		if (ss.isNullOrUndefined($quake_world.sV_TestEntityPosition(ent))) {
+			$quake_mathlib.vectorCopy(ent.v.origin, ent.v.oldorigin);
+			return;
+		}
+		$quake_mathlib.vectorCopy(ent.v.origin, org);
+		$quake_mathlib.vectorCopy(ent.v.oldorigin, ent.v.origin);
+		if (ss.isNullOrUndefined($quake_world.sV_TestEntityPosition(ent))) {
+			$quake_console.con_DPrintf('Unstuck.\n');
+			$quake_world.sV_LinkEdict(ent, true);
+			return;
+		}
+		for (z = 0; z < 18; z++) {
+			for (i = -1; i <= 1; i++) {
+				for (j = -1; j <= 1; j++) {
+					ent.v.origin[0] = org[0] + i;
+					ent.v.origin[1] = org[1] + j;
+					ent.v.origin[2] = org[2] + z;
+					if (ss.isValue($quake_world.sV_TestEntityPosition(ent))) {
+						$quake_console.con_DPrintf('Unstuck.\n');
+						$quake_world.sV_LinkEdict(ent, true);
+						return;
+					}
+				}
+			}
+		}
+		$quake_mathlib.vectorCopy(org, ent.v.origin);
+		$quake_console.con_DPrintf('player is stuck.\n');
+	};
+	$quake_server.$sV_CheckWater = function(ent) {
+		//Debug.WriteLine("SV_CheckWater");
+		var point = new Array(3);
+		var cont;
+		point[0] = ent.v.origin[0];
+		point[1] = ent.v.origin[1];
+		point[2] = ent.v.origin[2] + ent.v.mins[2] + 1;
+		ent.v.waterlevel = 0;
+		ent.v.watertype = -1;
+		cont = $quake_world.sV_PointContents(point);
+		if (cont <= $quake_bspfile.contentS_WATER) {
+			ent.v.watertype = cont;
+			ent.v.waterlevel = 1;
+			point[2] = ent.v.origin[2] + (ent.v.mins[2] + ent.v.maxs[2]) * 0.5;
+			cont = $quake_world.sV_PointContents(point);
+			if (cont <= $quake_bspfile.contentS_WATER) {
+				ent.v.waterlevel = 2;
+				point[2] = ent.v.origin[2] + ent.v.view_ofs[2];
+				cont = $quake_world.sV_PointContents(point);
+				if (cont <= $quake_bspfile.contentS_WATER) {
+					ent.v.waterlevel = 3;
+				}
+			}
+		}
+		return ent.v.waterlevel > 1;
+	};
+	$quake_server.$sV_WallFriction = function(ent, trace) {
+		var forward = new Array(3), right = new Array(3), up = new Array(3);
+		var d, i;
+		var into = new Array(3), side = new Array(3);
+		$quake_mathlib.angleVectors(ent.v.v_angle, forward, right, up);
+		d = $quake_mathlib.dotProduct$1(trace.plane.normal, forward);
+		d += 0.5;
+		if (d >= 0) {
+			return;
+		}
+		// cut the tangential velocity
+		i = $quake_mathlib.dotProduct$1(trace.plane.normal, ent.v.velocity);
+		$quake_mathlib.vectorScale(trace.plane.normal, i, into);
+		$quake_mathlib.vectorSubtract(ent.v.velocity, into, side);
+		ent.v.velocity[0] = side[0] * (1 + d);
+		ent.v.velocity[1] = side[1] * (1 + d);
+	};
+	$quake_server.$sV_TryUnstick = function(ent, oldvel) {
+		var i;
+		var oldorg = new Array(3);
+		var dir = new Array(3);
+		var clip;
+		var steptrace = new $quake_world$trace_t();
+		$quake_mathlib.vectorCopy(ent.v.origin, oldorg);
+		$quake_mathlib.vectorCopy($quake_mathlib.vec3_origin, dir);
+		for (i = 0; i < 8; i++) {
+			// try pushing a little in an axial direction
+			switch (i) {
+				case 0: {
+					dir[0] = 2;
+					dir[1] = 0;
+					break;
+				}
+				case 1: {
+					dir[0] = 0;
+					dir[1] = 2;
+					break;
+				}
+				case 2: {
+					dir[0] = -2;
+					dir[1] = 0;
+					break;
+				}
+				case 3: {
+					dir[0] = 0;
+					dir[1] = -2;
+					break;
+				}
+				case 4: {
+					dir[0] = 2;
+					dir[1] = 2;
+					break;
+				}
+				case 5: {
+					dir[0] = -2;
+					dir[1] = 2;
+					break;
+				}
+				case 6: {
+					dir[0] = 2;
+					dir[1] = -2;
+					break;
+				}
+				case 7: {
+					dir[0] = -2;
+					dir[1] = -2;
+					break;
+				}
+			}
+			$quake_server.$sV_PushEntity(ent, dir);
+			// retry the original move
+			ent.v.velocity[0] = oldvel[0];
+			ent.v.velocity[1] = oldvel[1];
+			ent.v.velocity[2] = 0;
+			clip = $quake_server.$sV_FlyMove(ent, 0.100000001490116, steptrace);
+			if (Math.abs(oldorg[1] - ent.v.origin[1]) > 4 || Math.abs(oldorg[0] - ent.v.origin[0]) > 4) {
+				//Con_DPrintf ("unstuck!\n");
+				return clip;
+			}
+			// go back to the original pos and try again
+			$quake_mathlib.vectorCopy(oldorg, ent.v.origin);
+		}
+		$quake_mathlib.vectorCopy($quake_mathlib.vec3_origin, ent.v.velocity);
+		return 7;
+		// still not moving
+	};
+	$quake_server.sV_WalkMove = function(ent) {
+		var upmove = new Array(3), downmove = new Array(3);
+		var oldorg = new Array(3), oldvel = new Array(3);
+		var nosteporg = new Array(3), nostepvel = new Array(3);
+		var clip;
+		var oldonground;
+		var steptrace = new $quake_world$trace_t(), downtrace = new $quake_world$trace_t();
+		//
+		// do a regular slide move unless it looks like you ran into a step
+		//
+		oldonground = ss.Int32.trunc(ent.v.flags) & $quake_server.fL_ONGROUND;
+		ent.v.flags = ss.Int32.trunc(ent.v.flags) & -513;
+		$quake_mathlib.vectorCopy(ent.v.origin, oldorg);
+		$quake_mathlib.vectorCopy(ent.v.velocity, oldvel);
+		clip = $quake_server.$sV_FlyMove(ent, $quake_host.host_frametime, steptrace);
+		if (!((clip & 2) !== 0)) {
+			return;
+		}
+		// move didn't block on a step
+		if (!(oldonground !== 0) && ent.v.waterlevel === 0) {
+			return;
+		}
+		// don't stair up while jumping
+		if (ent.v.movetype !== 3) {
+			return;
+		}
+		// gibbed by a trigger
+		if ($quake_server.$sv_nostep.value !== 0) {
+			return;
+		}
+		if ((ss.Int32.trunc($quake_server.sv_player.v.flags) & $quake_server.fL_WATERJUMP) !== 0) {
+			return;
+		}
+		$quake_mathlib.vectorCopy(ent.v.origin, nosteporg);
+		$quake_mathlib.vectorCopy(ent.v.velocity, nostepvel);
+		//
+		// try moving up and forward to go up a step
+		//
+		$quake_mathlib.vectorCopy(oldorg, ent.v.origin);
+		// back to start pos
+		$quake_mathlib.vectorCopy($quake_mathlib.vec3_origin, upmove);
+		$quake_mathlib.vectorCopy($quake_mathlib.vec3_origin, downmove);
+		upmove[2] = 18;
+		downmove[2] = -18 + oldvel[2] * $quake_host.host_frametime;
+		// move up
+		$quake_server.$sV_PushEntity(ent, upmove);
+		// FIXME: don't link?
+		// move forward
+		ent.v.velocity[0] = oldvel[0];
+		ent.v.velocity[1] = oldvel[1];
+		ent.v.velocity[2] = 0;
+		clip = $quake_server.$sV_FlyMove(ent, $quake_host.host_frametime, steptrace);
+		// check for stuckness, possibly due to the limited precision of floats
+		// in the clipping hulls
+		if (clip !== 0) {
+			if (Math.abs(oldorg[1] - ent.v.origin[1]) < 0.03125 && Math.abs(oldorg[0] - ent.v.origin[0]) < 0.03125) {
+				// stepping up didn't make any progress
+				clip = $quake_server.$sV_TryUnstick(ent, oldvel);
+			}
+		}
+		// extra friction based on view angle
+		if ((clip & 2) !== 0) {
+			$quake_server.$sV_WallFriction(ent, steptrace);
+		}
+		// move down
+		downtrace = $quake_server.$sV_PushEntity(ent, downmove);
+		// FIXME: don't link?
+		if (downtrace.plane.normal[2] > 0.7) {
+			if (ent.v.solid === 4) {
+				ent.v.flags = ss.Int32.trunc(ent.v.flags) | $quake_server.fL_ONGROUND;
+				ent.v.groundentity = $quake_prog.edicT_TO_PROG(downtrace.ent);
+			}
+		}
+		else {
+			// if the push down didn't end up on good ground, use the move without
+			// the step up.  This happens near wall / slope combinations, and can
+			// cause the player to hop up higher on a slope too steep to climb	
+			$quake_mathlib.vectorCopy(nosteporg, ent.v.origin);
+			$quake_mathlib.vectorCopy(nostepvel, ent.v.velocity);
+		}
+	};
 	$quake_server.$sV_Physics_Client = function(ent, num) {
+		//Debug.WriteLine("SV_Physics_Client");
 		if (!$quake_server.svs.clients[num - 1].active) {
 			return;
 		}
@@ -20720,22 +22698,23 @@
 				if (!$quake_server.$sV_RunThink(ent)) {
 					return;
 				}
-				//if (!SV_CheckWater (ent) && ! ((int)ent.v.flags & FL_WATERJUMP) )
-				//SV_AddGravity (ent);
-				//SV_CheckStuck (ent);
-				//SV_WalkMove (ent);
+				if (!$quake_server.$sV_CheckWater(ent) && !((ss.Int32.trunc(ent.v.flags) & $quake_server.fL_WATERJUMP) !== 0)) {
+					$quake_server.$sV_AddGravity(ent);
+				}
+				$quake_server.$sV_CheckStuck(ent);
+				$quake_server.sV_WalkMove(ent);
 				break;
 			}
 			case 6:
 			case 10: {
-				//SV_Physics_Toss (ent);
+				$quake_server.$sV_Physics_Toss(ent);
 				break;
 			}
 			case 5: {
 				if (!$quake_server.$sV_RunThink(ent)) {
 					return;
 				}
-				//SV_FlyMove (ent, host.host_frametime, null);
+				$quake_server.$sV_FlyMove(ent, $quake_host.host_frametime, null);
 				break;
 			}
 			case 8: {
@@ -20753,7 +22732,7 @@
 		//
 		// call standard player post-think
 		//		
-		//SV_LinkEdict (ent, true);
+		$quake_world.sV_LinkEdict(ent, true);
 		$quake_prog.pr_global_struct[0].time = $quake_server.sv.time;
 		$quake_prog.pr_global_struct[0].self = $quake_prog.edicT_TO_PROG(ent);
 		$quake_prog.pR_ExecuteProgram($quake_prog.pr_functions[$quake_prog.pr_global_struct[0].playerPostThink]);
@@ -20771,8 +22750,34 @@
 		$quake_mathlib.vectorMA(ent.v.origin, $quake_host.host_frametime, ent.v.velocity, ent.v.origin);
 		$quake_world.sV_LinkEdict(ent, false);
 	};
+	$quake_server.$sV_CheckWaterTransition = function(ent) {
+		var cont;
+		cont = $quake_world.sV_PointContents(ent.v.origin);
+		if (!ss.Nullable.ne(ent.v.watertype, null)) {
+			// just spawned here
+			ent.v.watertype = cont;
+			ent.v.waterlevel = 1;
+			return;
+		}
+		if (cont <= $quake_bspfile.contentS_WATER) {
+			if (ent.v.watertype === -1) {
+				// just crossed into water
+				$quake_server.sV_StartSound(ent, 0, 'misc/h2ohit1.wav', 255, 1);
+			}
+			ent.v.watertype = cont;
+			ent.v.waterlevel = 1;
+		}
+		else {
+			if (ent.v.watertype !== -1) {
+				// just crossed into water
+				$quake_server.sV_StartSound(ent, 0, 'misc/h2ohit1.wav', 255, 1);
+			}
+			ent.v.watertype = -1;
+			ent.v.waterlevel = cont;
+		}
+	};
 	$quake_server.$sV_Physics_Toss = function(ent) {
-		//trace_t	trace;
+		var trace = new $quake_world$trace_t();
 		var move = new Array(3);
 		var backoff;
 		// regular thinking
@@ -20792,9 +22797,10 @@
 		$quake_mathlib.vectorMA(ent.v.angles, $quake_host.host_frametime, ent.v.avelocity, ent.v.angles);
 		// move origin
 		$quake_mathlib.vectorScale(ent.v.velocity, $quake_host.host_frametime, move);
-		//trace = SV_PushEntity (ent, move);
-		//if (trace.fraction == 1)
-		//return;
+		trace = $quake_server.$sV_PushEntity(ent, move);
+		if (trace.fraction === 1) {
+			return;
+		}
 		if (ent.free) {
 			return;
 		}
@@ -20804,20 +22810,42 @@
 		else {
 			backoff = 1;
 		}
-		//ClipVelocity (ent.v.velocity, trace.plane.normal, ent.v.velocity, backoff);
+		$quake_server.$clipVelocity(ent.v.velocity, trace.plane.normal, ent.v.velocity, backoff);
 		// stop if on ground
-		//if (trace.plane.normal[2] > 0.7)
-		//{
-		//if (ent.v.velocity[2] < 60 || ent.v.movetype != MOVETYPE_BOUNCE)
-		//{
-		//ent.v.flags = (int)ent.v.flags | FL_ONGROUND;
-		//ent.v.groundentity = EDICT_TO_PROG(trace.ent);
-		//VectorCopy (vec3_origin, ent.v.velocity);
-		//VectorCopy (vec3_origin, ent.v.avelocity);
-		//}
-		//}
+		if (trace.plane.normal[2] > 0.7) {
+			if (ent.v.velocity[2] < 60 || ent.v.movetype !== 10) {
+				ent.v.flags = ss.Int32.trunc(ent.v.flags) | $quake_server.fL_ONGROUND;
+				ent.v.groundentity = $quake_prog.edicT_TO_PROG(trace.ent);
+				$quake_mathlib.vectorCopy($quake_mathlib.vec3_origin, ent.v.velocity);
+				$quake_mathlib.vectorCopy($quake_mathlib.vec3_origin, ent.v.avelocity);
+			}
+		}
 		// check for in water
-		//SV_CheckWaterTransition (ent);
+		$quake_server.$sV_CheckWaterTransition(ent);
+	};
+	$quake_server.$sV_Physics_Step = function(ent) {
+		var hitsound;
+		// freefall if not onground
+		if (!((ss.Int32.trunc(ent.v.flags) & 515) !== 0)) {
+			if (ent.v.velocity[2] < $quake_server.sv_gravity.value * -0.1) {
+				hitsound = true;
+			}
+			else {
+				hitsound = false;
+			}
+			$quake_server.$sV_AddGravity(ent);
+			$quake_server.$sV_CheckVelocity(ent);
+			$quake_server.$sV_FlyMove(ent, $quake_host.host_frametime, null);
+			$quake_world.sV_LinkEdict(ent, true);
+			if ((ss.Int32.trunc(ent.v.flags) & $quake_server.fL_ONGROUND) !== 0) {
+				if (hitsound) {
+					$quake_server.sV_StartSound(ent, 0, 'demon/dland2.wav', 255, 1);
+				}
+			}
+		}
+		// regular thinking
+		$quake_server.$sV_RunThink(ent);
+		$quake_server.$sV_CheckWaterTransition(ent);
 	};
 	$quake_server.sV_Physics = function() {
 		var i;
@@ -20833,7 +22861,10 @@
 		//
 		for (i = 0; i < $quake_server.sv.num_edicts; i++) {
 			ent = $quake_server.sv.edicts[i];
+			ss.Debug.writeln(ss.formatString('phys_num {0} edict {1} movetype {2} absmin[0] {3}', $quake_server.$phys_num, i, ss.Int32.trunc(ent.v.movetype), ss.Int32.trunc(ent.v.absmin[0])));
+			$quake_server.$phys_num++;
 			if (ent.free) {
+				//Debug.WriteLine("free");
 				continue;
 			}
 			if ($quake_prog.pr_global_struct[0].force_retouch !== 0) {
@@ -20854,8 +22885,7 @@
 			}
 			else if (ent.v.movetype === 4) {
 				//todo!!! step phys
-				//Debug.WriteLine("SV_Physics_Step todo");
-				//SV_Physics_Step (ent);
+				$quake_server.$sV_Physics_Step(ent);
 			}
 			else if (ent.v.movetype === 6 || ent.v.movetype === 10 || ent.v.movetype === 5 || ent.v.movetype === 9) {
 				$quake_server.$sV_Physics_Toss(ent);
@@ -20871,7 +22901,7 @@
 	};
 	$quake_server.$sV_SetIdealPitch = function() {
 		var angleval, sinval, cosval;
-		//trace_t	tr;
+		var tr;
 		var top = new Array(3), bottom = new Array(3);
 		var z = new Array($quake_server.$maX_FORWARD);
 		var i, j;
@@ -20889,14 +22919,16 @@
 			bottom[0] = top[0];
 			bottom[1] = top[1];
 			bottom[2] = top[2] - 160;
-			throw new $System_NotImplementedException();
-			//tr = SV_Move (top, vec3_origin, vec3_origin, bottom, 1, sv_player);
-			//if (tr.allsolid)
-			//return;	// looking at a wall, leave ideal the way is was
-			//if (tr.fraction == 1)
-			//return;	// near a dropoff
-			//
-			//z[i] = top[2] + tr.fraction*(bottom[2]-top[2]);
+			tr = $quake_world.sV_Move(top, $quake_mathlib.vec3_origin, $quake_mathlib.vec3_origin, bottom, 1, $quake_server.sv_player);
+			if (tr.allsolid) {
+				return;
+			}
+			// looking at a wall, leave ideal the way is was*/
+			if (tr.fraction === 1) {
+				return;
+			}
+			// near a dropoff
+			z[i] = top[2] + tr.fraction * (bottom[2] - top[2]);
 		}
 		dir = 0;
 		steps = 0;
@@ -21379,8 +23411,8 @@
 		this.paused = false;
 		this.loadgame = false;
 		this.time = 0;
-		this.$lastcheck = 0;
-		this.$lastchecktime = 0;
+		this.lastcheck = 0;
+		this.lastchecktime = 0;
 		this.name = null;
 		this.modelname = null;
 		this.worldmodel = null;
@@ -22087,8 +24119,8 @@
 	$quake_sys_linux.$sys_Init = function() {
 	};
 	$quake_sys_linux.sys_Error = function(error) {
-		console.info('Error: ' + error);
-		//            Debug.WriteLine("Error: " + error);
+		//MessageBox.Show("Error: " + error);
+		ss.Debug.writeln('Error: ' + error);
 		//            Host_Shutdown ();
 		throw new ss.Exception();
 	};
@@ -22193,9 +24225,8 @@
 		$viD_Shutdown: function() {
 			$quake_vid.$vid_testingmode = 0;
 		},
-		$d_BeginDirectRect: function(x, y, pbitmap, width, height) {
-		},
 		$d_EndDirectRect: function(x, y, width, height) {
+			ss.Debug.writeln('D_EndDirectRect');
 		},
 		$viD_MenuDraw: function() {
 		}
@@ -22279,6 +24310,9 @@
 		}
 		$quake_vid.$surface.context.putImageData(imageData, 0, 0);
 		//Page.thePage.image.Source = surface;
+	};
+	$quake_vid.d_BeginDirectRect = function(x, y, pbitmap, width, height) {
+		ss.Debug.writeln('D_BeginDirectRect');
 	};
 	////////////////////////////////////////////////////////////////////////////////
 	// quake.vid.viddef_t
@@ -22382,10 +24416,12 @@
 		}
 		// don't count small mouse motion
 		if ($quake_client.cl.nodrift) {
-			//if (Math.Abs(client.cl.cmd.forwardmove) < client.cl_forwardspeed.value)
-			//client.cl.driftmove = 0;
-			//else
-			$quake_client.cl.driftmove += $quake_host.host_frametime;
+			if (Math.abs($quake_client.cl.cmd.forwardmove) < $quake_client.cl_forwardspeed.value) {
+				$quake_client.cl.driftmove = 0;
+			}
+			else {
+				$quake_client.cl.driftmove += $quake_host.host_frametime;
+			}
 			if ($quake_client.cl.driftmove > $quake_view.$v_centermove.value) {
 				$quake_view.v_StartPitchDrift();
 			}
@@ -22981,85 +25017,650 @@
 	// quake.world
 	var $quake_world = function() {
 	};
+	$quake_world.$init_box_clip_nodes = function(num) {
+		var box_clipnodes = new Array(num);
+		for (var i = 0; i < num; i++) {
+			box_clipnodes[i] = new $quake_bspfile$dclipnode_t();
+		}
+		return box_clipnodes;
+	};
+	$quake_world.$init_box_planes = function(num) {
+		var box_clipnodes = new Array(num);
+		for (var i = 0; i < num; i++) {
+			box_clipnodes[i] = new $quake_model$mplane_t();
+		}
+		return box_clipnodes;
+	};
+	$quake_world.$sV_InitBoxHull = function() {
+		var i;
+		var side;
+		$quake_world.$box_hull.clipnodes = $quake_world.$box_clipnodes;
+		$quake_world.$box_hull.planes = $quake_world.$box_planes;
+		$quake_world.$box_hull.firstclipnode = 0;
+		$quake_world.$box_hull.lastclipnode = 5;
+		for (i = 0; i < 6; i++) {
+			$quake_world.$box_clipnodes[i].planenum = i;
+			side = i & 1;
+			$quake_world.$box_clipnodes[i].children[side] = $quake_bspfile.contentS_EMPTY;
+			if (i !== 5) {
+				$quake_world.$box_clipnodes[i].children[side ^ 1] = i + 1;
+			}
+			else {
+				$quake_world.$box_clipnodes[i].children[side ^ 1] = $quake_bspfile.contentS_SOLID;
+			}
+			$quake_world.$box_planes[i].type = i >> 1;
+			$quake_world.$box_planes[i].normal[i >> 1] = 1;
+		}
+	};
+	$quake_world.$sV_HullForBox = function(mins, maxs) {
+		$quake_world.$box_planes[0].dist = maxs[0];
+		$quake_world.$box_planes[1].dist = mins[0];
+		$quake_world.$box_planes[2].dist = maxs[1];
+		$quake_world.$box_planes[3].dist = mins[1];
+		$quake_world.$box_planes[4].dist = maxs[2];
+		$quake_world.$box_planes[5].dist = mins[2];
+		return $quake_world.$box_hull;
+	};
+	$quake_world.$sV_HullForEntity = function(ent, mins, maxs, offset) {
+		var model;
+		var size = new Array(3);
+		var hullmins = new Array(3), hullmaxs = new Array(3);
+		var hull;
+		// decide which clipping hull to use, based on the size
+		if (ent.v.solid === 4) {
+			// explicit hulls in the BSP model
+			if (ent.v.movetype !== 7) {
+				$quake_sys_linux.sys_Error('SOLID_BSP without MOVETYPE_PUSH');
+			}
+			model = $quake_server.sv.models[ss.Int32.trunc(ent.v.modelindex)];
+			if (ss.isNullOrUndefined(model) || model.type !== 0) {
+				$quake_sys_linux.sys_Error('MOVETYPE_PUSH with a non bsp model');
+			}
+			$quake_mathlib.vectorSubtract(maxs, mins, size);
+			if (size[0] < 3) {
+				hull = model.hulls[0];
+			}
+			else if (size[0] <= 32) {
+				hull = model.hulls[1];
+			}
+			else {
+				hull = model.hulls[2];
+			}
+			// calculate an offset value to center the origin
+			$quake_mathlib.vectorSubtract(hull.clip_mins, mins, offset);
+			$quake_mathlib.vectorAdd(offset, ent.v.origin, offset);
+		}
+		else {
+			// create a temp hull from bounding box sizes
+			$quake_mathlib.vectorSubtract(ent.v.mins, maxs, hullmins);
+			$quake_mathlib.vectorSubtract(ent.v.maxs, mins, hullmaxs);
+			hull = $quake_world.$sV_HullForBox(hullmins, hullmaxs);
+			$quake_mathlib.vectorCopy(ent.v.origin, offset);
+		}
+		return hull;
+	};
+	$quake_world.$init_areanode_t = function(count) {
+		var nodes = new Array(count);
+		for (var i = 0; i < count; i++) {
+			nodes[i] = new $quake_$world$areanode_t();
+		}
+		return nodes;
+	};
+	$quake_world.$sV_CreateAreaNode = function(depth, mins, maxs) {
+		var anode = new $quake_$world$areanode_t();
+		var size = new Array(3);
+		var mins1 = new Array(3), maxs1 = new Array(3), mins2 = new Array(3), maxs2 = new Array(3);
+		anode = $quake_world.$sv_areanodes[$quake_world.$sv_numareanodes];
+		$quake_world.$sv_numareanodes++;
+		ss.Debug.writeln('SV_CreateAreaNode');
+		$quake_common.clearLink(anode.$trigger_edicts);
+		$quake_common.clearLink(anode.$solid_edicts);
+		if (depth === $quake_world.$areA_DEPTH) {
+			anode.$axis = -1;
+			anode.$children[0] = anode.$children[1] = null;
+			return anode;
+		}
+		$quake_mathlib.vectorSubtract(maxs, mins, size);
+		if (size[0] > size[1]) {
+			anode.$axis = 0;
+		}
+		else {
+			anode.$axis = 1;
+		}
+		anode.$dist = 0.5 * (maxs[anode.$axis] + mins[anode.$axis]);
+		$quake_mathlib.vectorCopy(mins, mins1);
+		$quake_mathlib.vectorCopy(mins, mins2);
+		$quake_mathlib.vectorCopy(maxs, maxs1);
+		$quake_mathlib.vectorCopy(maxs, maxs2);
+		maxs1[anode.$axis] = mins2[anode.$axis] = anode.$dist;
+		anode.$children[0] = $quake_world.$sV_CreateAreaNode(depth + 1, mins2, maxs2);
+		anode.$children[1] = $quake_world.$sV_CreateAreaNode(depth + 1, mins1, maxs1);
+		return anode;
+	};
+	$quake_world.sV_ClearWorld = function() {
+		$quake_world.$sV_InitBoxHull();
+		$quake_world.$sv_areanodes = $quake_world.$init_areanode_t($quake_world.$areA_NODES);
+		$quake_world.$sv_numareanodes = 0;
+		$quake_world.$sV_CreateAreaNode(0, $quake_server.sv.worldmodel.mins, $quake_server.sv.worldmodel.maxs);
+	};
+	$quake_world.sV_UnlinkEdict = function(ent) {
+		if (ss.isNullOrUndefined(ent.area.prev)) {
+			return;
+		}
+		// not linked in anywhere
+		$quake_common.removeLink(ent.area);
+		ent.area.prev = ent.area.next = null;
+	};
+	$quake_world.$sV_TouchLinks = function(ent, node) {
+		var l, next;
+		var touch;
+		var old_self, old_other;
+		ss.Debug.writeln(ss.formatString('tchlinksFunc {0} absmax[0] {1:F6}', $quake_world.$tchlinksFunc, ent.v.absmax[0]));
+		$quake_world.$tchlinksFunc++;
+		// touch linked edicts
+		for (l = node.$trigger_edicts.next; !ss.referenceEquals(l, node.$trigger_edicts); l = next) {
+			ss.Debug.writeln('SV_TouchLinks loop ' + $quake_world.$tchlinks);
+			$quake_world.$tchlinks++;
+			next = l.next;
+			touch = $quake_prog.edicT_FROM_AREA(l);
+			ss.Debug.writeln('touch.leafnums[0] ' + touch.leafnums[0].toString());
+			if (ss.referenceEquals(touch, ent)) {
+				continue;
+			}
+			if (!(touch.v.touch !== 0) || touch.v.solid !== 1) {
+				continue;
+			}
+			if (ent.v.absmin[0] > touch.v.absmax[0] || ent.v.absmin[1] > touch.v.absmax[1] || ent.v.absmin[2] > touch.v.absmax[2] || ent.v.absmax[0] < touch.v.absmin[0] || ent.v.absmax[1] < touch.v.absmin[1] || ent.v.absmax[2] < touch.v.absmin[2]) {
+				continue;
+			}
+			old_self = $quake_prog.pr_global_struct[0].self;
+			old_other = $quake_prog.pr_global_struct[0].other;
+			$quake_prog.pr_global_struct[0].self = $quake_prog.edicT_TO_PROG(touch);
+			$quake_prog.pr_global_struct[0].other = $quake_prog.edicT_TO_PROG(ent);
+			$quake_prog.pr_global_struct[0].time = $quake_server.sv.time;
+			$quake_prog.pR_ExecuteProgram($quake_prog.pr_functions[touch.v.touch]);
+			$quake_prog.pr_global_struct[0].self = old_self;
+			$quake_prog.pr_global_struct[0].other = old_other;
+		}
+		// recurse down both sides
+		if (node.$axis === -1) {
+			ss.Debug.writeln('node.axis == -1');
+			return;
+		}
+		if (ent.v.absmax[node.$axis] > node.$dist) {
+			ss.Debug.writeln('1--');
+			$quake_world.$sV_TouchLinks(ent, node.$children[0]);
+		}
+		if (ent.v.absmin[node.$axis] < node.$dist) {
+			ss.Debug.writeln('2--');
+			$quake_world.$sV_TouchLinks(ent, node.$children[1]);
+		}
+	};
+	$quake_world.$sV_FindTouchedLeafs = function(ent, node) {
+		var splitplane;
+		var leaf;
+		var sides;
+		var leafnum;
+		if (node.contents === $quake_bspfile.contentS_SOLID) {
+			return;
+		}
+		// add an efrag if the node is a leaf
+		if (node.contents < 0) {
+			if (ent.num_leafs === $quake_prog.maX_ENT_LEAFS) {
+				return;
+			}
+			leaf = node;
+			var i;
+			for (i = 0; i < $quake_server.sv.worldmodel.leafs.length; i++) {
+				var mleafT = $quake_server.sv.worldmodel.leafs[i];
+				if (ss.referenceEquals(mleafT, leaf)) {
+					break;
+				}
+			}
+			leafnum = i - 1;
+			ent.leafnums[ent.num_leafs] = leafnum;
+			ent.num_leafs++;
+			ss.Debug.writeln('num_leafs ' + ent.num_leafs);
+			ss.Debug.writeln('leafnum_ ' + leafnum);
+			return;
+		}
+		// NODE_MIXED
+		splitplane = ss.cast(node, $quake_model$mnode_t).plane;
+		sides = $quake_mathlib.boX_ON_PLANE_SIDE(ent.v.absmin, ent.v.absmax, splitplane);
+		// recurse down the contacted sides
+		if ((sides & 1) !== 0) {
+			$quake_world.$sV_FindTouchedLeafs(ent, ss.cast(node, $quake_model$mnode_t).children[0]);
+		}
+		if ((sides & 2) !== 0) {
+			$quake_world.$sV_FindTouchedLeafs(ent, ss.cast(node, $quake_model$mnode_t).children[1]);
+		}
+	};
 	$quake_world.sV_LinkEdict = function(ent, touch_triggers) {
-		//TODO: NOT SUPER NEEDED
-		//    areanode_t node;
-		//    if (ent->area.prev)
-		//        SV_UnlinkEdict(ent);	// unlink from old position
-		//    if (ent == sv.edicts)
-		//        return;		// don't add the world
-		//    if (ent->free)
-		//        return;
-		//    // set the abs box
-		//    {
-		//        VectorAdd(ent->v.origin, ent->v.mins, ent->v.absmin);
-		//        VectorAdd(ent->v.origin, ent->v.maxs, ent->v.absmax);
-		//    }
-		//    //
-		//    // to make items easier to pick up and allow them to be grabbed off
-		//    // of shelves, the abs sizes are expanded
-		//    //
-		//    if ((int)ent->v.flags & FL_ITEM)
-		//    {
-		//        ent->v.absmin[0] -= 15;
-		//        ent->v.absmin[1] -= 15;
-		//        ent->v.absmax[0] += 15;
-		//        ent->v.absmax[1] += 15;
-		//    }
-		//    else
-		//    {	// because movement is clipped an epsilon away from an actual edge,
-		//        // we must fully check even when bounding boxes don't quite touch
-		//        ent->v.absmin[0] -= 1;
-		//        ent->v.absmin[1] -= 1;
-		//        ent->v.absmin[2] -= 1;
-		//        ent->v.absmax[0] += 1;
-		//        ent->v.absmax[1] += 1;
-		//        ent->v.absmax[2] += 1;
-		//    }
-		//    // link to PVS leafs
-		//    ent->num_leafs = 0;
-		//    if (ent->v.modelindex)
-		//        SV_FindTouchedLeafs(ent, sv.worldmodel->nodes);
-		//    if (ent->v.solid == SOLID_NOT)
-		//        return;
-		//    // find the first node that the ent's box crosses
-		//    node = sv_areanodes;
-		//    while (1)
-		//    {
-		//        if (node->axis == -1)
-		//            break;
-		//        if (ent->v.absmin[node->axis] > node->dist)
-		//            node = node->children[0];
-		//        else if (ent->v.absmax[node->axis] < node->dist)
-		//            node = node->children[1];
-		//        else
-		//            break;		// crosses the node
-		//    }
-		//    // link it in	
-		//    if (ent->v.solid == SOLID_TRIGGER)
-		//        InsertLinkBefore(&ent->area, &node->trigger_edicts);
-		//    else
-		//        InsertLinkBefore(&ent->area, &node->solid_edicts);
-		//    // if touch_triggers, touch all entities at this node and decend for more
-		//    if (touch_triggers)
-		//        SV_TouchLinks(ent, sv_areanodes);
+		var node;
+		ss.Debug.writeln('SV_LinkEdict_count ' + $quake_world.$sV_LinkEdict_count);
+		$quake_world.$sV_LinkEdict_count++;
+		if (ss.isValue(ent.area.prev)) {
+			$quake_world.sV_UnlinkEdict(ent);
+		}
+		// unlink from old position
+		if (ss.referenceEquals(ent, $quake_server.sv.edicts[0])) {
+			return;
+		}
+		// don't add the world
+		if (ent.free) {
+			return;
+		}
+		// set the abs box
+		{
+			$quake_mathlib.vectorAdd(ent.v.origin, ent.v.mins, ent.v.absmin);
+			$quake_mathlib.vectorAdd(ent.v.origin, ent.v.maxs, ent.v.absmax);
+		}
+		ss.Debug.writeln(ss.formatString('VectorAdd origin{0:F6}', ent.v.origin[0]));
+		ss.Debug.writeln(ss.formatString('VectorAdd absmin {0:F6}', ent.v.absmin[0]));
+		//
+		// to make items easier to pick up and allow them to be grabbed off
+		// of shelves, the abs sizes are expanded
+		//
+		if ((ss.Int32.trunc(ent.v.flags) & $quake_server.fL_ITEM) !== 0) {
+			ent.v.absmin[0] -= 15;
+			ent.v.absmin[1] -= 15;
+			ent.v.absmax[0] += 15;
+			ent.v.absmax[1] += 15;
+			ss.Debug.writeln(ss.formatString('(int)ent->v.flags & FL_ITEM {0:F6}', ent.v.absmin[0]));
+		}
+		else {
+			// because movement is clipped an epsilon away from an actual edge,
+			// we must fully check even when bounding boxes don't quite touch
+			ent.v.absmin[0] -= 1;
+			ent.v.absmin[1] -= 1;
+			ent.v.absmin[2] -= 1;
+			ent.v.absmax[0] += 1;
+			ent.v.absmax[1] += 1;
+			ent.v.absmax[2] += 1;
+			ss.Debug.writeln(ss.formatString('nerp {0:F6}', ent.v.absmin[0]));
+		}
+		// link to PVS leafs
+		ent.num_leafs = 0;
+		if (ent.v.modelindex !== 0) {
+			$quake_world.$sV_FindTouchedLeafs(ent, $quake_server.sv.worldmodel.nodes[0]);
+		}
+		if (ent.v.solid === 0) {
+			return;
+		}
+		// find the first node that the ent's box crosses
+		node = $quake_world.$sv_areanodes[0];
+		while (true) {
+			if (node.$axis === -1) {
+				break;
+			}
+			if (ent.v.absmin[node.$axis] > node.$dist) {
+				node = node.$children[0];
+			}
+			else if (ent.v.absmax[node.$axis] < node.$dist) {
+				node = node.$children[1];
+			}
+			else {
+				break;
+			}
+			// crosses the node
+		}
+		// link it in	
+		if (ent.v.solid === 1) {
+			ss.Debug.writeln('ent.v.solid == server.SOLID_TRIGGER');
+			$quake_common.insertLinkBefore(ent.area, node.$trigger_edicts);
+		}
+		else {
+			ss.Debug.writeln('ELSE!');
+			$quake_common.insertLinkBefore(ent.area, node.$solid_edicts);
+		}
+		// if touch_triggers, touch all entities at this node and decend for more
+		if (touch_triggers) {
+			$quake_world.$sV_TouchLinks(ent, $quake_world.$sv_areanodes[0]);
+		}
+	};
+	$quake_world.sV_HullPointContents = function(hull, num, p) {
+		var d;
+		var node;
+		var plane;
+		while (num >= 0) {
+			if (num < hull.firstclipnode || num > hull.lastclipnode) {
+				$quake_sys_linux.sys_Error('SV_HullPointContents: bad node number');
+			}
+			node = hull.clipnodes[num];
+			plane = hull.planes[node.planenum];
+			if (plane.type < 3) {
+				d = p[plane.type] - plane.dist;
+			}
+			else {
+				d = $quake_mathlib.dotProduct$1(plane.normal, p) - plane.dist;
+			}
+			if (d < 0) {
+				num = node.children[1];
+			}
+			else {
+				num = node.children[0];
+			}
+		}
+		return num;
+	};
+	$quake_world.sV_PointContents = function(p) {
+		var cont;
+		cont = $quake_world.sV_HullPointContents($quake_server.sv.worldmodel.hulls[0], 0, p);
+		if (cont <= $quake_bspfile.contentS_CURRENT_0 && cont >= $quake_bspfile.contentS_CURRENT_DOWN) {
+			cont = $quake_bspfile.contentS_WATER;
+		}
+		return cont;
+	};
+	$quake_world.sV_TruePointContents = function(p) {
+		return $quake_world.sV_HullPointContents($quake_server.sv.worldmodel.hulls[0], 0, p);
+	};
+	$quake_world.sV_TestEntityPosition = function(ent) {
+		var trace;
+		trace = $quake_world.sV_Move(ent.v.origin, ent.v.mins, ent.v.maxs, ent.v.origin, 0, ent);
+		if (trace.startsolid) {
+			return $quake_server.sv.edicts[0];
+		}
+		return null;
+	};
+	$quake_world.$sV_RecursiveHullCheck = function(hull, num, p1f, p2f, p1, p2, trace) {
+		var node;
+		var plane;
+		var t1, t2;
+		var frac;
+		var i;
+		var mid = new Array(3);
+		var side;
+		var midf;
+		//Debug.WriteLine(string.Format("SV_RecursiveHullCheck hull.firstclipnode:{0} num:{1} {2:F6} {3:F6} p1[0] {4:F6} p1[1] {5:F6}  p1[2] {6:F6} -  p2[0] {7:F6} p2[1] {8:F6} p2[2] {9:F6} num_hullcheck: {10}", hull.firstclipnode, num, (float)p1f, (float)p2f, (float)p1[0], (float)p1[1], (float)p1[2], (float)p2[0], (float)p2[1], (float)p2[2], ++num_hullcheck));
+		if (ss.isValue(trace.ent)) {
+			ss.Debug.writeln(ss.formatString('{0} {1}', trace.ent.v.modelindex, trace.ent.v.velocity[0]));
+		}
+		// check for empty
+		if (num < 0) {
+			if (num !== $quake_bspfile.contentS_SOLID) {
+				trace.allsolid = false;
+				if (num === $quake_bspfile.contentS_EMPTY) {
+					trace.inopen = true;
+				}
+				else {
+					trace.inwater = true;
+				}
+			}
+			else {
+				trace.startsolid = true;
+			}
+			//Debug.WriteLine(string.Format("empty"));
+			return true;
+			// empty
+		}
+		if (num < hull.firstclipnode || num > hull.lastclipnode) {
+			$quake_sys_linux.sys_Error('SV_RecursiveHullCheck: bad node number');
+		}
+		//
+		// find the point distances
+		//
+		node = hull.clipnodes[num];
+		plane = hull.planes[node.planenum];
+		if (plane.type < 3) {
+			t1 = p1[plane.type] - plane.dist;
+			t2 = p2[plane.type] - plane.dist;
+		}
+		else {
+			t1 = $quake_mathlib.dotProduct$1(plane.normal, p1) - plane.dist;
+			t2 = $quake_mathlib.dotProduct$1(plane.normal, p2) - plane.dist;
+		}
+		//Debug.WriteLine(string.Format("t1: {0:F6} t2: {1:F6}", (float)t1, (float)t2));
+		if (t1 >= 0 && t2 >= 0) {
+			//Debug.WriteLine(string.Format("t1 >= 0 && t2 >= 0"));
+			return $quake_world.$sV_RecursiveHullCheck(hull, node.children[0], p1f, p2f, p1, p2, trace);
+		}
+		if (t1 < 0 && t2 < 0) {
+			//Debug.WriteLine(string.Format("t1 < 0 && t2 < 0"));
+			return $quake_world.$sV_RecursiveHullCheck(hull, node.children[1], p1f, p2f, p1, p2, trace);
+		}
+		// put the crosspoint DIST_EPSILON pixels on the near side
+		if (t1 < 0) {
+			frac = (t1 + $quake_world.$disT_EPSILON) / (t1 - t2);
+		}
+		else {
+			frac = (t1 - $quake_world.$disT_EPSILON) / (t1 - t2);
+		}
+		if (frac < 0) {
+			frac = 0;
+		}
+		if (frac > 1) {
+			frac = 1;
+		}
+		midf = p1f + (p2f - p1f) * frac;
+		for (i = 0; i < 3; i++) {
+			mid[i] = p1[i] + frac * (p2[i] - p1[i]);
+		}
+		side = ((t1 < 0) ? 1 : 0);
+		// move up to the node
+		if (!$quake_world.$sV_RecursiveHullCheck(hull, node.children[side], p1f, midf, p1, mid, trace)) {
+			//Debug.WriteLine(string.Format("move up to the node !SV_RecursiveHullCheck(hull, node.children[side], p1f, midf, p1, mid, trace)"));
+			return false;
+		}
+		if ($quake_world.sV_HullPointContents(hull, node.children[side ^ 1], mid) !== $quake_bspfile.contentS_SOLID) {
+			//Debug.WriteLine(string.Format("go past the node"));
+			return $quake_world.$sV_RecursiveHullCheck(hull, node.children[side ^ 1], midf, p2f, mid, p2, trace);
+		}
+		if (trace.allsolid) {
+			//Debug.WriteLine(string.Format("trace.allsolid"));
+			return false;
+			// never got out of the solid area
+		}
+		//==================
+		// the other side of the node is solid, this is the impact point
+		//==================
+		if (side === 0) {
+			$quake_mathlib.vectorCopy(plane.normal, trace.plane.normal);
+			trace.plane.dist = plane.dist;
+		}
+		else {
+			$quake_mathlib.vectorSubtract($quake_mathlib.vec3_origin, plane.normal, trace.plane.normal);
+			trace.plane.dist = -plane.dist;
+		}
+		while ($quake_world.sV_HullPointContents(hull, hull.firstclipnode, mid) === $quake_bspfile.contentS_SOLID) {
+			// shouldn't really happen, but does occasionally
+			frac -= 0.1;
+			if (frac < 0) {
+				trace.fraction = midf;
+				$quake_mathlib.vectorCopy(mid, trace.endpos);
+				$quake_console.con_DPrintf('backup past 0\n');
+				return false;
+			}
+			midf = p1f + (p2f - p1f) * frac;
+			for (i = 0; i < 3; i++) {
+				mid[i] = p1[i] + frac * (p2[i] - p1[i]);
+			}
+		}
+		trace.fraction = midf;
+		$quake_mathlib.vectorCopy(mid, trace.endpos);
+		//Debug.WriteLine(string.Format("end of func return false"));
+		return false;
+	};
+	$quake_world.sV_ClipMoveToEntity = function(ent, start, mins, maxs, end) {
+		var trace;
+		var offset = new Array(3);
+		var start_l = new Array(3), end_l = new Array(3);
+		var hull;
+		// fill in a default trace
+		trace = new $quake_world$trace_t();
+		trace.fraction = 1;
+		trace.allsolid = true;
+		$quake_mathlib.vectorCopy(end, trace.endpos);
+		// get the clipping hull
+		hull = $quake_world.$sV_HullForEntity(ent, mins, maxs, offset);
+		$quake_mathlib.vectorSubtract(start, offset, start_l);
+		$quake_mathlib.vectorSubtract(end, offset, end_l);
+		//Debug.WriteLine(string.Format("end[2] {0:F6}", (float)end[2]));
+		// trace a line through the apropriate clipping hull
+		//Debug.WriteLine(string.Format("end_l[2] {0:F6}",(float)  end_l[2]));
+		$quake_world.$sV_RecursiveHullCheck(hull, hull.firstclipnode, 0, 1, start_l, end_l, trace);
+		// fix trace up by the offset
+		if (trace.fraction !== 1) {
+			$quake_mathlib.vectorAdd(trace.endpos, offset, trace.endpos);
+		}
+		// did we clip the move?
+		if (trace.fraction < 1 || trace.startsolid) {
+			trace.ent = ent;
+		}
+		return trace;
+	};
+	$quake_world.$sV_ClipToLinks = function(node, clip) {
+		var l, next;
+		var touch;
+		var trace;
+		// touch linked edicts
+		for (l = node.$solid_edicts.next; !ss.referenceEquals(l, node.$solid_edicts); l = next) {
+			next = l.next;
+			touch = $quake_prog.edicT_FROM_AREA(l);
+			if (touch.v.solid === 0) {
+				continue;
+			}
+			if (ss.referenceEquals(touch, clip.passedict)) {
+				continue;
+			}
+			if (touch.v.solid === 1) {
+				$quake_sys_linux.sys_Error('Trigger in clipping list');
+			}
+			if (clip.type === $quake_world.movE_NOMONSTERS && touch.v.solid !== 4) {
+				continue;
+			}
+			if (clip.boxmins[0] > touch.v.absmax[0] || clip.boxmins[1] > touch.v.absmax[1] || clip.boxmins[2] > touch.v.absmax[2] || clip.boxmaxs[0] < touch.v.absmin[0] || clip.boxmaxs[1] < touch.v.absmin[1] || clip.boxmaxs[2] < touch.v.absmin[2]) {
+				continue;
+			}
+			//if (clip.passedict && clip.passedict.v.size[0] && !touch.v.size[0])
+			if (ss.isValue(clip.passedict) && clip.passedict.v.size[0] !== 0 && touch.v.size[0] !== 0) {
+				continue;
+			}
+			// points never interact
+			// might intersect, so do an exact clip
+			if (clip.trace.allsolid) {
+				return;
+			}
+			if (ss.isValue(clip.passedict)) {
+				if (ss.referenceEquals($quake_prog.proG_TO_EDICT(touch.v.owner), clip.passedict)) {
+					continue;
+				}
+				// don't clip against own missiles
+				if (ss.referenceEquals($quake_prog.proG_TO_EDICT(clip.passedict.v.owner), touch)) {
+					continue;
+				}
+				// don't clip against owner
+			}
+			if ((ss.Int32.trunc(touch.v.flags) & $quake_server.fL_MONSTER) !== 0) {
+				trace = $quake_world.sV_ClipMoveToEntity(touch, clip.start, clip.mins2, clip.maxs2, clip.end);
+			}
+			else {
+				trace = $quake_world.sV_ClipMoveToEntity(touch, clip.start, clip.mins, clip.maxs, clip.end);
+			}
+			if (trace.allsolid || trace.startsolid || trace.fraction < clip.trace.fraction) {
+				trace.ent = touch;
+				if (clip.trace.startsolid) {
+					clip.trace = trace;
+					clip.trace.startsolid = true;
+				}
+				else {
+					clip.trace = trace;
+				}
+			}
+			else if (trace.startsolid) {
+				clip.trace.startsolid = true;
+			}
+		}
+		// recurse down both sides
+		if (node.$axis === -1) {
+			return;
+		}
+		if (clip.boxmaxs[node.$axis] > node.$dist) {
+			$quake_world.$sV_ClipToLinks(node.$children[0], clip);
+		}
+		if (clip.boxmins[node.$axis] < node.$dist) {
+			$quake_world.$sV_ClipToLinks(node.$children[1], clip);
+		}
+	};
+	$quake_world.$sV_MoveBounds = function(start, mins, maxs, end, boxmins, boxmaxs) {
+		//#if 0
+		//boxmins[0] = boxmins[1] = boxmins[2] = -9999;
+		//boxmaxs[0] = boxmaxs[1] = boxmaxs[2] = 9999;
+		//#else
+		var i;
+		for (i = 0; i < 3; i++) {
+			if (end[i] > start[i]) {
+				boxmins[i] = start[i] + mins[i] - 1;
+				boxmaxs[i] = end[i] + maxs[i] + 1;
+			}
+			else {
+				boxmins[i] = end[i] + mins[i] - 1;
+				boxmaxs[i] = start[i] + maxs[i] + 1;
+			}
+		}
+		//#endif
+	};
+	$quake_world.sV_Move = function(start, mins, maxs, end, type, passedict) {
+		var clip;
+		var i;
+		clip = new $quake_world$moveclip_t();
+		// clip to world
+		//Debug.WriteLine("SV_Move ?? SV_ClipMoveToEntity");
+		clip.trace = $quake_world.sV_ClipMoveToEntity($quake_server.sv.edicts[0], start, mins, maxs, end);
+		clip.start = start;
+		clip.end = end;
+		clip.mins = mins;
+		clip.maxs = maxs;
+		clip.type = type;
+		clip.passedict = passedict;
+		if (type === $quake_world.movE_MISSILE) {
+			for (i = 0; i < 3; i++) {
+				clip.mins2[i] = -15;
+				clip.maxs2[i] = 15;
+			}
+		}
+		else {
+			$quake_mathlib.vectorCopy(mins, clip.mins2);
+			$quake_mathlib.vectorCopy(maxs, clip.maxs2);
+		}
+		// create the bounding box of the entire move
+		$quake_world.$sV_MoveBounds(start, clip.mins2, clip.maxs2, end, clip.boxmins, clip.boxmaxs);
+		// clip to entities
+		//Debug.WriteLine("SV_Move ?? SV_ClipToLinks");
+		$quake_world.$sV_ClipToLinks($quake_world.$sv_areanodes[0], clip);
+		return clip.trace;
+	};
+	////////////////////////////////////////////////////////////////////////////////
+	// quake.world.moveclip_t
+	var $quake_world$moveclip_t = function() {
+		this.boxmins = new Array(3);
+		this.boxmaxs = new Array(3);
+		this.mins = new Array(3);
+		this.maxs = new Array(3);
+		this.mins2 = new Array(3);
+		this.maxs2 = new Array(3);
+		this.start = null;
+		this.end = null;
+		this.trace = null;
+		this.type = 0;
+		this.passedict = null;
 	};
 	////////////////////////////////////////////////////////////////////////////////
 	// quake.world.plane_t
 	var $quake_world$plane_t = function() {
-		this.$normal = new Array(3);
-		this.$dist = 0;
+		this.normal = new Array(3);
+		this.dist = 0;
 	};
 	////////////////////////////////////////////////////////////////////////////////
 	// quake.world.trace_t
 	var $quake_world$trace_t = function() {
-		this.$allsolid = false;
-		this.$startsolid = false;
-		this.$inopen = false;
-		this.$inwater = false;
-		this.$fraction = 0;
-		this.$endpos = new Array(3);
-		this.$plane = null;
+		this.allsolid = false;
+		this.startsolid = false;
+		this.inopen = false;
+		this.inwater = false;
+		this.fraction = 0;
+		this.endpos = new Array(3);
+		this.plane = new $quake_world$plane_t();
+		this.ent = null;
 	};
 	////////////////////////////////////////////////////////////////////////////////
 	// ScriptProject.Missing.Web.AudioBufferSourceNodePlayBackState
@@ -23431,6 +26032,7 @@
 	ss.registerClass(null, 'quake.$vrect_s', $quake_$vrect_s);
 	ss.registerClass(null, 'quake.$wad$lumpinfo_t', $quake_$wad$lumpinfo_t);
 	ss.registerClass(null, 'quake.$wad$wadinfo_t', $quake_$wad$wadinfo_t);
+	ss.registerClass(null, 'quake.$world$areanode_t', $quake_$world$areanode_t);
 	ss.registerClass(global, 'quake.bspfile', $quake_bspfile);
 	ss.registerClass(global, 'quake.bspfile$ByteBuffer', $quake_bspfile$ByteBuffer);
 	ss.registerClass(global, 'quake.bspfile$dclipnode_t', $quake_bspfile$dclipnode_t);
@@ -23458,6 +26060,7 @@
 	ss.registerClass(global, 'quake.client$usercmd_t', $quake_client$usercmd_t);
 	ss.registerClass(global, 'quake.cmd', $quake_cmd);
 	ss.registerClass(global, 'quake.common', $quake_common);
+	ss.registerClass(global, 'quake.common$link_t', $quake_common$link_t);
 	ss.registerClass(global, 'quake.common$sizebuf_t', $quake_common$sizebuf_t);
 	ss.registerClass(global, 'quake.console', $quake_console);
 	ss.registerClass(global, 'quake.crc', $quake_crc);
@@ -23569,6 +26172,7 @@
 	ss.registerClass(global, 'quake.wad', $quake_wad);
 	ss.registerClass(global, 'quake.wad$qpic_t', $quake_wad$qpic_t);
 	ss.registerClass(global, 'quake.world', $quake_world);
+	ss.registerClass(global, 'quake.world$moveclip_t', $quake_world$moveclip_t);
 	ss.registerClass(global, 'quake.world$plane_t', $quake_world$plane_t);
 	ss.registerClass(global, 'quake.world$trace_t', $quake_world$trace_t);
 	ss.registerClass(global, 'System.Buffer', $System_Buffer);
@@ -23755,6 +26359,7 @@
 	$quake_bspfile.contentS_CURRENT_UP = -13;
 	$quake_bspfile.contentS_CURRENT_DOWN = -14;
 	$quake_bspfile.sizeof_dnode_t = 24;
+	$quake_bspfile.sizeof_dclipnode_t = 8;
 	$quake_bspfile.sizeof_texinfo_t = 40;
 	$quake_bspfile.teX_SPECIAL = 1;
 	$quake_bspfile.sizeof_dedge_t = 4;
@@ -23779,9 +26384,6 @@
 			// does not support
 		}
 	}
-	$quake_world.movE_NORMAL = 0;
-	$quake_world.movE_NOMONSTERS = 1;
-	$quake_world.movE_MISSILE = 2;
 	$quake_crc.crC_INIT_VALUE = 65535;
 	$quake_crc.crC_XOR_VALUE = 0;
 	$quake_crc.$crctable = [0, 4129, 8258, 12387, 16516, 20645, 24774, 28903, 33032, 37161, 41290, 45419, 49548, 53677, 57806, 61935, 4657, 528, 12915, 8786, 21173, 17044, 29431, 25302, 37689, 33560, 45947, 41818, 54205, 50076, 62463, 58334, 9314, 13379, 1056, 5121, 25830, 29895, 17572, 21637, 42346, 46411, 34088, 38153, 58862, 62927, 50604, 54669, 13907, 9842, 5649, 1584, 30423, 26358, 22165, 18100, 46939, 42874, 38681, 34616, 63455, 59390, 55197, 51132, 18628, 22757, 26758, 30887, 2112, 6241, 10242, 14371, 51660, 55789, 59790, 63919, 35144, 39273, 43274, 47403, 23285, 19156, 31415, 27286, 6769, 2640, 14899, 10770, 56317, 52188, 64447, 60318, 39801, 35672, 47931, 43802, 27814, 31879, 19684, 23749, 11298, 15363, 3168, 7233, 60846, 64911, 52716, 56781, 44330, 48395, 36200, 40265, 32407, 28342, 24277, 20212, 15891, 11826, 7761, 3696, 65439, 61374, 57309, 53244, 48923, 44858, 40793, 36728, 37256, 33193, 45514, 41451, 53516, 49453, 61774, 57711, 4224, 161, 12482, 8419, 20484, 16421, 28742, 24679, 33721, 37784, 41979, 46042, 49981, 54044, 58239, 62302, 689, 4752, 8947, 13010, 16949, 21012, 25207, 29270, 46570, 42443, 38312, 34185, 62830, 58703, 54572, 50445, 13538, 9411, 5280, 1153, 29798, 25671, 21540, 17413, 42971, 47098, 34713, 38840, 59231, 63358, 50973, 55100, 9939, 14066, 1681, 5808, 26199, 30326, 17941, 22068, 55628, 51565, 63758, 59695, 39368, 35305, 47498, 43435, 22596, 18533, 30726, 26663, 6336, 2273, 14466, 10403, 52093, 56156, 60223, 64286, 35833, 39896, 43963, 48026, 19061, 23124, 27191, 31254, 2801, 6864, 10931, 14994, 64814, 60687, 56684, 52557, 48554, 44427, 40424, 36297, 31782, 27655, 23652, 19525, 15522, 11395, 7392, 3265, 61215, 65342, 53085, 57212, 44955, 49082, 36825, 40952, 28183, 32310, 20053, 24180, 11923, 16050, 3793, 7920];
@@ -24551,6 +27153,21 @@
 	for (var kk = 0; kk < $quake_model.maX_MOD_KNOWN; kk++) {
 		$quake_model.$mod_known[kk] = new $quake_model$model_t();
 	}
+	$quake_world.movE_NORMAL = 0;
+	$quake_world.movE_NOMONSTERS = 1;
+	$quake_world.movE_MISSILE = 2;
+	$quake_world.$box_hull = new $quake_model$hull_t();
+	$quake_world.$box_clipnodes = $quake_world.$init_box_clip_nodes(6);
+	$quake_world.$box_planes = $quake_world.$init_box_planes(6);
+	$quake_world.$areA_DEPTH = 4;
+	$quake_world.$areA_NODES = 32;
+	$quake_world.$sv_areanodes = $quake_world.$init_areanode_t($quake_world.$areA_NODES);
+	$quake_world.$sv_numareanodes = 0;
+	$quake_world.$tchlinks = 0;
+	$quake_world.$tchlinksFunc = 0;
+	$quake_world.$sV_LinkEdict_count = 0;
+	$quake_world.$disT_EPSILON = 0.03125;
+	$quake_world.$num_hullcheck = 0;
 	$quake_sys_linux.$nostdout = 0;
 	$quake_sys_linux.$basedir = '.';
 	$quake_sys_linux.$sys_linerefresh = new $quake_cvar_t('sys_linerefresh', '0');
@@ -24559,13 +27176,95 @@
 	$quake_sys_linux.sys_handles = new Array($quake_sys_linux.$maX_HANDLES);
 	$quake_mathlib.m_PI = 3.14159265358979;
 	$quake_mathlib.vec3_origin = [0, 0, 0];
+	$quake_server.nuM_PING_TIMES = 16;
+	$quake_server.nuM_SPAWN_PARMS = 16;
+	$quake_server.movetypE_NONE = 0;
+	$quake_server.movetypE_ANGLENOCLIP = 1;
+	$quake_server.movetypE_ANGLECLIP = 2;
+	$quake_server.movetypE_WALK = 3;
+	$quake_server.movetypE_STEP = 4;
+	$quake_server.movetypE_FLY = 5;
+	$quake_server.movetypE_TOSS = 6;
+	$quake_server.movetypE_PUSH = 7;
+	$quake_server.movetypE_NOCLIP = 8;
+	$quake_server.movetypE_FLYMISSILE = 9;
+	$quake_server.movetypE_BOUNCE = 10;
+	$quake_server.soliD_NOT = 0;
+	$quake_server.soliD_TRIGGER = 1;
+	$quake_server.soliD_BBOX = 2;
+	$quake_server.soliD_SLIDEBOX = 3;
+	$quake_server.soliD_BSP = 4;
+	$quake_server.deaD_NO = 0;
+	$quake_server.deaD_DYING = 1;
+	$quake_server.deaD_DEAD = 2;
+	$quake_server.damagE_NO = 0;
+	$quake_server.damagE_YES = 1;
+	$quake_server.damagE_AIM = 2;
+	$quake_server.fL_FLY = 1;
+	$quake_server.fL_SWIM = 2;
+	$quake_server.fL_CONVEYOR = 4;
+	$quake_server.fL_CLIENT = 8;
+	$quake_server.fL_INWATER = 16;
+	$quake_server.fL_MONSTER = 32;
+	$quake_server.fL_GODMODE = 64;
+	$quake_server.fL_NOTARGET = 128;
+	$quake_server.fL_ITEM = 256;
+	$quake_server.fL_ONGROUND = 512;
+	$quake_server.fL_PARTIALGROUND = 1024;
+	$quake_server.fL_WATERJUMP = 2048;
+	$quake_server.fL_JUMPRELEASED = 4096;
+	$quake_server.eF_BRIGHTFIELD = 1;
+	$quake_server.eF_MUZZLEFLASH = 2;
+	$quake_server.eF_BRIGHTLIGHT = 4;
+	$quake_server.eF_DIMLIGHT = 8;
+	$quake_server.spawnflaG_NOT_EASY = 256;
+	$quake_server.spawnflaG_NOT_MEDIUM = 512;
+	$quake_server.spawnflaG_NOT_HARD = 1024;
+	$quake_server.spawnflaG_NOT_DEATHMATCH = 2048;
+	$quake_server.sv = new $quake_server$server_t();
+	$quake_server.svs = new $quake_server$server_static_t();
+	$quake_server.$localmodels = new Array($quake_quakedef.maX_MODELS);
+	$quake_server.STEPSIZE = 18;
+	$quake_server.$c_yes = 0;
+	$quake_server.$c_no = 0;
+	$quake_server.$dI_NODIR = -1;
+	$quake_server.$sv_friction = new $quake_cvar_t.$ctor2('sv_friction', '4', false, true);
+	$quake_server.$sv_stopspeed = new $quake_cvar_t('sv_stopspeed', '100');
+	$quake_server.sv_gravity = new $quake_cvar_t.$ctor2('sv_gravity', '800', false, true);
+	$quake_server.$sv_maxvelocity = new $quake_cvar_t('sv_maxvelocity', '2000');
+	$quake_server.$sv_nostep = new $quake_cvar_t('sv_nostep', '0');
+	$quake_server.movE_EPSILON = 0.01;
+	$quake_server.$stoP_EPSILON = 0.1;
+	$quake_server.$maX_CLIP_PLANES = 5;
+	$quake_server.$phys_num = 0;
+	$quake_server.sv_player = null;
+	$quake_server.$sv_edgefriction = new $quake_cvar_t('edgefriction', '2');
+	$quake_server.$forward = new Array(3);
+	$quake_server.$right = new Array(3);
+	$quake_server.$up = new Array(3);
+	$quake_server.$wishdir = new Array(3);
+	$quake_server.$wishspeed = 0;
+	$quake_server.$angles = null;
+	$quake_server.$origin = null;
+	$quake_server.$velocity = null;
+	$quake_server.$onground = false;
+	$quake_server.$cmd = new $quake_client$usercmd_t();
+	$quake_server.$sv_idealpitchscale = new $quake_cvar_t('sv_idealpitchscale', '0.8');
+	$quake_server.$maX_FORWARD = 6;
+	$quake_server.$sv_maxspeed = new $quake_cvar_t.$ctor2('sv_maxspeed', '320', false, true);
+	$quake_server.$sv_accelerate = new $quake_cvar_t('sv_accelerate', '10');
 	$quake_prog.sizeof_globalvars_t = 368;
 	$quake_prog.sizeof_entvars_t = 420;
 	$quake_prog.progheadeR_CRC = 5927;
 	$quake_prog.maX_ENT_LEAFS = 16;
 	$quake_prog.sizeof_edict_t = 516;
 	$quake_prog.$out = $System_StringExtensions.stringOfLength(256);
-	$quake_prog.$pr_builtin = [$quake_prog.$pF_Fixme, $quake_prog.$pF_makevectors, $quake_prog.$pF_setorigin, $quake_prog.$pF_setmodel, $quake_prog.$pF_setsize, $quake_prog.$pF_Fixme, $quake_prog.$pF_break, $quake_prog.$pF_random, $quake_prog.$pF_sound, $quake_prog.$pF_normalize, $quake_prog.$pF_error, $quake_prog.$pF_objerror, $quake_prog.$pF_vlen, $quake_prog.$pF_vectoyaw, $quake_prog.$pF_Spawn, $quake_prog.$pF_Remove, $quake_prog.$pF_traceline, $quake_prog.$pF_checkclient, $quake_prog.$pF_Find, $quake_prog.$pF_precache_sound, $quake_prog.$pF_precache_model, $quake_prog.$pF_stuffcmd, $quake_prog.$pF_findradius, $quake_prog.$pF_bprint, $quake_prog.$pF_sprint, $quake_prog.$pF_dprint, $quake_prog.$pF_ftos, $quake_prog.$pF_vtos, $quake_prog.$pF_coredump, $quake_prog.$pF_traceon, $quake_prog.$pF_traceoff, $quake_prog.$pF_eprint, $quake_prog.$pF_walkmove, $quake_prog.$pF_Fixme, $quake_prog.$pF_droptofloor, $quake_prog.$pF_lightstyle, $quake_prog.$pF_rint, $quake_prog.$pF_floor, $quake_prog.$pF_ceil, $quake_prog.$pF_Fixme, $quake_prog.$pF_checkbottom, $quake_prog.$pF_pointcontents, $quake_prog.$pF_Fixme, $quake_prog.$pF_fabs, $quake_prog.$pF_aim, $quake_prog.$pF_cvar, $quake_prog.$pF_localcmd, $quake_prog.$pF_nextent, $quake_prog.$pF_particle, $quake_prog.$pF_changeyaw, $quake_prog.$pF_Fixme, $quake_prog.$pF_vectoangles, $quake_prog.$pF_WriteByte, $quake_prog.$pF_WriteChar, $quake_prog.$pF_WriteShort, $quake_prog.$pF_WriteLong, $quake_prog.$pF_WriteCoord, $quake_prog.$pF_WriteAngle, $quake_prog.$pF_WriteString, $quake_prog.$pF_WriteEntity, $quake_prog.$pF_Fixme, $quake_prog.$pF_Fixme, $quake_prog.$pF_Fixme, $quake_prog.$pF_Fixme, $quake_prog.$pF_Fixme, $quake_prog.$pF_Fixme, $quake_prog.$pF_Fixme, null, $quake_prog.$pF_precache_file, $quake_prog.$pF_makestatic, $quake_prog.$pF_changelevel, $quake_prog.$pF_Fixme, $quake_prog.$pF_cvar_set, $quake_prog.$pF_centerprint, $quake_prog.$pF_ambientsound, $quake_prog.$pF_precache_model, $quake_prog.$pF_precache_sound, $quake_prog.$pF_precache_file, $quake_prog.$pF_setspawnparms];
+	$quake_prog.$checkpvs = new Uint8Array(1024);
+	$quake_prog.$c_invis = 0;
+	$quake_prog.$c_notvis = 0;
+	$quake_prog.$pr_string_temp = null;
+	$quake_prog.sv_aim = new $quake_cvar_t('sv_aim', '0.93');
+	$quake_prog.$pr_builtin = [$quake_prog.$pF_Fixme, $quake_prog.$pF_makevectors, $quake_prog.$pF_setorigin, $quake_prog.$pF_setmodel, $quake_prog.$pF_setsize, $quake_prog.$pF_Fixme, $quake_prog.$pF_break, $quake_prog.$pF_random, $quake_prog.$pF_sound, $quake_prog.$pF_normalize, $quake_prog.$pF_error, $quake_prog.$pF_objerror, $quake_prog.$pF_vlen, $quake_prog.$pF_vectoyaw, $quake_prog.$pF_Spawn, $quake_prog.$pF_Remove, $quake_prog.$pF_traceline, $quake_prog.$pF_checkclient, $quake_prog.$pF_Find, $quake_prog.$pF_precache_sound, $quake_prog.$pF_precache_model, $quake_prog.$pF_stuffcmd, $quake_prog.$pF_findradius, $quake_prog.$pF_bprint, $quake_prog.$pF_sprint, $quake_prog.$pF_dprint, $quake_prog.$pF_ftos, $quake_prog.$pF_vtos, $quake_prog.$pF_coredump, $quake_prog.$pF_traceon, $quake_prog.$pF_traceoff, $quake_prog.$pF_eprint, $quake_prog.$pF_walkmove, $quake_prog.$pF_Fixme, $quake_prog.$pF_droptofloor, $quake_prog.$pF_lightstyle, $quake_prog.$pF_rint, $quake_prog.$pF_floor, $quake_prog.$pF_ceil, $quake_prog.$pF_Fixme, $quake_prog.$pF_checkbottom, $quake_prog.$pF_pointcontents, $quake_prog.$pF_Fixme, $quake_prog.$pF_fabs, $quake_prog.$pF_aim, $quake_prog.$pF_cvar, $quake_prog.$pF_localcmd, $quake_prog.$pF_nextent, $quake_prog.$pF_particle, $quake_prog.pF_changeyaw, $quake_prog.$pF_Fixme, $quake_prog.$pF_vectoangles, $quake_prog.$pF_WriteByte, $quake_prog.$pF_WriteChar, $quake_prog.$pF_WriteShort, $quake_prog.$pF_WriteLong, $quake_prog.$pF_WriteCoord, $quake_prog.$pF_WriteAngle, $quake_prog.$pF_WriteString, $quake_prog.$pF_WriteEntity, $quake_prog.$pF_Fixme, $quake_prog.$pF_Fixme, $quake_prog.$pF_Fixme, $quake_prog.$pF_Fixme, $quake_prog.$pF_Fixme, $quake_prog.$pF_Fixme, $quake_prog.$pF_Fixme, $quake_server.sV_MoveToGoal, $quake_prog.$pF_precache_file, $quake_prog.$pF_makestatic, $quake_prog.$pF_changelevel, $quake_prog.$pF_Fixme, $quake_prog.$pF_cvar_set, $quake_prog.$pF_centerprint, $quake_prog.$pF_ambientsound, $quake_prog.$pF_precache_model, $quake_prog.$pF_precache_sound, $quake_prog.$pF_precache_file, $quake_prog.$pF_setspawnparms];
 	$quake_prog.$pr_builtins = $quake_prog.$pr_builtin;
 	$quake_prog.$pr_numbuiltins = $quake_prog.$pr_builtin.length;
 	$quake_prog.ofS_NULL = 0;
@@ -24620,71 +27319,7 @@
 	$quake_prog.$pr_xstatement = 0;
 	$quake_prog.$pr_argc = 0;
 	$quake_prog.$pr_opnames = ['DONE', 'MUL_F', 'MUL_V', 'MUL_FV', 'MUL_VF', 'DIV', 'ADD_F', 'ADD_V', 'SUB_F', 'SUB_V', 'EQ_F', 'EQ_V', 'EQ_S', 'EQ_E', 'EQ_FNC', 'NE_F', 'NE_V', 'NE_S', 'NE_E', 'NE_FNC', 'LE', 'GE', 'LT', 'GT', 'INDIRECT', 'INDIRECT', 'INDIRECT', 'INDIRECT', 'INDIRECT', 'INDIRECT', 'ADDRESS', 'STORE_F', 'STORE_V', 'STORE_S', 'STORE_ENT', 'STORE_FLD', 'STORE_FNC', 'STOREP_F', 'STOREP_V', 'STOREP_S', 'STOREP_ENT', 'STOREP_FLD', 'STOREP_FNC', 'RETURN', 'NOT_F', 'NOT_V', 'NOT_S', 'NOT_ENT', 'NOT_FNC', 'IF', 'IFNOT', 'CALL0', 'CALL1', 'CALL2', 'CALL3', 'CALL4', 'CALL5', 'CALL6', 'CALL7', 'CALL8', 'STATE', 'GOTO', 'AND', 'OR', 'BITAND', 'BITOR'];
-	$quake_prog.$prNum = 0;
-	$quake_server.nuM_PING_TIMES = 16;
-	$quake_server.nuM_SPAWN_PARMS = 16;
-	$quake_server.movetypE_NONE = 0;
-	$quake_server.movetypE_ANGLENOCLIP = 1;
-	$quake_server.movetypE_ANGLECLIP = 2;
-	$quake_server.movetypE_WALK = 3;
-	$quake_server.movetypE_STEP = 4;
-	$quake_server.movetypE_FLY = 5;
-	$quake_server.movetypE_TOSS = 6;
-	$quake_server.movetypE_PUSH = 7;
-	$quake_server.movetypE_NOCLIP = 8;
-	$quake_server.movetypE_FLYMISSILE = 9;
-	$quake_server.movetypE_BOUNCE = 10;
-	$quake_server.soliD_NOT = 0;
-	$quake_server.soliD_TRIGGER = 1;
-	$quake_server.soliD_BBOX = 2;
-	$quake_server.soliD_SLIDEBOX = 3;
-	$quake_server.soliD_BSP = 4;
-	$quake_server.fL_FLY = 1;
-	$quake_server.fL_SWIM = 2;
-	$quake_server.fL_CONVEYOR = 4;
-	$quake_server.fL_CLIENT = 8;
-	$quake_server.fL_INWATER = 16;
-	$quake_server.fL_MONSTER = 32;
-	$quake_server.fL_GODMODE = 64;
-	$quake_server.fL_NOTARGET = 128;
-	$quake_server.fL_ITEM = 256;
-	$quake_server.fL_ONGROUND = 512;
-	$quake_server.fL_PARTIALGROUND = 1024;
-	$quake_server.fL_WATERJUMP = 2048;
-	$quake_server.fL_JUMPRELEASED = 4096;
-	$quake_server.eF_BRIGHTFIELD = 1;
-	$quake_server.eF_MUZZLEFLASH = 2;
-	$quake_server.eF_BRIGHTLIGHT = 4;
-	$quake_server.eF_DIMLIGHT = 8;
-	$quake_server.spawnflaG_NOT_EASY = 256;
-	$quake_server.spawnflaG_NOT_MEDIUM = 512;
-	$quake_server.spawnflaG_NOT_HARD = 1024;
-	$quake_server.spawnflaG_NOT_DEATHMATCH = 2048;
-	$quake_server.sv = new $quake_server$server_t();
-	$quake_server.svs = new $quake_server$server_static_t();
-	$quake_server.$localmodels = new Array($quake_quakedef.maX_MODELS);
-	$quake_server.$sv_friction = new $quake_cvar_t.$ctor2('sv_friction', '4', false, true);
-	$quake_server.$sv_stopspeed = new $quake_cvar_t('sv_stopspeed', '100');
-	$quake_server.sv_gravity = new $quake_cvar_t.$ctor2('sv_gravity', '800', false, true);
-	$quake_server.$sv_maxvelocity = new $quake_cvar_t('sv_maxvelocity', '2000');
-	$quake_server.$sv_nostep = new $quake_cvar_t('sv_nostep', '0');
-	$quake_server.movE_EPSILON = 0.01;
-	$quake_server.sv_player = null;
-	$quake_server.$sv_edgefriction = new $quake_cvar_t('edgefriction', '2');
-	$quake_server.$forward = new Array(3);
-	$quake_server.$right = new Array(3);
-	$quake_server.$up = new Array(3);
-	$quake_server.$wishdir = new Array(3);
-	$quake_server.$wishspeed = 0;
-	$quake_server.$angles = null;
-	$quake_server.$origin = null;
-	$quake_server.$velocity = null;
-	$quake_server.$onground = false;
-	$quake_server.$cmd = new $quake_client$usercmd_t();
-	$quake_server.$sv_idealpitchscale = new $quake_cvar_t('sv_idealpitchscale', '0.8');
-	$quake_server.$maX_FORWARD = 6;
-	$quake_server.$sv_maxspeed = new $quake_cvar_t.$ctor2('sv_maxspeed', '320', false, true);
-	$quake_server.$sv_accelerate = new $quake_cvar_t('sv_accelerate', '10');
+	$quake_prog.prNum = 0;
 	$quake_host.host_initialized = false;
 	$quake_host.host_frametime = 0;
 	$quake_host.host_time = 0;
@@ -24699,9 +27334,9 @@
 	$quake_host.$host_speeds = new $quake_cvar_t('host_speeds', '0');
 	$quake_host.$sys_ticrate = new $quake_cvar_t('sys_ticrate', '0.05');
 	$quake_host.$serverprofile = new $quake_cvar_t('serverprofile', '0');
-	$quake_host.$fraglimit = new $quake_cvar_t.$ctor2('fraglimit', '0', false, true);
-	$quake_host.$timelimit = new $quake_cvar_t.$ctor2('timelimit', '0', false, true);
-	$quake_host.$teamplay = new $quake_cvar_t.$ctor2('teamplay', '0', false, true);
+	$quake_host.fraglimit = new $quake_cvar_t.$ctor2('fraglimit', '0', false, true);
+	$quake_host.timelimit = new $quake_cvar_t.$ctor2('timelimit', '0', false, true);
+	$quake_host.teamplay = new $quake_cvar_t.$ctor2('teamplay', '0', false, true);
 	$quake_host.$samelevel = new $quake_cvar_t('samelevel', '0');
 	$quake_host.$noexit = new $quake_cvar_t.$ctor2('noexit', '0', false, true);
 	$quake_host.developer = new $quake_cvar_t('developer', '1');
@@ -24756,7 +27391,7 @@
 	$quake_client.$in_down = new $quake_$client$kbutton_t();
 	$quake_client.$in_impulse = 0;
 	$quake_client.$cl_upspeed = new $quake_cvar_t('cl_upspeed', '200');
-	$quake_client.$cl_forwardspeed = new $quake_cvar_t.$ctor1('cl_forwardspeed', '200', true);
+	$quake_client.cl_forwardspeed = new $quake_cvar_t.$ctor1('cl_forwardspeed', '200', true);
 	$quake_client.$cl_backspeed = new $quake_cvar_t.$ctor1('cl_backspeed', '200', true);
 	$quake_client.$cl_sidespeed = new $quake_cvar_t('cl_sidespeed', '350');
 	$quake_client.$cl_movespeedkey = new $quake_cvar_t('cl_movespeedkey', '2.0');

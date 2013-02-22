@@ -246,6 +246,9 @@
     <Compile Include="..\InnoveWare\quake\sv_main.cs">
       <Link>quake\sv_main.cs</Link>
     </Compile>
+    <Compile Include="..\InnoveWare\quake\sv_move.cs">
+      <Link>quake\sv_move.cs</Link>
+    </Compile>
     <Compile Include="..\InnoveWare\quake\sv_phys.cs">
       <Link>quake\sv_phys.cs</Link>
     </Compile>
@@ -322,8 +325,8 @@
       <HintPath>..\packages\Saltarelle.Web.2.0.0\lib\Saltarelle.Web.dll</HintPath>
     </Reference>
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" Condition="!Exists('$(SolutionDir)packages\Saltarelle.Compiler.2.0.0\tools\Saltarelle.Compiler.targets')" />
-  <Import Project="$(SolutionDir)packages\Saltarelle.Compiler.2.0.0\tools\Saltarelle.Compiler.targets" Condition="Exists('$(SolutionDir)packages\Saltarelle.Compiler.2.0.0\tools\Saltarelle.Compiler.targets')" />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" Condition="!Exists('$(SolutionDir)packages\Saltarelle.Compiler.2.0.3\tools\Saltarelle.Compiler.targets')" />
+  <Import Project="$(SolutionDir)packages\Saltarelle.Compiler.2.0.3\tools\Saltarelle.Compiler.targets" Condition="Exists('$(SolutionDir)packages\Saltarelle.Compiler.2.0.3\tools\Saltarelle.Compiler.targets')" />
   <PropertyGroup>
     <PostBuildEvent>copy "$(TargetDir)$(TargetName).js" "$(SolutionDir)\web\scripts"</PostBuildEvent>
   </PropertyGroup>
