@@ -639,41 +639,68 @@ namespace quake
         //    ED_PrintNum (i);
         //}
 
-        ///*
-        //=============
-        //ED_Count
+        /*
+        =============
+        ED_Count
 
-        //For debugging
-        //=============
-        //*/
-        //void ED_Count (void)
-        //{
-        //    int		i;
-        //    edict_t	*ent;
-        //    int		active, models, solid, step;
+        For debugging
+        =============
+        */
+        static void  ED_Count ()
+        {
+            int i;
+            edict_t ent;
+            int active, models, solid, step;
 
-        //    active = models = solid = step = 0;
-        //    for (i=0 ; i<sv.num_edicts ; i++)
-        //    {
-        //        ent = EDICT_NUM(i);
-        //        if (ent->free)
-        //            continue;
-        //        active++;
-        //        if (ent->v.solid)
-        //            solid++;
-        //        if (ent->v.model)
-        //            models++;
-        //        if (ent->v.movetype == MOVETYPE_STEP)
-        //            step++;
-        //    }
+            active = models = solid = step = 0;
+            for (i = 0; i < server.sv.num_edicts; i++)
+            {
+                ent = EDICT_NUM(i);
+                if (ent.free)
+                    continue;
+                active++;
+                if (ent.v.solid != 0)
+                    solid++;
+                if (ent.v.model != 0)
+                    models++;
+                if (ent.v.movetype == server.MOVETYPE_STEP)
+                    step++;
+            }
 
-        //    Con_Printf ("num_edicts:%3i\n", sv.num_edicts);
-        //    Con_Printf ("active    :%3i\n", active);
-        //    Con_Printf ("view      :%3i\n", models);
-        //    Con_Printf ("touch     :%3i\n", solid);
-        //    Con_Printf ("step      :%3i\n", step);
+          console. Con_Printf ("num_edicts:%3i"+ server.sv.num_edicts+"\n");
+          console. Con_Printf ("active    :"+ active+"\n");
+          console. Con_Printf ("view      :"+ models+"\n");
+          console. Con_Printf ("touch     :"+ solid+"\n");
+          console. Con_Printf ("step      :"+ step+"\n");
+        }
 
-        //}
+        static string ED_Count_str()
+        {
+            int i;
+            edict_t ent;
+            int active, models, solid, step;
+
+            active = models = solid = step = 0;
+            for (i = 0; i < server.sv.num_edicts; i++)
+            {
+                ent = EDICT_NUM(i);
+                if (ent.free)
+                    continue;
+                active++;
+                if (ent.v.solid != 0)
+                    solid++;
+                if (ent.v.model != 0)
+                    models++;
+                if (ent.v.movetype == server.MOVETYPE_STEP)
+                    step++;
+            }
+
+            return "num_edicts:" + server.sv.num_edicts + "\n" +
+            "active    :" + active + "\n" +
+            "view      :" + models + "\n" +
+            "touch     :" + solid + "\n" +
+            "step      :" + step;
+        }
         /*
         =============
         ED_NewString
@@ -1323,7 +1350,7 @@ namespace quake
         {
             //Cmd_AddCommand ("edict", ED_PrintEdict_f);
             //Cmd_AddCommand ("edicts", ED_PrintEdicts);
-            //Cmd_AddCommand ("edictcount", ED_Count);
+            cmd.Cmd_AddCommand("edictcount", ED_Count);
             //Cmd_AddCommand ("profile", PR_Profile_f);
             cvar_t.Cvar_RegisterVariable(nomonsters);
             cvar_t.Cvar_RegisterVariable(gamecfg);
