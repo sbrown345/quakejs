@@ -59,9 +59,28 @@ namespace quake
         SV_CheckAllEnts
         ================
         */
-        void SV_CheckAllEnts ()
+        public static void SV_CheckAllEnts ()
         {
-            Debug.WriteLine("SV_CheckAllEnts");
+   	        int			e;
+	        prog.edict_t		check;
+
+        // see if any solid entities are inside the final position
+	        check = prog.NEXT_EDICT(sv.edicts[0]);
+            for (e = 1; e < sv.num_edicts; e++, check = prog.NEXT_EDICT(check))
+	        {
+		        if (check.free)
+			        continue;
+		        if (check.v.movetype == MOVETYPE_PUSH
+		        || check.v.movetype == MOVETYPE_NONE
+        //#ifdef QUAKE2
+        //        || check.v.movetype == MOVETYPE_FOLLOW
+        //#endif
+		        || check.v.movetype == MOVETYPE_NOCLIP)
+			        continue;
+
+		        if (world.SV_TestEntityPosition (check) != null)
+			        console.Con_Printf ("entity in invalid position\n");
+	        }
         }
 
         /*
@@ -1123,7 +1142,7 @@ static void SV_PushMove (prog.edict_t pusher, Double movetime)
             prog.pr_global_struct[0].time = sv.time;
 	        prog.PR_ExecuteProgram (prog.pr_functions[prog.pr_global_struct[0].StartFrame]);
 
-        //SV_CheckAllEnts ();
+        SV_CheckAllEnts ();
 
         //
         // treat each object in turn

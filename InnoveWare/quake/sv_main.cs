@@ -364,6 +364,8 @@ namespace quake
         // ignore ents without visible models
 			        if (ent.v.modelindex == 0 || prog.pr_string(ent.v.model) == null)
 				        continue;
+
+                    //todo: winquake has some PVS stuff here, is it important?
 		        }
 
 		        if (msg.maxsize - msg.cursize < 16)

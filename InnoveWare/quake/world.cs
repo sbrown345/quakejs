@@ -426,6 +426,7 @@ namespace quake
                ent.leafnums[ent.num_leafs] = (short)leafnum;
                ent.num_leafs++;
                Debug.WriteLine("num_leafs " +ent. num_leafs);
+               Debug.WriteLine("leafnum_ " + leafnum);
                return;
            }
 
@@ -667,8 +668,10 @@ namespace quake
                 if (num != bspfile.CONTENTS_SOLID)
                 {
                     trace.allsolid = false;
-                    if (num == bspfile.CONTENTS_EMPTY) trace.inopen = true;
-                    else trace.inwater = true;
+                    if (num == bspfile.CONTENTS_EMPTY) 
+                        trace.inopen = true;
+                    else 
+                        trace.inwater = true;
                 }
                 else trace.startsolid = true;
 
