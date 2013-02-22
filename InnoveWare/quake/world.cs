@@ -259,7 +259,7 @@ namespace quake
 
             anode = sv_areanodes[sv_numareanodes];
             sv_numareanodes++;
-
+            Debug.WriteLine("SV_CreateAreaNode");
             common.ClearLink(anode.trigger_edicts);
             common.ClearLink(anode.solid_edicts);
 
@@ -299,6 +299,7 @@ namespace quake
         public static void SV_ClearWorld ()
         {
             SV_InitBoxHull();
+
             sv_areanodes =  Init_areanode_t(AREA_NODES);
             sv_numareanodes = 0;
             SV_CreateAreaNode(0, server.sv.worldmodel.mins, server.sv.worldmodel.maxs);
@@ -311,11 +312,12 @@ namespace quake
 
         ===============
         */
-       static void SV_UnlinkEdict(prog.edict_t ent)
+       public static void SV_UnlinkEdict(prog.edict_t ent)
         {
             if (ent.area.prev == null)
                 return;		// not linked in anywhere
             common.RemoveLink(ent.area);
+            ent.area.prev = ent.area.next = null;
         }
 
 
@@ -423,6 +425,7 @@ namespace quake
                leafnum = i - 1;
                ent.leafnums[ent.num_leafs] = (short)leafnum;
                ent.num_leafs++;
+               Debug.WriteLine("num_leafs " +ent. num_leafs);
                return;
            }
 
@@ -457,8 +460,7 @@ namespace quake
             if (ent.area.prev != null)
                 world.SV_UnlinkEdict(ent);	// unlink from old position
 
-            //if (ent == sv.edicts)
-            if (ent == server.sv.edicts[0]) //todo! maybe dodgey
+            if (ent == server.sv.edicts[0])
                 return;		// don't add the world
 
             if (ent.free)
@@ -470,28 +472,30 @@ namespace quake
                 mathlib.VectorAdd(ent.v.origin, ent.v.maxs, ent.v.absmax);
             }
 
+                Debug.WriteLine(string.Format("VectorAdd origin{0:F6}", ent.v.origin[0]));
+                Debug.WriteLine(string.Format("VectorAdd absmin {0:F6}", ent.v.absmin[0]));
             //
             // to make items easier to pick up and allow them to be grabbed off
             // of shelves, the abs sizes are expanded
             //
             if (((int)ent.v.flags & server.FL_ITEM) != 0)
             {
-                Debug.WriteLine("(int)ent->v.flags & FL_ITEM");
                 ent.v.absmin[0] -= 15;
                 ent.v.absmin[1] -= 15;
                 ent.v.absmax[0] += 15;
                 ent.v.absmax[1] += 15;
+                Debug.WriteLine(string.Format("(int)ent->v.flags & FL_ITEM {0:F6}", ent.v.absmin[0]));
             }
             else
             {	// because movement is clipped an epsilon away from an actual edge,
                 // we must fully check even when bounding boxes don't quite touch
-                Debug.WriteLine("nerp");
                 ent.v.absmin[0] -= 1;
                 ent.v.absmin[1] -= 1;
                 ent.v.absmin[2] -= 1;
                 ent.v.absmax[0] += 1;
                 ent.v.absmax[1] += 1;
                 ent.v.absmax[2] += 1;
+                Debug.WriteLine(string.Format("nerp {0:F6}", ent.v.absmin[0]));
             }
 
             // link to PVS leafs
@@ -519,9 +523,15 @@ namespace quake
             // link it in	
 
             if (ent.v.solid == server.SOLID_TRIGGER)
+            {
+                Debug.WriteLine("ent.v.solid == server.SOLID_TRIGGER");
                 common.InsertLinkBefore(ent.area, node.trigger_edicts);
+            }
             else
+            {
+                Debug.WriteLine("ELSE!");
                 common.InsertLinkBefore(ent.area, node.solid_edicts);
+            }
 
             // if touch_triggers, touch all entities at this node and decend for more
             if (touch_triggers)
