@@ -207,20 +207,20 @@ ss.makeGenericType = function ss$makeGenericType(genericType, typeArguments) {
 	return ss.__genericCache[name] || genericType.apply(null, typeArguments);
 };
 
-ss.registerGenericClassInstance = function ss$registerGenericInstance(instance, genericType, typeArguments, baseType, interfaceTypes) {
+ss.registerGenericClassInstance = function ss$registerGenericClassInstance(instance, genericType, typeArguments, baseType, interfaceTypes, metadata) {
 	var name = ss._makeGenericTypeName(genericType, typeArguments);
 	ss.__genericCache[name] = instance;
 	instance.__genericTypeDefinition = genericType;
 	instance.__typeArguments = typeArguments;
-	ss.registerClass(null, name, instance, baseType(), interfaceTypes());
+	ss.registerClass(null, name, instance, baseType(), interfaceTypes(), metadata);
 };
 
-ss.registerGenericInterfaceInstance = function ss$registerGenericInstance(instance, genericType, typeArguments, baseInterfaces) {
+ss.registerGenericInterfaceInstance = function ss$registerGenericInterfaceInstance(instance, genericType, typeArguments, baseInterfaces, metadata) {
 	var name = ss._makeGenericTypeName(genericType, typeArguments);
 	ss.__genericCache[name] = instance;
 	instance.__genericTypeDefinition = genericType;
 	instance.__typeArguments = typeArguments;
-	ss.registerInterface(null, name, instance, baseInterfaces());
+	ss.registerInterface(null, name, instance, baseInterfaces(), metadata);
 };
 
 ss.isGenericTypeDefinition = function ss$isGenericTypeDefinition(type) {
@@ -239,7 +239,21 @@ ss.getGenericArguments = function ss$getGenericArguments(type) {
 	return type.__typeArguments || null;
 };
 
-ss.registerClass = function ss$registerClass(root, name, ctor, baseType, interfaceType) {
+ss._setMetadata = function ss$_setMetadata(type, metadata) {
+	if (metadata.members) {
+		for (var i = 0; i < metadata.members.length; i++) {
+			var m = metadata.members[i];
+			m.typeDef = type;
+			if (m.adder) m.adder.typeDef = type;
+			if (m.remover) m.remover.typeDef = type;
+			if (m.getter) m.getter.typeDef = type;
+			if (m.setter) m.setter.typeDef = type;
+		}
+	}
+	type.__metadata = metadata;
+}
+
+ss.registerClass = function ss$registerClass(root, name, ctor, baseType, interfaces, metadata) {
 	if (root)
 		ss.registerType(root, name, ctor);
 
@@ -247,23 +261,17 @@ ss.registerClass = function ss$registerClass(root, name, ctor, baseType, interfa
 	ctor.__typeName = name;
 	ctor.__class = true;
 	ctor.__baseType = baseType || Object;
+	if (interfaces)
+		ctor.__interfaces = interfaces;
+	if (metadata)
+		ss._setMetadata(ctor, metadata);
+
 	if (baseType) {
 		ss.setupBase(ctor);
 	}
-
-	if (interfaceType instanceof Array) {
-		ctor.__interfaces = interfaceType;
-	}
-	else if (interfaceType) {
-		ctor.__interfaces = [];
-		for (var i = 4; i < arguments.length; i++) {
-			interfaceType = arguments[i];
-			ctor.__interfaces.push(interfaceType);
-		}
-	}
 };
 
-ss.registerGenericClass = function ss$registerGenericClass(root, name, ctor, typeArgumentCount) {
+ss.registerGenericClass = function ss$registerGenericClass(root, name, ctor, typeArgumentCount, metadata) {
 	if (root)
 		ss.registerType(root, name, ctor);
 
@@ -273,26 +281,23 @@ ss.registerGenericClass = function ss$registerGenericClass(root, name, ctor, typ
 	ctor.__typeArgumentCount = typeArgumentCount;
 	ctor.__isGenericTypeDefinition = true;
 	ctor.__baseType = Object;
+	if (metadata)
+		ss._setMetadata(ctor, metadata);
 };
 
-ss.registerInterface = function ss$createInterface(root, name, ctor, baseInterface) {
+ss.registerInterface = function ss$createInterface(root, name, ctor, baseInterfaces, metadata) {
 	if (root)
 		ss.registerType(root, name, ctor);
 
 	ctor.__typeName = name;
 	ctor.__interface = true;
-	if (baseInterface instanceof Array) {
-		ctor.__interfaces = baseInterface;
-	}
-	else if (baseInterface) {
-		ctor.__interfaces = [];
-		for (var i = 3; i < arguments.length; i++) {
-			ctor.__interfaces.push(arguments[i]);
-		}
-	}
+	if (baseInterfaces)
+		ctor.__interfaces = baseInterfaces;
+	if (metadata)
+		ss._setMetadata(ctor, metadata);
 };
 
-ss.registerGenericInterface = function ss$registerGenericClass(root, name, ctor, typeArgumentCount) {
+ss.registerGenericInterface = function ss$registerGenericClass(root, name, ctor, typeArgumentCount, metadata) {
 	if (root)
 		ss.registerType(root, name, ctor);
 
@@ -301,21 +306,21 @@ ss.registerGenericInterface = function ss$registerGenericClass(root, name, ctor,
 	ctor.__interface = true;;
 	ctor.__typeArgumentCount = typeArgumentCount;
 	ctor.__isGenericTypeDefinition = true;
+	if (metadata)
+		ss._setMetadata(ctor, metadata);
 };
 
-ss.registerEnum = function ss$registerEnum(root, name, ctor, flags) {
+ss.registerEnum = function ss$registerEnum(root, name, ctor, metadata) {
 	if (root)
 		ss.registerType(root, name, ctor);
 
-	for (var field in ctor.prototype) {
+	for (var field in ctor.prototype)
 		ctor[field] = ctor.prototype[field];
-	}
 
 	ctor.__typeName = name;
 	ctor.__enum = true;
-	if (flags) {
-		ctor.__flags = true;
-	}
+	if (metadata)
+		ss._setMetadata(ctor, metadata);
 	ctor.getDefaultValue = ctor.createInstance = function() { return 0; };
 	ctor.isInstanceOfType = function(instance) { return typeof(instance) == 'number'; };
 };
@@ -358,7 +363,9 @@ ss.getTypeName = function ss$getTypeName(type) {
 ss.getInterfaces = function ss$getInterfaces(type) {
 	if (type === Array)
 		return [ ss_IEnumerable, ss_ICollection, ss_IList ];
-	else if (type === Boolean || type === Date || type === Number || type === String)
+	else if (type === Date || type === Number)
+		return [ ss_IEquatable, ss_IComparable, ss_IFormattable ];
+	else if (type === Boolean || type === String)
 		return [ ss_IEquatable, ss_IComparable ];
 	else
 		return type.__interfaces || [];
@@ -422,7 +429,7 @@ ss.isEnum = function Type$isEnum(type) {
 };
 
 ss.isFlags = function Type$isFlags(type) {
-	return ((type.__enum == true) && (type.__flags == true));
+	return type.__metadata && type.__metadata.enumFlags;
 };
 
 ss.isInterface = function Type$isInterface(type) {
@@ -514,11 +521,138 @@ ss.createInstance = function ss$createInstance(type) {
 };
 
 ss.applyConstructor = function ss$applyConstructor(constructor, args) {
-    var f = function() {
-        return constructor.apply(this, args);
-    };
-    f.prototype = constructor.prototype;
-    return new f();
+	var f = function() {
+		return constructor.apply(this, args);
+	};
+	f.prototype = constructor.prototype;
+	return new f();
+};
+
+ss.getAttributes = function ss$getAttributes(type, attrType, inherit) {
+	var result = inherit && type.__baseType ? ss.getAttributes(type.__baseType, attrType, true).filter(function(a) { var t = ss.getInstanceType(a); return !t.__metadata || !t.__metadata.attrNoInherit; }) : [];
+	if (type.__metadata && type.__metadata.attr) {
+		for (var i = 0; i < type.__metadata.attr.length; i++) {
+			var a = type.__metadata.attr[i];
+			if (attrType == null || ss.isInstanceOfType(a, attrType)) {
+				var t = ss.getInstanceType(a);
+				if (!t.__metadata || !t.__metadata.attrAllowMultiple)
+					result = result.filter(function (a) { return !ss.isInstanceOfType(a, t); });
+				result.push(a);
+			}
+		}
+	}
+	return result;
+};
+
+ss.getMembers = function ss$getAttributes(type, memberTypes, bindingAttr, name, params) {
+	var result = type.__baseType && ((bindingAttr & 72) == 72 || (bindingAttr & 6) == 4) ? ss.getMembers(type.__baseType, memberTypes & ~1, bindingAttr & (bindingAttr & 64 ? 255 : 247) & (bindingAttr & 2 ? 251 : 255), name, params) : [];
+
+	var f = function(m) {
+		if ((memberTypes & m.type) && (((bindingAttr & 4) && !m.isStatic) || ((bindingAttr & 8) && m.isStatic)) && (!name || m.name === name)) {
+			if (params) {
+				if ((m.params || []).length !== params.length)
+					return;
+				for (var i = 0; i < params.length; i++) {
+					if (params[i] !== m.params[i])
+						return;
+				}
+			}
+			result.push(m);
+		}
+	};
+
+	if (type.__metadata && type.__metadata.members) {
+		for (var i = 0; i < type.__metadata.members.length; i++) {
+			var m = type.__metadata.members[i];
+			f(m);
+			['getter','setter','adder','remover'].forEach(function(e) { if (m[e]) f(m[e]); });
+		}
+	}
+
+	if (bindingAttr & 256) {
+		while (type) {
+			var r = result.filter(function(m) { return m.typeDef === type; });
+			if (r.length > 1)
+				throw 'Ambiguous match';
+			else if (r.length === 1)
+				return r[0];
+			type = type.__baseType;
+		}
+		return null;
+	}
+
+	return result;
+};
+
+ss.midel = function ss$midel(mi, target, typeArguments) {
+	if (mi.isStatic && !!target)
+		throw 'Cannot specify target for static method';
+	else if (!mi.isStatic && !target)
+		throw 'Must specify target for instance method';
+
+	var method;
+	if (mi.fget) {
+		method = function() { return (mi.isStatic ? mi.typeDef : this)[mi.fget]; };
+	}
+	else if (mi.fset) {
+		method = function(v) { (mi.isStatic ? mi.typeDef : this)[mi.fset] = v; };
+	}
+	else {
+		var method = mi.isStatic || mi.sm ? mi.typeDef[mi.js] : target[mi.js];
+
+		if (mi.tpcount) {
+			if (!typeArguments || typeArguments.length !== mi.tpcount)
+				throw 'Wrong number of type arguments';
+			method = method.apply(null, typeArguments);
+		}
+		else {
+			if (typeArguments && typeArguments.length)
+				throw 'Cannot specify type arguments for non-generic method';
+		}
+		if (mi.sm) {
+			var _m = method;
+			method = function() { return _m.apply(null, [this].concat(Array.prototype.slice.call(arguments))); };
+		}
+	}
+	return ss.mkdel(target, method);
+};
+
+ss.invokeCI = function ss$invokeCI(ci, args) {
+	if (ci.sm)
+		return ci.typeDef[ci.js].apply(null, args);
+	else
+		return ss.applyConstructor(ci.js ? ci.typeDef[ci.js] : ci.typeDef, args);
+}
+
+ss.fieldAccess = function ss$fieldAccess(fi, obj) {
+	if (fi.isStatic && !!obj)
+		throw 'Cannot specify target for static field';
+	else if (!fi.isStatic && !obj)
+		throw 'Must specify target for instance field';
+	obj = fi.isStatic ? fi.typeDef : obj;
+	if (arguments.length === 3)
+		obj[fi.js] = arguments[2];
+	else
+		return obj[fi.js];
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// IFormattable
+
+var ss_IFormattable = function IFormattable$() { };
+ss_IFormattable.prototype = {
+	format: null
+};
+
+ss.registerInterface(global, 'ss.IFormattable', ss_IFormattable);
+
+ss.format = function ss$format(obj, fmt) {
+	if (typeof(obj) === 'number')
+		return ss.formatNumber(obj, fmt);
+	else if (ss.isDate(obj))
+		return ss.formatDate(obj, fmt);
+	else
+		return obj.format(fmt);
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -771,10 +905,6 @@ ss.compareStrings = function ss$compareStrings(s1, s2, ignoreCase) {
 	return 1;
 };
 
-ss.concatStrings = function ss$concatStrings() {
-	return Array.prototype.join.call(arguments, '');
-};
-
 ss.endsWithString = function ss$endsWithString(s, suffix) {
 	if (!suffix.length) {
 		return true;
@@ -797,13 +927,13 @@ ss._formatString = function ss$_formatString(format, values, useLocale) {
 							  if (ss.isNullOrUndefined(value)) {
 								  return '';
 							  }
-							  if (value.format) {
+							  if (ss.isInstanceOfType(value, ss_IFormattable)) {
 								  var formatSpec = null;
 								  var formatIndex = m.indexOf(':');
 								  if (formatIndex > 0) {
 									  formatSpec = m.substring(formatIndex + 1, m.length - 1);
 								  }
-								  return useLocale ? value.localeFormat(formatSpec) : value.format(formatSpec);
+								  return ss.format(value, formatSpec);
 							  }
 							  else {
 								  return useLocale ? value.toLocaleString() : value.toString();
@@ -945,12 +1075,26 @@ if (!String.prototype.trim) {
 	};
 }
 
-ss.trimEndString = function ss$trimEndString(s) {
-	return s.replace(/\s*$/, '');
+ss.trimEndString = function ss$trimEndString(s, chars) {
+	return s.replace(chars ? new RegExp('[' + String.fromCharCode.apply(null, chars) + ']+$') : /\s*$/, '');
 };
 
-ss.trimStartString = function ss$trimStartString(s) {
-	return s.replace(/^\s*/, '');
+ss.trimStartString = function ss$trimStartString(s, chars) {
+	return s.replace(chars ? new RegExp('^[' + String.fromCharCode.apply(null, chars) + ']+') : /^\s*/, '');
+};
+
+ss.trimString = function ss$trimString(s, chars) {
+	return ss.trimStartString(ss.trimEndString(s, chars), chars);
+};
+
+ss.lastIndexOfString = function ss$lastIndexOfString(s, search, startIndex, count) {
+	var index = s.lastIndexOf(search, startIndex);
+	return (index < (startIndex - count + 1)) ? -1 : index;
+};
+
+ss.indexOfString = function ss$indexOfString(s, search, startIndex, count) {
+	var index = s.indexOf(search, startIndex);
+	return ((index + search.length) <= (startIndex + count)) ? index : -1;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1030,7 +1174,7 @@ ss.arrayAddRange = function ss$arrayAddRange(arr, items) {
 			}
 		}
 		finally {
-			if (ss_IDisposable.isInstanceOfType(e)) {
+			if (ss.isInstanceOfType(e, ss_IDisposable)) {
 				ss.cast(e, ss_IDisposable).dispose();
 			}
 		}
@@ -1127,7 +1271,7 @@ ss.arrayInsertRange = function ss$arrayInsertRange(arr, index, items) {
 			}
 		}
 		finally {
-			if (ss_IDisposable.isInstanceOfType(e)) {
+			if (ss.isInstanceOfType(e, ss_IDisposable)) {
 				ss.cast(e, ss_IDisposable).dispose();
 			}
 		}
@@ -1680,6 +1824,13 @@ ss.getInvocationList = function ss$getInvocationList(delegate) {
 };
 
 ///////////////////////////////////////////////////////////////////////////////
+// Attribute
+
+var ss_Attribute = function Attribute$() {
+}
+ss.registerClass(global, 'ss.Attribute', ss_Attribute);
+
+///////////////////////////////////////////////////////////////////////////////
 // Debug Extensions
 
 ss.Debug = global.Debug || function() {};
@@ -1732,7 +1883,7 @@ ss.registerClass(global, 'ss.Enum', ss_Enum);
 
 ss_Enum.parse = function Enum$parse(enumType, s) {
 	var values = enumType.prototype;
-	if (!enumType.__flags) {
+	if (!ss.isFlags(enumType)) {
 		for (var f in values) {
 			if (f === s) {
 				return values[f];
@@ -1770,7 +1921,7 @@ ss_Enum.parse = function Enum$parse(enumType, s) {
 
 ss_Enum.toString = function  Enum$toString(enumType, value) {
 	var values = enumType.prototype;
-	if (!enumType.__flags || (value === 0)) {
+	if (!ss.isFlags(enumType) || (value === 0)) {
 		for (var i in values) {
 			if (values[i] === value) {
 				return i;
@@ -1869,7 +2020,7 @@ ss_IEnumerator.prototype = {
 	reset: null
 };
 
-ss.registerInterface(global, 'ss.IEnumerator', ss_IEnumerator, ss_IDisposable);
+ss.registerInterface(global, 'ss.IEnumerator', ss_IEnumerator, [ss_IDisposable]);
 
 ///////////////////////////////////////////////////////////////////////////////
 // IEnumerable
@@ -1897,7 +2048,7 @@ ss_ICollection.prototype = {
 	remove: null
 };
 
-ss.registerInterface(global, 'ss.ICollection', ss_IEnumerable);
+ss.registerInterface(global, 'ss.ICollection', ss_ICollection);
 
 ss.count = function ss$count(obj) {
 	return ss.isArray(obj) ? obj.length : obj.get_count();
@@ -1929,7 +2080,7 @@ ss.contains = function ss$contains(obj, item) {
 };
 
 ///////////////////////////////////////////////////////////////////////////////
-// IEnumerator
+// IEqualityComparer
 
 var ss_IEqualityComparer = function IEqualityComparer$() { };
 ss_IEqualityComparer.prototype = {
@@ -1938,6 +2089,16 @@ ss_IEqualityComparer.prototype = {
 };
 
 ss.registerInterface(global, 'ss.IEqualityComparer', ss_IEqualityComparer);
+
+///////////////////////////////////////////////////////////////////////////////
+// IComparer
+
+var ss_IComparer = function IComparer$() { };
+ss_IComparer.prototype = {
+	compare: null
+};
+
+ss.registerInterface(global, 'ss.IComparer', ss_IComparer);
 
 ///////////////////////////////////////////////////////////////////////////////
 // Nullable
@@ -2067,7 +2228,7 @@ ss_IList.prototype = {
 	removeAt: null
 };
 
-ss.registerInterface(global, 'ss.IList', ss_IList, ss_ICollection, ss_IEnumerable);
+ss.registerInterface(global, 'ss.IList', ss_IList, [ss_ICollection, ss_IEnumerable]);
 
 ss.getItem = function ss$getItem(obj, index) {
 	return ss.isArray(obj) ? obj[index] : obj.get_item(index);
@@ -2120,7 +2281,7 @@ ss.registerInterface(global, 'ss.IDictionary', ss_IDictionary, [ss_IEnumerable])
 
 var ss_Int32 = function Int32$() { };
 
-ss.registerClass(global, 'ss.Int32', ss_Int32, Object, [ ss_IEquatable, ss_IComparable ]);
+ss.registerClass(global, 'ss.Int32', ss_Int32, Object, [ ss_IEquatable, ss_IComparable, ss_IFormattable ]);
 ss_Int32.__class = false;
 
 ss_Int32.isInstanceOfType = function Int32$isInstanceOfType(instance) {
@@ -2219,8 +2380,23 @@ ss_EqualityComparer.prototype.areEqual = function EqualityComparer$areEqual(x, y
 ss_EqualityComparer.prototype.getObjectHashCode = function EqualityComparer$getObjectHashCode(obj) {
 	return ss.isValue(obj) ? ss.getHashCode(obj) : 0;
 };
-ss.registerClass(global, 'ss.EqualityComparer', ss_EqualityComparer, null, ss_IEqualityComparer);
+ss.registerClass(global, 'ss.EqualityComparer', ss_EqualityComparer, null, [ss_IEqualityComparer]);
 ss_EqualityComparer.def = new ss_EqualityComparer();
+
+///////////////////////////////////////////////////////////////////////////////
+// Comparer
+
+var ss_Comparer = function Comparer$(f) {
+	this.f = f;
+};
+ss_Comparer.prototype.compare = function Comparer$compare(x, y) {
+	return this.f(x, y);
+};
+ss_Comparer.create = function Comparer$create(f) {
+	return new ss_Comparer(f);
+};
+ss.registerClass(global, 'ss.Comparer', ss_Comparer, null, [ss_IComparer]);
+ss_Comparer.def = new ss_Comparer(ss.compare);
 
 ///////////////////////////////////////////////////////////////////////////////
 // Dictionary
@@ -2587,7 +2763,7 @@ ss_IteratorBlockEnumerable.prototype = {
 	}
 };
 
-ss.registerClass(global, 'ss.IteratorBlockEnumerable', ss_IteratorBlockEnumerable, null, ss_IEnumerable);
+ss.registerClass(global, 'ss.IteratorBlockEnumerable', ss_IteratorBlockEnumerable, null, [ss_IEnumerable]);
 
 ///////////////////////////////////////////////////////////////////////////////
 // IteratorBlockEnumerator
@@ -2897,7 +3073,7 @@ ss_Task.fromNode = function  Task$fromNode(t, f, m) {
 	return tcs.task;
 };
 
-ss.registerClass(global, 'ss.Task', ss_Task, null, ss_IDisposable);
+ss.registerClass(global, 'ss.Task', ss_Task, null, [ss_IDisposable]);
 
 ////////////////////////////////////////////////////////////////////////////////
 // TaskStatus

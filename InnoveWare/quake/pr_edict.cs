@@ -368,7 +368,7 @@ namespace quake
         public static string ED_Print(edict_t ed)
         {
             string output = "\nEDICT " + NUM_FOR_EDICT(ed) + ":\n";
-#if SILVERLIGHT
+
             int l;
             ddef_t d;
             //C++ TO C# CONVERTER TODO TASK: C# does not have an equivalent for pointers to value types:
@@ -542,11 +542,16 @@ namespace quake
                 }
                 catch (Exception e)
                 {
-                    output += "-----------\nBAD ON " + name + " type: " + d.type + "\n" + e.Message + e.StackTrace + e + output
+                    output += "-----------\nBAD ON " + name + " type: " + d.type + "\n" + e.Message 
+#if SILVERLIGHT
+                    + e.StackTrace 
+#endif         
+                    + e + output
+
                               + "\n------------------------------\n";
                 }
             }
-#endif
+
             return output;
         }
 
@@ -740,7 +745,7 @@ namespace quake
         */
         public static bool ED_ParseEpair(object @base, ddef_t key, string keyname, string s)
         {
-#if SILVERLIGHT
+
             int i;
             /*ddef_t	*def;
             char	*v, *w;*/
@@ -815,9 +820,6 @@ namespace quake
                     break;
             }
             return true;
-#else
-            throw new NotImplementedException("ED_ParseEpair todo!");
-#endif
         }
 
         /*
