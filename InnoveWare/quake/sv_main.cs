@@ -51,7 +51,7 @@ namespace quake
             cvar_t.Cvar_RegisterVariable(sv_maxspeed);
             cvar_t.Cvar_RegisterVariable(sv_accelerate);
             cvar_t.Cvar_RegisterVariable(sv_idealpitchscale);
-            //cvar_t.Cvar_RegisterVariable(sv_aim);
+            cvar_t.Cvar_RegisterVariable(prog.sv_aim);
             cvar_t.Cvar_RegisterVariable(sv_nostep);
 
 	        for (i=0 ; i<quakedef.MAX_MODELS ; i++)
@@ -262,6 +262,11 @@ namespace quake
 
         // set up the client_t
 	        netconnection = client.netconnection;
+
+            if (sv.loadgame)
+            {
+                //memcpy(spawn_parms, client->spawn_parms, sizeof(spawn_parms));
+            }
         	
 	        client.netconnection = netconnection;
 	        client.name = "unconnected";
@@ -274,7 +279,14 @@ namespace quake
 
 	        client.privileged = false;
 
-	        {
+            if (sv.loadgame)
+            {
+                Debug.WriteLine("sv.load game need to test");
+                throw new Exception("sv.load game need to test");
+                //memcpy(client->spawn_parms, spawn_parms, sizeof(spawn_parms));
+            }
+            else
+            {
 	        // call the progs to get default spawn parms for the new client
 		        prog.PR_ExecuteProgram (prog.pr_functions[prog.pr_global_struct[0].SetNewParms]);
 		        for (i=0 ; i<NUM_SPAWN_PARMS ; i++)
@@ -527,7 +539,7 @@ namespace quake
         // mix in items2
 	        //val = GetEdictFieldValue(ent, "items2");
 
-	        /*if (val)
+	        /*todo if (val)
 		        items = (int)ent->v.items | ((int)val->_float << 23);
 	        else*/
 		        items = (int)ent.v.items | ((int)prog.pr_global_struct[0].serverflags << 28);
@@ -639,7 +651,8 @@ namespace quake
         // send the datagram
 	        if (net.NET_SendUnreliableMessage (client.netconnection, msg) == -1)
 	        {
-		        return false;
+                host.SV_DropClient(true);// if the message couldn't send, kick off
+                return false;
 	        }
         	
 	        return true;
@@ -705,7 +718,9 @@ namespace quake
 
 	        common.MSG_WriteChar (msg, net.svc_nop);
 
-            net.NET_SendUnreliableMessage (client.netconnection, msg);
+            if (net.NET_SendUnreliableMessage(client.netconnection, msg) == -1)
+                host.SV_DropClient(true);	// if the message couldn't send, kick off
+
 	        client.last_message = host.realtime;
         }
 
@@ -753,7 +768,8 @@ namespace quake
 		        // changes level
 		        if (host.host_client.message.overflowed)
 		        {
-			        host.host_client.message.overflowed = false;
+                    host.SV_DropClient(true);
+                    host.host_client.message.overflowed = false;
 			        continue;
 		        }
 
@@ -767,8 +783,9 @@ namespace quake
 
                     if (!host.host_client.dropasap)
 			        {
-                        net.NET_SendMessage (host.host_client.netconnection
-                        , host.host_client.message);
+                        if (net.NET_SendMessage(host.host_client.netconnection
+                        , host.host_client.message)== -1)
+                            host.SV_DropClient(true);	// if the message couldn't send, kick off
                         common.SZ_Clear (host.host_client.message);
                         host.host_client.last_message = host.realtime;
                         host.host_client.sendsignon = false;
@@ -892,6 +909,33 @@ namespace quake
                 quake.cmd.Cmd_ExecuteString("reconnect\n\0".ToCharArray(), quake.cmd.cmd_source_t.src_command);
         }
 
+        /////*
+        ////================
+        ////SV_SaveSpawnparms
+
+        ////Grabs the current state of each client for saving across the
+        ////transition to another level
+        ////================
+        ////*/
+        ////void SV_SaveSpawnparms (void)
+        ////{
+        ////    int		i, j;
+
+        ////    svs.serverflags = pr_global_struct->serverflags;
+
+        ////  todo  for (i=0, host_client = svs.clients ; i<svs.maxclients ; i++, host_client++)
+        ////    {
+        ////        if (!host_client->active)
+        ////            continue;
+
+        ////    // call the progs to get default spawn parms for the new client
+        ////        pr_global_struct->self = EDICT_TO_PROG(host_client->edict);
+        ////        PR_ExecuteProgram (pr_global_struct->SetChangeParms);
+        ////        for (j=0 ; j<NUM_SPAWN_PARMS ; j++)
+        ////            host_client->spawn_parms[j] = (&pr_global_struct->parm1)[j];
+        ////    }
+        ////}
+        /// 
         /*
         ================
         SV_SpawnServer

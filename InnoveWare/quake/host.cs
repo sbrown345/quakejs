@@ -292,7 +292,7 @@ namespace quake
         if (crash = true), don't bother sending signofs
         =====================
         */
-        void SV_DropClient (bool crash)
+        public static void SV_DropClient (bool crash)
         {
             Debug.WriteLine("SV_DropClient");
         }

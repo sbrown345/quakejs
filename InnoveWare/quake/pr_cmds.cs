@@ -267,10 +267,6 @@ namespace quake
 		        SetMinMaxSize (e, mod.mins, mod.maxs, true);
 	        else
                 SetMinMaxSize(e, mathlib.vec3_origin, mathlib.vec3_origin, true);
-	        /*if (mod != null)
-		        SetMinMaxSize (e, mod->mins, mod->maxs, true);
-	        else
-		        SetMinMaxSize (e, vec3_origin, vec3_origin, true);*/
         }
 
         /*
@@ -393,7 +389,6 @@ namespace quake
                     yaw += 360;
             }
 
-            //G_FLOAT(OFS_RETURN) = yaw;
             pr_globals_write(OFS_RETURN, yaw);
         }
 
@@ -641,7 +636,6 @@ namespace quake
 	        mathlib.VectorAdd (ent.v.origin, ent.v.view_ofs, org);
 	        leaf = model.Mod_PointInLeaf (org, server.sv.worldmodel);
 	        pvs = model.Mod_LeafPVS (leaf, server.sv.worldmodel);
-            //memcpy (checkpvs, pvs, (server.sv.worldmodel.numleafs+7)>>3 );
             Buffer.BlockCopy(checkpvs, 0, pvs, 0, (server.sv.worldmodel.numleafs+7)>>3);
 
 	        return i;
@@ -699,14 +693,15 @@ namespace quake
                     break;
                 }
             }
-            //Debug.WriteLine("PF_checkclient l: " + l);
+            Debug.WriteLine("PF_checkclient l: " + l);
             // todo: possible bug, on e1m1 2nd time l = 924, HOWEVER it is 921 in winquake. everything else looks ok tho
 
             if ( (l<0) || !( (checkpvs[l>>3] & (1<<(l&7))) != 0 ) )
 	        {
                 c_notvis++;
 		        RETURN_EDICT(server.sv.edicts[0]);
-		        return;
+                Debug.WriteLine("RETURN_EDICT(server.sv.edicts[0])\n");
+                return;
 	        }
 
         // might be able to see it
@@ -951,13 +946,11 @@ namespace quake
 
         static void PF_traceon ()
         {
-            Debug.WriteLine("PF_traceon");
             pr_trace = true;
         }
 
         static void PF_traceoff ()
         {
-            Debug.WriteLine("PF_traceoff");
             pr_trace = false;
         }
 
@@ -1137,7 +1130,7 @@ namespace quake
         =============
         */
 
-        private static cvar_t sv_aim = new cvar_t("sv_aim", "0.93");
+        public static cvar_t sv_aim = new cvar_t("sv_aim", "0.93");
         static void PF_aim()
         {
             edict_t	ent, check, bestent;

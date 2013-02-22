@@ -283,9 +283,11 @@ If steptrace is not NULL, the trace of any vertical wall hit will be stored
                     numplanes = 0;
                 }
 
-                if (trace.fraction == 1.0) break; // moved the entire distance
+                if (trace.fraction == 1.0) 
+                    break; // moved the entire distance
 
-                if (trace.ent == null) sys_linux.Sys_Error("SV_FlyMove: !trace.ent");
+                if (trace.ent == null) 
+                    sys_linux.Sys_Error("SV_FlyMove: !trace.ent");
 
                 if (trace.plane.normal[2] > 0.7)
                 {
@@ -299,14 +301,16 @@ If steptrace is not NULL, the trace of any vertical wall hit will be stored
                 if (!(trace.plane.normal[2] != 0.0))
                 {
                     blocked |= 2; // step
-                    if (steptrace != null) steptrace = trace; // save for player extrafriction
+                    if (steptrace != null) 
+                        steptrace = trace; // save for player extrafriction
                 }
 
                 //
                 // run the impact function
                 //
                 SV_Impact(ent, trace.ent);
-                if (ent.free) break; // removed by the impact function
+                if (ent.free) 
+                    break; // removed by the impact function
 
 
                 time_left -= time_left * trace.fraction;
@@ -811,15 +815,20 @@ static void SV_PushMove (prog.edict_t pusher, Double movetime)
 
             clip = SV_FlyMove(ent, host.host_frametime, steptrace);
 
-            if (!((clip & 2) != 0)) return; // move didn't block on a step
+            if (!((clip & 2) != 0)) 
+                return; // move didn't block on a step
 
-            if (!(oldonground != 0) && ent.v.waterlevel == 0) return; // don't stair up while jumping
+            if (!(oldonground != 0) && ent.v.waterlevel == 0) 
+                return; // don't stair up while jumping
 
-            if (ent.v.movetype != MOVETYPE_WALK) return; // gibbed by a trigger
+            if (ent.v.movetype != MOVETYPE_WALK) 
+                return; // gibbed by a trigger
 
-            if (sv_nostep.value != 0.0) return;
+            if (sv_nostep.value != 0.0)
+                return;
 
-            if (((int)sv_player.v.flags & FL_WATERJUMP) != 0) return;
+            if (((int)sv_player.v.flags & FL_WATERJUMP) != 0) 
+                return;
 
             mathlib.VectorCopy(ent.v.origin, nosteporg);
             mathlib.VectorCopy(ent.v.velocity, nostepvel);
@@ -1103,8 +1112,10 @@ static void SV_PushMove (prog.edict_t pusher, Double movetime)
             // freefall if not onground
             if (!(((int)ent.v.flags & (FL_ONGROUND | FL_FLY | FL_SWIM)) != 0))
             {
-                if (ent.v.velocity[2] < sv_gravity.value * -0.1) hitsound = true;
-                else hitsound = false;
+                if (ent.v.velocity[2] < sv_gravity.value * -0.1) 
+                    hitsound = true;
+                else 
+                    hitsound = false;
 
                 SV_AddGravity(ent);
                 SV_CheckVelocity(ent);
@@ -1113,7 +1124,8 @@ static void SV_PushMove (prog.edict_t pusher, Double movetime)
 
                 if (((int)ent.v.flags & FL_ONGROUND) != 0) // just hit ground
                 {
-                    if (hitsound) SV_StartSound(ent, 0, "demon/dland2.wav", 255, 1);
+                    if (hitsound) 
+                        SV_StartSound(ent, 0, "demon/dland2.wav", 255, 1);
                 }
             }
 
@@ -1142,7 +1154,7 @@ static void SV_PushMove (prog.edict_t pusher, Double movetime)
             prog.pr_global_struct[0].time = sv.time;
 	        prog.PR_ExecuteProgram (prog.pr_functions[prog.pr_global_struct[0].StartFrame]);
 
-        SV_CheckAllEnts ();
+        //SV_CheckAllEnts ();
 
         //
         // treat each object in turn
@@ -1187,8 +1199,6 @@ static void SV_PushMove (prog.edict_t pusher, Double movetime)
 		        prog.pr_global_struct[0].force_retouch--;	
 
 	        sv.time += host.host_frametime;
-
         }
-
     }
 }

@@ -425,7 +425,7 @@ namespace quake
                leafnum = i - 1;
                ent.leafnums[ent.num_leafs] = (short)leafnum;
                ent.num_leafs++;
-               Debug.WriteLine("num_leafs " +ent. num_leafs);
+               Debug.WriteLine("num_leafs " + ent.num_leafs);
                Debug.WriteLine("leafnum_ " + leafnum);
                return;
            }
