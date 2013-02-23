@@ -36,6 +36,9 @@
     <Compile Include="..\InnoveWare\Helpers\Helper.cs">
       <Link>Helpers\Helper.cs</Link>
     </Compile>
+    <Compile Include="..\InnoveWare\Missing\ArrayHelpers.cs">
+      <Link>Missing\ArrayHelpers.cs</Link>
+    </Compile>
     <Compile Include="..\InnoveWare\quake\bspfile.cs">
       <Link>quake\bspfile.cs</Link>
     </Compile>
@@ -274,7 +277,6 @@
     <Compile Include="Missing\Libs\Stats.cs" />
     <Compile Include="Missing\NotImplementedException.cs" />
     <Compile Include="Missing\Web\ArrayBuffer.cs" />
-    <Compile Include="Missing\Web\ArrayHelpers.cs" />
     <Compile Include="Missing\Web\AudioBuffer.cs" />
     <Compile Include="Missing\Web\AudioBufferSourceNode.cs" />
     <Compile Include="Missing\Web\AudioGain.cs" />

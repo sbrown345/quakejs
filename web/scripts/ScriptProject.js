@@ -42,6 +42,26 @@
 		$quake_vid.viD_Init($quake_host.host_basepal);
 	};
 	////////////////////////////////////////////////////////////////////////////////
+	// ArrayHelpers
+	var $ArrayHelpers = function() {
+	};
+	$ArrayHelpers.explcitDoubleArray = function(length) {
+		var arr = new Array(length);
+		for (var i = 0; i < arr.length; i++) {
+			arr[i] = 0;
+		}
+		return arr;
+	};
+	$ArrayHelpers.initArray = function(T) {
+		return function(length) {
+			var array = new Array(length);
+			for (var i = 0; i < length; i++) {
+				array[i] = ss.createInstance(T);
+			}
+			return array;
+		};
+	};
+	////////////////////////////////////////////////////////////////////////////////
 	// Window
 	var $Window = function() {
 	};
@@ -242,17 +262,6 @@
 	};
 	$InnoveWare_Page.get_gheight = function() {
 		return $InnoveWare_Page.thePage.get_gameCanvas().height;
-	};
-	////////////////////////////////////////////////////////////////////////////////
-	// Missing.ArrayHelpers
-	var $Missing_ArrayHelpers = function() {
-	};
-	$Missing_ArrayHelpers.explcitDoubleArray = function(length) {
-		var arr = new Array(length);
-		for (var i = 0; i < arr.length; i++) {
-			arr[i] = 0;
-		}
-		return arr;
 	};
 	////////////////////////////////////////////////////////////////////////////////
 	// quake.client.kbutton_t
@@ -7021,62 +7030,58 @@
 	};
 	$quake_host.$_Host_Frame = function(time) {
 		var pass1, pass2, pass3;
-		try {
-			// decide the simulation time
-			if (!$quake_host.$host_FilterTime(time)) {
-				return;
-			}
-			// don't run too fast, or packets will flood out
-			// process console commands
-			$quake_cmd.cbuf_Execute();
-			$quake_net.neT_Poll();
-			// if running the server locally, make intentions now
-			if ($quake_server.sv.active) {
-				$quake_client.cL_SendCmd();
-			}
-			//-------------------
-			//
-			// server operations
-			//
-			//-------------------
-			if ($quake_server.sv.active) {
-				$quake_host.$host_ServerFrame();
-			}
-			//-------------------
-			//
-			// client operations
-			//
-			//-------------------
-			// if running the server remotely, send intentions now after
-			// the incoming messages have been read
-			if (!$quake_server.sv.active) {
-				$quake_client.cL_SendCmd();
-			}
-			$quake_host.host_time += $quake_host.host_frametime;
-			// fetch results from server
-			if ($quake_client.cls.state === 2) {
-				$quake_client.cL_ReadFromServer();
-			}
-			$quake_screen.scR_UpdateScreen();
-			// update audio
-			if ($quake_client.cls.signon === $quake_client.SIGNONS) {
-				$quake_sound.s_Update($quake_render.r_origin, $quake_render.vpn, $quake_render.vright, $quake_render.vup);
-				$quake_client.cL_DecayLights();
-			}
-			else {
-				$quake_sound.s_Update($quake_mathlib.vec3_origin, $quake_mathlib.vec3_origin, $quake_mathlib.vec3_origin, $quake_mathlib.vec3_origin);
-			}
-			$quake_host.host_framecount++;
+		//try
+		//{
+		// decide the simulation time
+		if (!$quake_host.$host_FilterTime(time)) {
+			return;
 		}
-		catch ($t1) {
-			$t1 = ss.Exception.wrap($t1);
-			if (ss.isInstanceOfType($t1, $quake_host_abortserver)) {
-				return;
-			}
-			else {
-				throw $t1;
-			}
+		// don't run too fast, or packets will flood out
+		// process console commands
+		$quake_cmd.cbuf_Execute();
+		$quake_net.neT_Poll();
+		// if running the server locally, make intentions now
+		if ($quake_server.sv.active) {
+			$quake_client.cL_SendCmd();
 		}
+		//-------------------
+		//
+		// server operations
+		//
+		//-------------------
+		if ($quake_server.sv.active) {
+			$quake_host.$host_ServerFrame();
+		}
+		//-------------------
+		//
+		// client operations
+		//
+		//-------------------
+		// if running the server remotely, send intentions now after
+		// the incoming messages have been read
+		if (!$quake_server.sv.active) {
+			$quake_client.cL_SendCmd();
+		}
+		$quake_host.host_time += $quake_host.host_frametime;
+		// fetch results from server
+		if ($quake_client.cls.state === 2) {
+			$quake_client.cL_ReadFromServer();
+		}
+		$quake_screen.scR_UpdateScreen();
+		// update audio
+		if ($quake_client.cls.signon === $quake_client.SIGNONS) {
+			$quake_sound.s_Update($quake_render.r_origin, $quake_render.vpn, $quake_render.vright, $quake_render.vup);
+			$quake_client.cL_DecayLights();
+		}
+		else {
+			$quake_sound.s_Update($quake_mathlib.vec3_origin, $quake_mathlib.vec3_origin, $quake_mathlib.vec3_origin, $quake_mathlib.vec3_origin);
+		}
+		$quake_host.host_framecount++;
+		//}
+		//catch (host_abortserver)
+		//{
+		//    return;
+		//}
 	};
 	$quake_host.host_Frame = function(time) {
 		var time1, time2;
@@ -12079,7 +12084,7 @@
 		var pvs;
 		var ent;
 		var leaf;
-		var org = $Missing_ArrayHelpers.explcitDoubleArray(3);
+		var org = $ArrayHelpers.explcitDoubleArray(3);
 		// cycle to the next one
 		if (check < 1) {
 			check = 1;
@@ -12125,7 +12130,7 @@
 		var ent, self;
 		var leaf;
 		var l = 0;
-		var view = $Missing_ArrayHelpers.explcitDoubleArray(3);
+		var view = $ArrayHelpers.explcitDoubleArray(3);
 		// find a new check if on a new frame
 		if ($quake_server.sv.time - $quake_server.sv.lastchecktime >= 0.1) {
 			$quake_server.sv.lastcheck = $quake_prog.$pF_newcheckclient($quake_server.sv.lastcheck);
@@ -14772,375 +14777,376 @@
 		var ed;
 		var exitdepth;
 		//eval_t	*ptr;
-		try {
-			//if (!fnum || fnum >= progs.numfunctions)
-			//{
-			//if (pr_global_struct.self)
-			//ED_Print (PROG_TO_EDICT(pr_global_struct.self));
-			//Host_Error ("PR_ExecuteProgram: NULL function");
-			//}
-			//
-			//f = &pr_functions[fnum];
-			runaway = 100000;
-			$quake_prog.$pr_trace = true;
-			// make a stack frame
-			exitdepth = $quake_prog.$pr_depth;
-			s = $quake_prog.pR_EnterFunction(fnum);
-			while (true) {
-				s++;
-				// next statement
-				$quake_prog.prNum++;
-				st = $quake_prog.$pr_statements[s];
-				if (--runaway === 0) {
-					$quake_prog.$pR_RunError('runaway loop error');
+		//try{
+		//if (!fnum || fnum >= progs.numfunctions)
+		//{
+		//if (pr_global_struct.self)
+		//ED_Print (PROG_TO_EDICT(pr_global_struct.self));
+		//Host_Error ("PR_ExecuteProgram: NULL function");
+		//}
+		//
+		//f = &pr_functions[fnum];
+		runaway = 100000;
+		$quake_prog.$pr_trace = true;
+		// make a stack frame
+		exitdepth = $quake_prog.$pr_depth;
+		s = $quake_prog.pR_EnterFunction(fnum);
+		while (true) {
+			s++;
+			// next statement
+			$quake_prog.prNum++;
+			st = $quake_prog.$pr_statements[s];
+			if (--runaway === 0) {
+				$quake_prog.$pR_RunError('runaway loop error');
+			}
+			$quake_prog.$pr_xfunction.profile++;
+			$quake_prog.$pr_xstatement = s;
+			if ($quake_prog.$pr_trace) {
+				//PR_PrintStatement(st);
+				//Debug.WriteLine(string.Format("a {0}: {1} {2} {3}", st.a, pr_globals_read(st.a), pr_globals_read(st.a + 1), pr_globals_read(st.a + 2)));
+				//Debug.WriteLine(string.Format("b {0}: {1} {2} {3}", st.b, pr_globals_read(st.b), pr_globals_read(st.b + 1), pr_globals_read(st.b + 2)));
+				//Debug.WriteLine(string.Format("c {0}: {1} {2} {3}", st.c, pr_globals_read(st.c), pr_globals_read(st.c + 1), pr_globals_read(st.c + 2)));
+				//PR_StackTraceStr();
+			}
+			if (st.c === 7505) {
+				st.c = st.c;
+			}
+			var eval;
+			switch (st.op) {
+				case 6: {
+					//c->_float = a->_float + b->_float;
+					$quake_prog.pr_globals_write(st.c, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) + $quake_prog.cast_float($quake_prog.pr_globals_read(st.b)));
+					break;
 				}
-				$quake_prog.$pr_xfunction.profile++;
-				$quake_prog.$pr_xstatement = s;
-				if ($quake_prog.$pr_trace) {
-					//PR_PrintStatement(st);
-					//Debug.WriteLine(string.Format("a {0}: {1} {2} {3}", st.a, pr_globals_read(st.a), pr_globals_read(st.a + 1), pr_globals_read(st.a + 2)));
-					//Debug.WriteLine(string.Format("b {0}: {1} {2} {3}", st.b, pr_globals_read(st.b), pr_globals_read(st.b + 1), pr_globals_read(st.b + 2)));
-					//Debug.WriteLine(string.Format("c {0}: {1} {2} {3}", st.c, pr_globals_read(st.c), pr_globals_read(st.c + 1), pr_globals_read(st.c + 2)));
-					//PR_StackTraceStr();
+				case 7: {
+					//c->vector[0] = a->vector[0] + b->vector[0];
+					//c->vector[1] = a->vector[1] + b->vector[1];
+					//c->vector[2] = a->vector[2] + b->vector[2];
+					$quake_prog.pr_globals_write(st.c, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) + $quake_prog.cast_float($quake_prog.pr_globals_read(st.b)));
+					$quake_prog.pr_globals_write(st.c + 1, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 1)) + $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 1)));
+					$quake_prog.pr_globals_write(st.c + 2, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 2)) + $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 2)));
+					break;
 				}
-				if (st.c === 7505) {
-					st.c = st.c;
+				case 8: {
+					//c->_float = a->_float - b->_float;
+					$quake_prog.pr_globals_write(st.c, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) - $quake_prog.cast_float($quake_prog.pr_globals_read(st.b)));
+					break;
 				}
-				var eval;
-				switch (st.op) {
-					case 6: {
-						//c->_float = a->_float + b->_float;
-						$quake_prog.pr_globals_write(st.c, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) + $quake_prog.cast_float($quake_prog.pr_globals_read(st.b)));
-						break;
+				case 9: {
+					//c->vector[0] = a->vector[0] - b->vector[0];
+					//c->vector[1] = a->vector[1] - b->vector[1];
+					//c->vector[2] = a->vector[2] - b->vector[2];
+					$quake_prog.pr_globals_write(st.c, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) - $quake_prog.cast_float($quake_prog.pr_globals_read(st.b)));
+					$quake_prog.pr_globals_write(st.c + 1, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 1)) - $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 1)));
+					$quake_prog.pr_globals_write(st.c + 2, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 2)) - $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 2)));
+					break;
+				}
+				case 1: {
+					//c->_float = a->_float * b->_float;
+					$quake_prog.pr_globals_write(st.c, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) * $quake_prog.cast_float($quake_prog.pr_globals_read(st.b)));
+					break;
+				}
+				case 2: {
+					//c->_float = a->vector[0] * b->vector[0]
+					//+ a->vector[1] * b->vector[1]
+					//+ a->vector[2] * b->vector[2];
+					var res = $quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) * $quake_prog.cast_float($quake_prog.pr_globals_read(st.b)) + $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 1)) * $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 1)) + $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 2)) * $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 2));
+					$quake_prog.pr_globals_write(st.c, res);
+					break;
+				}
+				case 3: {
+					//c->vector[0] = a->_float * b->vector[0];
+					//c->vector[1] = a->_float * b->vector[1];
+					//c->vector[2] = a->_float * b->vector[2];
+					var a_float = $quake_prog.cast_float($quake_prog.pr_globals_read(st.a));
+					$quake_prog.pr_globals_write(st.c, a_float * $quake_prog.cast_float($quake_prog.pr_globals_read(st.b)));
+					$quake_prog.pr_globals_write(st.c + 1, a_float * $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 1)));
+					$quake_prog.pr_globals_write(st.c + 2, a_float * $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 2)));
+					break;
+				}
+				case 4: {
+					//c->vector[0] = b->_float * a->vector[0];
+					//c->vector[1] = b->_float * a->vector[1];
+					//c->vector[2] = b->_float * a->vector[2];
+					var b_float = $quake_prog.cast_float($quake_prog.pr_globals_read(st.b));
+					$quake_prog.pr_globals_write(st.c, b_float * $quake_prog.cast_float($quake_prog.pr_globals_read(st.a)));
+					$quake_prog.pr_globals_write(st.c + 1, b_float * $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 1)));
+					$quake_prog.pr_globals_write(st.c + 2, b_float * $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 2)));
+					break;
+				}
+				case 5: {
+					//c->_float = a->_float / b->_float;
+					$quake_prog.pr_globals_write(st.c, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) / $quake_prog.cast_float($quake_prog.pr_globals_read(st.b)));
+					break;
+				}
+				case 64: {
+					//c->_float = (int)a->_float & (int)b->_float;
+					$quake_prog.pr_globals_write(st.c, ss.Int32.trunc($quake_prog.cast_float($quake_prog.pr_globals_read(st.a))) & ss.Int32.trunc($quake_prog.cast_float($quake_prog.pr_globals_read(st.b))));
+					break;
+				}
+				case 65: {
+					//c->_float = (int)a->_float | (int)b->_float;
+					$quake_prog.pr_globals_write(st.c, ss.Int32.trunc($quake_prog.cast_float($quake_prog.pr_globals_read(st.a))) | ss.Int32.trunc($quake_prog.cast_float($quake_prog.pr_globals_read(st.b))));
+					break;
+				}
+				case 21: {
+					//c->_float = a->_float >= b->_float;
+					$quake_prog.pr_globals_write(st.c, (($quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) >= $quake_prog.cast_float($quake_prog.pr_globals_read(st.b))) ? 1 : 0));
+					break;
+				}
+				case 20: {
+					//c->_float = a->_float <= b->_float;
+					$quake_prog.pr_globals_write(st.c, (($quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) <= $quake_prog.cast_float($quake_prog.pr_globals_read(st.b))) ? 1 : 0));
+					break;
+				}
+				case 23: {
+					//c->_float = a->_float > b->_float;
+					$quake_prog.pr_globals_write(st.c, (($quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) > $quake_prog.cast_float($quake_prog.pr_globals_read(st.b))) ? 1 : 0));
+					break;
+				}
+				case 22: {
+					//c->_float = a->_float < b->_float;
+					$quake_prog.pr_globals_write(st.c, (($quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) < $quake_prog.cast_float($quake_prog.pr_globals_read(st.b))) ? 1 : 0));
+					break;
+				}
+				case 62: {
+					//c->_float = a->_float && b->_float;
+					$quake_prog.pr_globals_write(st.c, (($quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) !== 0 && $quake_prog.cast_float($quake_prog.pr_globals_read(st.b)) !== 0) ? 1 : 0));
+					break;
+				}
+				case 63: {
+					//c->_float = a->_float || b->_float;
+					$quake_prog.pr_globals_write(st.c, (($quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) !== 0 || $quake_prog.cast_float($quake_prog.pr_globals_read(st.b)) !== 0) ? 1 : 0));
+					break;
+				}
+				case 44: {
+					//c->_float = !a->_float;
+					$quake_prog.pr_globals_write(st.c, (($quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) === 0) ? 1 : 0));
+					break;
+				}
+				case 46: {
+					//c->_float = !a->string || !pr_strings[a->string];
+					var astring = $quake_prog.cast_int($quake_prog.pr_globals_read(st.a));
+					$quake_prog.pr_globals_write(st.c, ((astring === 0 || ss.isNullOrUndefined($quake_prog.pr_string(astring))) ? 1 : 0));
+					break;
+				}
+				case 48: {
+					//c->_float = !a->function;
+					$quake_prog.pr_globals_write(st.c, (($quake_prog.cast_int($quake_prog.pr_globals_read(st.a)) === 0) ? 1 : 0));
+					break;
+				}
+				case 47: {
+					//c->_float = (PROG_TO_EDICT(a->edict) == sv.edicts);
+					$quake_prog.pr_globals_write(st.c, (ss.referenceEquals($quake_prog.proG_TO_EDICT($quake_prog.cast_int($quake_prog.pr_globals_read(st.a))), $quake_server.sv.edicts[0]) ? 1 : 0));
+					break;
+				}
+				case 10: {
+					//c->_float = a->_float == b->_float;
+					$quake_prog.pr_globals_write(st.c, (($quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) === $quake_prog.cast_float($quake_prog.pr_globals_read(st.b))) ? 1 : 0));
+					break;
+				}
+				case 11: {
+					//c->_float = (a->vector[0] == b->vector[0]) &&
+					//(a->vector[1] == b->vector[1]) &&
+					//(a->vector[2] == b->vector[2]);
+					eval = $quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) === $quake_prog.cast_float($quake_prog.pr_globals_read(st.b)) && $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 1)) === $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 1)) && $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 2)) === $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 2));
+					$quake_prog.pr_globals_write(st.c, (eval ? 1 : 0));
+					break;
+				}
+				case 12: {
+					//c->_float = !strcmp(pr_strings+a->string,pr_strings+b->string);
+					$quake_prog.pr_globals_write(st.c, ((ss.compare($quake_prog.pr_string($quake_prog.cast_int($quake_prog.pr_globals_read(st.a))), $quake_prog.pr_string($quake_prog.cast_int($quake_prog.pr_globals_read(st.b)))) === 0) ? 1 : 0));
+					break;
+				}
+				case 13: {
+					// 		c->_float = a->_int == b->_int;
+					$quake_prog.pr_globals_write(st.c, (($quake_prog.cast_int($quake_prog.pr_globals_read(st.a)) === $quake_prog.cast_int($quake_prog.pr_globals_read(st.b))) ? 1 : 0));
+					break;
+				}
+				case 15: {
+					eval = $quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) !== $quake_prog.cast_float($quake_prog.pr_globals_read(st.b));
+					$quake_prog.pr_globals_write(st.c, (eval ? 1 : 0));
+					break;
+				}
+				case 16: {
+					//c->_float = (a->vector[0] != b->vector[0]) ||
+					//(a->vector[1] != b->vector[1]) ||
+					//(a->vector[2] != b->vector[2]);
+					eval = $quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) !== $quake_prog.cast_float($quake_prog.pr_globals_read(st.b)) || $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 1)) !== $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 1)) || $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 2)) !== $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 2));
+					$quake_prog.pr_globals_write(st.c, (eval ? 1 : 0));
+					break;
+				}
+				case 17: {
+					eval = ss.referenceEquals($quake_prog.pr_string(st.a), $quake_prog.pr_string(st.b));
+					$quake_prog.pr_globals_write(st.c, (eval ? 1 : 0));
+					break;
+				}
+				case 18: {
+					//c->_float = a->_int != b->_int;
+					eval = $quake_prog.cast_int($quake_prog.pr_globals_read(st.a)) !== $quake_prog.cast_int($quake_prog.pr_globals_read(st.b));
+					$quake_prog.pr_globals_write(st.c, (eval ? 1 : 0));
+					break;
+				}
+				case 19: {
+					//c->_float = a->function != b->function;
+					break;
+				}
+				case 31:
+				case 34:
+				case 35:
+				case 33:
+				case 36: {
+					// integers
+					// pointers
+					$quake_prog.pr_globals_write(st.b, $quake_prog.pr_globals_read(st.a));
+					break;
+				}
+				case 32: {
+					//b->vector[0] = a->vector[0];
+					//b->vector[1] = a->vector[1];
+					//b->vector[2] = a->vector[2];
+					$quake_prog.pr_globals_write(st.b, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a)));
+					$quake_prog.pr_globals_write(st.b + 1, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 1)));
+					$quake_prog.pr_globals_write(st.b + 2, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 2)));
+					break;
+				}
+				case 37:
+				case 40:
+				case 41:
+				case 39:
+				case 42: {
+					// integers
+					// pointers
+					//ptr = (eval_t*)((byte*)sv.edicts + b->_int);
+					//ptr->_int = a->_int;
+					$quake_prog.$writeptr($quake_prog.cast_int($quake_prog.pr_globals_read(st.b)), $quake_prog.cast_int($quake_prog.pr_globals_read(st.a)), 0);
+					break;
+				}
+				case 38: {
+					//ptr = (eval_t*)((byte*)sv.edicts + b->_int);
+					//ptr->vector[0] = a->vector[0];
+					//ptr->vector[1] = a->vector[1];
+					//ptr->vector[2] = a->vector[2];
+					$quake_prog.$writeptr($quake_prog.cast_int($quake_prog.pr_globals_read(st.b)), $quake_prog.cast_int($quake_prog.pr_globals_read(st.a)), 0);
+					$quake_prog.$writeptr($quake_prog.cast_int($quake_prog.pr_globals_read(st.b)), $quake_prog.cast_int($quake_prog.pr_globals_read(st.a + 1)), 1);
+					$quake_prog.$writeptr($quake_prog.cast_int($quake_prog.pr_globals_read(st.b)), $quake_prog.cast_int($quake_prog.pr_globals_read(st.a + 2)), 2);
+					break;
+				}
+				case 30: {
+					ed = $quake_prog.proG_TO_EDICT($quake_prog.cast_int($quake_prog.pr_globals_read(st.a)));
+					if (ss.referenceEquals(ed, $quake_server.sv.edicts[0]) && $quake_server.sv.state === 1) {
+						$quake_prog.$pR_RunError('assignment to world entity');
 					}
-					case 7: {
-						//c->vector[0] = a->vector[0] + b->vector[0];
-						//c->vector[1] = a->vector[1] + b->vector[1];
-						//c->vector[2] = a->vector[2] + b->vector[2];
-						$quake_prog.pr_globals_write(st.c, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) + $quake_prog.cast_float($quake_prog.pr_globals_read(st.b)));
-						$quake_prog.pr_globals_write(st.c + 1, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 1)) + $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 1)));
-						$quake_prog.pr_globals_write(st.c + 2, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 2)) + $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 2)));
-						break;
+					//c->_int = (byte *)((int *)&ed->v + b->_int) - (byte *)sv.edicts;
+					$quake_prog.pr_globals_write(st.c, ed.index * $quake_prog.pr_edict_size + 96 + $quake_prog.cast_int($quake_prog.pr_globals_read(st.b)) * 4);
+					break;
+				}
+				case 24:
+				case 28:
+				case 27:
+				case 26:
+				case 29: {
+					ed = $quake_prog.proG_TO_EDICT($quake_prog.cast_int($quake_prog.pr_globals_read(st.a)));
+					//a = (eval_t *)((int *)&ed->v + b->_int);
+					//c->_int = a->_int;
+					$quake_prog.pr_globals_write(st.c, $quake_prog.cast_int($quake_prog.$readptr(ed.index * $quake_prog.pr_edict_size + 96 + $quake_prog.cast_int($quake_prog.pr_globals_read(st.b)) * 4)));
+					break;
+				}
+				case 25: {
+					ed = $quake_prog.proG_TO_EDICT($quake_prog.cast_int($quake_prog.pr_globals_read(st.a)));
+					//a = (eval_t *)((int *)&ed->v + b->_int);
+					//c->vector[0] = a->vector[0];
+					//c->vector[1] = a->vector[1];
+					//c->vector[2] = a->vector[2];
+					$quake_prog.pr_globals_write(st.c, $quake_prog.cast_float($quake_prog.$readptr(ed.index * $quake_prog.pr_edict_size + 96 + $quake_prog.cast_int($quake_prog.pr_globals_read(st.b)) * 4)));
+					$quake_prog.pr_globals_write(st.c + 1, $quake_prog.cast_float($quake_prog.$readptr(ed.index * $quake_prog.pr_edict_size + 96 + ($quake_prog.cast_int($quake_prog.pr_globals_read(st.b)) + 1) * 4)));
+					$quake_prog.pr_globals_write(st.c + 2, $quake_prog.cast_float($quake_prog.$readptr(ed.index * $quake_prog.pr_edict_size + 96 + ($quake_prog.cast_int($quake_prog.pr_globals_read(st.b)) + 2) * 4)));
+					break;
+				}
+				case 50: {
+					if ($quake_prog.cast_int($quake_prog.pr_globals_read(st.a)) === 0) {
+						s += st.b - 1;
 					}
-					case 8: {
-						//c->_float = a->_float - b->_float;
-						$quake_prog.pr_globals_write(st.c, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) - $quake_prog.cast_float($quake_prog.pr_globals_read(st.b)));
-						break;
+					// offset the s++
+					break;
+				}
+				case 49: {
+					if ($quake_prog.cast_int($quake_prog.pr_globals_read(st.a)) !== 0) {
+						s += st.b - 1;
 					}
-					case 9: {
-						//c->vector[0] = a->vector[0] - b->vector[0];
-						//c->vector[1] = a->vector[1] - b->vector[1];
-						//c->vector[2] = a->vector[2] - b->vector[2];
-						$quake_prog.pr_globals_write(st.c, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) - $quake_prog.cast_float($quake_prog.pr_globals_read(st.b)));
-						$quake_prog.pr_globals_write(st.c + 1, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 1)) - $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 1)));
-						$quake_prog.pr_globals_write(st.c + 2, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 2)) - $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 2)));
-						break;
+					// offset the s++
+					break;
+				}
+				case 61: {
+					s += st.a - 1;
+					// offset the s++
+					break;
+				}
+				case 51:
+				case 52:
+				case 53:
+				case 54:
+				case 55:
+				case 56:
+				case 57:
+				case 58:
+				case 59: {
+					$quake_prog.$pr_argc = st.op - 51;
+					var afunction = $quake_prog.cast_int($quake_prog.pr_globals_read(st.a));
+					if (afunction === 0) {
+						$quake_prog.$pR_RunError('NULL function');
 					}
-					case 1: {
-						//c->_float = a->_float * b->_float;
-						$quake_prog.pr_globals_write(st.c, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) * $quake_prog.cast_float($quake_prog.pr_globals_read(st.b)));
-						break;
-					}
-					case 2: {
-						//c->_float = a->vector[0] * b->vector[0]
-						//+ a->vector[1] * b->vector[1]
-						//+ a->vector[2] * b->vector[2];
-						var res = $quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) * $quake_prog.cast_float($quake_prog.pr_globals_read(st.b)) + $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 1)) * $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 1)) + $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 2)) * $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 2));
-						$quake_prog.pr_globals_write(st.c, res);
-						break;
-					}
-					case 3: {
-						//c->vector[0] = a->_float * b->vector[0];
-						//c->vector[1] = a->_float * b->vector[1];
-						//c->vector[2] = a->_float * b->vector[2];
-						var a_float = $quake_prog.cast_float($quake_prog.pr_globals_read(st.a));
-						$quake_prog.pr_globals_write(st.c, a_float * $quake_prog.cast_float($quake_prog.pr_globals_read(st.b)));
-						$quake_prog.pr_globals_write(st.c + 1, a_float * $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 1)));
-						$quake_prog.pr_globals_write(st.c + 2, a_float * $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 2)));
-						break;
-					}
-					case 4: {
-						//c->vector[0] = b->_float * a->vector[0];
-						//c->vector[1] = b->_float * a->vector[1];
-						//c->vector[2] = b->_float * a->vector[2];
-						var b_float = $quake_prog.cast_float($quake_prog.pr_globals_read(st.b));
-						$quake_prog.pr_globals_write(st.c, b_float * $quake_prog.cast_float($quake_prog.pr_globals_read(st.a)));
-						$quake_prog.pr_globals_write(st.c + 1, b_float * $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 1)));
-						$quake_prog.pr_globals_write(st.c + 2, b_float * $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 2)));
-						break;
-					}
-					case 5: {
-						//c->_float = a->_float / b->_float;
-						$quake_prog.pr_globals_write(st.c, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) / $quake_prog.cast_float($quake_prog.pr_globals_read(st.b)));
-						break;
-					}
-					case 64: {
-						//c->_float = (int)a->_float & (int)b->_float;
-						$quake_prog.pr_globals_write(st.c, ss.Int32.trunc($quake_prog.cast_float($quake_prog.pr_globals_read(st.a))) & ss.Int32.trunc($quake_prog.cast_float($quake_prog.pr_globals_read(st.b))));
-						break;
-					}
-					case 65: {
-						//c->_float = (int)a->_float | (int)b->_float;
-						$quake_prog.pr_globals_write(st.c, ss.Int32.trunc($quake_prog.cast_float($quake_prog.pr_globals_read(st.a))) | ss.Int32.trunc($quake_prog.cast_float($quake_prog.pr_globals_read(st.b))));
-						break;
-					}
-					case 21: {
-						//c->_float = a->_float >= b->_float;
-						$quake_prog.pr_globals_write(st.c, (($quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) >= $quake_prog.cast_float($quake_prog.pr_globals_read(st.b))) ? 1 : 0));
-						break;
-					}
-					case 20: {
-						//c->_float = a->_float <= b->_float;
-						$quake_prog.pr_globals_write(st.c, (($quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) <= $quake_prog.cast_float($quake_prog.pr_globals_read(st.b))) ? 1 : 0));
-						break;
-					}
-					case 23: {
-						//c->_float = a->_float > b->_float;
-						$quake_prog.pr_globals_write(st.c, (($quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) > $quake_prog.cast_float($quake_prog.pr_globals_read(st.b))) ? 1 : 0));
-						break;
-					}
-					case 22: {
-						//c->_float = a->_float < b->_float;
-						$quake_prog.pr_globals_write(st.c, (($quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) < $quake_prog.cast_float($quake_prog.pr_globals_read(st.b))) ? 1 : 0));
-						break;
-					}
-					case 62: {
-						//c->_float = a->_float && b->_float;
-						$quake_prog.pr_globals_write(st.c, (($quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) !== 0 && $quake_prog.cast_float($quake_prog.pr_globals_read(st.b)) !== 0) ? 1 : 0));
-						break;
-					}
-					case 63: {
-						//c->_float = a->_float || b->_float;
-						$quake_prog.pr_globals_write(st.c, (($quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) !== 0 || $quake_prog.cast_float($quake_prog.pr_globals_read(st.b)) !== 0) ? 1 : 0));
-						break;
-					}
-					case 44: {
-						//c->_float = !a->_float;
-						$quake_prog.pr_globals_write(st.c, (($quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) === 0) ? 1 : 0));
-						break;
-					}
-					case 46: {
-						//c->_float = !a->string || !pr_strings[a->string];
-						var astring = $quake_prog.cast_int($quake_prog.pr_globals_read(st.a));
-						$quake_prog.pr_globals_write(st.c, ((astring === 0 || ss.isNullOrUndefined($quake_prog.pr_string(astring))) ? 1 : 0));
-						break;
-					}
-					case 48: {
-						//c->_float = !a->function;
-						$quake_prog.pr_globals_write(st.c, (($quake_prog.cast_int($quake_prog.pr_globals_read(st.a)) === 0) ? 1 : 0));
-						break;
-					}
-					case 47: {
-						//c->_float = (PROG_TO_EDICT(a->edict) == sv.edicts);
-						$quake_prog.pr_globals_write(st.c, (ss.referenceEquals($quake_prog.proG_TO_EDICT($quake_prog.cast_int($quake_prog.pr_globals_read(st.a))), $quake_server.sv.edicts[0]) ? 1 : 0));
-						break;
-					}
-					case 10: {
-						//c->_float = a->_float == b->_float;
-						$quake_prog.pr_globals_write(st.c, (($quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) === $quake_prog.cast_float($quake_prog.pr_globals_read(st.b))) ? 1 : 0));
-						break;
-					}
-					case 11: {
-						//c->_float = (a->vector[0] == b->vector[0]) &&
-						//(a->vector[1] == b->vector[1]) &&
-						//(a->vector[2] == b->vector[2]);
-						eval = $quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) === $quake_prog.cast_float($quake_prog.pr_globals_read(st.b)) && $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 1)) === $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 1)) && $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 2)) === $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 2));
-						$quake_prog.pr_globals_write(st.c, (eval ? 1 : 0));
-						break;
-					}
-					case 12: {
-						//c->_float = !strcmp(pr_strings+a->string,pr_strings+b->string);
-						$quake_prog.pr_globals_write(st.c, ((ss.compare($quake_prog.pr_string($quake_prog.cast_int($quake_prog.pr_globals_read(st.a))), $quake_prog.pr_string($quake_prog.cast_int($quake_prog.pr_globals_read(st.b)))) === 0) ? 1 : 0));
-						break;
-					}
-					case 13: {
-						// 		c->_float = a->_int == b->_int;
-						$quake_prog.pr_globals_write(st.c, (($quake_prog.cast_int($quake_prog.pr_globals_read(st.a)) === $quake_prog.cast_int($quake_prog.pr_globals_read(st.b))) ? 1 : 0));
-						break;
-					}
-					case 15: {
-						eval = $quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) !== $quake_prog.cast_float($quake_prog.pr_globals_read(st.b));
-						$quake_prog.pr_globals_write(st.c, (eval ? 1 : 0));
-						break;
-					}
-					case 16: {
-						//c->_float = (a->vector[0] != b->vector[0]) ||
-						//(a->vector[1] != b->vector[1]) ||
-						//(a->vector[2] != b->vector[2]);
-						eval = $quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) !== $quake_prog.cast_float($quake_prog.pr_globals_read(st.b)) || $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 1)) !== $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 1)) || $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 2)) !== $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 2));
-						$quake_prog.pr_globals_write(st.c, (eval ? 1 : 0));
-						break;
-					}
-					case 17: {
-						eval = ss.referenceEquals($quake_prog.pr_string(st.a), $quake_prog.pr_string(st.b));
-						$quake_prog.pr_globals_write(st.c, (eval ? 1 : 0));
-						break;
-					}
-					case 18: {
-						//c->_float = a->_int != b->_int;
-						eval = $quake_prog.cast_int($quake_prog.pr_globals_read(st.a)) !== $quake_prog.cast_int($quake_prog.pr_globals_read(st.b));
-						$quake_prog.pr_globals_write(st.c, (eval ? 1 : 0));
-						break;
-					}
-					case 19: {
-						//c->_float = a->function != b->function;
-						break;
-					}
-					case 31:
-					case 34:
-					case 35:
-					case 33:
-					case 36: {
-						// integers
-						// pointers
-						$quake_prog.pr_globals_write(st.b, $quake_prog.pr_globals_read(st.a));
-						break;
-					}
-					case 32: {
-						//b->vector[0] = a->vector[0];
-						//b->vector[1] = a->vector[1];
-						//b->vector[2] = a->vector[2];
-						$quake_prog.pr_globals_write(st.b, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a)));
-						$quake_prog.pr_globals_write(st.b + 1, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 1)));
-						$quake_prog.pr_globals_write(st.b + 2, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 2)));
-						break;
-					}
-					case 37:
-					case 40:
-					case 41:
-					case 39:
-					case 42: {
-						// integers
-						// pointers
-						//ptr = (eval_t*)((byte*)sv.edicts + b->_int);
-						//ptr->_int = a->_int;
-						$quake_prog.$writeptr($quake_prog.cast_int($quake_prog.pr_globals_read(st.b)), $quake_prog.cast_int($quake_prog.pr_globals_read(st.a)), 0);
-						break;
-					}
-					case 38: {
-						//ptr = (eval_t*)((byte*)sv.edicts + b->_int);
-						//ptr->vector[0] = a->vector[0];
-						//ptr->vector[1] = a->vector[1];
-						//ptr->vector[2] = a->vector[2];
-						$quake_prog.$writeptr($quake_prog.cast_int($quake_prog.pr_globals_read(st.b)), $quake_prog.cast_int($quake_prog.pr_globals_read(st.a)), 0);
-						$quake_prog.$writeptr($quake_prog.cast_int($quake_prog.pr_globals_read(st.b)), $quake_prog.cast_int($quake_prog.pr_globals_read(st.a + 1)), 1);
-						$quake_prog.$writeptr($quake_prog.cast_int($quake_prog.pr_globals_read(st.b)), $quake_prog.cast_int($quake_prog.pr_globals_read(st.a + 2)), 2);
-						break;
-					}
-					case 30: {
-						ed = $quake_prog.proG_TO_EDICT($quake_prog.cast_int($quake_prog.pr_globals_read(st.a)));
-						if (ss.referenceEquals(ed, $quake_server.sv.edicts[0]) && $quake_server.sv.state === 1) {
-							$quake_prog.$pR_RunError('assignment to world entity');
+					newf = $quake_prog.pr_functions[afunction];
+					if (newf.first_statement < 0) {
+						// negative statements are built in functions
+						i = -newf.first_statement;
+						if (i >= $quake_prog.$pr_numbuiltins) {
+							$quake_prog.$pR_RunError('Bad builtin call number');
 						}
-						//c->_int = (byte *)((int *)&ed->v + b->_int) - (byte *)sv.edicts;
-						$quake_prog.pr_globals_write(st.c, ed.index * $quake_prog.pr_edict_size + 96 + $quake_prog.cast_int($quake_prog.pr_globals_read(st.b)) * 4);
-						break;
-					}
-					case 24:
-					case 28:
-					case 27:
-					case 26:
-					case 29: {
-						ed = $quake_prog.proG_TO_EDICT($quake_prog.cast_int($quake_prog.pr_globals_read(st.a)));
-						//a = (eval_t *)((int *)&ed->v + b->_int);
-						//c->_int = a->_int;
-						$quake_prog.pr_globals_write(st.c, $quake_prog.cast_int($quake_prog.$readptr(ed.index * $quake_prog.pr_edict_size + 96 + $quake_prog.cast_int($quake_prog.pr_globals_read(st.b)) * 4)));
-						break;
-					}
-					case 25: {
-						ed = $quake_prog.proG_TO_EDICT($quake_prog.cast_int($quake_prog.pr_globals_read(st.a)));
-						//a = (eval_t *)((int *)&ed->v + b->_int);
-						//c->vector[0] = a->vector[0];
-						//c->vector[1] = a->vector[1];
-						//c->vector[2] = a->vector[2];
-						$quake_prog.pr_globals_write(st.c, $quake_prog.cast_float($quake_prog.$readptr(ed.index * $quake_prog.pr_edict_size + 96 + $quake_prog.cast_int($quake_prog.pr_globals_read(st.b)) * 4)));
-						$quake_prog.pr_globals_write(st.c + 1, $quake_prog.cast_float($quake_prog.$readptr(ed.index * $quake_prog.pr_edict_size + 96 + ($quake_prog.cast_int($quake_prog.pr_globals_read(st.b)) + 1) * 4)));
-						$quake_prog.pr_globals_write(st.c + 2, $quake_prog.cast_float($quake_prog.$readptr(ed.index * $quake_prog.pr_edict_size + 96 + ($quake_prog.cast_int($quake_prog.pr_globals_read(st.b)) + 2) * 4)));
-						break;
-					}
-					case 50: {
-						if ($quake_prog.cast_int($quake_prog.pr_globals_read(st.a)) === 0) {
-							s += st.b - 1;
+						//Debug.WriteLine("pr_builtins " + i);
+						if (ss.staticEquals($quake_prog.$pr_builtins[i], null)) {
+							ss.Debug.writeln('pr_builtins ' + i + ' does not exist');
 						}
-						// offset the s++
+						$quake_prog.$pr_builtins[i]();
 						break;
 					}
-					case 49: {
-						if ($quake_prog.cast_int($quake_prog.pr_globals_read(st.a)) !== 0) {
-							s += st.b - 1;
-						}
-						// offset the s++
-						break;
+					s = $quake_prog.pR_EnterFunction(newf);
+					break;
+				}
+				case 0:
+				case 43: {
+					$quake_prog.pr_globals_write($quake_prog.ofS_RETURN, $quake_prog.pr_globals_read(st.a));
+					$quake_prog.pr_globals_write(2, $quake_prog.pr_globals_read(st.a + 1));
+					$quake_prog.pr_globals_write(3, $quake_prog.pr_globals_read(st.a + 2));
+					s = $quake_prog.$pR_LeaveFunction();
+					if ($quake_prog.$pr_depth === exitdepth) {
+						return;
 					}
-					case 61: {
-						s += st.a - 1;
-						// offset the s++
-						break;
+					// all done
+					break;
+				}
+				case 60: {
+					ed = $quake_prog.proG_TO_EDICT($quake_prog.pr_global_struct[0].self);
+					ed.v.nextthink = $quake_prog.pr_global_struct[0].time + 0.1;
+					if ($quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) !== ed.v.frame) {
+						ed.v.frame = $quake_prog.cast_float($quake_prog.pr_globals_read(st.a));
 					}
-					case 51:
-					case 52:
-					case 53:
-					case 54:
-					case 55:
-					case 56:
-					case 57:
-					case 58:
-					case 59: {
-						$quake_prog.$pr_argc = st.op - 51;
-						var afunction = $quake_prog.cast_int($quake_prog.pr_globals_read(st.a));
-						if (afunction === 0) {
-							$quake_prog.$pR_RunError('NULL function');
-						}
-						newf = $quake_prog.pr_functions[afunction];
-						if (newf.first_statement < 0) {
-							// negative statements are built in functions
-							i = -newf.first_statement;
-							if (i >= $quake_prog.$pr_numbuiltins) {
-								$quake_prog.$pR_RunError('Bad builtin call number');
-							}
-							//Debug.WriteLine("pr_builtins " + i);
-							if (ss.staticEquals($quake_prog.$pr_builtins[i], null)) {
-								ss.Debug.writeln('pr_builtins ' + i + ' does not exist');
-							}
-							$quake_prog.$pr_builtins[i]();
-							break;
-						}
-						s = $quake_prog.pR_EnterFunction(newf);
-						break;
-					}
-					case 0:
-					case 43: {
-						$quake_prog.pr_globals_write($quake_prog.ofS_RETURN, $quake_prog.pr_globals_read(st.a));
-						$quake_prog.pr_globals_write(2, $quake_prog.pr_globals_read(st.a + 1));
-						$quake_prog.pr_globals_write(3, $quake_prog.pr_globals_read(st.a + 2));
-						s = $quake_prog.$pR_LeaveFunction();
-						if ($quake_prog.$pr_depth === exitdepth) {
-							return;
-						}
-						// all done
-						break;
-					}
-					case 60: {
-						ed = $quake_prog.proG_TO_EDICT($quake_prog.pr_global_struct[0].self);
-						ed.v.nextthink = $quake_prog.pr_global_struct[0].time + 0.1;
-						if ($quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) !== ed.v.frame) {
-							ed.v.frame = $quake_prog.cast_float($quake_prog.pr_globals_read(st.a));
-						}
-						ed.v.think = $quake_prog.cast_int($quake_prog.pr_globals_read(st.b));
-						break;
-					}
-					default: {
-						ss.Debug.writeln('******Bad opcode ' + st.op + ' prNum: ' + $quake_prog.prNum);
-						// todo: this works fine on winquake. need to comment out here
-						//PR_RunError("Bad opcode " + st.op); 
-						break;
-					}
+					ed.v.think = $quake_prog.cast_int($quake_prog.pr_globals_read(st.b));
+					break;
+				}
+				default: {
+					ss.Debug.writeln('******Bad opcode ' + st.op + ' prNum: ' + $quake_prog.prNum);
+					// todo: this works fine on winquake. need to comment out here
+					//PR_RunError("Bad opcode " + st.op); 
+					break;
 				}
 			}
 		}
-		catch ($t1) {
-			ss.Debug.writeln('broked');
-		}
+		//}
+		//catch
+		//{
+		//    Debug.WriteLine("broked");
+		//}
 	};
 	////////////////////////////////////////////////////////////////////////////////
 	// quake.prog.ddef_t
@@ -16178,8 +16184,8 @@
 	};
 	$quake_render.$r_AliasSetUpTransform = function(trivial_accept) {
 		var i;
-		var rotationmatrix = [$Missing_ArrayHelpers.explcitDoubleArray(4), $Missing_ArrayHelpers.explcitDoubleArray(4), $Missing_ArrayHelpers.explcitDoubleArray(4)];
-		var t2matrix = [$Missing_ArrayHelpers.explcitDoubleArray(4), $Missing_ArrayHelpers.explcitDoubleArray(4), $Missing_ArrayHelpers.explcitDoubleArray(4)];
+		var rotationmatrix = [$ArrayHelpers.explcitDoubleArray(4), $ArrayHelpers.explcitDoubleArray(4), $ArrayHelpers.explcitDoubleArray(4)];
+		var t2matrix = [$ArrayHelpers.explcitDoubleArray(4), $ArrayHelpers.explcitDoubleArray(4), $ArrayHelpers.explcitDoubleArray(4)];
 		var angles = new Array(3);
 		var kk;
 		// TODO: should really be stored with the entity instead of being reconstructed
@@ -21964,7 +21970,7 @@
 		for (;;) {
 			switch ($state) {
 				case 0: {
-					mins = $Missing_ArrayHelpers.explcitDoubleArray(3), maxs = $Missing_ArrayHelpers.explcitDoubleArray(3), start = $Missing_ArrayHelpers.explcitDoubleArray(3), stop = $Missing_ArrayHelpers.explcitDoubleArray(3);
+					mins = $ArrayHelpers.explcitDoubleArray(3), maxs = $ArrayHelpers.explcitDoubleArray(3), start = $ArrayHelpers.explcitDoubleArray(3), stop = $ArrayHelpers.explcitDoubleArray(3);
 					$quake_mathlib.vectorAdd(ent.v.origin, ent.v.mins, mins);
 					$quake_mathlib.vectorAdd(ent.v.origin, ent.v.maxs, maxs);
 					// if all of the points under the corners are solid world, don't bother
@@ -22027,7 +22033,7 @@
 	};
 	$quake_server.sV_Movestep = function(ent, move, relink) {
 		var dz;
-		var oldorg = $Missing_ArrayHelpers.explcitDoubleArray(3), neworg = $Missing_ArrayHelpers.explcitDoubleArray(3), end = $Missing_ArrayHelpers.explcitDoubleArray(3);
+		var oldorg = $ArrayHelpers.explcitDoubleArray(3), neworg = $ArrayHelpers.explcitDoubleArray(3), end = $ArrayHelpers.explcitDoubleArray(3);
 		var trace;
 		var i;
 		var enemy;
@@ -22368,7 +22374,7 @@
 		var dir = new Array(3);
 		var d;
 		var numplanes;
-		var planes = [$Missing_ArrayHelpers.explcitDoubleArray(3), $Missing_ArrayHelpers.explcitDoubleArray(3), $Missing_ArrayHelpers.explcitDoubleArray(3), $Missing_ArrayHelpers.explcitDoubleArray(3), $Missing_ArrayHelpers.explcitDoubleArray(3)];
+		var planes = [$ArrayHelpers.explcitDoubleArray(3), $ArrayHelpers.explcitDoubleArray(3), $ArrayHelpers.explcitDoubleArray(3), $ArrayHelpers.explcitDoubleArray(3), $ArrayHelpers.explcitDoubleArray(3)];
 		var primal_velocity = new Array(3), original_velocity = new Array(3), new_velocity = new Array(3);
 		var i, j;
 		var trace;
@@ -26195,6 +26201,7 @@
 			return this.$_stream;
 		}
 	};
+	ss.registerClass(global, 'ArrayHelpers', $ArrayHelpers);
 	ss.registerClass(global, 'Window', $Window);
 	ss.registerClass(global, 'Helper.helper', $Helper_helper);
 	ss.registerClass(global, 'Helper.helper$ByteBuffer', $Helper_helper$ByteBuffer);
@@ -26202,7 +26209,6 @@
 	ss.registerClass(global, 'Helper.helper$ObjectBuffer', $Helper_helper$ObjectBuffer);
 	ss.registerClass(global, 'Helper.helper$UIntBuffer', $Helper_helper$UIntBuffer);
 	ss.registerClass(global, 'InnoveWare.Page', $InnoveWare_Page);
-	ss.registerClass(global, 'Missing.ArrayHelpers', $Missing_ArrayHelpers);
 	ss.registerClass(null, 'quake.$client$kbutton_t', $quake_$client$kbutton_t);
 	ss.registerClass(null, 'quake.$cmd$cmd_function_t', $quake_$cmd$cmd_function_t);
 	ss.registerClass(null, 'quake.$cmd$cmdalias_t', $quake_$cmd$cmdalias_t);
@@ -26868,8 +26874,8 @@
 	$quake_render.$r_avertexnormals = [[-0.525731, 0, 0.850651], [-0.442863, 0.238856, 0.864188], [-0.295242, 0, 0.955423], [-0.309017, 0.5, 0.809017], [-0.16246, 0.262866, 0.951056], [0, 0, 1], [0, 0.850651, 0.525731], [-0.147621, 0.716567, 0.681718], [0.147621, 0.716567, 0.681718], [0, 0.525731, 0.850651], [0.309017, 0.5, 0.809017], [0.525731, 0, 0.850651], [0.295242, 0, 0.955423], [0.442863, 0.238856, 0.864188], [0.16246, 0.262866, 0.951056], [-0.681718, 0.147621, 0.716567], [-0.809017, 0.309017, 0.5], [-0.587785, 0.425325, 0.688191], [-0.850651, 0.525731, 0], [-0.864188, 0.442863, 0.238856], [-0.716567, 0.681718, 0.147621], [-0.688191, 0.587785, 0.425325], [-0.5, 0.809017, 0.309017], [-0.238856, 0.864188, 0.442863], [-0.425325, 0.688191, 0.587785], [-0.716567, 0.681718, -0.147621], [-0.5, 0.809017, -0.309017], [-0.525731, 0.850651, 0], [0, 0.850651, -0.525731], [-0.238856, 0.864188, -0.442863], [0, 0.955423, -0.295242], [-0.262866, 0.951056, -0.16246], [0, 1, 0], [0, 0.955423, 0.295242], [-0.262866, 0.951056, 0.16246], [0.238856, 0.864188, 0.442863], [0.262866, 0.951056, 0.16246], [0.5, 0.809017, 0.309017], [0.238856, 0.864188, -0.442863], [0.262866, 0.951056, -0.16246], [0.5, 0.809017, -0.309017], [0.850651, 0.525731, 0], [0.716567, 0.681718, 0.147621], [0.716567, 0.681718, -0.147621], [0.525731, 0.850651, 0], [0.425325, 0.688191, 0.587785], [0.864188, 0.442863, 0.238856], [0.688191, 0.587785, 0.425325], [0.809017, 0.309017, 0.5], [0.681718, 0.147621, 0.716567], [0.587785, 0.425325, 0.688191], [0.955423, 0.295242, 0], [1, 0, 0], [0.951056, 0.16246, 0.262866], [0.850651, -0.525731, 0], [0.955423, -0.295242, 0], [0.864188, -0.442863, 0.238856], [0.951056, -0.16246, 0.262866], [0.809017, -0.309017, 0.5], [0.681718, -0.147621, 0.716567], [0.850651, 0, 0.525731], [0.864188, 0.442863, -0.238856], [0.809017, 0.309017, -0.5], [0.951056, 0.16246, -0.262866], [0.525731, 0, -0.850651], [0.681718, 0.147621, -0.716567], [0.681718, -0.147621, -0.716567], [0.850651, 0, -0.525731], [0.809017, -0.309017, -0.5], [0.864188, -0.442863, -0.238856], [0.951056, -0.16246, -0.262866], [0.147621, 0.716567, -0.681718], [0.309017, 0.5, -0.809017], [0.425325, 0.688191, -0.587785], [0.442863, 0.238856, -0.864188], [0.587785, 0.425325, -0.688191], [0.688191, 0.587785, -0.425325], [-0.147621, 0.716567, -0.681718], [-0.309017, 0.5, -0.809017], [0, 0.525731, -0.850651], [-0.525731, 0, -0.850651], [-0.442863, 0.238856, -0.864188], [-0.295242, 0, -0.955423], [-0.16246, 0.262866, -0.951056], [0, 0, -1], [0.295242, 0, -0.955423], [0.16246, 0.262866, -0.951056], [-0.442863, -0.238856, -0.864188], [-0.309017, -0.5, -0.809017], [-0.16246, -0.262866, -0.951056], [0, -0.850651, -0.525731], [-0.147621, -0.716567, -0.681718], [0.147621, -0.716567, -0.681718], [0, -0.525731, -0.850651], [0.309017, -0.5, -0.809017], [0.442863, -0.238856, -0.864188], [0.16246, -0.262866, -0.951056], [0.238856, -0.864188, -0.442863], [0.5, -0.809017, -0.309017], [0.425325, -0.688191, -0.587785], [0.716567, -0.681718, -0.147621], [0.688191, -0.587785, -0.425325], [0.587785, -0.425325, -0.688191], [0, -0.955423, -0.295242], [0, -1, 0], [0.262866, -0.951056, -0.16246], [0, -0.850651, 0.525731], [0, -0.955423, 0.295242], [0.238856, -0.864188, 0.442863], [0.262866, -0.951056, 0.16246], [0.5, -0.809017, 0.309017], [0.716567, -0.681718, 0.147621], [0.525731, -0.850651, 0], [-0.238856, -0.864188, -0.442863], [-0.5, -0.809017, -0.309017], [-0.262866, -0.951056, -0.16246], [-0.850651, -0.525731, 0], [-0.716567, -0.681718, -0.147621], [-0.716567, -0.681718, 0.147621], [-0.525731, -0.850651, 0], [-0.5, -0.809017, 0.309017], [-0.238856, -0.864188, 0.442863], [-0.262866, -0.951056, 0.16246], [-0.864188, -0.442863, 0.238856], [-0.809017, -0.309017, 0.5], [-0.688191, -0.587785, 0.425325], [-0.681718, -0.147621, 0.716567], [-0.442863, -0.238856, 0.864188], [-0.587785, -0.425325, 0.688191], [-0.309017, -0.5, 0.809017], [-0.147621, -0.716567, 0.681718], [-0.425325, -0.688191, 0.587785], [-0.16246, -0.262866, 0.951056], [0.442863, -0.238856, 0.864188], [0.16246, -0.262866, 0.951056], [0.309017, -0.5, 0.809017], [0.147621, -0.716567, 0.681718], [0, -0.525731, 0.850651], [0.425325, -0.688191, 0.587785], [0.587785, -0.425325, 0.688191], [0.688191, -0.587785, 0.425325], [-0.955423, 0.295242, 0], [-0.951056, 0.16246, 0.262866], [-1, 0, 0], [-0.850651, 0, 0.525731], [-0.955423, -0.295242, 0], [-0.951056, -0.16246, 0.262866], [-0.864188, 0.442863, -0.238856], [-0.951056, 0.16246, -0.262866], [-0.809017, 0.309017, -0.5], [-0.864188, -0.442863, -0.238856], [-0.951056, -0.16246, -0.262866], [-0.809017, -0.309017, -0.5], [-0.681718, 0.147621, -0.716567], [-0.681718, -0.147621, -0.716567], [-0.850651, 0, -0.525731], [-0.688191, 0.587785, -0.425325], [-0.587785, 0.425325, -0.688191], [-0.425325, 0.688191, -0.587785], [-0.425325, -0.688191, -0.587785], [-0.587785, -0.425325, -0.688191], [-0.688191, -0.587785, -0.425325]];
 	$quake_render.$finalverts = null;
 	$quake_render.$auxverts = null;
-	$quake_render.$tmatrix = [$Missing_ArrayHelpers.explcitDoubleArray(4), $Missing_ArrayHelpers.explcitDoubleArray(4), $Missing_ArrayHelpers.explcitDoubleArray(4)];
-	$quake_render.$viewmatrix = [$Missing_ArrayHelpers.explcitDoubleArray(4), $Missing_ArrayHelpers.explcitDoubleArray(4), $Missing_ArrayHelpers.explcitDoubleArray(4)];
+	$quake_render.$tmatrix = [$ArrayHelpers.explcitDoubleArray(4), $ArrayHelpers.explcitDoubleArray(4), $ArrayHelpers.explcitDoubleArray(4)];
+	$quake_render.$viewmatrix = [$ArrayHelpers.explcitDoubleArray(4), $ArrayHelpers.explcitDoubleArray(4), $ArrayHelpers.explcitDoubleArray(4)];
 	$quake_render.$insubmodel = false;
 	$quake_render.currententity = null;
 	$quake_render.modelorg = new Array(3);
@@ -27514,7 +27520,7 @@
 	$quake_prog.$strings = 0;
 	$quake_prog.$line = $System_StringExtensions.stringOfLength(256);
 	$quake_prog.maX_STACK_DEPTH = 32;
-	$quake_prog.$pr_stack = new Array($quake_prog.maX_STACK_DEPTH);
+	$quake_prog.$pr_stack = $ArrayHelpers.initArray($quake_prog$prstack_t).call(null, $quake_prog.maX_STACK_DEPTH);
 	$quake_prog.$pr_depth = 0;
 	$quake_prog.localstacK_SIZE = 2048;
 	$quake_prog.$localstack = new Array($quake_prog.localstacK_SIZE);

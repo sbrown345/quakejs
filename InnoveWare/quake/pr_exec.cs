@@ -26,20 +26,14 @@ namespace quake
 
     public partial class prog
     {
-        public
-#if SILVERLIGHT
-        struct 
-#else
-        class
-#endif
-            prstack_t
+        public class prstack_t
         {
 	        public int			s;
 	        public dfunction_t  f;
         };
 
         public const int	MAX_STACK_DEPTH		= 32;
-        static prstack_t[]	pr_stack = new prstack_t[MAX_STACK_DEPTH];
+        private static prstack_t[] pr_stack = ArrayHelpers.InitArray<prstack_t>(MAX_STACK_DEPTH);
         static int			pr_depth;
 
         public const int	LOCALSTACK_SIZE		= 2048;
@@ -645,7 +639,7 @@ namespace quake
             edict_t ed;
             int exitdepth;
             //eval_t	*ptr;
-  try{
+  //try{
             /*if (!fnum || fnum >= progs.numfunctions)
             {
                 if (pr_global_struct.self)
@@ -1057,11 +1051,11 @@ namespace quake
                         break;
                 }
             }
-            }
-            catch
-            {
-                Debug.WriteLine("broked");
-            }
+            //}
+            //catch
+            //{
+            //    Debug.WriteLine("broked");
+            //}
         }
     }
 }
