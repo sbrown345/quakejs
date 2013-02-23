@@ -653,30 +653,7 @@ namespace quake
         */
         static void  ED_Count ()
         {
-            int i;
-            edict_t ent;
-            int active, models, solid, step;
-
-            active = models = solid = step = 0;
-            for (i = 0; i < server.sv.num_edicts; i++)
-            {
-                ent = EDICT_NUM(i);
-                if (ent.free)
-                    continue;
-                active++;
-                if (ent.v.solid != 0)
-                    solid++;
-                if (ent.v.model != 0)
-                    models++;
-                if (ent.v.movetype == server.MOVETYPE_STEP)
-                    step++;
-            }
-
-          console. Con_Printf ("num_edicts:%3i"+ server.sv.num_edicts+"\n");
-          console. Con_Printf ("active    :"+ active+"\n");
-          console. Con_Printf ("view      :"+ models+"\n");
-          console. Con_Printf ("touch     :"+ solid+"\n");
-          console. Con_Printf ("step      :"+ step+"\n");
+          console.Con_Printf(ED_Count_str() + "\n");
         }
 
         static string ED_Count_str()
