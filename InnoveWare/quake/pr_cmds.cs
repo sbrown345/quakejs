@@ -324,9 +324,25 @@ namespace quake
         centerprint(clientent, value)
         =================
         */
-        static void PF_centerprint ()
+        private static void PF_centerprint()
         {
-            Debug.WriteLine("PF_centerprint");
+            string s;
+            server.client_t client;
+            int entnum;
+
+            entnum = G_EDICTNUM(OFS_PARM0);
+            s = PF_VarString(1);
+
+            if (entnum < 1 || entnum > server.svs.maxclients)
+            {
+                console.Con_Printf("tried to sprint to a non-client\n");
+                return;
+            }
+
+            client = server.svs.clients[entnum - 1];
+
+            common.MSG_WriteChar(client.message, net.svc_centerprint);
+            common.MSG_WriteString(client.message, s);
         }
 
         /*
