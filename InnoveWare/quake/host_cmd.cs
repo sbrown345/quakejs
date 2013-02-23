@@ -173,7 +173,21 @@ namespace quake
         */
         static void Host_Changelevel_f()
         {
-            Debug.WriteLine("todo Host_Changelevel_f");
+            string level;
+
+	        if (cmd.Cmd_Argc() != 2)
+	        {
+		        console.Con_Printf ("changelevel <levelname> : continue game on a new level\n");
+		        return;
+	        }
+	        if (!server.sv.active || client.cls.demoplayback)
+	        {
+		        console.Con_Printf ("Only the server may changelevel\n");
+		        return;
+	        }
+            server.SV_SaveSpawnparms();
+            level = cmd.Cmd_Argv(1);
+	        server.SV_SpawnServer (level);
         }
 
         /*

@@ -909,33 +909,44 @@ namespace quake
                 quake.cmd.Cmd_ExecuteString("reconnect\n\0".ToCharArray(), quake.cmd.cmd_source_t.src_command);
         }
 
-        /////*
-        ////================
-        ////SV_SaveSpawnparms
+        /*
+        ================
+        SV_SaveSpawnparms
 
-        ////Grabs the current state of each client for saving across the
-        ////transition to another level
-        ////================
-        ////*/
-        ////void SV_SaveSpawnparms (void)
-        ////{
-        ////    int		i, j;
+        Grabs the current state of each client for saving across the
+        transition to another level
+        ================
+        */
+        public static void SV_SaveSpawnparms ()
+        {
+            int	i, j;
 
-        ////    svs.serverflags = pr_global_struct->serverflags;
+            svs.serverflags = (int) prog.pr_global_struct[0].serverflags;
 
-        ////  todo  for (i=0, host_client = svs.clients ; i<svs.maxclients ; i++, host_client++)
-        ////    {
-        ////        if (!host_client->active)
-        ////            continue;
-
-        ////    // call the progs to get default spawn parms for the new client
-        ////        pr_global_struct->self = EDICT_TO_PROG(host_client->edict);
-        ////        PR_ExecuteProgram (pr_global_struct->SetChangeParms);
-        ////        for (j=0 ; j<NUM_SPAWN_PARMS ; j++)
-        ////            host_client->spawn_parms[j] = (&pr_global_struct->parm1)[j];
-        ////    }
-        ////}
-        /// 
+            foreach (var host_client in svs.clients)
+            {
+                if (!host_client.active) continue;
+                prog.pr_global_struct[0].self = prog.EDICT_TO_PROG(host_client.edict);
+                prog.PR_ExecuteProgram(prog.pr_functions[prog.pr_global_struct[0].SetChangeParms]);
+                host_client.spawn_parms[0] = prog.pr_global_struct[0].parm1;
+                host_client.spawn_parms[1] = prog.pr_global_struct[0].parm2;
+                host_client.spawn_parms[2] = prog.pr_global_struct[0].parm3;
+                host_client.spawn_parms[3] = prog.pr_global_struct[0].parm4;
+                host_client.spawn_parms[4] = prog.pr_global_struct[0].parm5;
+                host_client.spawn_parms[5] = prog.pr_global_struct[0].parm6;
+                host_client.spawn_parms[6] = prog.pr_global_struct[0].parm7;
+                host_client.spawn_parms[7] = prog.pr_global_struct[0].parm8;
+                host_client.spawn_parms[8] = prog.pr_global_struct[0].parm9;
+                host_client.spawn_parms[9] = prog.pr_global_struct[0].parm10;
+                host_client.spawn_parms[10] = prog.pr_global_struct[0].parm11;
+                host_client.spawn_parms[11] = prog.pr_global_struct[0].parm12;
+                host_client.spawn_parms[12] = prog.pr_global_struct[0].parm13;
+                host_client.spawn_parms[13] = prog.pr_global_struct[0].parm14;
+                host_client.spawn_parms[14] = prog.pr_global_struct[0].parm15;
+                host_client.spawn_parms[15] = prog.pr_global_struct[0].parm16;
+            }
+        }
+         
         /*
         ================
         SV_SpawnServer

@@ -1342,37 +1342,32 @@ namespace quake
 
         static void PF_WriteByte ()
         {
-            common.MSG_WriteByte(WriteDest(), net.clc_disconnect);
+            common.MSG_WriteByte(WriteDest(), (int)G_FLOAT(OFS_PARM1));
         }
 
         static void PF_WriteChar ()
         {
-            Debug.WriteLine("PF_WriteChar");
-            throw new Exception("PF_WriteChar");
+            common.MSG_WriteByte(WriteDest(), (int)G_FLOAT(OFS_PARM1));
         }
 
         static void PF_WriteShort ()
         {
-            Debug.WriteLine("PF_WriteShort");
-            throw new Exception("PF_WriteShort");
+            common.MSG_WriteByte(WriteDest(), (int)G_FLOAT(OFS_PARM1));
         }
 
         static void PF_WriteLong ()
         {
-            Debug.WriteLine("PF_WriteLong");
-            throw new Exception("PF_WriteLong");
+            common.MSG_WriteByte(WriteDest(), (int)G_FLOAT(OFS_PARM1));
         }
 
         static void PF_WriteAngle ()
         {
-            Debug.WriteLine("PF_WriteAngle");
-            throw new Exception("PF_WriteAngle");
+            common.MSG_WriteByte(WriteDest(), (int)G_FLOAT(OFS_PARM1));
         }
 
         static void PF_WriteCoord ()
         {
-            Debug.WriteLine("PF_WriteCoord");
-            throw new Exception("PF_WriteCoord");
+            common.MSG_WriteByte(WriteDest(), (int)G_FLOAT(OFS_PARM1));
         }
 
         static void PF_WriteString ()
@@ -1433,8 +1428,15 @@ namespace quake
         */
         static void PF_changelevel ()
         {
-            Debug.WriteLine("PF_changelevel");
-            throw new Exception("PF_changelevel");
+            string s;
+
+            // make sure we don't issue two changelevels
+            if (server.svs.changelevel_issued)
+                return;
+            server.svs.changelevel_issued = true;
+
+            s = G_STRING(OFS_PARM0);
+            cmd.Cbuf_AddText("changelevel " + s + "\n");
         }
 
         static void PF_Fixme ()
