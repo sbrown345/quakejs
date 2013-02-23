@@ -25,8 +25,6 @@ namespace quake
 {
     using System.Diagnostics;
 
-    using Missing;
-
     public partial class prog
     {
         static void RETURN_EDICT(edict_t e) { pr_globals_write(OFS_RETURN, EDICT_TO_PROG(e)); }
@@ -295,9 +293,26 @@ namespace quake
         sprint(clientent, value)
         =================
         */
-        static void PF_sprint ()
+
+        private static void PF_sprint()
         {
-            Debug.WriteLine("PF_sprint");
+            string s;
+            server.client_t client;
+            int entnum;
+
+            entnum = G_EDICTNUM(OFS_PARM0);
+            s = PF_VarString(1);
+
+            if (entnum < 1 || entnum > server.svs.maxclients)
+            {
+                console.Con_Printf("tried to sprint to a non-client\n");
+                return;
+            }
+
+            client = server.svs.clients[entnum - 1];
+
+            common.MSG_WriteChar(client.message, net.svc_print);
+            common.MSG_WriteString(client.message, s);
         }
 
         /*
@@ -717,9 +732,21 @@ namespace quake
         stuffcmd (clientent, value)
         =================
         */
-        static void PF_stuffcmd ()
+
+        private static void PF_stuffcmd()
         {
-            Debug.WriteLine("PF_stuffcmd");
+            int entnum;
+            string str;
+            server.client_t old;
+
+            entnum = G_EDICTNUM(OFS_PARM0);
+            if (entnum < 1 || entnum > server.svs.maxclients) PR_RunError("Parm 0 not a client");
+            str = G_STRING(OFS_PARM1);
+
+            old = host.host_client;
+            host.host_client = server.svs.clients[entnum - 1];
+            host.Host_ClientCommands(str);
+            host.host_client = old;
         }
 
         /*
@@ -817,7 +844,7 @@ namespace quake
                 pr_string_temp = string.Format("{0:F5}", v);
             }
 
-            throw new Exception("todo PF_ftos G_INT(OFS_RETURN) = pr_string_temp - pr_strings;");
+            //throw new Exception("todo PF_ftos G_INT(OFS_RETURN) = pr_string_temp - pr_strings;");
             var index = getStringIndex(pr_string_temp) - 15000;
             pr_globals_write(OFS_RETURN, index);
             //G_INT(OFS_RETURN) = pr_string_temp - pr_strings; =-- GET INDEX OF STRING AND WRITE TO GLOBALS AS INT opposite of  pr_string() ???? - has that 15000 index thing
@@ -837,7 +864,7 @@ namespace quake
             ////G_INT(OFS_RETURN) = pr_string_temp - pr_strings;
             //pr_globals_write(OFS_RETURN, pr_string_temp - pr_strings;); //todo: FIND INDEX OF IT IN ARRAAY AND WRITE TO GLOBAS AS INT? opposite of  pr_string() ???? - has that 15000 index thing
 
-            throw new Exception("todo TEST PF_vtos;");
+            //throw new Exception("todo TEST PF_vtos;");
             pr_string_temp= string.Format("{0:F5} {1:F5} {2:F5} ", G_VECTOR(OFS_PARM0)[0], G_VECTOR(OFS_PARM0)[1], G_VECTOR(OFS_PARM0)[2]);
             var index = getStringIndex(pr_string_temp) - 15000;
             pr_globals_write(OFS_RETURN, index);
@@ -1111,6 +1138,7 @@ namespace quake
         static void PF_checkbottom ()
         {
             Debug.WriteLine("PF_checkbottom");
+            throw  new Exception("PF_checkbottom");
         }
 
         /*
@@ -1121,6 +1149,7 @@ namespace quake
         static void PF_pointcontents ()
         {
             Debug.WriteLine("PF_pointcontents");
+            throw new Exception("PF_pointcontents");
         }
 
         /*
@@ -1272,45 +1301,90 @@ namespace quake
 
         ===============================================================================
         */
+        const int	MSG_BROADCAST	=0;		// unreliable to all
+        const int	MSG_ONE			=1;		// reliable to one (msg_entity)
+        const int	MSG_ALL			=2;		// reliable to all
+        const int   MSG_INIT        = 3;	// write to the init string
+
+        private static common.sizebuf_t WriteDest()
+        {
+            int entnum;
+            int dest;
+            edict_t ent;
+
+            dest = (int)G_FLOAT(OFS_PARM0);
+            switch (dest)
+            {
+                case MSG_BROADCAST:
+                    return server.sv.datagram;
+
+                case MSG_ONE:
+                    ent = PROG_TO_EDICT(pr_global_struct[0].msg_entity);
+                    entnum = NUM_FOR_EDICT(ent);
+                    if (entnum < 1 || entnum > server.svs.maxclients) 
+                        PR_RunError("WriteDest: not a client");
+                    return server.svs.clients[entnum - 1].message;
+
+                case MSG_ALL:
+                    return server.sv.reliable_datagram;
+
+                case MSG_INIT:
+                    return server.sv.signon;
+
+                default:
+                    PR_RunError("WriteDest: bad destination");
+                    break;
+            }
+
+            return null;
+        }
+
 
         static void PF_WriteByte ()
         {
-            Debug.WriteLine("PF_WriteByte");
+            common.MSG_WriteByte(WriteDest(), net.clc_disconnect);
         }
 
         static void PF_WriteChar ()
         {
             Debug.WriteLine("PF_WriteChar");
+            throw new Exception("PF_WriteChar");
         }
 
         static void PF_WriteShort ()
         {
             Debug.WriteLine("PF_WriteShort");
+            throw new Exception("PF_WriteShort");
         }
 
         static void PF_WriteLong ()
         {
             Debug.WriteLine("PF_WriteLong");
+            throw new Exception("PF_WriteLong");
         }
 
         static void PF_WriteAngle ()
         {
             Debug.WriteLine("PF_WriteAngle");
+            throw new Exception("PF_WriteAngle");
         }
 
         static void PF_WriteCoord ()
         {
             Debug.WriteLine("PF_WriteCoord");
+            throw new Exception("PF_WriteCoord");
         }
 
         static void PF_WriteString ()
         {
             Debug.WriteLine("PF_WriteString");
+            throw new Exception("PF_WriteString");
         }
         
         static void PF_WriteEntity ()
         {
             Debug.WriteLine("PF_WriteEntity");
+            throw  new Exception("PF_WriteEntity");
         }
 
         //=============================================================================
@@ -1349,6 +1423,7 @@ namespace quake
         static void PF_setspawnparms ()
         {
             Debug.WriteLine("PF_setspawnparms");
+            throw new Exception("PF_setspawnparms");
         }
 
         /*
@@ -1359,6 +1434,7 @@ namespace quake
         static void PF_changelevel ()
         {
             Debug.WriteLine("PF_changelevel");
+            throw new Exception("PF_changelevel");
         }
 
         static void PF_Fixme ()

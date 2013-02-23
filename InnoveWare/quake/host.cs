@@ -279,9 +279,10 @@ namespace quake
         Send text over to the client to be executed
         =================
         */
-        void Host_ClientCommands (string fmt)
+        public static void Host_ClientCommands(string fmt)
         {
-            throw new NotImplementedException();
+            common.MSG_WriteByte(host_client.message, net.svc_stufftext);
+            common.MSG_WriteString(host_client.message, fmt);
         }
 
         /*
@@ -352,8 +353,8 @@ namespace quake
             if (!client.cls.timedemo && realtime - oldrealtime < 1.0 / 72.0)
                 return false;		// framerate is too high
 
-            host_frametime = realtime - oldrealtime;//TODO: USE THIS WHEN NOT DEBUGGING
-            //host_frametime = 0.1;
+            //host_frametime = realtime - oldrealtime;//TODO: USE THIS WHEN NOT DEBUGGING
+            host_frametime = 0.1;
             oldrealtime = realtime;
 
             if (host_framerate.value > 0)
