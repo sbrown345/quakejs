@@ -12903,31 +12903,7 @@
 		ss.Debug.writeln(output);
 	};
 	$quake_prog.$eD_Count = function() {
-		var i;
-		var ent;
-		var active, models, solid, step;
-		active = models = solid = step = 0;
-		for (i = 0; i < $quake_server.sv.num_edicts; i++) {
-			ent = $quake_prog.edicT_NUM(i);
-			if (ent.free) {
-				continue;
-			}
-			active++;
-			if (ent.v.solid !== 0) {
-				solid++;
-			}
-			if (ent.v.model !== 0) {
-				models++;
-			}
-			if (ent.v.movetype === 4) {
-				step++;
-			}
-		}
-		$quake_console.con_Printf('num_edicts:%3i' + $quake_server.sv.num_edicts + '\n');
-		$quake_console.con_Printf('active    :' + active + '\n');
-		$quake_console.con_Printf('view      :' + models + '\n');
-		$quake_console.con_Printf('touch     :' + solid + '\n');
-		$quake_console.con_Printf('step      :' + step + '\n');
+		$quake_console.con_Printf($quake_prog.$eD_Count_str() + '\n');
 	};
 	$quake_prog.$eD_Count_str = function() {
 		var i;
@@ -12981,9 +12957,9 @@
 		var variables = null;
 		var values = new Array(3);
 		//d = (void *)((int *)base + key->ofs);
-		d = ss.getMembers(ss.getInstanceType(base), 4, 284, keyname);
+		d = ss.getMembers($quake_prog$entvars_t, 4, 20 | 256, keyname);
 		if (ss.isNullOrUndefined(d)) {
-			variables = ss.cast(base, $quake_prog$entvars_t).variables;
+			variables = base.variables;
 		}
 		switch (key.type & -32769) {
 			case 1: {
@@ -26355,7 +26331,7 @@
 	ss.registerClass(global, 'quake.prog$dprograms_t', $quake_prog$dprograms_t);
 	ss.registerClass(global, 'quake.prog$dstatement_t', $quake_prog$dstatement_t);
 	ss.registerClass(global, 'quake.prog$edict_t', $quake_prog$edict_t);
-	ss.registerClass(global, 'quake.prog$entvars_t', $quake_prog$entvars_t);
+	ss.registerClass(global, 'quake.prog$entvars_t', $quake_prog$entvars_t, null, [], { members: [{ name: 'modelindex', type: 4, fieldType: Number, js: 'modelindex' }, { name: 'absmin', type: 4, fieldType: Array, js: 'absmin' }, { name: 'absmax', type: 4, fieldType: Array, js: 'absmax' }, { name: 'ltime', type: 4, fieldType: Number, js: 'ltime' }, { name: 'movetype', type: 4, fieldType: Number, js: 'movetype' }, { name: 'solid', type: 4, fieldType: Number, js: 'solid' }, { name: 'origin', type: 4, fieldType: Array, js: 'origin' }, { name: 'oldorigin', type: 4, fieldType: Array, js: 'oldorigin' }, { name: 'velocity', type: 4, fieldType: Array, js: 'velocity' }, { name: 'angles', type: 4, fieldType: Array, js: 'angles' }, { name: 'avelocity', type: 4, fieldType: Array, js: 'avelocity' }, { name: 'punchangle', type: 4, fieldType: Array, js: 'punchangle' }, { name: 'classname', type: 4, fieldType: ss.Int32, js: 'classname' }, { name: 'model', type: 4, fieldType: ss.Int32, js: 'model' }, { name: 'frame', type: 4, fieldType: Number, js: 'frame' }, { name: 'skin', type: 4, fieldType: Number, js: 'skin' }, { name: 'effects', type: 4, fieldType: Number, js: 'effects' }, { name: 'mins', type: 4, fieldType: Array, js: 'mins' }, { name: 'maxs', type: 4, fieldType: Array, js: 'maxs' }, { name: 'size', type: 4, fieldType: Array, js: 'size' }, { name: 'touch', type: 4, fieldType: ss.Int32, js: 'touch' }, { name: 'use', type: 4, fieldType: ss.Int32, js: 'use$1' }, { name: 'think', type: 4, fieldType: ss.Int32, js: 'think' }, { name: 'blocked', type: 4, fieldType: ss.Int32, js: 'blocked' }, { name: 'nextthink', type: 4, fieldType: Number, js: 'nextthink' }, { name: 'groundentity', type: 4, fieldType: ss.Int32, js: 'groundentity' }, { name: 'health', type: 4, fieldType: Number, js: 'health' }, { name: 'frags', type: 4, fieldType: Number, js: 'frags' }, { name: 'weapon', type: 4, fieldType: Number, js: 'weapon' }, { name: 'weaponmodel', type: 4, fieldType: ss.Int32, js: 'weaponmodel' }, { name: 'weaponframe', type: 4, fieldType: Number, js: 'weaponframe' }, { name: 'currentammo', type: 4, fieldType: Number, js: 'currentammo' }, { name: 'ammo_shells', type: 4, fieldType: Number, js: 'ammo_shells' }, { name: 'ammo_nails', type: 4, fieldType: Number, js: 'ammo_nails' }, { name: 'ammo_rockets', type: 4, fieldType: Number, js: 'ammo_rockets' }, { name: 'ammo_cells', type: 4, fieldType: Number, js: 'ammo_cells' }, { name: 'items', type: 4, fieldType: Number, js: 'items' }, { name: 'takedamage', type: 4, fieldType: Number, js: 'takedamage' }, { name: 'chain', type: 4, fieldType: ss.Int32, js: 'chain' }, { name: 'deadflag', type: 4, fieldType: Number, js: 'deadflag' }, { name: 'view_ofs', type: 4, fieldType: Array, js: 'view_ofs' }, { name: 'button0', type: 4, fieldType: Number, js: 'button0' }, { name: 'button1', type: 4, fieldType: Number, js: 'button1' }, { name: 'button2', type: 4, fieldType: Number, js: 'button2' }, { name: 'impulse', type: 4, fieldType: Number, js: 'impulse' }, { name: 'fixangle', type: 4, fieldType: Number, js: 'fixangle' }, { name: 'v_angle', type: 4, fieldType: Array, js: 'v_angle' }, { name: 'idealpitch', type: 4, fieldType: Number, js: 'idealpitch' }, { name: 'netname', type: 4, fieldType: ss.Int32, js: 'netname' }, { name: 'enemy', type: 4, fieldType: ss.Int32, js: 'enemy' }, { name: 'flags', type: 4, fieldType: Number, js: 'flags' }, { name: 'colormap', type: 4, fieldType: Number, js: 'colormap' }, { name: 'team', type: 4, fieldType: Number, js: 'team' }, { name: 'max_health', type: 4, fieldType: Number, js: 'max_health' }, { name: 'teleport_time', type: 4, fieldType: Number, js: 'teleport_time' }, { name: 'armortype', type: 4, fieldType: Number, js: 'armortype' }, { name: 'armorvalue', type: 4, fieldType: Number, js: 'armorvalue' }, { name: 'waterlevel', type: 4, fieldType: Number, js: 'waterlevel' }, { name: 'watertype', type: 4, fieldType: Number, js: 'watertype' }, { name: 'ideal_yaw', type: 4, fieldType: Number, js: 'ideal_yaw' }, { name: 'yaw_speed', type: 4, fieldType: Number, js: 'yaw_speed' }, { name: 'aiment', type: 4, fieldType: ss.Int32, js: 'aiment' }, { name: 'goalentity', type: 4, fieldType: ss.Int32, js: 'goalentity' }, { name: 'spawnflags', type: 4, fieldType: Number, js: 'spawnflags' }, { name: 'target', type: 4, fieldType: ss.Int32, js: 'target' }, { name: 'targetname', type: 4, fieldType: ss.Int32, js: 'targetname' }, { name: 'dmg_take', type: 4, fieldType: Number, js: 'dmg_take' }, { name: 'dmg_save', type: 4, fieldType: Number, js: 'dmg_save' }, { name: 'dmg_inflictor', type: 4, fieldType: ss.Int32, js: 'dmg_inflictor' }, { name: 'owner', type: 4, fieldType: ss.Int32, js: 'owner' }, { name: 'movedir', type: 4, fieldType: Array, js: 'movedir' }, { name: 'message', type: 4, fieldType: ss.Int32, js: 'message' }, { name: 'sounds', type: 4, fieldType: Number, js: 'sounds' }, { name: 'noise', type: 4, fieldType: ss.Int32, js: 'noise' }, { name: 'noise1', type: 4, fieldType: ss.Int32, js: 'noise1' }, { name: 'noise2', type: 4, fieldType: ss.Int32, js: 'noise2' }, { name: 'noise3', type: 4, fieldType: ss.Int32, js: 'noise3' }] });
 	ss.registerEnum(global, 'quake.prog$etype_t', $quake_prog$etype_t);
 	ss.registerClass(global, 'quake.prog$eval_t', $quake_prog$eval_t);
 	ss.registerClass(global, 'quake.prog$globalvars_t', $quake_prog$globalvars_t);

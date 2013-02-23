@@ -720,7 +720,7 @@ namespace quake
         returns false if error
         =============
         */
-        public static bool ED_ParseEpair(object @base, ddef_t key, string keyname, string s)
+        public static bool ED_ParseEpair(entvars_t @base, ddef_t key, string keyname, string s)
         {
 
             int i;
@@ -732,7 +732,7 @@ namespace quake
             double[] values = new double[3];
 
             //d = (void *)((int *)base + key->ofs);
-            d = @base.GetType().GetField(keyname);
+            d = typeof(entvars_t).GetField(keyname, BindingFlags.Public | BindingFlags.Instance);
             if (d == null)
                 variables = ((entvars_t)@base).variables;
 
