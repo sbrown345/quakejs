@@ -13727,15 +13727,6 @@
 		}
 		if (ss.referenceEquals(ss.getInstanceType(value), Number)) {
 			var val = BitConverter.toInt32(BitConverter.getBytes(ss.Nullable.unbox(ss.cast(value, Number))), 0);
-			//if (val.ToString() == "544" || val.ToString() == "288" || val.ToString() == "32")
-			//{
-			//    //return Convert.ToInt32((double)value);
-			//    Debug.WriteLine("odd bit here!");
-			//}
-			//if (val > 1000000000)
-			//{ //NO THIS IS correct but maybe it is beign useed wrong someplace
-			//    Debug.WriteLine(prNum + " bad cast_int " + value + " turned to " + val);
-			//}
 			return val;
 		}
 		else {
@@ -13845,7 +13836,10 @@
 	};
 	$quake_prog.$pR_PrintStatement = function(s) {
 		var i;
-		if ($quake_prog.prNum >= 3959) {
+		if ($quake_prog.prNum % 50 === 0) {
+			ss.Debug.writeln($quake_prog.$eD_Count_str());
+		}
+		if ($quake_prog.prNum >= 9000) {
 			$quake_prog.$pR_StackTraceStr();
 			$quake_console.con_Printf($quake_prog.prNum + ' ');
 			if (s.op < $quake_prog.$pr_opnames.length) {
@@ -13877,9 +13871,9 @@
 				}
 			}
 			$quake_console.con_Printf('\n');
-			//if (prNum % 200 == 0)
-			//if (prNum == 5200)
-			//prog.PF_coredump();
+			if ($quake_prog.prNum % 50 === 0) {
+				$quake_prog.$pF_coredump();
+			}
 		}
 	};
 	$quake_prog.$pR_StackTrace = function() {
@@ -14807,9 +14801,6 @@
 				//Debug.WriteLine(string.Format("b {0}: {1} {2} {3}", st.b, pr_globals_read(st.b), pr_globals_read(st.b + 1), pr_globals_read(st.b + 2)));
 				//Debug.WriteLine(string.Format("c {0}: {1} {2} {3}", st.c, pr_globals_read(st.c), pr_globals_read(st.c + 1), pr_globals_read(st.c + 2)));
 				//PR_StackTraceStr();
-			}
-			if (st.c === 7505) {
-				st.c = st.c;
 			}
 			var eval;
 			switch (st.op) {
@@ -22951,7 +22942,7 @@
 	$quake_server.$sV_CheckWaterTransition = function(ent) {
 		var cont;
 		cont = $quake_world.sV_PointContents(ent.v.origin);
-		if (!ss.Nullable.ne(ent.v.watertype, null)) {
+		if (!(ent.v.watertype !== 0)) {
 			// just spawned here
 			ent.v.watertype = cont;
 			ent.v.waterlevel = 1;

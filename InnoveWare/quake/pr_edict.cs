@@ -990,6 +990,7 @@ namespace quake
             return common.parseString(pr_strings, progs.ofs_strings + offset);
         }
 
+        //TODO: FOR JS VERSION POSSIBLY ONLY TAKE CERTAIN TYPES, OR HAVE A GOBALS WRITE METHOD FOR EACH TYPE
         public static void pr_globals_write(int address, Object value)
         {
             globalvars_t globalvars = pr_global_struct[address * 4 / sizeof_globalvars_t];
@@ -1095,6 +1096,8 @@ namespace quake
             }
         }
 
+        //TODO: FOR JS VERSION POSSIBLY HAVE A GOBALS WRITE METHOD FOR EACH TYPE (e.g. double,dobule[],int etc)
+        //why is it double?? isn't it float in winquake????
         public static Object pr_globals_read(int address)
         {
             globalvars_t globalvars = pr_global_struct[address * 4 / sizeof_globalvars_t];
@@ -1218,15 +1221,6 @@ namespace quake
             if (value.GetType() == typeof(Double))
             {
                 var val = BitConverter.ToInt32(BitConverter.GetBytes((float)(double)value), 0);
-                //if (val.ToString() == "544" || val.ToString() == "288" || val.ToString() == "32")
-                //{
-                //    //return Convert.ToInt32((double)value);
-                //    Debug.WriteLine("odd bit here!");
-                //}
-                //if (val > 1000000000)
-                //{ //NO THIS IS correct but maybe it is beign useed wrong someplace
-                //    Debug.WriteLine(prNum + " bad cast_int " + value + " turned to " + val);
-                //}
                 return val;
             }
             else

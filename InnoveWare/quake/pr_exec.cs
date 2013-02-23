@@ -148,7 +148,10 @@ namespace quake
         private static void PR_PrintStatement(dstatement_t s)
         {
             int i;
-            if (prNum >= 3959)
+            if (prNum % 50 == 0)
+                Debug.WriteLine(ED_Count_str());
+
+            if (prNum >= 9000)
             {
                 PR_StackTraceStr();
                 console.Con_Printf((prNum) + " ");
@@ -178,9 +181,9 @@ namespace quake
                     if (s.c != 0) console.Con_Printf(PR_GlobalStringNoContents(s.c));
                 }
                 console.Con_Printf("\n");
-               //if (prNum % 200 == 0)
+                if (prNum % 50 == 0)
                 //if (prNum == 5200)
-                //prog.PF_coredump();
+                prog.PF_coredump();
             }
         }
 
@@ -678,11 +681,7 @@ namespace quake
                     //Debug.WriteLine(string.Format("c {0}: {1} {2} {3}", st.c, pr_globals_read(st.c), pr_globals_read(st.c + 1), pr_globals_read(st.c + 2)));
                     //PR_StackTraceStr();
                 }
-
-
-                if (st.c == 7505) 
-                    st.c = st.c;
-
+                
                 bool eval;
                 switch ((opcode_t)st.op)
                 {
@@ -1031,7 +1030,8 @@ namespace quake
                         pr_globals_write(OFS_RETURN + 2, pr_globals_read(st.a + 2));
 
                         s = PR_LeaveFunction();
-                        if (pr_depth == exitdepth) return; // all done
+                        if (pr_depth == exitdepth) 
+                            return; // all done
                         break;
 
                     case opcode_t.OP_STATE:
