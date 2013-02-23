@@ -434,8 +434,8 @@ namespace quake
         {
 	        int			pass1, pass2, pass3;
 
-            //try
-            //{
+            try
+            {
                 // decide the simulation time
                 if (!Host_FilterTime(time))
                     return;			// don't run too fast, or packets will flood out
@@ -489,11 +489,11 @@ namespace quake
                     sound.S_Update(mathlib.vec3_origin, mathlib.vec3_origin, mathlib.vec3_origin, mathlib.vec3_origin);
 
                 host_framecount++;
-            //}
-            //catch (host_abortserver)
-            //{
-            //    return;
-            //}
+            }
+            catch (host_abortserver)
+            {
+                return;
+            }
         }
 
         static double timetotal;

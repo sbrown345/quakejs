@@ -149,42 +149,43 @@ namespace quake
         {
             int i;
 
-            if (prNum >= 4000)
+            if (prNum >= 11296)
             {
-           
-                if (prNum % 500 == 0)
+                string output = "";
+                //if (prNum % 500 == 0)
                     Debug.WriteLine(ED_Count_str());
 
                 PR_StackTraceStr();
-                console.Con_Printf((prNum) + " ");
+                output+=(prNum) + " ********************************************************************\n";
 
                 if (s.op < pr_opnames.Length)
                 {
-                    console.Con_Printf(pr_opnames[s.op] + " ");
+                    output += (pr_opnames[s.op] + " ");
                     i = pr_opnames[s.op].Length;
-                    for (; i < 10; i++) console.Con_Printf(" ");
+                    for (; i < 10; i++) output += (" ");
                 }
 
-                if (s.op == (ushort)opcode_t.OP_IF || s.op == (ushort)opcode_t.OP_IFNOT) 
-                    console.Con_Printf(PR_GlobalString(s.a) + "branch " + s.b);
+                if (s.op == (ushort)opcode_t.OP_IF || s.op == (ushort)opcode_t.OP_IFNOT)
+                    output += (PR_GlobalString(s.a) + "branch " + s.b);
                 else if (s.op == (ushort)opcode_t.OP_GOTO)
                 {
-                    console.Con_Printf("branch " + s.a);
+                    output += ("branch " + s.a);
                 }
                 else if ((uint)(s.op - (ushort)opcode_t.OP_STORE_F) < 6)
                 {
-                    console.Con_Printf(PR_GlobalString(s.a));
-                    console.Con_Printf(PR_GlobalStringNoContents(s.b));
+                    output += (PR_GlobalString(s.a));
+                    output += (PR_GlobalStringNoContents(s.b));
                 }
                 else
                 {
-                    if (s.a != 0) console.Con_Printf(PR_GlobalString(s.a));
-                    if (s.b != 0) console.Con_Printf(PR_GlobalString(s.b));
-                    if (s.c != 0) console.Con_Printf(PR_GlobalStringNoContents(s.c));
+                    if (s.a != 0) output += (PR_GlobalString(s.a));
+                    if (s.b != 0) output += (PR_GlobalString(s.b));
+                    if (s.c != 0) output += (PR_GlobalStringNoContents(s.c));
                 }
 
-                console.Con_Printf("\n");
-                if (prNum % 500 == 0)
+                //console.Con_Printf(output + "\n");//todo: fix up like proper quake cmd
+                Debug.WriteLine(output);
+                //if (prNum % 500 == 0)
                 //if (prNum == 5200)
                     prog.PF_coredump();
             }
@@ -678,7 +679,7 @@ namespace quake
 
                 if (pr_trace)
                 {
-                    //PR_PrintStatement(st);
+                    PR_PrintStatement(st);
                     //Debug.WriteLine(string.Format("a {0}: {1} {2} {3}", st.a, pr_globals_read(st.a), pr_globals_read(st.a + 1), pr_globals_read(st.a + 2)));
                     //Debug.WriteLine(string.Format("b {0}: {1} {2} {3}", st.b, pr_globals_read(st.b), pr_globals_read(st.b + 1), pr_globals_read(st.b + 2)));
                     //Debug.WriteLine(string.Format("c {0}: {1} {2} {3}", st.c, pr_globals_read(st.c), pr_globals_read(st.c + 1), pr_globals_read(st.c + 2)));
@@ -887,8 +888,11 @@ namespace quake
                         break;
 
                     case opcode_t.OP_NE_S:
-                        eval = pr_string(st.a) == pr_string(st.b);
-                        pr_globals_write(st.c, (double)(eval ? 1 : 0));
+                        pr_globals_write(
+                            st.c,
+                            (double)
+                            (pr_string(cast_int(pr_globals_read(st.a)))
+                                 .CompareTo(pr_string(cast_int(pr_globals_read(st.b))))));
                         break;
 
                     case opcode_t.OP_NE_E:
