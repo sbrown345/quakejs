@@ -1016,7 +1016,7 @@ static void SV_PushMove (prog.edict_t pusher, Double movetime)
         {
 	        int		cont;
 	        cont = world.SV_PointContents (ent.v.origin);
-	        if (! (ent.v.watertype != null))
+	        if (! (ent.v.watertype != 0))
 	        {	// just spawned here
 		        ent.v.watertype = cont;
 		        ent.v.waterlevel = 1;
