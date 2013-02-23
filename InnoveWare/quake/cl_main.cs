@@ -491,7 +491,9 @@ namespace quake
                     render.R_EntityParticles (ent);
 		        if ((ent.effects & server.EF_MUZZLEFLASH) != 0)
 		        {
-                    double[]        fv = new double[3], rv = new double[3], uv = new double[3];
+		            double[] fv = ArrayHelpers.ExplcitDoubleArray(3),
+		                     rv = ArrayHelpers.ExplcitDoubleArray(3),
+		                     uv = ArrayHelpers.ExplcitDoubleArray(3);
 
 			        dl = CL_AllocDlight (i);
 			        mathlib.VectorCopy (ent.origin,  dl.origin);
