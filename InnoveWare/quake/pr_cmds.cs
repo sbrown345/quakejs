@@ -419,9 +419,6 @@ namespace quake
 	        double		num;
         		
 	        num = (helper.rand ()&0x7fff) / ((double)0x7fff);
-            //TODO: RREMOVE THIS DEBUG TEST  THING
-            num = 0.3;
-
 	        pr_globals_write(OFS_RETURN, num);
 
         }
@@ -806,9 +803,24 @@ namespace quake
             }
         }
 
-        static void PF_ftos ()
+        private static void PF_ftos()
         {
-            Debug.WriteLine("todo PF_ftos");
+            double v;
+            v = G_FLOAT(OFS_PARM0);
+
+            if (v == (int)v)
+            {
+                pr_string_temp = ((int)v).ToString();
+            }
+            else
+            {
+                pr_string_temp = string.Format("{0:F5}", v);
+            }
+
+            throw new Exception("todo PF_ftos G_INT(OFS_RETURN) = pr_string_temp - pr_strings;");
+            var index = getStringIndex(pr_string_temp) - 15000;
+            pr_globals_write(OFS_RETURN, index);
+            //G_INT(OFS_RETURN) = pr_string_temp - pr_strings; =-- GET INDEX OF STRING AND WRITE TO GLOBALS AS INT opposite of  pr_string() ???? - has that 15000 index thing
         }
 
         static void PF_fabs ()
@@ -821,12 +833,14 @@ namespace quake
         private static string pr_string_temp = null;
         static void PF_vtos ()
         {
-            Debug.WriteLine("todo PF_vtos");
             //sprintf (pr_string_temp, "'%5.1f %5.1f %5.1f'", G_VECTOR(OFS_PARM0)[0], G_VECTOR(OFS_PARM0)[1], G_VECTOR(OFS_PARM0)[2]);
-            //pr_string_temp= string.Format("{0:F5} {1:F5} {2:F5} ", G_VECTOR(OFS_PARM0)[0], G_VECTOR(OFS_PARM0)[1], G_VECTOR(OFS_PARM0)[2]);
-
             ////G_INT(OFS_RETURN) = pr_string_temp - pr_strings;
-            //pr_globals_write(OFS_RETURN, pr_string_temp - pr_strings;); //todo: check - how to get it from array?
+            //pr_globals_write(OFS_RETURN, pr_string_temp - pr_strings;); //todo: FIND INDEX OF IT IN ARRAAY AND WRITE TO GLOBAS AS INT? opposite of  pr_string() ???? - has that 15000 index thing
+
+            throw new Exception("todo TEST PF_vtos;");
+            pr_string_temp= string.Format("{0:F5} {1:F5} {2:F5} ", G_VECTOR(OFS_PARM0)[0], G_VECTOR(OFS_PARM0)[1], G_VECTOR(OFS_PARM0)[2]);
+            var index = getStringIndex(pr_string_temp) - 15000;
+            pr_globals_write(OFS_RETURN, index);
         }
 
         static void PF_Spawn ()
