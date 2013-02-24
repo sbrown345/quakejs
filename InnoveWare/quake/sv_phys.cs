@@ -493,6 +493,8 @@ static void SV_PushMove (prog.edict_t pusher, Double movetime)
     {
         if (check.free)
             continue;
+        Debug.WriteLine(string.Format("e: {0} movetype:{1}", e, (int)check.v.movetype));
+
         if (check.v.movetype == MOVETYPE_PUSH
         || check.v.movetype == MOVETYPE_NONE
 

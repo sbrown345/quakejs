@@ -334,7 +334,6 @@ namespace quake
            prog.edict_t touch;
            int old_self, old_other;
 
-           Debug.WriteLine(string.Format("tchlinksFunc {0} absmax[0] {1}", tchlinksFunc,(int)ent.v.absmax[0]));
            tchlinksFunc++;
 
            // touch linked edicts
@@ -345,7 +344,6 @@ namespace quake
 
                next = l.next;
                touch = prog.EDICT_FROM_AREA(l);
-               Debug.WriteLine("touch.leafnums[0] " + touch.leafnums[0].ToString());
                if (touch == ent)
                    continue;
                if (!(touch.v.touch != 0) || touch.v.solid != server.SOLID_TRIGGER)
@@ -372,18 +370,15 @@ namespace quake
            // recurse down both sides
            if (node.axis == -1)
            {
-               Debug.WriteLine("node.axis == -1");
                return;
            }
 
            if (ent.v.absmax[node.axis] > node.dist)
            {
-               Debug.WriteLine("1--");
                SV_TouchLinks(ent, node.children[0]);
            }
            if (ent.v.absmin[node.axis] < node.dist)
            {
-               Debug.WriteLine("2--");
                SV_TouchLinks(ent, node.children[1]);
            }
        }
@@ -662,8 +657,6 @@ namespace quake
 
             //Debug.WriteLine(string.Format("SV_RecursiveHullCheck hull.firstclipnode:{0} num:{1} {2:F6} {3:F6} p1[0] {4:F6} p1[1] {5:F6}  p1[2] {6:F6} -  p2[0] {7:F6} p2[1] {8:F6} p2[2] {9:F6} num_hullcheck: {10}", hull.firstclipnode, num, (float)p1f, (float)p2f, (float)p1[0], (float)p1[1], (float)p1[2], (float)p2[0], (float)p2[1], (float)p2[2], num_hullcheck));
             num_hullcheck++;
-            if (trace.ent != null) 
-                Debug.WriteLine(string.Format("{0} {1}", trace.ent.v.modelindex, trace.ent.v.velocity[0]));
             // check for empty
             if (num < 0)
             {
@@ -704,12 +697,10 @@ namespace quake
 
             if (t1 >= 0 && t2 >= 0)
             {
-                Debug.WriteLine(string.Format("t1 >= 0 && t2 >= 0"));
                 return SV_RecursiveHullCheck(hull, node.children[0], p1f, p2f, p1, p2, trace);
             }
             if (t1 < 0 && t2 < 0)
             {
-                Debug.WriteLine(string.Format("t1 < 0 && t2 < 0"));
                 return SV_RecursiveHullCheck(hull, node.children[1], p1f, p2f, p1, p2, trace);
             }
 
@@ -725,26 +716,20 @@ namespace quake
 
             side = (t1 < 0) ? 1 : 0;
 
-            Debug.WriteLine(string.Format("side {0}", side));
-            Debug.WriteLine(string.Format("midf {0:F6}", midf));
-            Debug.WriteLine(string.Format("frac {0:F6}", frac));
 
             // move up to the node
             if (!SV_RecursiveHullCheck(hull, node.children[side], p1f, midf, p1, mid, trace))
             {
-                Debug.WriteLine(string.Format("move up to the node !SV_RecursiveHullCheck(hull, node.children[side], p1f, midf, p1, mid, trace)"));
                 return false;
             }
 
             if (SV_HullPointContents(hull, node.children[side ^ 1], mid) != bspfile.CONTENTS_SOLID) // go past the node
             {
-                Debug.WriteLine(string.Format("go past the node"));
                 return SV_RecursiveHullCheck(hull, node.children[side ^ 1], midf, p2f, mid, p2, trace);
             }
 
             if (trace.allsolid) 
             {
-                Debug.WriteLine(string.Format("trace.allsolid"));
                 return false; // never got out of the solid area
             }
 
@@ -781,7 +766,6 @@ namespace quake
             trace.fraction = midf;
             mathlib.VectorCopy(mid, trace.endpos);
 
-            //Debug.WriteLine(string.Format("end of func return false"));
             return false;
         }
 
@@ -840,7 +824,6 @@ namespace quake
         ====================
         */
 
-        private static int ClipToLinks_num = 0;
         private static int ClipToLinks_for_num = 0;
         static void SV_ClipToLinks(areanode_t node, moveclip_t clip)
         {
@@ -849,23 +832,18 @@ namespace quake
             trace_t		trace;
 
         // touch linked edicts
-            Debug.WriteLine("ClipToLinks_num " + ClipToLinks_num);
-            ClipToLinks_num++;
             for (l = node.solid_edicts.next; l != node.solid_edicts; l = next)
             {
                 Debug.WriteLine("ClipToLinks_for_num " + ClipToLinks_for_num);
                 ClipToLinks_for_num++;
                 next = l.next;
                 touch = prog. EDICT_FROM_AREA(l);
-                Debug.WriteLine("touch.v.solid " +touch.v.solid);
-                Debug.WriteLine("clip.type " + clip.type);
                 if (touch.v.solid == server.SOLID_NOT)
                 {
                     continue;
                 }
                 if (touch == clip.passedict)
                 {
-                    Debug.WriteLine("touch == clip->passedict");
                     continue;
                 }
                 if (touch.v.solid == server. SOLID_TRIGGER)
@@ -881,48 +859,37 @@ namespace quake
                 || clip.boxmaxs[1] < touch.v.absmin[1]
                 || clip.boxmaxs[2] < touch.v.absmin[2])
                 {
-
-                    Debug.WriteLine("clip.boxmins[0] > touch.v.absmax[0] etc");
                     continue;
                 }
 
                 //if (clip.passedict && clip.passedict.v.size[0] && !touch.v.size[0])
                 if (clip.passedict !=null && clip.passedict.v.size[0] != 0 && !(touch.v.size[0] != 0))
                 {
-                    Debug.WriteLine("clip.passedict !=null && clip.passedict.v.size[0] != 0 && touch.v.size[0] != 0");
                     continue;	// points never interact
                 }
 
             // might intersect, so do an exact clip
                 if (clip.trace.allsolid)
                 {
-                    Debug.WriteLine("clip.trace.allsolid");
                     return;
                 }
                 if (clip.passedict != null)
                 {
                     if (prog.PROG_TO_EDICT(touch.v.owner) == clip.passedict)
                     {
-                        Debug.WriteLine("prog.PROG_TO_EDICT(touch.v.owner) == clip.passedict");
                         continue; // don't clip against own missiles
                     }
                     if (prog.PROG_TO_EDICT(clip.passedict.v.owner) == touch)
                     {
-                        Debug.WriteLine("prog.PROG_TO_EDICT(clip.passedict.v.owner) == touch");
                         continue; // don't clip against owner
                     }
                 }
 
-                Debug.WriteLine("touch.v.flags "+ (int)touch.v.flags);
                 if (((int)touch.v.flags & server.FL_MONSTER) != 0)
                     trace = SV_ClipMoveToEntity (touch, clip.start, clip.mins2, clip.maxs2, clip.end);
                 else
                     trace = SV_ClipMoveToEntity (touch, clip.start, clip.mins, clip.maxs, clip.end);
 
-
-                Debug.WriteLine("trace.allsolid"+ (trace.allsolid ? 0 : 1));
-                Debug.WriteLine("trace.startsolid "+ (trace.startsolid ? 0 : 1));
-                Debug.WriteLine("trace.fraction < clip->trace.fraction "+ (trace.fraction < clip.trace.fraction ? 0 : 1));
                 if (trace.allsolid || trace.startsolid ||
                 trace.fraction < clip.trace.fraction)
                 {
@@ -940,18 +907,15 @@ namespace quake
             }
 	
         // recurse down both sides
-            Debug.WriteLine("node->axis " + node.axis);
             if (node.axis == -1)
                 return;
 
             if (clip.boxmaxs[node.axis] > node.dist)
             {
-                Debug.WriteLine("clip->boxmaxs[node->axis] > node->dist");
                 SV_ClipToLinks(node.children[0], clip);
             }
             if (clip.boxmins[node.axis] < node.dist)
             {
-                Debug.WriteLine("clip->boxmins[node->axis] < node->dist");
                 SV_ClipToLinks(node.children[1], clip);
             }
         }

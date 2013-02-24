@@ -74,14 +74,11 @@ namespace quake
 
         public static edict_t NEXT_EDICT(edict_t e)
         {
-            for (int i = 0; i < server.sv.edicts.Length; i++)
+            if (e.index + 1 < server.sv.edicts.Length)
             {
-                var edict = server.sv.edicts[i];
-                if (e == edict && i + 1 < server.sv.edicts.Length)
-                {
-                    return edict;
-                }
+                return server.sv.edicts[e.index + 1];
             }
+
             return null;
         }
 
