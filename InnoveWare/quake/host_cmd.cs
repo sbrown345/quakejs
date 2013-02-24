@@ -83,14 +83,47 @@ namespace quake
 
         static void Host_Notarget_f ()
         {
-            Debug.WriteLine("todo Host_Notarget_f");
+            if (cmd.cmd_source == cmd.cmd_source_t.src_command)
+            {
+                cmd.Cmd_ForwardToServer();
+                return;
+            }
+
+            if (prog.pr_global_struct[0].deathmatch != 0 && !host_client.privileged)
+                return;
+
+            server.sv_player.v.flags = (int)server.sv_player.v.flags ^ server.FL_NOTARGET;
+            if (!(((int)server.sv_player.v.flags & server.FL_NOTARGET) != 0))
+                SV_ClientPrintf("notarget OFF\n");
+            else
+                SV_ClientPrintf("notarget ON\n");
         }
 
         public static bool noclip_anglehack;
 
         static void Host_Noclip_f ()
         {
-            Debug.WriteLine("todo Host_Noclip_f");
+            if (cmd.cmd_source == cmd.cmd_source_t.src_command)
+            {
+                cmd.Cmd_ForwardToServer();
+                return;
+            }
+
+            if (prog.pr_global_struct[0].deathmatch != 0 && !host_client.privileged)
+                return;
+
+            if (server.sv_player.v.movetype != server.MOVETYPE_NOCLIP)
+            {
+                noclip_anglehack = true;
+                server.sv_player.v.movetype = server.MOVETYPE_NOCLIP;
+                SV_ClientPrintf("noclip ON\n");
+            }
+            else
+            {
+                noclip_anglehack = false;
+                server.sv_player.v.movetype = server.MOVETYPE_WALK;
+                SV_ClientPrintf("noclip OFF\n");
+            }
         }
 
         /*
@@ -102,7 +135,25 @@ namespace quake
         */
         static void Host_Fly_f()
         {
-            Debug.WriteLine("todo Host_Fly_f");
+            if (cmd.cmd_source == cmd.cmd_source_t.src_command)
+            {
+                cmd.Cmd_ForwardToServer();
+                return;
+            }
+
+            if (prog.pr_global_struct[0].deathmatch != 0 && !host_client.privileged)
+                return;
+
+            if (server.sv_player.v.movetype != server.MOVETYPE_FLY)
+            {
+                server.sv_player.v.movetype = server.MOVETYPE_FLY;
+                SV_ClientPrintf("flymode ON\n");
+            }
+            else
+            {
+                server.sv_player.v.movetype = server.MOVETYPE_WALK;
+                SV_ClientPrintf("flymode OFF\n");
+            }
         }
         
         /*
@@ -113,7 +164,29 @@ namespace quake
         */
         static void Host_Ping_f ()
         {
-            Debug.WriteLine("todo Host_Ping_f");
+            int i, j;
+            double total;
+            server.client_t client;
+
+            if (cmd.cmd_source == cmd.cmd_source_t.src_command)
+            {
+                cmd.Cmd_ForwardToServer();
+                return;
+            }
+
+            SV_ClientPrintf("Client ping times:\n");
+            for (i = 0; i < server.svs.maxclients; i++)
+            {
+                client = server.svs.clients[i];
+                if (!client.active)
+                    continue;
+                total = 0;
+                for (j = 0; j < server.NUM_PING_TIMES; j++)
+                    total += client.ping_times[j];
+                total /= server.NUM_PING_TIMES;
+                //SV_ClientPrintf("%4i %s\n", (int)(total * 1000), client.name);//todo maybe formatting on ping
+                SV_ClientPrintf(string.Format("{0} {1}\n", (int)(total * 1000), client.name));
+            }
         }
 
         /*
