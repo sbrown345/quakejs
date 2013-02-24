@@ -130,7 +130,9 @@ namespace quake
             double thinktime;
 
             thinktime = ent.v.nextthink;
-            if (thinktime <= 0 || thinktime > sv.time + host.host_frametime)
+            /*not ">" like ordiginal to fix rounding difference, mainly for debugging*/
+            //if (thinktime <= 0 || thinktime > sv.time + host_frametime)
+            if (thinktime <= 0 || thinktime >= sv.time + host.host_frametime)
                 return true;
 
             if (thinktime < sv.time)
