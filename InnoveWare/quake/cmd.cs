@@ -627,7 +627,7 @@ namespace quake
 
             // check functions
             for (cmd = cmd_functions; cmd != null; cmd = cmd.next)
-                if (partial.CompareTo(cmd.name.Substring(0, len)) == 0)
+                if (cmd.name.StartsWith(partial))
                     return cmd.name;
 
             return null;

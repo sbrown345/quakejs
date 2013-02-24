@@ -127,16 +127,16 @@ namespace quake
         static bool SV_RunThink(prog.edict_t ent)
         {
             //Debug.WriteLine("SV_RunThink");
-            double thinktime;
+            float thinktime;
 
-            thinktime = ent.v.nextthink;
+            thinktime = (float)ent.v.nextthink;
             /*not ">" like ordiginal to fix rounding difference, mainly for debugging*/
             //if (thinktime <= 0 || thinktime > sv.time + host_frametime)
             if (thinktime <= 0 || thinktime >= sv.time + host.host_frametime)
                 return true;
 
             if (thinktime < sv.time)
-                thinktime = sv.time;	// don't let things stay in the past.
+                thinktime = (float)sv.time;	// don't let things stay in the past.
             // it is possible to start that way
             // by a trigger with a local time.
             ent.v.nextthink = 0;
