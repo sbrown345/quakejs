@@ -259,6 +259,7 @@ If steptrace is not NULL, the trace of any vertical wall hit will be stored
 
             time_left = time;
 
+            Debug.WriteLine("SV_FlyMove");
             for (bumpcount = 0; bumpcount < numbumps; bumpcount++)
             {
                 if (ent.v.velocity[0] == 0.0 && ent.v.velocity[1] == 0.0 && ent.v.velocity[2] == 0.0) break;
@@ -270,11 +271,13 @@ If steptrace is not NULL, the trace of any vertical wall hit will be stored
 
                 if (trace.allsolid)
                 {
+                    Debug.WriteLine("allsolid");
                     // entity is trapped in another solid
                     mathlib.VectorCopy(mathlib.vec3_origin, ent.v.velocity);
                     return 3;
                 }
 
+                Debug.WriteLine(string.Format("fraction {0}", trace.fraction));
                 if (trace.fraction > 0)
                 {
                     // actually covered some distance
@@ -291,6 +294,7 @@ If steptrace is not NULL, the trace of any vertical wall hit will be stored
 
                 if (trace.plane.normal[2] > 0.7)
                 {
+                    Debug.WriteLine("trace.plane.normal[2] > 0.7");
                     blocked |= 1; // floor
                     if (trace.ent.v.solid == SOLID_BSP)
                     {
@@ -300,6 +304,7 @@ If steptrace is not NULL, the trace of any vertical wall hit will be stored
                 }
                 if (!(trace.plane.normal[2] != 0.0))
                 {
+                    Debug.WriteLine("!trace.plane.normal[2]");
                     blocked |= 2; // step
                     if (steptrace != null) 
                         steptrace = trace; // save for player extrafriction
@@ -308,9 +313,13 @@ If steptrace is not NULL, the trace of any vertical wall hit will be stored
                 //
                 // run the impact function
                 //
+                Debug.WriteLine("SV_Impact");
                 SV_Impact(ent, trace.ent);
                 if (ent.free) 
+                {
+                    Debug.WriteLine("ent.fre");
                     break; // removed by the impact function
+                }
 
 
                 time_left -= time_left * trace.fraction;
@@ -318,6 +327,7 @@ If steptrace is not NULL, the trace of any vertical wall hit will be stored
                 // cliped to another plane
                 if (numplanes >= MAX_CLIP_PLANES)
                 {
+                    Debug.WriteLine("numplanes >= MAX_CLIP_PLANES");
                     // this shouldn't really happen
                     mathlib.VectorCopy(mathlib.vec3_origin, ent.v.velocity);
                     return 3;
@@ -343,6 +353,7 @@ If steptrace is not NULL, the trace of any vertical wall hit will be stored
                 if (i != numplanes)
                 {
                     // go along this plane
+                    Debug.WriteLine("i != numplanes");
                     mathlib.VectorCopy(new_velocity, ent.v.velocity);
                 }
                 else
@@ -365,6 +376,7 @@ If steptrace is not NULL, the trace of any vertical wall hit will be stored
                 //
                 if (mathlib.DotProduct(ent.v.velocity, primal_velocity) <= 0)
                 {
+                    Debug.WriteLine("DotProductstuff");
                     mathlib.VectorCopy(mathlib.vec3_origin, ent.v.velocity);
                     return blocked;
                 }

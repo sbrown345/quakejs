@@ -990,8 +990,22 @@ namespace quake
             return common.parseString(pr_strings, progs.ofs_strings + offset);
         }
 
-        //TODO: FOR JS VERSION POSSIBLY ONLY TAKE CERTAIN TYPES, OR HAVE A GOBALS WRITE METHOD FOR EACH TYPE
-        public static void pr_globals_write(int address, Object value)
+
+
+        //public static void pr_globals_write(int address, double value)
+        //{
+        //    pr_globals_write(address, value, null, null);
+        //}
+        //public static void pr_globals_write(int address, double[] value)
+        //{
+        //    pr_globals_write(address, null, value, null);
+        //}
+        //public void pr_globals_write(int address, int value)
+        //{
+        //    pr_globals_write(address, null, null, value);
+        //}
+
+        public static void pr_globals_write(int address, Object value/*,todo for JS - args: double doubleVal, double[] vecVal, int intVal - explicitly set them here */)
         {
             globalvars_t globalvars = pr_global_struct[address * 4 / sizeof_globalvars_t];
             int offset = address % (sizeof_globalvars_t / 4);
@@ -1098,6 +1112,14 @@ namespace quake
 
         //TODO: FOR JS VERSION POSSIBLY HAVE A GOBALS WRITE METHOD FOR EACH TYPE (e.g. double,dobule[],int etc)
         //why is it double?? isn't it float in winquake????
+        //public static double pr_globals_read_float(int address)
+        //{
+            
+        //}
+        //public static double pr_globals_read_vector(int address)
+        //{
+            
+        //}
         public static Object pr_globals_read(int address)
         {
             globalvars_t globalvars = pr_global_struct[address * 4 / sizeof_globalvars_t];
