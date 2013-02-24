@@ -210,6 +210,7 @@ namespace InnoveWare
             // Synchronize the Silverlight UI thread to Quake framerate.
 		    double newtime = quake.sys_linux.Sys_FloatTime ();
             double time = newtime - oldtime;
+            time = 0.25;//TODO- TESTING
             quake.host.Host_Frame(time);
             oldtime = newtime;
         }

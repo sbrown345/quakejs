@@ -149,7 +149,7 @@ namespace quake
         {
             int i;
 
-            if (prNum >= 28720)
+            if (prNum >= 5000)
             {
                 string output = "";
                 if (prNum % 1000 == 0)
@@ -185,9 +185,9 @@ namespace quake
 
                 //console.Con_Printf(output + "\n");//todo: fix up like proper quake cmd
                 Debug.WriteLine(output);
-                //if (prNum % 1000 == 0)
+                if (prNum % 1000 == 0)
                 ////if (prNum == 5200)
-                //    prog.PF_coredump();
+                prog.PF_coredump();
             }
         }
 

@@ -334,7 +334,7 @@ namespace quake
            prog.edict_t touch;
            int old_self, old_other;
 
-           Debug.WriteLine(string.Format("tchlinksFunc {0} absmax[0] {1:F6}", tchlinksFunc, ent.v.absmax[0]));
+           Debug.WriteLine(string.Format("tchlinksFunc {0} absmax[0] {1}", tchlinksFunc,(int)ent.v.absmax[0]));
            tchlinksFunc++;
 
            // touch linked edicts
@@ -473,8 +473,8 @@ namespace quake
                 mathlib.VectorAdd(ent.v.origin, ent.v.maxs, ent.v.absmax);
             }
 
-                Debug.WriteLine(string.Format("VectorAdd origin{0:F6}", ent.v.origin[0]));
-                Debug.WriteLine(string.Format("VectorAdd absmin {0:F6}", ent.v.absmin[0]));
+                //Debug.WriteLine(string.Format("VectorAdd origin{0:F6}", ent.v.origin[0]));
+                //Debug.WriteLine(string.Format("VectorAdd absmin {0:F6}", ent.v.absmin[0]));
             //
             // to make items easier to pick up and allow them to be grabbed off
             // of shelves, the abs sizes are expanded
@@ -496,7 +496,7 @@ namespace quake
                 ent.v.absmax[0] += 1;
                 ent.v.absmax[1] += 1;
                 ent.v.absmax[2] += 1;
-                Debug.WriteLine(string.Format("nerp {0:F6}", ent.v.absmin[0]));
+                //Debug.WriteLine(string.Format("nerp {0:F6}", ent.v.absmin[0]));
             }
 
             // link to PVS leafs
@@ -660,7 +660,7 @@ namespace quake
             int side;
             double midf;
 
-            Debug.WriteLine(string.Format("SV_RecursiveHullCheck hull.firstclipnode:{0} num:{1} {2:F6} {3:F6} p1[0] {4:F6} p1[1] {5:F6}  p1[2] {6:F6} -  p2[0] {7:F6} p2[1] {8:F6} p2[2] {9:F6} num_hullcheck: {10}", hull.firstclipnode, num, (float)p1f, (float)p2f, (float)p1[0], (float)p1[1], (float)p1[2], (float)p2[0], (float)p2[1], (float)p2[2], num_hullcheck));
+            //Debug.WriteLine(string.Format("SV_RecursiveHullCheck hull.firstclipnode:{0} num:{1} {2:F6} {3:F6} p1[0] {4:F6} p1[1] {5:F6}  p1[2] {6:F6} -  p2[0] {7:F6} p2[1] {8:F6} p2[2] {9:F6} num_hullcheck: {10}", hull.firstclipnode, num, (float)p1f, (float)p2f, (float)p1[0], (float)p1[1], (float)p1[2], (float)p2[0], (float)p2[1], (float)p2[2], num_hullcheck));
             num_hullcheck++;
             if (trace.ent != null) 
                 Debug.WriteLine(string.Format("{0} {1}", trace.ent.v.modelindex, trace.ent.v.velocity[0]));
@@ -726,8 +726,8 @@ namespace quake
             side = (t1 < 0) ? 1 : 0;
 
             Debug.WriteLine(string.Format("side {0}", side));
-            Debug.WriteLine(string.Format("midf {0}", midf));
-            Debug.WriteLine(string.Format("frac {0}", frac));
+            Debug.WriteLine(string.Format("midf {0:F6}", midf));
+            Debug.WriteLine(string.Format("frac {0:F6}", frac));
 
             // move up to the node
             if (!SV_RecursiveHullCheck(hull, node.children[side], p1f, midf, p1, mid, trace))
@@ -920,7 +920,7 @@ namespace quake
                     trace = SV_ClipMoveToEntity (touch, clip.start, clip.mins, clip.maxs, clip.end);
 
 
-                Debug.WriteLine("trace.allsolid n"+ (trace.allsolid ? 0 : 1));
+                Debug.WriteLine("trace.allsolid"+ (trace.allsolid ? 0 : 1));
                 Debug.WriteLine("trace.startsolid "+ (trace.startsolid ? 0 : 1));
                 Debug.WriteLine("trace.fraction < clip->trace.fraction "+ (trace.fraction < clip.trace.fraction ? 0 : 1));
                 if (trace.allsolid || trace.startsolid ||

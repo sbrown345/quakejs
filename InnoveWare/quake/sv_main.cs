@@ -1088,7 +1088,7 @@ namespace quake
             sv.state = server_state_t.ss_active;
         	
         // run two frames to allow everything to settle
-	        host.host_frametime = 0.1;
+	        host.host_frametime = 0.01;
 	        SV_Physics ();
 	        SV_Physics ();
 

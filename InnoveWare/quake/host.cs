@@ -353,8 +353,7 @@ namespace quake
             if (!client.cls.timedemo && realtime - oldrealtime < 1.0 / 72.0)
                 return false;		// framerate is too high
 
-            //host_frametime = realtime - oldrealtime;//TODO: USE THIS WHEN NOT DEBUGGING
-            host_frametime = 0.1;
+            host_frametime = realtime - oldrealtime;
             oldrealtime = realtime;
 
             if (host_framerate.value > 0)
@@ -367,6 +366,7 @@ namespace quake
                     host_frametime = 0.001;
             }
 
+            //host_frametime = 0.01;//TODO: remove THIS WHEN NOT DEBUGGING
             return true;
         }
 
