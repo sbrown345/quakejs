@@ -116,6 +116,8 @@ namespace quake
         pr_global_struct.trace_normal is set to the normal of the blocking wall
         =============
         */
+
+        private static int SV_Movestep_count = -1;
         public static bool SV_Movestep(prog.edict_t ent, double[] move, bool relink)
         {
             double dz;
@@ -123,6 +125,9 @@ namespace quake
             world.trace_t trace;
             int i;
             prog.edict_t enemy;
+
+            SV_Movestep_count++;
+            Debug.WriteLine("SV_Movestep " + SV_Movestep_count);
 
             // try the move	
             mathlib.VectorCopy(ent.v.origin, oldorg);
@@ -148,11 +153,17 @@ namespace quake
 
                     if (trace.fraction == 1)
                     {
-                        if (((int)ent.v.flags & FL_SWIM) != 0 && world.SV_PointContents(trace.endpos) == bspfile.CONTENTS_EMPTY)
+                        if (((int)ent.v.flags & FL_SWIM) != 0
+                            && world.SV_PointContents(trace.endpos) == bspfile.CONTENTS_EMPTY)
+                        {
+                            Debug.WriteLine("bspfile.CONTENTS_EMPTY etc");
                             return false;	// swim monster left water
+                        }
+
+                        Debug.WriteLine("NOT bspfile.CONTENTS_EMPTY etc");
 
                         mathlib.VectorCopy(trace.endpos, ent.v.origin);
-                        if (relink != null)
+                        if (relink)
                             world.SV_LinkEdict(ent, true);
                         return true;
                     }
@@ -161,6 +172,7 @@ namespace quake
                         break;
                 }
 
+                Debug.WriteLine("dfasdgsdfgdf sdsdfasdsdf");
                 return false;
             }
 
@@ -172,17 +184,25 @@ namespace quake
             trace = world.SV_Move(neworg, ent.v.mins, ent.v.maxs, end, 0, ent);
 
             if (trace.allsolid)
+            {
+                Debug.WriteLine("trace.allsolid");
                 return false;
+            }
 
             if (trace.startsolid)
             {
+                Debug.WriteLine("trace.startsolid");
                 neworg[2] -= STEPSIZE;
                 trace = world.SV_Move(neworg, ent.v.mins, ent.v.maxs, end, 0, ent);
                 if (trace.allsolid || trace.startsolid)
+                {
+                    Debug.WriteLine("trace.startsolid return false");
                     return false;
+                }
             }
             if (trace.fraction == 1)
             {
+                Debug.WriteLine("trace.fraction == 1");
                 // if monster had the ground pulled out, go ahead and fall
                 if (((int)ent.v.flags & FL_PARTIALGROUND )!= 0)
                 {
@@ -191,9 +211,11 @@ namespace quake
                         world.SV_LinkEdict(ent, true);
                     ent.v.flags = (int)ent.v.flags & ~FL_ONGROUND;
                     //	Con_Printf ("fall down\n"); 
+                    Debug.WriteLine("trace.fraction == 1 return true");
                     return true;
                 }
 
+                Debug.WriteLine("walked off an edge");
                 return false;		// walked off an edge
             }
 
@@ -202,14 +224,19 @@ namespace quake
 
             if (!SV_CheckBottom(ent))
             {
+                Debug.WriteLine("!SV_CheckBottom(ent)");
                 if (((int)ent.v.flags & FL_PARTIALGROUND) != 0)
                 {	// entity had floor mostly pulled out from underneath it
                     // and is trying to correct
                     if (relink)
                         world.SV_LinkEdict(ent, true);
+
+                    Debug.WriteLine("!SV_CheckBottom(ent) return true");
                     return true;
                 }
                 mathlib.VectorCopy(oldorg, ent.v.origin);
+
+                Debug.WriteLine("!SV_CheckBottom(ent) return false");
                 return false;
             }
 
@@ -223,6 +250,7 @@ namespace quake
             // the move is ok
             if (relink)
                 world.SV_LinkEdict(ent, true);
+            Debug.WriteLine(" return true");
             return true;
         }
 
@@ -403,36 +431,33 @@ namespace quake
 
         public static void SV_MoveToGoal()
         {
-           
+            Debug.WriteLine("SV_MoveToGoal");
             prog.edict_t ent, goal;
             double dist;
-            try
+          
+            ent = prog.PROG_TO_EDICT(prog.pr_global_struct[0].self);
+            goal = prog.PROG_TO_EDICT(ent.v.goalentity);
+            dist = prog.G_FLOAT(prog.OFS_PARM0);
+
+            if (!(((int)ent.v.flags & (FL_ONGROUND | FL_FLY | FL_SWIM)) != 0))
             {
-                ent = prog.PROG_TO_EDICT(prog.pr_global_struct[0].self);
-                goal = prog.PROG_TO_EDICT(ent.v.goalentity);
-                dist = prog.G_FLOAT(prog.OFS_PARM0);
-
-                if (!(((int)ent.v.flags & (FL_ONGROUND | FL_FLY | FL_SWIM)) != 0))
-                {
-                    //prog.G_FLOAT(prog.OFS_RETURN) = 0;
-                    prog.pr_globals_write(prog.OFS_RETURN, 0);
-                    return;
-                }
-
-                // if the next step hits the enemy, return immediately
-
-                if (prog.PROG_TO_EDICT(ent.v.enemy) != sv.edicts[0] && SV_CloseEnough(ent, goal, dist)) 
-                    return;
-
-                // bump around...
-                if ((Helper.helper.rand() & 3) == 1 || !SV_StepDirection(ent, ent.v.ideal_yaw, dist))
-                {
-                    SV_NewChaseDir(ent, goal, dist);
-                }
+                //prog.G_FLOAT(prog.OFS_RETURN) = 0;
+                prog.pr_globals_write(prog.OFS_RETURN, 0);
+                return;
             }
-            catch
+
+            // if the next step hits the enemy, return immediately
+
+            if (prog.PROG_TO_EDICT(ent.v.enemy) != sv.edicts[0] && SV_CloseEnough(ent, goal, dist)) 
+                return;
+
+            // bump around...
+            Debug.WriteLine(string.Format("ideal_yaw {0:F6}", ent.v.ideal_yaw));
+            Debug.WriteLine(string.Format("dist {0:F6}", dist));
+
+            if ((Helper.helper.rand() & 3) == 1 || !SV_StepDirection(ent, ent.v.ideal_yaw, dist))
             {
-                Debug.WriteLine("SV_MoveToGoal err");
+                SV_NewChaseDir(ent, goal, dist);
             }
         } 
     }
