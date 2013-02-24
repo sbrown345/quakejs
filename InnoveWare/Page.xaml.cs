@@ -43,19 +43,17 @@ namespace InnoveWare
             this.Focus();
 
             // Auto scale the rendering screen.
-            gwidth = 640; //(int)Application.Current.Host.Content.ActualWidth; //if this is bigger it was crashing because it was larger than 1024 and some buffer didn't liek it
-            gheight = 480;// (int)Application.Current.Host.Content.ActualHeight;
+            gwidth = 640; //Math.Min(640, (int)Application.Current.Host.Content.ActualWidth); //if this is bigger it was crashing because it was larger than 1024 and some buffer didn't liek it
+            gheight = 480; //Math.Min(480, (int)Application.Current.Host.Content.ActualHeight);
+            this.AutoScaleScreen();
 
-            // Prepare rendering image.
-            image.Width = gwidth;
-            image.Height = gheight;
             image.Source = bitmap;
             
             // Game loop.
-            CompositionTarget.Rendering += new EventHandler(Page_CompositionTarget_Rendering);
+            CompositionTarget.Rendering += this.Page_CompositionTarget_Rendering;
 
             // FPS counter timer.
-            fps_timer.Completed += new EventHandler(Page_FpsCounter);
+            fps_timer.Completed += this.Page_FpsCounter;
             _lastTime = DateTime.Now;
             fps_timer.Begin();
 
@@ -65,12 +63,13 @@ namespace InnoveWare
 
             // Prepare keyboard.
             BuildDictionaryKeys();
-            KeyUp += new KeyEventHandler(Page_KeyUp);
-            KeyDown += new KeyEventHandler(Page_KeyDown);
+            KeyUp += this.Page_KeyUp;
+            KeyDown += this.Page_KeyDown;
 
             // Prepare full screen support.
-            image.MouseLeftButtonDown += new MouseButtonEventHandler(Page_MouseLeftButtonDown);
-            Application.Current.Host.Content.FullScreenChanged += new EventHandler(Page_FullScreenChanged);
+            image.MouseLeftButtonDown += this.Page_MouseLeftButtonDown;
+            Application.Current.Host.Content.FullScreenChanged += this.Page_FullScreenChanged;
+            Application.Current.Host.Content.Resized += this.Page_FullScreenChanged;
         }
 
         /// <summary>
@@ -91,8 +90,15 @@ namespace InnoveWare
         void Page_FullScreenChanged(object sender, EventArgs e)
         {
             // Auto scale the rendering screen.
-            image.Width = Application.Current.Host.Content.ActualWidth;
-            image.Height = Application.Current.Host.Content.ActualHeight;
+            this.AutoScaleScreen();
+        }
+
+        private void AutoScaleScreen()
+        {
+            image.Width = (int)Application.Current.Host.Content.ActualWidth;
+            image.Height = (int)Application.Current.Host.Content.ActualHeight;
+            parentCanvas.Width = (int)Application.Current.Host.Content.ActualWidth;
+            parentCanvas.Height = (int)Application.Current.Host.Content.ActualHeight;
         }
 
         /// <summary>
@@ -117,6 +123,7 @@ namespace InnoveWare
             dictionaryKeys.Add(Key.PageUp, quake.keys.K_PGUP);
             dictionaryKeys.Add(Key.PageDown, quake.keys.K_PGDN);
             dictionaryKeys.Add(Key.Space, quake.keys.K_SPACE);
+            dictionaryKeys.Add(Key.Ctrl, quake.keys.K_CTRL);
 
             // Add default key mappings.
             dictionaryKeys.Add(Key.D0, '0');
