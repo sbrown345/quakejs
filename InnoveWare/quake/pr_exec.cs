@@ -149,7 +149,7 @@ namespace quake
         {
             int i;
 
-            if (prNum >= 16430 /*&& prNum % 1000 == 10*/)
+            if (prNum >= 0 && prNum % 100 == 0)
             {
                 string output = "";
                 if (prNum % 1000 == 0)

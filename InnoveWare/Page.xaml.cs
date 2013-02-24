@@ -119,11 +119,13 @@ namespace InnoveWare
             dictionaryKeys.Add(Key.Back, quake.keys.K_BACKSPACE);
             dictionaryKeys.Add(Key.Home, quake.keys.K_HOME);
             dictionaryKeys.Add(Key.End, quake.keys.K_END);
+            dictionaryKeys.Add(Key.Insert, quake.keys.K_INS);
             dictionaryKeys.Add(Key.Tab, quake.keys.K_TAB);
             dictionaryKeys.Add(Key.PageUp, quake.keys.K_PGUP);
             dictionaryKeys.Add(Key.PageDown, quake.keys.K_PGDN);
             dictionaryKeys.Add(Key.Space, quake.keys.K_SPACE);
             dictionaryKeys.Add(Key.Ctrl, quake.keys.K_CTRL);
+            dictionaryKeys.Add(Key.Shift, quake.keys.K_SHIFT);
 
             // Add default key mappings.
             dictionaryKeys.Add(Key.D0, '0');
@@ -217,7 +219,7 @@ namespace InnoveWare
             // Synchronize the Silverlight UI thread to Quake framerate.
 		    double newtime = quake.sys_linux.Sys_FloatTime ();
             double time = newtime - oldtime;
-            time = 0.25;//TODO- used just for TESTING
+            //time = 0.25;//TODO- used just for TESTING
             quake.host.Host_Frame(time);
             oldtime = newtime;
         }

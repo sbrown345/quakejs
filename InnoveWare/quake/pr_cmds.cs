@@ -1364,32 +1364,43 @@ namespace quake
 
         static void PF_WriteByte ()
         {
+            var val = G_FLOAT(OFS_PARM1);
+            Debug.WriteLine("PF_WriteByte " + val);
             common.MSG_WriteByte(WriteDest(), (int)G_FLOAT(OFS_PARM1));
         }
 
         static void PF_WriteChar ()
         {
-            common.MSG_WriteByte(WriteDest(), (int)G_FLOAT(OFS_PARM1));
+            var val = G_FLOAT(OFS_PARM1);
+            Debug.WriteLine("PF_WriteChar " + val);
+            common.MSG_WriteChar(WriteDest(), (int)G_FLOAT(OFS_PARM1));
         }
 
         static void PF_WriteShort ()
         {
-            common.MSG_WriteByte(WriteDest(), (int)G_FLOAT(OFS_PARM1));
+            var val = G_FLOAT(OFS_PARM1);
+            Debug.WriteLine("PF_WriteShort " + val);
+            common.MSG_WriteShort(WriteDest(), (int)G_FLOAT(OFS_PARM1));
         }
 
         static void PF_WriteLong ()
         {
-            common.MSG_WriteByte(WriteDest(), (int)G_FLOAT(OFS_PARM1));
+            var val = G_FLOAT(OFS_PARM1);
+            Debug.WriteLine("PF_WriteLong " + val);
+            common.MSG_WriteLong(WriteDest(), (int)G_FLOAT(OFS_PARM1));
         }
 
         static void PF_WriteAngle ()
         {
-            common.MSG_WriteByte(WriteDest(), (int)G_FLOAT(OFS_PARM1));
+            var val = G_FLOAT(OFS_PARM1);
+            common.MSG_WriteAngle(WriteDest(), (int)G_FLOAT(OFS_PARM1));
         }
 
         static void PF_WriteCoord ()
         {
-            common.MSG_WriteByte(WriteDest(), (int)G_FLOAT(OFS_PARM1));
+            var val = G_FLOAT(OFS_PARM1);
+            Debug.WriteLine("PF_WriteCoord " + val);
+            common.MSG_WriteCoord(WriteDest(), val);
         }
 
         static void PF_WriteString ()

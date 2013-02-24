@@ -388,7 +388,7 @@ namespace quake
     //        break;
     //    Cbuf_AddText (cmd);
     //}
-            Debug.WriteLine("Host_GetConsoleCommands");
+            Debug.WriteLine("todo Host_GetConsoleCommands");
         }
 
 
