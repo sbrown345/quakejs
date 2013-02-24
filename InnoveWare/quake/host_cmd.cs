@@ -65,7 +65,20 @@ namespace quake
         */
         static void Host_God_f()
         {
-            Debug.WriteLine("todo Host_God_f");
+            if (cmd.cmd_source == cmd.cmd_source_t.src_command)
+            {
+                cmd.Cmd_ForwardToServer();
+                return;
+            }
+
+            if (prog.pr_global_struct[0].deathmatch != 0 && !host_client.privileged)
+                return;
+
+            server.sv_player.v.flags = (int)server.sv_player.v.flags ^ server.FL_GODMODE;
+            if (!(((int)server.sv_player.v.flags & server.FL_GODMODE) != 0))
+                SV_ClientPrintf("godmode OFF\n");
+            else
+                SV_ClientPrintf("godmode ON\n");
         }
 
         static void Host_Notarget_f ()

@@ -157,8 +157,8 @@ namespace quake
         		
         // check functions
 	        for (cvar=cvar_vars ; cvar != null ; cvar=cvar.next)
-                if (partial.CompareTo(cvar.name.Substring(0, len)) == 0)
-			        return cvar.name;
+                if (cvar.name.StartsWith(partial))
+                    return cvar.name;
 
 	        return null;
         }
