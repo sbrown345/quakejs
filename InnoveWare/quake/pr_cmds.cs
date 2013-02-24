@@ -664,7 +664,7 @@ namespace quake
 	        mathlib.VectorAdd (ent.v.origin, ent.v.view_ofs, org);
 	        leaf = model.Mod_PointInLeaf (org, server.sv.worldmodel);
 	        pvs = model.Mod_LeafPVS (leaf, server.sv.worldmodel);
-            Buffer.BlockCopy(checkpvs, 0, pvs, 0, (server.sv.worldmodel.numleafs+7)>>3);
+            Buffer.BlockCopy(pvs, 0, checkpvs, 0, (server.sv.worldmodel.numleafs + 7) >> 3);
 
 	        return i;
         }
