@@ -373,8 +373,10 @@ namespace quake
                 newvalue[1] = value1[1] * @new;
                 newvalue[2] = value1[2] * @new;
 	        }
-	
-	        mathlib.VectorCopy (newvalue, G_VECTOR(OFS_RETURN));	
+
+            var tempVector = new double[3];
+            mathlib.VectorCopy (newvalue, tempVector);
+            G_VECTOR_WRITE(OFS_RETURN, tempVector);
         }
 
         /*
@@ -1194,7 +1196,8 @@ namespace quake
         {
             edict_t	ent, check, bestent;
             double[]	start = new double[3], dir = new double[3], end = new double[3], bestdir = new double[3];
-            int		i, j;
+            var tempVector = new double[3];
+            int i, j;
             world.trace_t	tr;
             double	dist, bestdist;
             double	speed;
@@ -1212,7 +1215,8 @@ namespace quake
             if (tr.ent != null && tr.ent.v.takedamage == server.DAMAGE_AIM
             && (!(host.teamplay.value != 0) || ent.v.team <=0 || ent.v.team != tr.ent.v.team) )
             {
-                mathlib.VectorCopy(pr_global_struct[0].v_forward, G_VECTOR(OFS_RETURN));
+                mathlib.VectorCopy(pr_global_struct[0].v_forward, tempVector);
+                G_VECTOR_WRITE(OFS_RETURN, tempVector);
 	            return;
             }
 
@@ -1258,11 +1262,13 @@ namespace quake
 	            mathlib.VectorScale (pr_global_struct[0].v_forward, dist, end);
 	            end[2] = dir[2];
 	            mathlib.VectorNormalize (end);
-	            mathlib.VectorCopy (end, G_VECTOR(OFS_RETURN));	
+                mathlib.VectorCopy(end, tempVector);
+                G_VECTOR_WRITE(OFS_RETURN, tempVector);
             }
             else
             {
-	            mathlib.VectorCopy (bestdir, G_VECTOR(OFS_RETURN));
+                mathlib.VectorCopy(bestdir, tempVector);
+                G_VECTOR_WRITE(OFS_RETURN, tempVector);
             }
         }
 

@@ -113,6 +113,14 @@ namespace quake
             res[2] = cast_float(pr_globals_read(o + 2));
             return res;
         }
+
+        private static void G_VECTOR_WRITE(int o, double[] vector)
+        {
+            pr_globals_write(o,  (double)cast_float(vector[0]));
+            pr_globals_write(o + 1, (double)cast_float(vector[1]));
+            pr_globals_write(o + 2, (double)cast_float(vector[2]));
+        }
+
         static string G_STRING(int o) { return pr_string((int)pr_globals_read(o)); }
         //#define	G_FUNCTION(o) (*(func_t *)&pr_globals[o])
 

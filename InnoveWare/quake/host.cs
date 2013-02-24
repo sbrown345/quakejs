@@ -366,7 +366,6 @@ namespace quake
                     host_frametime = 0.001;
             }
 
-            //host_frametime = 0.01;//TODO: remove THIS WHEN NOT DEBUGGING
             return true;
         }
 
