@@ -464,6 +464,7 @@ static void SV_PushMove (prog.edict_t pusher, Double movetime)
     prog.edict_t[] moved_edict = new prog.edict_t[quakedef.MAX_EDICTS];
     double[][]		moved_from = new double[quakedef.MAX_EDICTS][];
 
+
     if (pusher.v.velocity[0]==0 && pusher.v.velocity[1]==0 && pusher.v.velocity[2]==0)
     {
         pusher.v.ltime += movetime;
@@ -521,7 +522,12 @@ static void SV_PushMove (prog.edict_t pusher, Double movetime)
     // remove the onground flag for non-players
         if (check.v.movetype != MOVETYPE_WALK)
             check.v.flags = (int)check.v.flags & ~FL_ONGROUND;
-		
+
+        for (int j = 0; j < moved_from.Length; j++)
+        {
+            moved_from[j] = new double[3];
+        }
+
         mathlib.VectorCopy (check.v.origin, entorig);
         mathlib.VectorCopy (check.v.origin, moved_from[num_moved]);
         moved_edict[num_moved] = check;
