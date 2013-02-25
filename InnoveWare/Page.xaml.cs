@@ -128,6 +128,8 @@ namespace InnoveWare
             dictionaryKeys.Add(Key.Space, quake.keys.K_SPACE);
             dictionaryKeys.Add(Key.Ctrl, quake.keys.K_CTRL);
             dictionaryKeys.Add(Key.Shift, quake.keys.K_SHIFT);
+            dictionaryKeys.Add(Key.Add, '+');
+            dictionaryKeys.Add(Key.Subtract, '-');
 
             // Add default key mappings.
             dictionaryKeys.Add(Key.D0, '0');
@@ -202,6 +204,14 @@ namespace InnoveWare
             {
                 quake.keys.Key_Event('`', true); 
             }
+            else if (e.PlatformKeyCode == 187)
+            {
+                quake.keys.Key_Event('=', true); 
+            }
+            else if (e.PlatformKeyCode == 189)
+            {
+                quake.keys.Key_Event('-', true); 
+            }
             else
             {
                 Debug.WriteLine("key not found Key: " + e.Key);
@@ -223,7 +233,11 @@ namespace InnoveWare
             else if (e.PlatformKeyCode == 0xbc)
                 quake.keys.Key_Event(0x2c, false);
             else if (e.PlatformKeyCode == 223)
-                quake.keys.Key_Event('`', false); // `
+                quake.keys.Key_Event('`', false);
+            else if (e.PlatformKeyCode == 187)
+                quake.keys.Key_Event('=', false);
+            else if (e.PlatformKeyCode == 189)
+                quake.keys.Key_Event('-', false); // `
         }
 
         /// <summary>
