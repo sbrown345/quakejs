@@ -862,7 +862,34 @@ namespace quake
         */
         static void PF_findradius ()
         {
-            Debug.WriteLine("PF_findradius");
+	        edict_t	ent, chain;
+	        double	rad;
+            double[] org;
+            double[] eorg = ArrayHelpers.ExplcitDoubleArray(3);
+	        int		i, j;
+
+	        chain = (edict_t )server.sv.edicts[0];
+	
+	        org = G_VECTOR(OFS_PARM0);
+	        rad = G_FLOAT(OFS_PARM1);
+
+	        ent = NEXT_EDICT(server.sv.edicts[0]);
+            for (i = 1; i < server.sv.num_edicts; i++, ent = NEXT_EDICT(ent))
+	        {
+		        if (ent.free)
+			        continue;
+		        if (ent.v.solid == server.SOLID_NOT)
+			        continue;
+		        for (j=0 ; j<3 ; j++)
+			        eorg[j] = org[j] - (ent.v.origin[j] + (ent.v.mins[j] + ent.v.maxs[j])*0.5);			
+		        if (mathlib.Length(eorg) > rad)
+			        continue;
+			
+		        ent.v.chain = EDICT_TO_PROG(chain);
+		        chain = ent;
+	        }
+
+	        RETURN_EDICT(chain);
         }
 
         /*
@@ -1200,8 +1227,11 @@ namespace quake
         */
         static void PF_pointcontents ()
         {
-            Debug.WriteLine("PF_pointcontents");
-            throw new Exception("PF_pointcontents");
+            double[] v;
+
+            v = G_VECTOR(OFS_PARM0);
+
+            pr_globals_write(OFS_RETURN, world.SV_PointContents(v));
         }
 
         /*
@@ -1214,6 +1244,7 @@ namespace quake
         static void PF_nextent ()
         {
             Debug.WriteLine("PF_nextent");
+            throw new Exception("PF_nextent");
         }
 
         /*
