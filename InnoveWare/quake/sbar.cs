@@ -618,43 +618,47 @@ namespace quake
         */
         static void Sbar_DrawFace ()
         {
-	        int		f, anim;
+            try
+            {
+                int f, anim;
 
-            if ((client.cl.items & (quakedef.IT_INVISIBILITY | quakedef.IT_INVULNERABILITY))
-            == (quakedef.IT_INVISIBILITY | quakedef.IT_INVULNERABILITY))
-	        {
-		        Sbar_DrawPic (112, 0, sb_face_invis_invuln);
-		        return;
-	        }
-	        if ((client.cl.items & quakedef.IT_QUAD) != 0)
-	        {
-		        Sbar_DrawPic (112, 0, sb_face_quad );
-		        return;
-	        }
-            if ((client.cl.items & quakedef.IT_INVISIBILITY) != 0)
-	        {
-		        Sbar_DrawPic (112, 0, sb_face_invis );
-		        return;
-	        }
-            if ((client.cl.items & quakedef.IT_INVULNERABILITY) != 0)
-	        {
-		        Sbar_DrawPic (112, 0, sb_face_invuln);
-		        return;
-	        }
+                if ((client.cl.items & (quakedef.IT_INVISIBILITY | quakedef.IT_INVULNERABILITY))
+                    == (quakedef.IT_INVISIBILITY | quakedef.IT_INVULNERABILITY))
+                {
+                    Sbar_DrawPic(112, 0, sb_face_invis_invuln);
+                    return;
+                }
+                if ((client.cl.items & quakedef.IT_QUAD) != 0)
+                {
+                    Sbar_DrawPic(112, 0, sb_face_quad);
+                    return;
+                }
+                if ((client.cl.items & quakedef.IT_INVISIBILITY) != 0)
+                {
+                    Sbar_DrawPic(112, 0, sb_face_invis);
+                    return;
+                }
+                if ((client.cl.items & quakedef.IT_INVULNERABILITY) != 0)
+                {
+                    Sbar_DrawPic(112, 0, sb_face_invuln);
+                    return;
+                }
 
-            if (client.cl.stats[quakedef.STAT_HEALTH] >= 100)
-		        f = 4;
-	        else
-                f = client.cl.stats[quakedef.STAT_HEALTH] / 20;
+                if (client.cl.stats[quakedef.STAT_HEALTH] >= 100) f = 4;
+                else f = client.cl.stats[quakedef.STAT_HEALTH] / 20;
 
-	        if (client.cl.time <= client.cl.faceanimtime)
-	        {
-		        anim = 1;
-		        sb_updates = 0;		// make sure the anim gets drawn over
-	        }
-	        else
-		        anim = 0;
-	        Sbar_DrawPic (112, 0, sb_faces[f,anim]);
+                if (client.cl.time <= client.cl.faceanimtime)
+                {
+                    anim = 1;
+                    sb_updates = 0; // make sure the anim gets drawn over
+                }
+                else anim = 0;
+                Sbar_DrawPic(112, 0, sb_faces[f, anim]);
+            }
+            catch
+            {
+                Debug.WriteLine("gotcha");
+            }
         }
 
         /*
