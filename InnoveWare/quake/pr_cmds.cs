@@ -1216,8 +1216,11 @@ namespace quake
         */
         static void PF_checkbottom ()
         {
-            Debug.WriteLine("PF_checkbottom");
-            throw  new Exception("PF_checkbottom");
+            edict_t ent;
+
+            ent = G_EDICT(OFS_PARM0);
+
+            pr_globals_write(OFS_RETURN, server.SV_CheckBottom(ent) ? 1 : 0);
         }
 
         /*
