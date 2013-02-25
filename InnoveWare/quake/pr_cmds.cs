@@ -492,8 +492,15 @@ namespace quake
         */
         static void PF_particle ()
         {
-            //todo
-            Debug.WriteLine("PF_particle");
+	        double[]		org, dir;
+	        int		        color;
+            int             count;
+			
+	        org = G_VECTOR(OFS_PARM0);
+	        dir = G_VECTOR(OFS_PARM1);
+	        color = (int)G_FLOAT(OFS_PARM2);
+            count = (int)G_FLOAT(OFS_PARM3);
+	        server.SV_StartParticle (org, dir, color, count);
         }
         
         /*
