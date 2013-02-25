@@ -452,8 +452,13 @@ namespace quake
             {
                 int offset;
                 Uint8Array dst = SZ_GetSpace(buf, len, out offset);
-                for (int kk = 0; kk < data.Length; kk++)
-                    dst[offset + kk] = (byte)data[kk]; // no trailing 0
+                for (int kk = 0; kk <  len; kk++)
+                {
+                    if(kk < data.Length)
+                        dst[offset + kk] = (byte)data[kk]; // no trailing 0
+                    else
+                        dst[offset + kk] = 0;
+                }
             }
             else
             {
