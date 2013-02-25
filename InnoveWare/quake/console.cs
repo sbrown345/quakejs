@@ -500,6 +500,8 @@ namespace quake
 
 	        if (v > con_notifylines)
 		        con_notifylines = v;
+
+            // todo stuff with chat_buffer from Key_Message
         }
 
         /*

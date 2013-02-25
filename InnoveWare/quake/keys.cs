@@ -21,6 +21,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 namespace quake
 {
     using System;
+    using System.Diagnostics;
 
     public sealed class keys
     {
@@ -131,7 +132,9 @@ namespace quake
         
         public const int	    MAXCMDLINE	= 256;
         public static string[]  key_lines = new string[32];
-        public static int		key_linepos;
+        public static int key_linepos;
+        public static bool shift_down = false;
+        public static int key_lastpress;
 
         public static int		edit_line=0;
         static int		    history_line=0;
@@ -142,6 +145,10 @@ namespace quake
 
         static string[]	    keybindings = new string[256];
         static bool[]	    consolekeys = new bool[256];	// if true, can't be rebound while in console
+        static bool[]	    menubound = new bool[256];	// if true, can't be rebound while in menu
+        static int[]		keyshift = new int[256];		// key to map to if shift held down in console
+        static int[]		key_repeats = new int[256];	// if > 1, it is autorepeating
+        static bool[]       keydown = new bool[256];
 
         class keyname_t
         {
@@ -375,9 +382,53 @@ namespace quake
         }
 
         //============================================================================
+        public static char[] chat_buffer = new char[32];
+        static bool team_message = false;
+        static int chat_bufferlen = 0;
 
-        static void Key_Message (int key)
+        static void Key_Message(int key)
         {
+	        if (key == K_ENTER)
+	        {
+		        if (team_message)
+			        cmd.Cbuf_AddText ("say_team \"");
+		        else
+                    cmd.Cbuf_AddText("say \"");
+                cmd.Cbuf_AddText(new string(chat_buffer));
+                cmd.Cbuf_AddText("\"\n");
+
+		        key_dest  = keydest_t.key_game;
+		        chat_bufferlen = 0;
+		        chat_buffer[0] = (char)0;
+		        return;
+	        }
+
+	        if (key == K_ESCAPE)
+	        {
+                key_dest = keydest_t.key_game;
+		        chat_bufferlen = 0;
+                chat_buffer[0] = (char)0;
+		        return;
+	        }
+
+	        if (key < 32 || key > 127)
+		        return;	// non printable
+
+	        if (key == K_BACKSPACE)
+	        {
+		        if (chat_bufferlen != 0)
+		        {
+			        chat_bufferlen--;
+                    chat_buffer[chat_bufferlen] = (char)0;
+		        }
+		        return;
+	        }
+
+	        if (chat_bufferlen == 31)
+		        return; // all full
+
+            chat_buffer[chat_bufferlen++] = (char)key;
+            chat_buffer[chat_bufferlen] = (char)0;
         }
 
         //============================================================================
@@ -417,9 +468,28 @@ namespace quake
         FIXME: handle quote special (general escape sequence?)
         ===================
         */
-        string Key_KeynumToString (int keynum)
+        static string Key_KeynumToString (int keynum)
         {
-            return null;
+            keyname_t	kn;	
+            var	tinystr = new char[2];
+	
+            if (keynum == -1)
+                return "<KEY NOT FOUND>";
+            if (keynum > 32 && keynum < 127)
+            {	// printable ascii
+                tinystr[0] = (char) keynum;
+                tinystr[1] = (char)0;
+                return new string(tinystr);
+            }
+
+            for (int i = 0; i < keynames.Length; i++)
+            {
+                kn = keynames[i];
+                if (keynum == kn.keynum)
+                    return kn.name;
+            }
+
+            return "<UNKNOWN KEYNUM>";
         }
         
         /*
@@ -452,10 +522,31 @@ namespace quake
         */
         static void Key_Unbind_f()
         {
+            int b;
+
+            if (cmd.Cmd_Argc() != 2)
+            {
+                console.Con_Printf("unbind <key> : remove commands from a key\n");
+                return;
+            }
+
+            b = Key_StringToKeynum(cmd.Cmd_Argv(1));
+            if (b == -1)
+            {
+                console.Con_Printf(string.Format("\"{0}\" isn't a valid key\n", cmd.Cmd_Argv(1)));
+                return;
+            }
+
+            Key_SetBinding(b, "");
         }
 
         static void Key_Unbindall_f()
         {
+            int i;
+
+            for (i = 0; i < 256; i++)
+                if (keybindings[i] != null)
+                    Key_SetBinding(i, "");
         }
 
         /*
@@ -503,6 +594,23 @@ namespace quake
 	        Key_SetBinding (b, cmd);
         }
 
+        ///*todo
+        //============
+        //Key_WriteBindings          
+
+        //Writes lines containing "bind key value"
+        //============
+        //*/
+        //void Key_WriteBindings(FILE* f)
+        //{
+        //    int i;
+
+        //    for (i = 0; i < 256; i++)
+        //        if (keybindings[i])
+        //            if (*keybindings[i])
+        //                fprintf(f, "bind \"%s\" \"%s\"\n", Key_KeynumToString(i), keybindings[i]);
+        //}
+
         /*
         ===================
         Key_Init
@@ -538,6 +646,39 @@ namespace quake
 	        consolekeys['`'] = false;
 	        consolekeys['~'] = false;
 
+
+            for (i = 0; i < 256; i++)
+                keyshift[i] = i;
+            for (i = 'a'; i <= 'z'; i++)
+                keyshift[i] = i - 'a' + 'A';
+            keyshift['1'] = '!';
+            keyshift['2'] = '@';
+            keyshift['3'] = '#';
+            keyshift['4'] = '$';
+            keyshift['5'] = '%';
+            keyshift['6'] = '^';
+            keyshift['7'] = '&';
+            keyshift['8'] = '*';
+            keyshift['9'] = '(';
+            keyshift['0'] = ')';
+            keyshift['-'] = '_';
+            keyshift['='] = '+';
+            keyshift[','] = '<';
+            keyshift['.'] = '>';
+            keyshift['/'] = '?';
+            keyshift[';'] = ':';
+            keyshift['\''] = '"';
+            keyshift['['] = '{';
+            keyshift[']'] = '}';
+            keyshift['`'] = '~';
+            keyshift['\\'] = '|';
+
+            menubound[K_ESCAPE] = true;
+            for (i = 0; i < 12; i++)
+                menubound[K_F1 + i] = true;
+
+
+
         //
         // register our functions
         //
@@ -558,12 +699,38 @@ namespace quake
         {
             string  kb;
         	string  cmd = StringExtensions.StringOfLength(1024);
-            
+
+            keydown[key] = down;
+
+            if (!down)
+                key_repeats[key] = 0;
+
+            key_lastpress = key;
             key_count++;
 	        if (key_count <= 0)
 	        {
 		        return;		// just catching keys for Con_NotifyBox
 	        }
+
+            // update auto-repeat status
+            if (down)
+            {
+                key_repeats[key]++;
+                if (key != K_BACKSPACE && key != K_PAUSE && key_repeats[key] > 1)
+                {
+                    Debug.WriteLine("ignore most autorepeats repeats: " + key_repeats[key]);
+                    return;	// ignore most autorepeats
+                }
+
+                if (key >= 200 && keybindings[key] == null)
+                    console.Con_Printf(Key_KeynumToString(key) + " is unbound, hit F4 to set.\n");
+            }
+
+            if (key == K_SHIFT)
+            {
+                Debug.WriteLine("shift down");
+                shift_down = down;
+            }
 
         //
         // handle escape specialy, so the user can never unbind it
@@ -605,10 +772,22 @@ namespace quake
                 {
                     cmd = "-" + kb.Substring(1) + " " + key + "\n";
                     quake.cmd.Cbuf_AddText(cmd);
+                    Debug.WriteLine(cmd);
+                }
+                if (keyshift[key] != key)
+                {
+                    kb = keybindings[keyshift[key]];
+                    if (kb != null && kb[0] == '+')
+                    {
+                        //sprintf(cmd, "-%s %i\n", kb + 1, key);
+                        string.Format("-{0} {1}\n", kb[0] + 1, key);
+
+                        quake.cmd.Cbuf_AddText(cmd);
+                        Debug.WriteLine(cmd);
+                    }
                 }
                 return;
             }
-
         //
         // during demo playback, most keys bring up the main menu
         //
@@ -630,11 +809,13 @@ namespace quake
                     if (kb[0] == '+')
                     {	// button commands add keynum as a parm
                         cmd = kb + " " + key + "\n";
+                        Debug.WriteLine(cmd);
                         quake.cmd.Cbuf_AddText(cmd);
                     }
                     else
                     {
                         quake.cmd.Cbuf_AddText(kb);
+                        Debug.WriteLine(kb);
                         quake.cmd.Cbuf_AddText("\n");
                     }
                 }
@@ -643,6 +824,12 @@ namespace quake
 
 	        if (!down)
 		        return;		// other systems only care about key down events
+
+            if (shift_down)
+            {
+                key = keyshift[key];
+            }
+
 
 	        switch (key_dest)
 	        {
@@ -667,8 +854,15 @@ namespace quake
         Key_ClearStates
         ===================
         */
-        void Key_ClearStates ()
+        void Key_ClearStates()
         {
+            int i;
+
+            for (i = 0; i < 256; i++)
+            {
+                keydown[i] = false;
+                key_repeats[i] = 0;
+            }
         }
     }
 }

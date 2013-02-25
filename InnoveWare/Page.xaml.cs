@@ -16,6 +16,8 @@ using System.IO;
 
 namespace InnoveWare
 {
+    using System.Diagnostics;
+
     public partial class Page : UserControl
     {
         private int _frames_count = 0;
@@ -185,12 +187,28 @@ namespace InnoveWare
         private void Page_KeyDown(object sender, KeyEventArgs e)
         {
             // Forward translated key to quake keyboard event.
+            Debug.WriteLine("Key : " + e.Key);
+            Debug.WriteLine("PlatformKeyCode : " + e.PlatformKeyCode);
             int quake_key;
             if (dictionaryKeys.TryGetValue(e.Key, out quake_key))
+            {
                 quake.keys.Key_Event(quake_key, true);
+            }
             else if (e.PlatformKeyCode == 0xbc)
+            {
                 quake.keys.Key_Event(0x2c, true);
+            }
+            else if (e.PlatformKeyCode == 223)
+            {
+                quake.keys.Key_Event('`', true); 
+            }
+            else
+            {
+                Debug.WriteLine("key not found Key: " + e.Key);
+                Debug.WriteLine("key not found PlatformKeyCode:" + e.PlatformKeyCode);
+            }
         }
+
         /// <summary>
         /// Keydown event handler.
         /// </summary>
@@ -204,6 +222,8 @@ namespace InnoveWare
                 quake.keys.Key_Event(quake_key, false);
             else if (e.PlatformKeyCode == 0xbc)
                 quake.keys.Key_Event(0x2c, false);
+            else if (e.PlatformKeyCode == 223)
+                quake.keys.Key_Event('`', false); // `
         }
 
         /// <summary>
