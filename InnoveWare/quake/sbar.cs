@@ -300,7 +300,7 @@ namespace quake
         Sbar_DrawString
         ================
         */
-        void Sbar_DrawString (int x, int y, string str)
+        static void Sbar_DrawString (int x, int y, string str)
         {
 		    if (client.cl.gametype == net.GAME_DEATHMATCH)
                 draw.Draw_String(x /*+ ((screen.vid.width - 320)>>1)*/, (int)(y + screen.vid.height - SBAR_HEIGHT), str);
@@ -394,7 +394,30 @@ namespace quake
         */
         static void Sbar_SoloScoreboard ()
         {
-            Debug.WriteLine("Sbar_SoloScoreboard");
+	        var	str = "";
+	        int		minutes, seconds, tens, units;
+	        int		l;
+
+            //sprintf (str,"Monsters:%3i /%3i", client.cl.stats[quakedef.STAT_MONSTERS],  client.cl.stats[quakedef.STAT_TOTALMONSTERS]);
+            str = string.Format("Monsters:{0} /{1}",client.cl.stats[quakedef.STAT_MONSTERS],client.cl.stats[quakedef.STAT_TOTALMONSTERS]);
+	        Sbar_DrawString (8, 4, str);
+
+            //sprintf (str,"Secrets :%3i /%3i",  client.cl.stats[quakedef.STAT_SECRETS], client. cl.stats[quakedef.STAT_TOTALSECRETS]);
+	        str+= string.Format("Secrets :{0} /{1}",  client.cl.stats[quakedef.STAT_SECRETS], client. cl.stats[quakedef.STAT_TOTALSECRETS]);
+	        Sbar_DrawString (8, 12, str);
+
+        // time
+	        minutes = (int) client.cl.time / 60;
+	        seconds = (int)client.cl.time - 60*minutes;
+	        tens = seconds / 10;
+	        units = seconds - 10*tens;
+            //sprintf (str,"Time :%3i:%i%i", minutes, tens, units);
+            str += string.Format("Time :{0}:{1}{2}", minutes, tens, units);
+	        Sbar_DrawString (184, 4, str);
+
+        // draw level name
+	        l =  client.cl.levelname.Length;
+	        Sbar_DrawString (232 - l*4, 12,  client.cl.levelname);
         }
 
         /*
