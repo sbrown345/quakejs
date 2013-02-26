@@ -354,6 +354,73 @@ namespace quake
         }
 
         /*
+        =============================================================================
+
+        The PVS must include a small area around the client to allow head bobbing
+        or other small motion on the client side.  Otherwise, a bob might cause an
+        entity that should be visible to not show up, especially when the bob
+        crosses a waterline.
+
+        =============================================================================
+        */
+
+        static int		fatbytes;
+        static byte[]	fatpvs = new byte[bspfile.MAX_MAP_LEAFS/8];
+
+        static void SV_AddToFatPVS (double[] org, model.mnode_t node)
+        {
+	        int		i;
+	        byte[]	pvs;
+	        model.mplane_t	plane;
+	        double	d;
+
+	        while (true)
+	        {
+	        // if this is a leaf, accumulate the pvs bits
+		        if (node.contents < 0)
+		        {
+			        if (node.contents != bspfile.CONTENTS_SOLID)
+			        {
+                        pvs = model.Mod_LeafPVS((model.mleaf_t)node, sv.worldmodel);
+				        for (i=0 ; i<fatbytes ; i++)
+					        fatpvs[i] |= pvs[i];
+			        }
+			        return;
+		        }
+	
+		        plane = node.plane;
+		        d = mathlib.DotProduct (org, plane.normal) - plane.dist;
+		        if (d > 8)
+                    node = (model.mnode_t)node.children[0];
+		        else if (d < -8)
+                    node = (model.mnode_t)node.children[1];
+		        else
+		        {	// go down both
+			        SV_AddToFatPVS (org, (model.mnode_t)node.children[0]);
+                    node = (model.mnode_t)node.children[1];
+		        }
+	        }
+        }
+
+        /*
+        =============
+        SV_FatPVS
+
+        Calculates a PVS that is the inclusive or of all leafs within 8 pixels of the
+        given point.
+        =============
+        */
+        static byte[] SV_FatPVS (double[] org)
+        {
+	        fatbytes = (sv.worldmodel.numleafs+31)>>3;
+	        Q_memset (fatpvs, 0, fatbytes);
+	        SV_AddToFatPVS (org, sv.worldmodel.nodes[0]);
+	        return fatpvs;
+        }
+
+        //=============================================================================
+
+        /*
         =============
         SV_WriteEntitiesToClient
 
@@ -363,9 +430,14 @@ namespace quake
         {
 	        int		        e, i;
 	        int		        bits;
-	        double[]        org = new double[3];
+            byte[]          pvs;
+            double[] org = new double[3];
 	        double	        miss;
 	        prog.edict_t	ent;
+
+            // find the client's PVS
+            mathlib.VectorAdd(clent.v.origin, clent.v.view_ofs, org);
+            pvs = SV_FatPVS(org);
 
         // send over all entities (excpet the client) that touch the pvs
 	        for (e=1 ; e<sv.num_edicts ; e++)
@@ -379,7 +451,12 @@ namespace quake
 			        if (ent.v.modelindex == 0 || prog.pr_string(ent.v.model) == null)
 				        continue;
 
-                    //todo: winquake has some PVS stuff here, is it important?
+                    for (i = 0; i < ent->num_leafs; i++)
+                        if (pvs[ent->leafnums[i] >> 3] & (1 << (ent->leafnums[i] & 7)))
+                            break;
+
+                    if (i == ent->num_leafs)
+                        continue;		// not visible
 		        }
 
 		        if (msg.maxsize - msg.cursize < 16)
