@@ -276,7 +276,7 @@ namespace quake
 	        //memset (cl.sound_precache, 0, sizeof(cl.sound_precache));
 	        for (numsounds=1 ; ; numsounds++)
 	        {
-		        str = common.MSG_ReadString ();
+		        str = common.MSG_ReadString ();//todo: this is empty when starting level!
 		        if (str.Length == 0)
 			        break;
 		        if (numsounds==quakedef.MAX_SOUNDS)
@@ -621,8 +621,8 @@ namespace quake
             Buffer.BlockCopy(screen.vid.colormap, 0, cl.scores[slot].translations, 0, cl.scores[slot].translations.Length);
 	        top = cl.scores[slot].colors & 0xf0;
 	        bottom = (cl.scores[slot].colors &15)<<4;
-
-	        for (i=0 ; i<vid.VID_GRADES ; i++, dest += 256, source+=256)
+            
+            for (i=0 ; i<vid.VID_GRADES ; i++, dest += 256, source+=256)
 	        {
 		        if (top < 128)	// the artists made some backwards ranges.  sigh.
                     Buffer.BlockCopy(screen.vid.colormap, source + top, cl.scores[slot].translations, dest + render.TOP_RANGE, 16);
@@ -684,9 +684,9 @@ namespace quake
             vol = common.MSG_ReadByte();
             atten = common.MSG_ReadByte();
 
-            //sound.S_StaticSound(cl.sound_precache[sound_num], org, vol, atten);
+            sound.S_StaticSound(cl.sound_precache[sound_num], org, vol, atten);
         }
-
+        
         /*
         =====================
         CL_ParseServerMessage
@@ -751,6 +751,13 @@ namespace quake
                     CL_ParseClientdata(i);
                     break;
 
+
+                case net.svc_version:
+                    i = common.MSG_ReadLong();
+                    if (i != net.PROTOCOL_VERSION)
+                        host.Host_Error(string.Format("CL_ParseServerMessage: Server is protocol {0} instead of {1}\n", i, net.PROTOCOL_VERSION));
+                    break;
+
                 case net.svc_disconnect:
                     host.Host_EndGame("Server disconnected\n");
                     break;
@@ -797,6 +804,11 @@ namespace quake
                     CL_ParseStartSoundPacket();
                     break;
 
+                case net.svc_stopsound:
+                    i = common.MSG_ReadShort();
+                    sound.S_StopSound(i >> 3, i & 7);
+                    break;
+
                 case net.svc_updatename:
                     sbar.Sbar_Changed();
                     i = common.MSG_ReadByte();
@@ -840,6 +852,28 @@ namespace quake
                     CL_ParseTEnt();
                     break;
 
+                case net.svc_setpause:
+                    throw new NotImplementedException("CL_ParseServerMessage net.svc_setpause");
+        //            {
+        //                cl.paused = MSG_ReadByte ();
+
+        //                if (cl.paused)
+        //                {
+        //                    CDAudio_Pause ();
+        //#ifdef _WIN32
+        //                    VID_HandlePause (true);
+        //#endif
+        //                }
+        //                else
+        //                {
+        //                    CDAudio_Resume ();
+        //#ifdef _WIN32
+        //                    VID_HandlePause (false);
+        //#endif
+        //                }
+        //            }
+        //          break;
+
                 case net.svc_signonnum:
                     i = common.MSG_ReadByte();
                     if (i <= cls.signon)
@@ -870,9 +904,38 @@ namespace quake
                 case net.svc_cdtrack:
                     cl.cdtrack = common.MSG_ReadByte();
                     cl.looptrack = common.MSG_ReadByte();
+                    ////if ((cls.demoplayback || cls.demorecording) && (cls.forcetrack != -1))
+                    ////    CDAudio_Play((byte)cls.forcetrack, true);
+                    ////else
+                    ////    CDAudio_Play((byte)cl.cdtrack, true);
+                    break;
+
+                case net.svc_intermission:
+                    client.cl.intermission = 1;
+                    client.cl.completed_time = (int)cl.time;
+                    screen.vid.recalc_refdef = true;	// go to full screen
+                    break;
+
+                case net.svc_finale:
+                    cl.intermission = 2;
+                    cl.completed_time = (int) cl.time;
+                    screen. vid.recalc_refdef = true;	// go to full screen
+                   screen. SCR_CenterPrint(common.MSG_ReadString());
+                    break;
+
+                case net.svc_cutscene:
+                    cl.intermission = 3;
+                    cl.completed_time = (int)cl.time;
+                    screen.vid.recalc_refdef = true;	// go to full screen
+                   screen. SCR_CenterPrint(common.MSG_ReadString());
+                    break;
+
+                case net.svc_sellscreen:
+                    quake.cmd.Cmd_ExecuteString("help".ToCharArray(), quake.cmd.cmd_source_t.src_command);
                     break;
                 }
 	        }
         }
     }
 }
+

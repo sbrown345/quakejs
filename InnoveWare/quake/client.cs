@@ -195,7 +195,7 @@ namespace quake
 	        public bool	            inwater;
         	
 	        public int			    intermission;	// don't change view angle, full screen, etc
-	        int			completed_time;	// latched at intermission start
+	        public int			completed_time;	// latched at intermission start
 
             public double[]         mtime = new double[2];		// the timestamp of last two messages	
             public double           time;			// clients view of time, should be between

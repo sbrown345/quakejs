@@ -43,7 +43,7 @@ namespace quake
         */
         static int c_yes, c_no;
 
-        static bool SV_CheckBottom(prog.edict_t ent)
+        public static bool SV_CheckBottom(prog.edict_t ent)
         {
             double[] mins = ArrayHelpers.ExplcitDoubleArray(3), maxs = ArrayHelpers.ExplcitDoubleArray(3), start = ArrayHelpers.ExplcitDoubleArray(3), stop = ArrayHelpers.ExplcitDoubleArray(3);
             world.trace_t trace;
