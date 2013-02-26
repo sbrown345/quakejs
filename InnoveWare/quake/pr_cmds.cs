@@ -540,8 +540,8 @@ namespace quake
 
             common.MSG_WriteByte(server.sv.signon, soundnum);
 
-            common.MSG_WriteByte(server.sv.signon,(int)vol * 255);
-            common.MSG_WriteByte(server.sv.signon, (int)attenuation * 64);
+            common.MSG_WriteByte(server.sv.signon,(int)(vol * 255));
+            common.MSG_WriteByte(server.sv.signon, (int)(attenuation * 64));
         }
 
         /*
