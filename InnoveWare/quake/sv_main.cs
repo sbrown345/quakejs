@@ -159,7 +159,7 @@ namespace quake
            if ((field_mask & net.SND_VOLUME) != 0)
                common. MSG_WriteByte(sv.datagram, volume);
             if ((field_mask & net.SND_ATTENUATION) != 0)
-               common. MSG_WriteByte(sv.datagram, (int) attenuation * 64);
+               common. MSG_WriteByte(sv.datagram, (int) (attenuation * 64));
           common.  MSG_WriteShort(sv.datagram, channel);
           common.  MSG_WriteByte(sv.datagram, sound_num);
             for (i = 0; i < 3; i++)
@@ -208,16 +208,18 @@ namespace quake
             for (i = 1, s = sv.model_precache[i]; s != null; i++)
             {
                 s = sv.model_precache[i];
-                common.MSG_WriteString(client.message, s);
+                if (s != null)
+                    common.MSG_WriteString(client.message, s);
             }
-            //common.MSG_WriteByte(client.message, 0); // write string already writes a 0 at the end
+            common.MSG_WriteByte(client.message, 0); 
 
             for (i = 1, s = sv.sound_precache[i]; s != null; i++)
             {
                 s = sv.sound_precache[i];
-                common.MSG_WriteString(client.message, s);
+                if (s != null)
+                    common.MSG_WriteString(client.message, s);
             }
-            //common.MSG_WriteByte(client.message, 0); // write string already writes a 0 at the end
+            common.MSG_WriteByte(client.message, 0); 
 
             // send music
             common.MSG_WriteByte(client.message, net.svc_cdtrack);
