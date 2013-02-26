@@ -210,14 +210,14 @@ namespace quake
                 s = sv.model_precache[i];
                 common.MSG_WriteString(client.message, s);
             }
-            common.MSG_WriteByte(client.message, 0);
+            //common.MSG_WriteByte(client.message, 0); // write string already writes a 0 at the end
 
             for (i = 1, s = sv.sound_precache[i]; s != null; i++)
             {
                 s = sv.sound_precache[i];
                 common.MSG_WriteString(client.message, s);
             }
-            common.MSG_WriteByte(client.message, 0);
+            //common.MSG_WriteByte(client.message, 0); // write string already writes a 0 at the end
 
             // send music
             common.MSG_WriteByte(client.message, net.svc_cdtrack);
@@ -1049,6 +1049,8 @@ namespace quake
             // clear world interaction links
             //
             world.SV_ClearWorld();
+
+            sv.sound_precache[0] = prog.pr_string(0);
 
             //sv.model_precache[0] = pr_strings;
             sv.model_precache[0] = "";

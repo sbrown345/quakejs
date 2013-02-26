@@ -276,7 +276,7 @@ namespace quake
 	        //memset (cl.sound_precache, 0, sizeof(cl.sound_precache));
 	        for (numsounds=1 ; ; numsounds++)
 	        {
-		        str = common.MSG_ReadString ();//todo: this is empty when starting level!
+		        str = common.MSG_ReadString ();
 		        if (str.Length == 0)
 			        break;
 		        if (numsounds==quakedef.MAX_SOUNDS)
@@ -931,7 +931,7 @@ namespace quake
                     break;
 
                 case net.svc_sellscreen:
-                    quake.cmd.Cmd_ExecuteString("help".ToCharArray(), quake.cmd.cmd_source_t.src_command);
+                    quake.cmd.Cmd_ExecuteString("help\0".ToCharArray(), quake.cmd.cmd_source_t.src_command);
                     break;
                 }
 	        }
