@@ -142,19 +142,20 @@ namespace quake
 
         public class node_or_leaf_t
         {
+            public bspfile.ByteBuffer   compressed_vis;
             public int              contents;
             public int              visframe;
 
             public short[]          minmaxs = new short[6];
 
             public node_or_leaf_t   parent;
+            public node_or_leaf_t[] children = new node_or_leaf_t[2];
+            public mplane_t         plane;
         }
 
         public class mnode_t : node_or_leaf_t
         {
         // node specific
-            public mplane_t         plane;
-            public node_or_leaf_t[] children = new node_or_leaf_t[2];
 
             public ushort           firstsurface;
             public ushort           numsurfaces;
@@ -163,7 +164,6 @@ namespace quake
         public class mleaf_t : node_or_leaf_t
         {
         // leaf specific
-            public bspfile.ByteBuffer   compressed_vis;
 	        public render.efrag_t		efrags;
 
             public helper.ObjectBuffer  firstmarksurface;
@@ -579,7 +579,7 @@ namespace quake
 	        return decompressed;
         }
 
-        public static Uint8Array Mod_LeafPVS(mleaf_t leaf, model_t model)
+        public static Uint8Array Mod_LeafPVS(node_or_leaf_t leaf, model_t model)
         {
 	        if (leaf == model.leafs[0])
 		        return mod_novis;

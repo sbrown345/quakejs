@@ -365,12 +365,12 @@ namespace quake
         */
 
         static int		fatbytes;
-        static byte[]	fatpvs = new byte[bspfile.MAX_MAP_LEAFS/8];
+        static Uint8Array fatpvs = new Uint8Array(bspfile.MAX_MAP_LEAFS / 8);
 
-        static void SV_AddToFatPVS (double[] org, model.mnode_t node)
+        static void SV_AddToFatPVS(double[] org, model.node_or_leaf_t node)
         {
 	        int		i;
-	        byte[]	pvs;
+            Uint8Array pvs;
 	        model.mplane_t	plane;
 	        double	d;
 
@@ -381,7 +381,7 @@ namespace quake
 		        {
 			        if (node.contents != bspfile.CONTENTS_SOLID)
 			        {
-                        pvs = model.Mod_LeafPVS((model.mleaf_t)node, sv.worldmodel);
+                        pvs = model.Mod_LeafPVS((model.node_or_leaf_t)node, sv.worldmodel);
 				        for (i=0 ; i<fatbytes ; i++)
 					        fatpvs[i] |= pvs[i];
 			        }
@@ -391,13 +391,13 @@ namespace quake
 		        plane = node.plane;
 		        d = mathlib.DotProduct (org, plane.normal) - plane.dist;
 		        if (d > 8)
-                    node = (model.mnode_t)node.children[0];
+                    node = ((model.node_or_leaf_t)node).children[0];
 		        else if (d < -8)
-                    node = (model.mnode_t)node.children[1];
+                    node = (model.node_or_leaf_t)node.children[1];
 		        else
 		        {	// go down both
-			        SV_AddToFatPVS (org, (model.mnode_t)node.children[0]);
-                    node = (model.mnode_t)node.children[1];
+                    SV_AddToFatPVS(org, (model.node_or_leaf_t)node.children[0]);
+                    node = (model.node_or_leaf_t)node.children[1];
 		        }
 	        }
         }
@@ -410,10 +410,14 @@ namespace quake
         given point.
         =============
         */
-        static byte[] SV_FatPVS (double[] org)
+        static Uint8Array SV_FatPVS(double[] org)
         {
 	        fatbytes = (sv.worldmodel.numleafs+31)>>3;
-	        Q_memset (fatpvs, 0, fatbytes);
+            //Q_memset (fatpvs, 0, fatbytes);
+            for (int i = 0; i < fatbytes; i++)
+            {
+                fatpvs[i] = 0;
+            }
 	        SV_AddToFatPVS (org, sv.worldmodel.nodes[0]);
 	        return fatpvs;
         }
@@ -430,7 +434,7 @@ namespace quake
         {
 	        int		        e, i;
 	        int		        bits;
-            byte[]          pvs;
+            Uint8Array      pvs;
             double[] org = new double[3];
 	        double	        miss;
 	        prog.edict_t	ent;
@@ -451,11 +455,11 @@ namespace quake
 			        if (ent.v.modelindex == 0 || prog.pr_string(ent.v.model) == null)
 				        continue;
 
-                    for (i = 0; i < ent->num_leafs; i++)
-                        if (pvs[ent->leafnums[i] >> 3] & (1 << (ent->leafnums[i] & 7)))
+                    for (i = 0; i < ent.num_leafs; i++)
+                        if ((pvs[ent.leafnums[i] >> 3] & (1 << (ent.leafnums[i] & 7))) != 0)
                             break;
 
-                    if (i == ent->num_leafs)
+                    if (i == ent.num_leafs)
                         continue;		// not visible
 		        }
 
