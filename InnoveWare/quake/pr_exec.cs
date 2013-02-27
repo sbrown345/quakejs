@@ -149,11 +149,11 @@ namespace quake
         {
             int i;
 
-            if (prNum >= 0 && prNum % 100 == 0)
+            if (prNum >= 38344 /*&& prNum % 100 == 0*/)
             {
                 string output = "";
-                if (prNum % 1000 == 0)
-                    Debug.WriteLine(ED_Count_str());
+                //if (prNum % 1000 == 0)
+                //    Debug.WriteLine(ED_Count_str());
 
                 PR_StackTraceStr();
                 output+=(prNum) + " ********************************************************************\n";
@@ -185,9 +185,10 @@ namespace quake
 
                 //console.Con_Printf(output + "\n");//todo: fix up like proper quake cmd
                 Debug.WriteLine(output);
-                if (prNum % 1000 == 0)
-                ////if (prNum == 5200)
-                prog.PF_coredump();
+
+                //if (prNum % 1000 == 0)
+                //////if (prNum == 5200)
+                //prog.PF_coredump();
             }
         }
 
@@ -900,10 +901,12 @@ namespace quake
                         eval = cast_int(pr_globals_read(st.a)) != cast_int(pr_globals_read(st.b));
                         pr_globals_write(st.c, (double)(eval ? 1 : 0));
                         break;
+
                     case opcode_t.OP_NE_FNC:
                         //c->_float = a->function != b->function;
+                        eval = cast_int(pr_globals_read(st.a)) != cast_int(pr_globals_read(st.b));
+                        pr_globals_write(st.c, (double)(eval? 1 : 0));
                         break;
-
 
                         //==================
                     case opcode_t.OP_STORE_F:
