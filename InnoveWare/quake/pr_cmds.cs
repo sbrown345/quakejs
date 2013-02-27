@@ -1196,9 +1196,9 @@ namespace quake
             double f;
             f = G_FLOAT(OFS_PARM0);
             if (f > 0)
-                pr_globals_write(OFS_RETURN, (int)(f + 0.5));
+                pr_globals_write(OFS_RETURN, (double)(int)(f + 0.5));
             else
-                pr_globals_write(OFS_RETURN, (int)(f - 0.5));
+                pr_globals_write(OFS_RETURN, (double)(int)(f - 0.5));
         }
         static void PF_floor ()
         {
@@ -1467,7 +1467,6 @@ namespace quake
         static void PF_WriteCoord ()
         {
             var val = G_FLOAT(OFS_PARM1);
-            Debug.WriteLine("PF_WriteCoord " + val);
             common.MSG_WriteCoord(WriteDest(), val);
         }
 
