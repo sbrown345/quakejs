@@ -656,7 +656,7 @@ namespace quake
 
 	        common.MSG_WriteByte (msg, net.svc_clientdata);
             common.MSG_WriteShort(msg, bits);
-
+            Debug.WriteLine("bits " + bits);
 	        if ((bits & net.SU_VIEWHEIGHT) != 0)
                 common.MSG_WriteChar(msg, (int)ent.v.view_ofs[2]);
 
@@ -668,7 +668,7 @@ namespace quake
                 if ((bits & (net.SU_PUNCH1 << i)) != 0)
                     common.MSG_WriteChar(msg, (int)ent.v.punchangle[i]);
                 if ((bits & (net.SU_VELOCITY1 << i)) != 0)
-                    common.MSG_WriteChar(msg, (int)ent.v.velocity[i] / 16);
+                    common.MSG_WriteChar(msg, (int)(ent.v.velocity[i] / 16));
 	        }
 
             // [always sent]	if (bits & SU_ITEMS)
