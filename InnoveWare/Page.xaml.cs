@@ -253,7 +253,9 @@ namespace InnoveWare
             // Synchronize the Silverlight UI thread to Quake framerate.
 		    double newtime = quake.sys_linux.Sys_FloatTime ();
             double time = newtime - oldtime;
-            //time = 0.25;//TODO- used just for TESTING
+#if DEBUG
+            time = 0.25;//TODO- used just for TESTING
+#endif
             quake.host.Host_Frame(time);
             oldtime = newtime;
         }
@@ -272,7 +274,7 @@ namespace InnoveWare
             count_fps += _cFps;
             nb_fps++;
             fps.Foreground = new SolidColorBrush(Colors.White);
-            fps.Text = (count_fps / nb_fps).ToString() + " fps";
+            fps.Text = (count_fps / nb_fps) + " fps";
             _last_frame = _frames_count;
             _lastTime = now;
 

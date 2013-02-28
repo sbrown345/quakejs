@@ -197,8 +197,11 @@ namespace Helper
 
         public static int rand()
         {
-            return 1000000000; //return r.Next();//todo: maybe have this on !DEBUG
-            
+#if DEBUG
+            return 1000000000; 
+#else
+            return r.Next();
+#endif       
         }
     }
 }
