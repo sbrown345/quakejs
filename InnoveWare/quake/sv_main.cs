@@ -452,7 +452,7 @@ namespace quake
 		        if (ent != clent)	// clent is ALLWAYS sent
 		        {
         // ignore ents without visible models
-			        if (ent.v.modelindex == 0 || prog.pr_string(ent.v.model) == null)
+			        if (ent.v.modelindex == 0 || string.IsNullOrEmpty(prog.pr_string(ent.v.model)))
 				        continue;
 
                     for (i = 0; i < ent.num_leafs; i++)

@@ -152,7 +152,7 @@ namespace quake
             //if (prNum >= 8400)
             if (/*(prNum >= 0 && prNum % 100 == 0) ||*/ prNum > 68000)
             {
-                Debug.WriteLine(prog.ED_PrintNum(1));
+                //Debug.WriteLine(prog.ED_PrintNum(1));
                 string output = "";
                 //if (prNum % 1000 == 0)
                 //    Debug.WriteLine(ED_Count_str());
@@ -828,7 +828,8 @@ namespace quake
                     case opcode_t.OP_NOT_S:
                         //c->_float = !a->string || !pr_strings[a->string];
                         int astring = cast_int(pr_globals_read(st.a));
-                        pr_globals_write(st.c, (double)(((astring == 0) || (pr_string(astring) == null)) ? 1 : 0));
+                        //pr_globals_write(st.c, (double)(((astring == 0) || (pr_string(astring) == null)) ? 1 : 0));
+                        pr_globals_write(st.c, (double)(((astring == 0) || string.IsNullOrEmpty(pr_string(astring))) ? 1 : 0));
                         break;
                     case opcode_t.OP_NOT_FNC:
                         //c->_float = !a->function;

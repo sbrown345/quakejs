@@ -1191,8 +1191,8 @@ static void SV_PushMove (prog.edict_t pusher, Double movetime)
 	        {
                 ent = sv.edicts[i];
              
-                if (phys_num >= 2300)
-                    Debug.WriteLine(string.Format("phys_num {0} edict {1} movetype {2} absmin[0] {3}", phys_num, i, (int)ent.v.movetype, (int)ent.v.absmin[0]));
+                //if (phys_num >= 2300)
+                //    Debug.WriteLine(string.Format("phys_num {0} edict {1} movetype {2} absmin[0] {3}", phys_num, i, (int)ent.v.movetype, (int)ent.v.absmin[0]));
                 phys_num++;
                 if (ent.free) 
                 {
@@ -1200,13 +1200,10 @@ static void SV_PushMove (prog.edict_t pusher, Double movetime)
                     continue;
                 }
 
-
-
 		        if (prog.pr_global_struct[0].force_retouch != 0)
 		        {
                     world.SV_LinkEdict(ent, true);	// force retouch even for stationary
 		        }
-
 
 		        if (i > 0 && i <= svs.maxclients)
 			        SV_Physics_Client (ent, i);
