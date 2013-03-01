@@ -452,9 +452,6 @@ namespace quake
                 return;
 
             // bump around...
-            Debug.WriteLine(string.Format("ideal_yaw {0:F6}", ent.v.ideal_yaw));
-            Debug.WriteLine(string.Format("dist {0:F6}", dist));
-
             if ((Helper.helper.rand() & 3) == 1 || !SV_StepDirection(ent, ent.v.ideal_yaw, dist))
             {
                 SV_NewChaseDir(ent, goal, dist);

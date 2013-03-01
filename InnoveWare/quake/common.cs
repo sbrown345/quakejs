@@ -186,7 +186,8 @@ namespace quake
 
         public static void MSG_WriteChar (sizebuf_t sb, int c)
         {
-	        Uint8Array    buf;
+            Debug.WriteLine("MSG_WriteChar " + c);
+            Uint8Array buf;
             int       offset;
 
 	        buf = SZ_GetSpace (sb, 1, out offset);
@@ -195,6 +196,7 @@ namespace quake
 
         public static void MSG_WriteByte (sizebuf_t sb, int c)
         {
+            Debug.WriteLine("MSG_WriteByte " + c);
 	        Uint8Array    buf;
             int       offset;
 
@@ -204,6 +206,7 @@ namespace quake
 
         public static void MSG_WriteShort (sizebuf_t sb, int c)
         {
+            Debug.WriteLine("MSG_WriteShort " + c);
             Uint8Array buf;
             int offset;
 
@@ -214,6 +217,7 @@ namespace quake
 
         public static void MSG_WriteLong (sizebuf_t sb, int c)
         {
+            Debug.WriteLine("MSG_WriteLong " + c);
             Uint8Array buf;
             int offset;
 
@@ -227,7 +231,7 @@ namespace quake
         public static void MSG_WriteFloat (sizebuf_t sb, double f)
         {
             Uint8Array dat;
-
+            Debug.WriteLine(string.Format("MSG_WriteFloat {0:F1}", f));
             dat = BitConverter.GetBytes((float)f);
         	
 	        SZ_Write (sb, dat, 4);
@@ -235,7 +239,8 @@ namespace quake
 
         public static void MSG_WriteString (sizebuf_t sb, string s)
         {
-            Uint8Array  buf;
+            Debug.WriteLine("MSG_WriteString " + s);
+            Uint8Array buf;
             if (s == null)
             {
                 buf = new Uint8Array(1);
@@ -253,19 +258,21 @@ namespace quake
 
         public static void MSG_WriteCoord (sizebuf_t sb, double f)
         {
-	        MSG_WriteShort (sb, (int)(f*8));
+            Debug.WriteLine(string.Format("MSG_WriteCoord {0:F1}", f));
+            MSG_WriteShort(sb, (int)(f * 8));
         }
 
         public static void MSG_WriteAngle(sizebuf_t sb, double f)
         {
-	        MSG_WriteByte (sb, ((int)f*256/360) & 255);
+            Debug.WriteLine(string.Format("MSG_WriteAngle {0:F1}", f));
+            MSG_WriteByte(sb, ((int)f * 256 / 360) & 255);
         }
 
         //
         // reading functions
         //
         static int          msg_readcount;
-        public static bool         msg_badread;
+        public static bool  msg_badread;
 
         public static void MSG_BeginReading ()
         {

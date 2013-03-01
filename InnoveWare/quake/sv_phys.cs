@@ -233,7 +233,7 @@ If steptrace is not NULL, the trace of any vertical wall hit will be stored
 
         private const int MAX_CLIP_PLANES = 5;
 
-        private static int SV_FlyMove(prog.edict_t ent, double time /*was float*/, world.trace_t steptrace)
+        private static int SV_FlyMove(prog.edict_t ent, double time /*was float*/, ref world.trace_t steptrace)
         {
             int bumpcount, numbumps;
             double[] dir = new double[3];
@@ -261,10 +261,11 @@ If steptrace is not NULL, the trace of any vertical wall hit will be stored
 
             time_left = time;
 
-            Debug.WriteLine("SV_FlyMove");
+            //Debug.WriteLine("SV_FlyMove");
             for (bumpcount = 0; bumpcount < numbumps; bumpcount++)
             {
-                if (ent.v.velocity[0] == 0.0 && ent.v.velocity[1] == 0.0 && ent.v.velocity[2] == 0.0) break;
+                if (ent.v.velocity[0] == 0.0 && ent.v.velocity[1] == 0.0 && ent.v.velocity[2] == 0.0) 
+                    break;
 
                 for (i = 0; i < 3; i++) 
                     end[i] = ent.v.origin[i] + time_left * ent.v.velocity[i];
@@ -273,13 +274,13 @@ If steptrace is not NULL, the trace of any vertical wall hit will be stored
 
                 if (trace.allsolid)
                 {
-                    Debug.WriteLine("allsolid");
+                    //Debug.WriteLine("allsolid");
                     // entity is trapped in another solid
                     mathlib.VectorCopy(mathlib.vec3_origin, ent.v.velocity);
                     return 3;
                 }
 
-                Debug.WriteLine(string.Format("fraction {0}", trace.fraction));
+                //Debug.WriteLine(string.Format("fraction {0}", trace.fraction));
                 if (trace.fraction > 0)
                 {
                     // actually covered some distance
@@ -296,7 +297,7 @@ If steptrace is not NULL, the trace of any vertical wall hit will be stored
 
                 if (trace.plane.normal[2] > 0.7)
                 {
-                    Debug.WriteLine("trace.plane.normal[2] > 0.7");
+                    //Debug.WriteLine("trace.plane.normal[2] > 0.7");
                     blocked |= 1; // floor
                     if (trace.ent.v.solid == SOLID_BSP)
                     {
@@ -306,7 +307,7 @@ If steptrace is not NULL, the trace of any vertical wall hit will be stored
                 }
                 if (!(trace.plane.normal[2] != 0.0))
                 {
-                    Debug.WriteLine("!trace.plane.normal[2]");
+                    //Debug.WriteLine("!trace.plane.normal[2]");
                     blocked |= 2; // step
                     if (steptrace != null) 
                         steptrace = trace; // save for player extrafriction
@@ -315,11 +316,11 @@ If steptrace is not NULL, the trace of any vertical wall hit will be stored
                 //
                 // run the impact function
                 //
-                Debug.WriteLine("SV_Impact");
+                //Debug.WriteLine("SV_Impact");
                 SV_Impact(ent, trace.ent);
                 if (ent.free) 
                 {
-                    Debug.WriteLine("ent.fre");
+                    //Debug.WriteLine("ent.fre");
                     break; // removed by the impact function
                 }
 
@@ -329,7 +330,7 @@ If steptrace is not NULL, the trace of any vertical wall hit will be stored
                 // cliped to another plane
                 if (numplanes >= MAX_CLIP_PLANES)
                 {
-                    Debug.WriteLine("numplanes >= MAX_CLIP_PLANES");
+                    //Debug.WriteLine("numplanes >= MAX_CLIP_PLANES");
                     // this shouldn't really happen
                     mathlib.VectorCopy(mathlib.vec3_origin, ent.v.velocity);
                     return 3;
@@ -347,15 +348,17 @@ If steptrace is not NULL, the trace of any vertical wall hit will be stored
                     for (j = 0; j < numplanes; j++)
                         if (j != i)
                         {
-                            if (mathlib.DotProduct(new_velocity, planes[j]) < 0) break; // not ok
+                            if (mathlib.DotProduct(new_velocity, planes[j]) < 0) 
+                                break; // not ok
                         }
-                    if (j == numplanes) break;
+                    if (j == numplanes) 
+                        break;
                 }
 
                 if (i != numplanes)
                 {
                     // go along this plane
-                    Debug.WriteLine("i != numplanes");
+                    //Debug.WriteLine("i != numplanes");
                     mathlib.VectorCopy(new_velocity, ent.v.velocity);
                 }
                 else
@@ -378,7 +381,7 @@ If steptrace is not NULL, the trace of any vertical wall hit will be stored
                 //
                 if (mathlib.DotProduct(ent.v.velocity, primal_velocity) <= 0)
                 {
-                    Debug.WriteLine("DotProductstuff");
+                    //Debug.WriteLine("DotProductstuff");
                     mathlib.VectorCopy(mathlib.vec3_origin, ent.v.velocity);
                     return blocked;
                 }
@@ -494,7 +497,7 @@ static void SV_PushMove (prog.edict_t pusher, Double movetime)
     {
         if (check.free)
             continue;
-        Debug.WriteLine(string.Format("e: {0} movetype:{1}", e, (int)check.v.movetype));
+        //Debug.WriteLine(string.Format("e: {0} movetype:{1}", e, (int)check.v.movetype));
 
         if (check.v.movetype == MOVETYPE_PUSH
         || check.v.movetype == MOVETYPE_NONE
@@ -790,7 +793,7 @@ static void SV_PushMove (prog.edict_t pusher, Double movetime)
 		        ent.v.velocity[0] = oldvel[0];
 		        ent.v. velocity[1] = oldvel[1];
 		        ent.v. velocity[2] = 0;
-		        clip = SV_FlyMove (ent, 0.1f, steptrace);
+		        clip = SV_FlyMove (ent, 0.1f, ref steptrace);
 
 		        if (  Math.Abs(oldorg[1] - ent.v.origin[1]) > 4
 		        ||  Math.Abs(oldorg[0] - ent.v.origin[0]) > 4 )
@@ -835,7 +838,7 @@ static void SV_PushMove (prog.edict_t pusher, Double movetime)
             mathlib.VectorCopy(ent.v.origin, oldorg);
             mathlib.VectorCopy(ent.v.velocity, oldvel);
 
-            clip = SV_FlyMove(ent, host.host_frametime, steptrace);
+            clip = SV_FlyMove(ent, host.host_frametime, ref steptrace);
 
             if (!((clip & 2) != 0)) 
                 return; // move didn't block on a step
@@ -872,7 +875,7 @@ static void SV_PushMove (prog.edict_t pusher, Double movetime)
             ent.v.velocity[0] = oldvel[0];
             ent.v.velocity[1] = oldvel[1];
             ent.v.velocity[2] = 0;
-            clip = SV_FlyMove(ent, host.host_frametime, steptrace);
+            clip = SV_FlyMove(ent, host.host_frametime, ref steptrace);
 
             // check for stuckness, possibly due to the limited precision of floats
             // in the clipping hulls
@@ -886,7 +889,8 @@ static void SV_PushMove (prog.edict_t pusher, Double movetime)
             }
 
             // extra friction based on view angle
-            if ((clip & 2) != 0) SV_WallFriction(ent, steptrace);
+            if ((clip & 2) != 0) 
+                SV_WallFriction(ent, steptrace);
 
             // move down
             downtrace = SV_PushEntity(ent, downmove); // FIXME: don't link?
@@ -962,7 +966,8 @@ static void SV_PushMove (prog.edict_t pusher, Double movetime)
 	        case MOVETYPE_FLY:
 		        if (!SV_RunThink (ent))
 			        return;
-		        SV_FlyMove (ent, host.host_frametime, null);
+                var unused_trace_t = new world.trace_t(); // null was passed into SV_FlyMove in original
+                SV_FlyMove(ent, host.host_frametime, ref unused_trace_t);
 		        break;
         		
 	        case MOVETYPE_NOCLIP:
@@ -1141,7 +1146,8 @@ static void SV_PushMove (prog.edict_t pusher, Double movetime)
 
                 SV_AddGravity(ent);
                 SV_CheckVelocity(ent);
-                SV_FlyMove(ent, host.host_frametime, null);
+                var unused_trace_t = new world.trace_t(); // null was passed into SV_FlyMove in original
+                SV_FlyMove(ent, host.host_frametime, ref unused_trace_t);
                 world.SV_LinkEdict(ent, true);
 
                 if (((int)ent.v.flags & FL_ONGROUND) != 0) // just hit ground
@@ -1184,7 +1190,9 @@ static void SV_PushMove (prog.edict_t pusher, Double movetime)
 	        for (i=0 ; i<sv.num_edicts ; i++)
 	        {
                 ent = sv.edicts[i];
-                Debug.WriteLine(string.Format("phys_num {0} edict {1} movetype {2} absmin[0] {3}", phys_num, i, (int)ent.v.movetype, (int)ent.v.absmin[0]));
+             
+                if (phys_num >= 2300)
+                    Debug.WriteLine(string.Format("phys_num {0} edict {1} movetype {2} absmin[0] {3}", phys_num, i, (int)ent.v.movetype, (int)ent.v.absmin[0]));
                 phys_num++;
                 if (ent.free) 
                 {
@@ -1192,10 +1200,14 @@ static void SV_PushMove (prog.edict_t pusher, Double movetime)
                     continue;
                 }
 
+
+
 		        if (prog.pr_global_struct[0].force_retouch != 0)
 		        {
                     world.SV_LinkEdict(ent, true);	// force retouch even for stationary
 		        }
+
+
 		        if (i > 0 && i <= svs.maxclients)
 			        SV_Physics_Client (ent, i);
 		        else if (ent.v.movetype == MOVETYPE_PUSH)

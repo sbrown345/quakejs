@@ -149,14 +149,16 @@ namespace quake
         {
             int i;
 
-            if (prNum >= 38344 /*&& prNum % 100 == 0*/)
+            //if (prNum >= 8400)
+            if (/*(prNum >= 0 && prNum % 100 == 0) ||*/ prNum > 68000)
             {
+                Debug.WriteLine(prog.ED_PrintNum(1));
                 string output = "";
                 //if (prNum % 1000 == 0)
                 //    Debug.WriteLine(ED_Count_str());
 
                 PR_StackTraceStr();
-                output+=(prNum) + " ********************************************************************\n";
+                output += (prNum) + " ********************************************************************\n";
 
                 if (s.op < pr_opnames.Length)
                 {
@@ -165,8 +167,7 @@ namespace quake
                     for (; i < 10; i++) output += (" ");
                 }
 
-                if (s.op == (ushort)opcode_t.OP_IF || s.op == (ushort)opcode_t.OP_IFNOT)
-                    output += (PR_GlobalString(s.a) + "branch " + s.b);
+                if (s.op == (ushort)opcode_t.OP_IF || s.op == (ushort)opcode_t.OP_IFNOT) output += (PR_GlobalString(s.a) + "branch " + s.b);
                 else if (s.op == (ushort)opcode_t.OP_GOTO)
                 {
                     output += ("branch " + s.a);
@@ -187,8 +188,8 @@ namespace quake
                 Debug.WriteLine(output);
 
                 //if (prNum % 1000 == 0)
-                //////if (prNum == 5200)
-                //prog.PF_coredump();
+                //if (prNum >= 69366)
+                //    prog.PF_coredump();
             }
         }
 

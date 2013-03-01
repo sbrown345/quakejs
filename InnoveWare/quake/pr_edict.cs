@@ -1005,6 +1005,29 @@ namespace quake
         //    pr_globals_write(address, null, null, value);
         //}
 
+        /*
+         * a->_int = b->int + c->.int
+  st.a.pointer<int>(st.b.pointer<int>() + sb.c.pointer<int>());
+ or
+ st.a.pointer_int(st.b.pointer() + sb.c.pointer_int());a->_int = b->int + c->.int
+  st.a.pointer<int>(st.b.pointer<int>() + sb.c.pointer<int>());
+ or
+ st.a.pointer_int(st.b.pointer() + sb.c.pointer_int());
+         
+         
+         
+         
+         HAVE THE CODE RUN AFTER pr_globals_write and throw error saying if its wrong
+         0) make the syntax as close as C as possible,  (use dynamic for padding?) 
+         1) look at where it is first written
+         2) make test cases around there e.g. read back and test it is OK (test proj?)
+         3) 
+         
+         
+         
+         
+         */
+
         public static void pr_globals_write(int address, Object value/*,todo for JS - args: double doubleVal, double[] vecVal, int intVal - explicitly set them here */)
         {
             globalvars_t globalvars = pr_global_struct[address * 4 / sizeof_globalvars_t];

@@ -259,7 +259,7 @@ namespace quake
 
             anode = sv_areanodes[sv_numareanodes];
             sv_numareanodes++;
-            Debug.WriteLine("SV_CreateAreaNode");
+            //Debug.WriteLine("SV_CreateAreaNode");
             common.ClearLink(anode.trigger_edicts);
             common.ClearLink(anode.solid_edicts);
 
@@ -339,7 +339,7 @@ namespace quake
            // touch linked edicts
            for (l = node.trigger_edicts.next; l != node.trigger_edicts; l = next)
            {
-               Debug.WriteLine("SV_TouchLinks loop "+ tchlinks);
+               //Debug.WriteLine("SV_TouchLinks loop "+ tchlinks);
                tchlinks++;
 
                next = l.next;
@@ -420,8 +420,8 @@ namespace quake
                leafnum = i - 1;
                ent.leafnums[ent.num_leafs] = (short)leafnum;
                ent.num_leafs++;
-               Debug.WriteLine("num_leafs " + ent.num_leafs);
-               Debug.WriteLine("leafnum_ " + leafnum);
+               //Debug.WriteLine("num_leafs " + ent.num_leafs);
+               //Debug.WriteLine("leafnum_ " + leafnum);
                return;
            }
 
@@ -450,7 +450,7 @@ namespace quake
         {
             areanode_t node;
 
-            Debug.WriteLine("SV_LinkEdict_count " + SV_LinkEdict_count);
+            //Debug.WriteLine("SV_LinkEdict_count " + SV_LinkEdict_count);
             SV_LinkEdict_count++;
 
             if (ent.area.prev != null)
@@ -480,7 +480,7 @@ namespace quake
                 ent.v.absmin[1] -= 15;
                 ent.v.absmax[0] += 15;
                 ent.v.absmax[1] += 15;
-                Debug.WriteLine(string.Format("(int)ent->v.flags & FL_ITEM {0:F6}", ent.v.absmin[0]));
+                //Debug.WriteLine(string.Format("(int)ent->v.flags & FL_ITEM {0:F6}", ent.v.absmin[0]));
             }
             else
             {	// because movement is clipped an epsilon away from an actual edge,
@@ -520,12 +520,12 @@ namespace quake
 
             if (ent.v.solid == server.SOLID_TRIGGER)
             {
-                Debug.WriteLine("ent.v.solid == server.SOLID_TRIGGER");
+                //Debug.WriteLine("ent.v.solid == server.SOLID_TRIGGER");
                 common.InsertLinkBefore(ent.area, node.trigger_edicts);
             }
             else
             {
-                Debug.WriteLine("ELSE!");
+                //Debug.WriteLine("ELSE!");
                 common.InsertLinkBefore(ent.area, node.solid_edicts);
             }
 
@@ -575,7 +575,7 @@ namespace quake
                     num = node.children[0];
             }
 
-            Debug.WriteLine("SV_HullPointContents " + num);
+            //Debug.WriteLine("SV_HullPointContents " + num);
             return num;
         }
 
@@ -834,7 +834,7 @@ namespace quake
         // touch linked edicts
             for (l = node.solid_edicts.next; l != node.solid_edicts; l = next)
             {
-                Debug.WriteLine("ClipToLinks_for_num " + ClipToLinks_for_num);
+                //Debug.WriteLine("ClipToLinks_for_num " + ClipToLinks_for_num);
                 ClipToLinks_for_num++;
                 next = l.next;
                 touch = prog. EDICT_FROM_AREA(l);
@@ -992,7 +992,7 @@ namespace quake
             SV_MoveBounds(start, clip.mins2, clip.maxs2, end, clip.boxmins, clip.boxmaxs);
 
             // clip to entities
-            Debug.WriteLine("SV_Move - SV_ClipToLinks");
+            //Debug.WriteLine("SV_Move - SV_ClipToLinks");
             SV_ClipToLinks(sv_areanodes[0], clip);
 
             return clip.trace;
