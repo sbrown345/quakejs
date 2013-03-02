@@ -499,16 +499,22 @@ namespace quake
             return null;
         }
 
+
+        private static edict_t getedict(int address)
+        {
+            return server.sv.edicts[address / pr_edict_size];
+        }
+
         static Object readptr(int address)
         {
-            entvars_t entvars = server.sv.edicts[address / pr_edict_size].v;
+            entvars_t entvars = getedict(address).v;
             int offset = ((address % pr_edict_size) - 96) / 4;
             return readentvar(entvars, offset);
         }
 
         static void writeptr(int address, Object value, int addressOffset = 0 /*fix vectors on .variables, each value was overwriting the previous*/)
         {
-            entvars_t entvars = server.sv.edicts[address / pr_edict_size].v;
+            entvars_t entvars = getedict(address).v;
             int offset = ((address % pr_edict_size) - 96) / 4;
             offset += addressOffset;
             if (offset > 104)
@@ -847,7 +853,8 @@ namespace quake
                         //ptr->vector[0] = a->vector[0];
                         //ptr->vector[1] = a->vector[1];
                         //ptr->vector[2] = a->vector[2];
-                        //todo ptr = sv.edicts[b._int];
+
+                        //ptr = getptr(b._int); //sv.edicts[b._int];
                         //ptr.vector[0] = a.vector[0] etc
 
                         writeptr(b._int, a.vector[0], 0);
@@ -860,7 +867,7 @@ namespace quake
                         if (ed == server.sv.edicts[0] && server.sv.state == server.server_state_t.ss_active) 
                             PR_RunError("assignment to world entity");
                         //c->_int = (byte *)((int *)&ed->v + b->_int) - (byte *)sv.edicts;
-                        pr_globals_write(st.c, ed.index * pr_edict_size + 96 + cast_int(pr_globals_read(st.b)) * 4);
+                        c._int = ed.index * pr_edict_size + 96 + b._int * 4;
                         break;
 
                     case opcode_t.OP_LOAD_F:
@@ -872,8 +879,6 @@ namespace quake
                         //a = (eval_t *)((int *)&ed->v + b->_int);
                         //c->_int = a->_int;
                         c._int = cast_int(readptr(ed.index * pr_edict_size + 96 + b._int * 4));
-                        //pr_globals_write(
-                        //    st.c, cast_int(readptr(ed.index * pr_edict_size + 96 + cast_int(pr_globals_read(st.b)) * 4)));
                         break;
 
                     case opcode_t.OP_LOAD_V:
@@ -882,21 +887,10 @@ namespace quake
                         //c.vector[0] = a.vector[0];
                         //c.vector[1] = a.vector[1];
                         //c.vector[2] = a.vector[2];
-
-                        pr_globals_write(
-                            st.c,
-                            (double)
-                            cast_float(readptr(ed.index * pr_edict_size + 96 + b._int* 4)));
-                        pr_globals_write(
-                            st.c + 1,
-                            (double)
-                            cast_float(
-                                readptr(ed.index * pr_edict_size + 96 + (b._int + 1) * 4)));
-                        pr_globals_write(
-                            st.c + 2,
-                            (double)
-                            cast_float(
-                                readptr(ed.index * pr_edict_size + 96 + (b._int + 2) * 4)));
+                        c.vector[0] = cast_float(readptr(ed.index * pr_edict_size + 96 + b._int * 4));
+                        c.vector[1] = cast_float(readptr(ed.index * pr_edict_size + 96 + (b._int + 1) * 4));
+                        c.vector[2] = cast_float(readptr(ed.index * pr_edict_size + 96 + (b._int + 2) * 4));
+                     
                         break;
 
                         //==================

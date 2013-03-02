@@ -371,6 +371,7 @@ namespace quake
 
             int l;
             ddef_t d;
+            //C++ TO C# CONVERTER TODO TASK: C# does not have an equivalent for pointers to value types:
             //ORIGINAL LINE: int *v;
             int v;
             int i;
@@ -419,6 +420,8 @@ namespace quake
                             //{
                             //    throw new Exception("not implmemetned: " + type);
                             //}
+
+
 
                             var tempval = ed.v.variables[d.ofs - 105];
                             if (tempval == null) continue;
@@ -1017,11 +1020,6 @@ namespace quake
         {
             globalvars_t globalvars = pr_global_struct[address * 4 / sizeof_globalvars_t];
             int offset = address % (sizeof_globalvars_t / 4);
-            pr_global_write(value, offset, globalvars);
-        }
-
-        private static void pr_global_write(object value, int offset, globalvars_t globalvars)
-        {
             switch (offset)
             {
                 case 0:
@@ -1116,7 +1114,7 @@ namespace quake
                 case 88: globalvars.PutClientInServer = cast_int(value); break;
                 case 89: globalvars.ClientDisconnect = cast_int(value); break;
                 case 90: globalvars.SetNewParms = cast_int(value); break;
-                case 91: globalvars.SetChangeParms = cast_int(value);break;
+                case 91: globalvars.SetChangeParms = cast_int(value); break;
                 default:
                     Debug.WriteLine("cant write global var offset" + offset);
                     break;
@@ -1137,11 +1135,6 @@ namespace quake
         {
             globalvars_t globalvars = pr_global_struct[address * 4 / sizeof_globalvars_t];
             int offset = address % (sizeof_globalvars_t / 4);
-            return pr_globals_read(globalvars, offset);
-        }
-
-        public static Object pr_globals_read(globalvars_t globalvars, int offset)
-        {
             switch (offset)
             {
                 case 0:
