@@ -1,16 +1,12 @@
 ﻿using System;
-/*using System.Diagnostics;*/
 using System.IO;
-/*using System.Windows;
-using System.Windows.Resources;*/
-/*using System.Threading;*/
 
 namespace Helper
 {
     public sealed class helper
     {
         public const int SEEK_SET = 0;
-        static Random r = new Random();
+        static readonly Random r = new Random();
 
         #region Memory Buffers
         #region ObjectBuffer

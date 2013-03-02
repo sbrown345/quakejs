@@ -216,11 +216,11 @@ namespace quake
                 {
                     get
                     {
-                        throw  new NotImplementedException();
+                        return cast_int(pr_globals_read(address));
                     }
                     set
                     {
-                        throw new NotImplementedException();
+                        pr_globals_write(address, value);
                     }
                 }
 

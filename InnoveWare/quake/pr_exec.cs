@@ -873,7 +873,7 @@ namespace quake
                         break;
                     case opcode_t.OP_EQ_S:
                         //c->_float = !strcmp(pr_strings+a->string,pr_strings+b->string);
-                        c._float_b = pr_string(a).CompareTo(pr_string(b)) == 0;
+                        c._float_b = pr_string(a._string).CompareTo(pr_string(b._string)) == 0;
                         //pr_globals_write(
                         //    st.c,
                         //    (double)
@@ -884,45 +884,53 @@ namespace quake
                         break;
                     case   opcode_t. OP_EQ_E:
                         // 		c->_float = a->_int == b->_int;
-                        pr_globals_write(
-                            st.c,
-                            (double)(cast_int(pr_globals_read(st.a)) == cast_int(pr_globals_read(st.b)) ? 1 : 0));
+                       	c._float_b = a._int == b._int;
+                        //pr_globals_write(
+                        //    st.c,
+                        //    (double)(cast_int(pr_globals_read(st.a)) == cast_int(pr_globals_read(st.b)) ? 1 : 0));
                         break;
 
                     case opcode_t.OP_NE_F:
-                        eval = cast_float(pr_globals_read(st.a)) != cast_float(pr_globals_read(st.b));
-                        pr_globals_write(st.c, (double)(eval ? 1 : 0));
+		                c._float_b = a._float != b._float;
+
+                        //eval = cast_float(pr_globals_read(st.a)) != cast_float(pr_globals_read(st.b));
+                        //pr_globals_write(st.c, (double)(eval ? 1 : 0));
                         
                         break;
 
                     case opcode_t.OP_NE_V:
-                        /*c->_float = (a->vector[0] != b->vector[0]) ||
-                                    (a->vector[1] != b->vector[1]) ||
-                                    (a->vector[2] != b->vector[2]);*/
-                        eval = (cast_float(pr_globals_read(st.a)) != cast_float(pr_globals_read(st.b)))
-                               || (cast_float(pr_globals_read(st.a + 1)) != cast_float(pr_globals_read(st.b + 1)))
-                               || (cast_float(pr_globals_read(st.a + 2)) != cast_float(pr_globals_read(st.b + 2)));
-                        pr_globals_write(st.c, (double)(eval ? 1 : 0));
+                        c._float_b = (a.vector[0] != b.vector[0]) ||
+                                    (a.vector[1] != b.vector[1]) ||
+                                    (a.vector[2] != b.vector[2]);
+
+                        //eval = (cast_float(pr_globals_read(st.a)) != cast_float(pr_globals_read(st.b)))
+                        //       || (cast_float(pr_globals_read(st.a + 1)) != cast_float(pr_globals_read(st.b + 1)))
+                        //       || (cast_float(pr_globals_read(st.a + 2)) != cast_float(pr_globals_read(st.b + 2)));
+                        //pr_globals_write(st.c, (double)(eval ? 1 : 0));
                         break;
 
                     case opcode_t.OP_NE_S:
-                        pr_globals_write(
-                            st.c,
-                            (double)
-                            (pr_string(cast_int(pr_globals_read(st.a)))
-                                 .CompareTo(pr_string(cast_int(pr_globals_read(st.b))))));
+                        //c->_float = strcmp(pr_strings+a->string,pr_strings+b->string);
+                        c._float = pr_string(a._string).CompareTo(pr_string(b._string));
+                        //pr_globals_write(
+                        //    st.c,
+                        //    (double)
+                        //    (pr_string(cast_int(pr_globals_read(st.a)))
+                        //         .CompareTo(pr_string(cast_int(pr_globals_read(st.b))))));
                         break;
 
                     case opcode_t.OP_NE_E:
                         //c->_float = a->_int != b->_int;
-                        eval = cast_int(pr_globals_read(st.a)) != cast_int(pr_globals_read(st.b));
-                        pr_globals_write(st.c, (double)(eval ? 1 : 0));
+                        c._float_b = a._int != b._int;
+                        //eval = cast_int(pr_globals_read(st.a)) != cast_int(pr_globals_read(st.b));
+                        //pr_globals_write(st.c, (double)(eval ? 1 : 0));
                         break;
 
                     case opcode_t.OP_NE_FNC:
                         //c->_float = a->function != b->function;
-                        eval = cast_int(pr_globals_read(st.a)) != cast_int(pr_globals_read(st.b));
-                        pr_globals_write(st.c, (double)(eval? 1 : 0));
+                        c._float_b = a.function != b.function;
+                        //eval = cast_int(pr_globals_read(st.a)) != cast_int(pr_globals_read(st.b));
+                        //pr_globals_write(st.c, (double)(eval? 1 : 0));
                         break;
 
                         //==================
@@ -931,15 +939,16 @@ namespace quake
                     case opcode_t.OP_STORE_FLD: // integers
                     case opcode_t.OP_STORE_S:
                     case opcode_t.OP_STORE_FNC: // pointers
-                        pr_globals_write(st.b, pr_globals_read(st.a));
+		                b._int = a._int;
+                        //pr_globals_write(st.b, pr_globals_read(st.a));
                         break;
                     case opcode_t.OP_STORE_V:
-                        /*b->vector[0] = a->vector[0];
-                        b->vector[1] = a->vector[1];
-                        b->vector[2] = a->vector[2];*/
-                        pr_globals_write(st.b, (double)cast_float(pr_globals_read(st.a)));
-                        pr_globals_write(st.b + 1, (double)cast_float(pr_globals_read(st.a + 1)));
-                        pr_globals_write(st.b + 2, (double)cast_float(pr_globals_read(st.a + 2)));
+                        b.vector[0] = a.vector[0];
+                        b.vector[1] = a.vector[1];
+                        b.vector[2] = a.vector[2];
+                        //pr_globals_write(st.b, (double)cast_float(pr_globals_read(st.a)));
+                        //pr_globals_write(st.b + 1, (double)cast_float(pr_globals_read(st.a + 1)));
+                        //pr_globals_write(st.b + 2, (double)cast_float(pr_globals_read(st.a + 2)));
                         break;
 
                     case opcode_t.OP_STOREP_F:
@@ -951,7 +960,7 @@ namespace quake
                         //ptr->_int = a->_int;
                         //todo ptr = sv.edicts[b._int];
                         //ptr._int = a._int;
-                        writeptr(cast_int(pr_globals_read(st.b)), cast_int(pr_globals_read(st.a)));
+                        writeptr(b._int, a._int);
                         break;
                     case opcode_t.OP_STOREP_V:
                         //ptr = (eval_t*)((byte*)sv.edicts + b->_int);
@@ -960,9 +969,14 @@ namespace quake
                         //ptr->vector[2] = a->vector[2];
                         //todo ptr = sv.edicts[b._int];
                         //ptr.vector[0] = a.vector[0] etc
-                        writeptr(cast_int(pr_globals_read(st.b)), cast_int(pr_globals_read(st.a)), 0);
-                        writeptr(cast_int(pr_globals_read(st.b)), cast_int(pr_globals_read(st.a + 1)), 1);
-                        writeptr(cast_int(pr_globals_read(st.b)), cast_int(pr_globals_read(st.a + 2)), 2);
+
+                        writeptr(b._int, a.vector[0], 0);
+                        writeptr(b._int, a.vector[1], 1);
+                        writeptr(b._int, a.vector[2], 2);
+
+                        //writeptr(cast_int(pr_globals_read(st.b)), cast_int(pr_globals_read(st.a)), 0);
+                        //writeptr(cast_int(pr_globals_read(st.b)), cast_int(pr_globals_read(st.a + 1)), 1);
+                        //writeptr(cast_int(pr_globals_read(st.b)), cast_int(pr_globals_read(st.a + 2)), 2);
                         break;
 
                     case opcode_t.OP_ADDRESS:
@@ -978,44 +992,63 @@ namespace quake
                     case opcode_t.OP_LOAD_ENT:
                     case opcode_t.OP_LOAD_S:
                     case opcode_t.OP_LOAD_FNC:
-                        ed = PROG_TO_EDICT(cast_int(pr_globals_read(st.a)));
+                        ed = PROG_TO_EDICT(a._int);
                         //a = (eval_t *)((int *)&ed->v + b->_int);
                         //c->_int = a->_int;
-                        pr_globals_write(
-                            st.c, cast_int(readptr(ed.index * pr_edict_size + 96 + cast_int(pr_globals_read(st.b)) * 4)));
+                        c._int = cast_int(readptr(ed.index * pr_edict_size + 96 + b._int * 4));
+                        //pr_globals_write(
+                        //    st.c, cast_int(readptr(ed.index * pr_edict_size + 96 + cast_int(pr_globals_read(st.b)) * 4)));
                         break;
 
                     case opcode_t.OP_LOAD_V:
-                        ed = PROG_TO_EDICT(cast_int(pr_globals_read(st.a)));
+                        ed = PROG_TO_EDICT(a._int);
                         //a = (eval_t *)((int *)&ed->v + b->_int);
-                        //c->vector[0] = a->vector[0];
-                        //c->vector[1] = a->vector[1];
-                        //c->vector[2] = a->vector[2];
+                        //c.vector[0] = a.vector[0];
+                        //c.vector[1] = a.vector[1];
+                        //c.vector[2] = a.vector[2];
+
+                   
+
                         pr_globals_write(
                             st.c,
                             (double)
-                            cast_float(readptr(ed.index * pr_edict_size + 96 + cast_int(pr_globals_read(st.b)) * 4)));
+                            cast_float(readptr(ed.index * pr_edict_size + 96 + b._int* 4)));
                         pr_globals_write(
                             st.c + 1,
                             (double)
                             cast_float(
-                                readptr(ed.index * pr_edict_size + 96 + (cast_int(pr_globals_read(st.b)) + 1) * 4)));
+                                readptr(ed.index * pr_edict_size + 96 + (b._int + 1) * 4)));
                         pr_globals_write(
                             st.c + 2,
                             (double)
                             cast_float(
-                                readptr(ed.index * pr_edict_size + 96 + (cast_int(pr_globals_read(st.b)) + 2) * 4)));
+                                readptr(ed.index * pr_edict_size + 96 + (b._int + 2) * 4)));
+
+                        //pr_globals_write(
+                        //    st.c,
+                        //    (double)
+                        //    cast_float(readptr(ed.index * pr_edict_size + 96 + cast_int(pr_globals_read(st.b)) * 4)));
+                        //pr_globals_write(
+                        //    st.c + 1,
+                        //    (double)
+                        //    cast_float(
+                        //        readptr(ed.index * pr_edict_size + 96 + (cast_int(pr_globals_read(st.b)) + 1) * 4)));
+                        //pr_globals_write(
+                        //    st.c + 2,
+                        //    (double)
+                        //    cast_float(
+                        //        readptr(ed.index * pr_edict_size + 96 + (cast_int(pr_globals_read(st.b)) + 2) * 4)));
                         break;
 
                         //==================
 
                     case opcode_t.OP_IFNOT:
-                        if (cast_int(pr_globals_read(st.a)) == 0) 
+                        if (a._int == 0) 
                             s += st.b - 1; // offset the s++
                         break;
 
                     case opcode_t.OP_IF:
-                        if (cast_int(pr_globals_read(st.a)) != 0) 
+                        if (a._int != 0) 
                             s += st.b - 1; // offset the s++
                         break;
 
@@ -1033,7 +1066,7 @@ namespace quake
                     case opcode_t.OP_CALL7:
                     case opcode_t.OP_CALL8:
                         pr_argc = st.op - (int)opcode_t.OP_CALL0;
-                        int afunction = cast_int(pr_globals_read(st.a));
+                        int afunction = a.function;
                         if (afunction == 0) 
                             PR_RunError("NULL function");
 
@@ -1069,11 +1102,11 @@ namespace quake
                     case opcode_t.OP_STATE:
                         ed = PROG_TO_EDICT(pr_global_struct[0].self);
                         ed.v.nextthink = pr_global_struct[0].time + 0.1;
-                        if (cast_float(pr_globals_read(st.a)) != ed.v.frame)
+                        if (a._float != ed.v.frame)
                         {
-                            ed.v.frame = cast_float(pr_globals_read(st.a));
+                            ed.v.frame = a._float;
                         }
-                        ed.v.think = cast_int(pr_globals_read(st.b));
+                        ed.v.think = b.function;
                         break;
 
                     default:
