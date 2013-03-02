@@ -517,7 +517,7 @@ namespace quake
         */
         public static void S_StaticSound (sfx_t sfx, double[] origin, double vol, double attenuation)
         {
-	        channel_t	ss;
+	        channel_t	ch_ss;
 	        sfxcache_t  sc;
 
 	        if (sfx == null)
@@ -529,7 +529,7 @@ namespace quake
 		        return;
 	        }
 
-	        ss = channels[total_channels];
+	        ch_ss = channels[total_channels];
 	        total_channels++;
 
 	        sc = S_LoadSound (sfx);
@@ -542,24 +542,24 @@ namespace quake
 		        return;
 	        }
         	
-	        ss.sfx = sfx;
-	        mathlib.VectorCopy (origin, ss.origin);
-	        ss.master_vol = (int)vol;
-	        ss.dist_mult = (attenuation/64) / sound_nominal_clip_dist;
+	        ch_ss.sfx = sfx;
+	        mathlib.VectorCopy (origin, ch_ss.origin);
+	        ch_ss.master_vol = (int)vol;
+	        ch_ss.dist_mult = (attenuation/64) / sound_nominal_clip_dist;
         	
-	        SND_Spatialize (ss);
+	        SND_Spatialize (ch_ss);
 
             MediaElement media = new MediaElement();
-            ss.media = media;
+            ch_ss.media = media;
             media.AutoPlay = true;
             media.SetSource(new MemoryStream(sc.data));
-            media.Tag = ss;
+            media.Tag = ch_ss;
 #if SILVERLIGHT
             media.MediaEnded += media_MediaEnded;
 #else
             throw new NotImplementedException("S_StaticSound todo!");
 #endif
-            SetVolume(ss);
+            SetVolume(ch_ss);
             Page.thePage.parentCanvas.Children.Add(media);
         }
 
