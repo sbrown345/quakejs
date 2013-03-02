@@ -12,7 +12,7 @@ namespace quake
 
         public class globalvars_t
         {
-        	public int[]	pad = new int[28]; // 0
+            public globalval[] pad = new globalval[28]; // 0
             public int	    self; // 28
 	        public int	    other;
             public int      world; // 30

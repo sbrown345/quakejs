@@ -994,32 +994,6 @@ namespace quake
             return common.parseString(pr_strings, progs.ofs_strings + offset);
         }
 
-
-
-        //public static void pr_globals_write(int address, double value)
-        //{
-        //    pr_globals_write(address, value, null, null);
-        //}
-        //public static void pr_globals_write(int address, double[] value)
-        //{
-        //    pr_globals_write(address, null, value, null);
-        //}
-        //public void pr_globals_write(int address, int value)
-        //{
-        //    pr_globals_write(address, null, null, value);
-        //}
-
-        /*         
-         HAVE THE CODE RUN AFTER pr_globals_write and throw error saying if its wrong
-         0) make the syntax as close as C as possible,  (use dynamic for padding?) 
-         1) look at where it is first written
-         2) make test cases around there e.g. read back and test it is OK 
-         3)       
-         
-         
-         
-         */
-
         public enum globalval_type
         {
             Double,
@@ -1057,32 +1031,6 @@ namespace quake
             {
                 return new globalval{Type  = globalval_type.Double, Value=m};
             }
-
-            //public int _int
-            //{
-            //    get
-            //    {
-            //        //double???
-            //        if (Type == globalval_type.Float)
-            //            return  this.i;
-            //    }
-            //    set
-            //    {
-            //        this.i = value;
-            //    }
-            //}
-
-            //public float _float
-            //{
-            //    get
-            //    {
-            //        return this.f;
-            //    }
-            //    set
-            //    {
-            //        this.f = value;
-            //    }
-            //}
         }
 
         public static void pr_globals_write(int address, globalval value/*,todo for JS - args: double doubleVal, double[] vecVal, int intVal - explicitly set them here */)
@@ -1190,16 +1138,6 @@ namespace quake
             }
         }
 
-        //TODO: FOR JS VERSION POSSIBLY HAVE A GOBALS WRITE METHOD FOR EACH TYPE (e.g. double,dobule[],int etc)
-        //why is it double?? isn't it float in winquake????
-        //public static double pr_globals_read_float(int address)
-        //{
-            
-        //}
-        //public static double pr_globals_read_vector(int address)
-        //{
-            
-        //}
         public static globalval pr_globals_read(int address)
         {
             globalvars_t globalvars = pr_global_struct[address * 4 / sizeof_globalvars_t];
