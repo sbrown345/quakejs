@@ -1472,8 +1472,7 @@ namespace quake
 
         static void PF_WriteString ()
         {
-            Debug.WriteLine("PF_WriteString");
-            throw new Exception("PF_WriteString");
+            common.MSG_WriteString(WriteDest(), G_STRING(OFS_PARM1));
         }
         
         static void PF_WriteEntity ()
