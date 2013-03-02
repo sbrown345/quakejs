@@ -565,7 +565,7 @@ static void SV_PushMove (prog.edict_t pusher, Double movetime)
             // otherwise, just stay in place until the obstacle is gone
             if (pusher.v.blocked != null)
             {
-                prog.pr_global_struct[0].self = prog.EDICT_TO_PROG(pusher); //todo [0] is this right??
+                prog.pr_global_struct[0].self = prog.EDICT_TO_PROG(pusher);
                prog.pr_global_struct[0].other = prog.EDICT_TO_PROG(check);
                 prog.PR_ExecuteProgram (prog.pr_functions[pusher.v.blocked]);
             }
@@ -611,7 +611,6 @@ static void SV_PushMove (prog.edict_t pusher, Double movetime)
 			    SV_PushMove (ent, movetime);	// advances ent.v.ltime if not blocked
 	        }
 
-            // todo: this float thing may have issues with JS!
             if ((float)thinktime > (float)oldltime && (float)thinktime <= (float)ent.v.ltime)
 	        {
 		        ent.v.nextthink = 0;
@@ -1214,7 +1213,6 @@ static void SV_PushMove (prog.edict_t pusher, Double movetime)
 		        else if (ent.v.movetype == MOVETYPE_NOCLIP)
 			        SV_Physics_Noclip (ent);
 		        else if (ent.v.movetype == MOVETYPE_STEP) {
-                    //todo!!! step phys
                     SV_Physics_Step (ent);
                 }
 		        else if (ent.v.movetype == MOVETYPE_TOSS 
