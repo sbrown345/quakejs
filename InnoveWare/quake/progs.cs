@@ -147,6 +147,16 @@ namespace quake
                 }
             }
 
+            public override string ToString()
+            {
+                return string.Format(
+                    "address: {0} _int: {1} _float: {2} vector[0]: {3}",
+                    this.address,
+                    this._int,
+                    this._float,
+                    this.vector[0]);
+            }
+
             //indexer? implicit conversion between double[] ?
         }
 

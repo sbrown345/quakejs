@@ -1126,7 +1126,6 @@ namespace quake
 		        return;
 	        }
             sv.models[1] = sv.worldmodel; 
-            Debug.WriteLine("world firstclipnode " + sv.worldmodel.hulls[0].firstclipnode);
 
             //
             // clear world interaction links

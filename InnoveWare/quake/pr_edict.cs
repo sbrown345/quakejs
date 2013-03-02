@@ -223,51 +223,49 @@ namespace quake
         =============
         */
         static string line = StringExtensions.StringOfLength(256);
-        static string PR_ValueString(int type, Object val)
+        static string PR_ValueString(int type, globalval val)
         {
-            return "todo PR_ValueString";
-            //todo uncomment
-            //ddef_t def;
-            //dfunction_t f;
+            ddef_t def;
+            dfunction_t f;
 
-            //type &= ~DEF_SAVEGLOBAL;
+            type &= ~DEF_SAVEGLOBAL;
 
-            //switch ((etype_t)type)
-            //{
-            //    case etype_t.ev_string:
-            //        line = pr_string(cast_int(val));
-            //        break;
-            //    case etype_t.ev_entity:
-            //        line = "entity " + NUM_FOR_EDICT(PROG_TO_EDICT(cast_int(val)));
-            //        break;
-            //    case etype_t.ev_function:
-            //        f = pr_functions[cast_int(val)];
-            //        line = pr_string(f.s_name) + "()";
-            //        break;
-            //    case etype_t.ev_field:
-            //        def = ED_FieldAtOfs(cast_int(val));
-            //        line = "." + pr_string(def.s_name);
-            //        break;
-            //    case etype_t.ev_void:
-            //        line = "void";
-            //        break;
-            //    case etype_t.ev_float:
-            //        line = string.Format("{0:F1}", cast_float(val));
-            //        break;
-            //    case etype_t.ev_vector:
-            //        var vec = (double[])val;
-            //        //line = "'" + vec[0] + " " + vec[1] + " " + vec[2] + "'";
-            //        line = string.Format("'{0:F1} {1:F1} {2:F1}'", vec[0], vec[1], vec[2]);
-            //        break;
-            //    case etype_t.ev_pointer:
-            //        line = "pointer";
-            //        break;
-            //    default:
-            //        line = "bad type " + type;
-            //        break;
-            //}
+            switch ((etype_t)type)
+            {
+                case etype_t.ev_string:
+                    line = pr_string(cast_int(val));
+                    break;
+                case etype_t.ev_entity:
+                    line = "entity " + NUM_FOR_EDICT(PROG_TO_EDICT(cast_int(val)));
+                    break;
+                case etype_t.ev_function:
+                    f = pr_functions[cast_int(val)];
+                    line = pr_string(f.s_name) + "()";
+                    break;
+                case etype_t.ev_field:
+                    def = ED_FieldAtOfs(cast_int(val));
+                    line = "." + pr_string(def.s_name);
+                    break;
+                case etype_t.ev_void:
+                    line = "void";
+                    break;
+                case etype_t.ev_float:
+                    line = string.Format("{0:F1}", cast_float(val));
+                    break;
+                case etype_t.ev_vector:
+                    var vec = (double[])val;
+                    //line = "'" + vec[0] + " " + vec[1] + " " + vec[2] + "'";
+                    line = string.Format("'{0:F1} {1:F1} {2:F1}'", vec[0], vec[1], vec[2]);
+                    break;
+                case etype_t.ev_pointer:
+                    line = "pointer";
+                    break;
+                default:
+                    line = "bad type " + type;
+                    break;
+            }
 
-            //return line;
+            return line;
         }
 
         /*
@@ -280,38 +278,37 @@ namespace quake
         */
         static string PR_GlobalString(int ofs)
         {
-            return "TODO PR_GlobalString";
-            //string s;
-            //int i;
-            //ddef_t def;
-            //Object val;
+            string s;
+            int i;
+            ddef_t def;
+            globalval val;
 
-            //val = pr_globals_read(ofs);
-            //def = ED_GlobalAtOfs(ofs);
-            //if (def == null)
-            //    line = ofs + "(???)";
-            //else
-            //{
-            //    if ((int)etype_t.ev_vector == (def.type & ~DEF_SAVEGLOBAL))
-            //    {
-            //        Object val2 = pr_globals_read(ofs + 1);
-            //        Object val3 = pr_globals_read(ofs + 2);
+            val = pr_globals_read(ofs);
+            def = ED_GlobalAtOfs(ofs);
+            if (def == null)
+                line = ofs + "(???)";
+            else
+            {
+                if ((int)etype_t.ev_vector == (def.type & ~DEF_SAVEGLOBAL))
+                {
+                    globalval val2 = pr_globals_read(ofs + 1);
+                    globalval val3 = pr_globals_read(ofs + 2);
 
-            //        s = string.Format("'{0:F1} {1:F1} {2:F1}'", cast_float(val), cast_float(val2), cast_float(val3));
-            //    }
-            //    else
-            //    {
-            //        s = PR_ValueString(def.type, val);
-            //    }
-            //    line = ofs + "(" + pr_string(def.s_name) + ")" + s;
-            //}
+                    s = string.Format("'{0:F1} {1:F1} {2:F1}'", cast_float(val), cast_float(val2), cast_float(val3));
+                }
+                else
+                {
+                    s = PR_ValueString(def.type, val);
+                }
+                line = ofs + "(" + pr_string(def.s_name) + ")" + s;
+            }
 
-            //i = line.Length;
-            //for (; i < 20; i++)
-            //    line += " ";
-            //line += " ";
+            i = line.Length;
+            for (; i < 20; i++)
+                line += " ";
+            line += " ";
 
-            //return line;
+            return line;
         }
 
         static bool PR_GlobalStringHasValue(int ofs)
@@ -370,103 +367,100 @@ namespace quake
 
         public static string ED_Print(edict_t ed)
         {
-            return "todo ED_Print";
-            //            string output = "\nEDICT " + NUM_FOR_EDICT(ed) + ":\n";
+            string output = "\nEDICT " + NUM_FOR_EDICT(ed) + ":\n";
 
-            //            int l;
-            //            ddef_t d;
-            //            //C++ TO C# CONVERTER TODO TASK: C# does not have an equivalent for pointers to value types:
-            //            //ORIGINAL LINE: int *v;
-            //            int v;
-            //            int i;
-            //            int j;
-            //            string name;
-            //            int type;
+            int l;
+            ddef_t d;
+            int v;
+            int i;
+            int j;
+            string name;
+            int type;
 
-            //            if (ed.free)
-            //            {
-            //                return "FREE\n";
-            //            }
+            if (ed.free)
+            {
+                return "FREE\n";
+            }
 
-            //            for (i = 1; i < progs.numfielddefs; i++)
-            //            {
-            //                d = pr_fielddefs[i];
-            //                name = pr_string(d.s_name);
-            //                try
-            //                {
-            //                    if (name[name.Length - 2] == '_')
-            //                    {
-            //                        continue; // skip _x, _y, _z vars
-            //                    }
+            for (i = 1; i < progs.numfielddefs; i++)
+            {
+                d = pr_fielddefs[i];
+                name = pr_string(d.s_name);
+                try
+                {
+                    if (name[name.Length - 2] == '_')
+                    {
+                        continue; // skip _x, _y, _z vars
+                    }
 
-            //                    //// if the value is still all 0, skip the field
+                    //// if the value is still all 0, skip the field
 
-            //                    var field = ed.v.GetType().GetField(name);
-            //                    var prop = ed.v.GetType().GetProperty(name);
-            //                    object value = null;
-            //                    string valStr = null;
-            //                    type = d.type & ~DEF_SAVEGLOBAL;
-            //                    if (field == null && prop == null)
-            //                    {
-            //                        if (d.ofs > 104)
-            //                        {
-            //                            //if ((etype_t)type == etype_t.ev_float)
-            //                            //{
-            //                            //    value = ed.v.variables[d.ofs - 105];
-            //                            //    if ((double)value == 0.0) continue;
-            //                            //}
-            //                            //else if ((etype_t)type == etype_t.ev_string)
-            //                            //{
-            //                            //    valStr = pr_string(cast_int(ed.v.variables[d.ofs - 105]));
-            //                            //    if (valStr == "") continue;
-            //                            //}
-            //                            //else
-            //                            //{
-            //                            //    throw new Exception("not implmemetned: " + type);
-            //                            //}
+                    var field = ed.v.GetType().GetField(name);
+                    var prop = ed.v.GetType().GetProperty(name);
+                    globalval value = null;
+                    string valStr = null;
+                    type = d.type & ~DEF_SAVEGLOBAL;
+                    if (field == null && prop == null)
+                    {
+                        if (d.ofs > 104)
+                        {
+                            //if ((etype_t)type == etype_t.ev_float)
+                            //{
+                            //    value = ed.v.variables[d.ofs - 105];
+                            //    if ((double)value == 0.0) continue;
+                            //}
+                            //else if ((etype_t)type == etype_t.ev_string)
+                            //{
+                            //    valStr = pr_string(cast_int(ed.v.variables[d.ofs - 105]));
+                            //    if (valStr == "") continue;
+                            //}
+                            //else
+                            //{
+                            //    throw new Exception("not implmemetned: " + type);
+                            //}
 
 
 
-            //                            var tempval = ed.v.variables[d.ofs - 105];
-            //                            if (tempval == null) continue;
-            //                            switch ((etype_t)type)
-            //                            {
-            //                                case etype_t.ev_function:
-            //                                    value = ed.v.variables[d.ofs - 105];
-            //                                    break;
-            //                                case etype_t.ev_string:
-            //                                    valStr = pr_string(cast_int(ed.v.variables[d.ofs - 105]));
-            //                                    if (valStr == "")
-            //                                        continue;
-            //                                    break;
-            //                                case etype_t.ev_entity:
-            //                                    var testVal = NUM_FOR_EDICT(PROG_TO_EDICT(cast_int(tempval)));
-            //                                    if (testVal == 0)
-            //                                    {
-            //                                        continue;
-            //                                    }
-            //                                    value = cast_int(tempval);
-            //                                    break;
-            //                                case etype_t.ev_field:
-            //                                case etype_t.ev_void:
-            //                                case etype_t.ev_pointer:
-            //                                case etype_t.ev_float:
-            //                                    if (cast_float(tempval) == 0.0)
-            //                                        continue;
-            //                                    value = tempval;
-            //                                    break;
-            //                                case etype_t.ev_vector:
-            //                                    if (cast_float(ed.v.variables[d.ofs - 105]) == 0 && cast_float(ed.v.variables[d.ofs - 105 + 1]) == 0 && cast_float(ed.v.variables[d.ofs - 105 + 2]) == 0)
-            //                                    {
-            //                                        continue;
-            //                                    }
-            //                                    value = new double[] { cast_float(ed.v.variables[d.ofs - 105]), 
-            //                                       cast_float( ed.v.variables[d.ofs - 105+1]),
-            //                                        cast_float(ed.v.variables[d.ofs - 105+2]) };
-            //                                    break;
-            //                                default:
-            //                                    throw new Exception("not implmemetned: " + type);
-            //                            }
+                            var tempval = ed.v.variables[d.ofs - 105];
+                            if (tempval == null) continue;
+                            switch ((etype_t)type)
+                            {
+                                case etype_t.ev_function:
+                                    value = ed.v.variables[d.ofs - 105];
+                                    break;
+                                case etype_t.ev_string:
+                                    valStr = pr_string(cast_int(ed.v.variables[d.ofs - 105]));
+                                    if (valStr == "")
+                                        continue;
+                                    break;
+                                case etype_t.ev_entity:
+                                    var testVal = NUM_FOR_EDICT(PROG_TO_EDICT(cast_int(tempval)));
+                                    if (testVal == 0)
+                                    {
+                                        continue;
+                                    }
+                                    value = cast_int(tempval);
+                                    break;
+                                case etype_t.ev_field:
+                                case etype_t.ev_void:
+                                case etype_t.ev_pointer:
+                                case etype_t.ev_float:
+                                    if (cast_float(tempval) == 0.0)
+                                        continue;
+                                    value = tempval;
+                                    break;
+                                case etype_t.ev_vector:
+                                    if (cast_float(ed.v.variables[d.ofs - 105]) == 0 && cast_float(ed.v.variables[d.ofs - 105 + 1]) == 0 && cast_float(ed.v.variables[d.ofs - 105 + 2]) == 0)
+                                    {
+                                        continue;
+                                    }
+                                    value = new double[] { cast_float(ed.v.variables[d.ofs - 105]), 
+                                                   cast_float( ed.v.variables[d.ofs - 105+1]),
+                                                    cast_float(ed.v.variables[d.ofs - 105+2]) };
+                                    break;
+                                default:
+                                    throw new Exception("not implmemetned: " + type);
+                            }
 
 
 
@@ -486,77 +480,88 @@ namespace quake
 
 
 
-            //                        }
-            //                        else
-            //                        {
-            //                            throw new Exception("d.ofs wrong");
-            //                        }
-            //                    }
-            //                    else
-            //                    {
-            //                        Object theValue = field == null ? prop.GetValue(ed.v, null) : field.GetValue(ed.v);
-            //                        switch ((etype_t)type)
-            //                        {
-            //                            case etype_t.ev_function:
-            //                            case etype_t.ev_string:
-            //                                value = cast_int(theValue);
-            //                                if ((int)value == 0)
-            //                                {
-            //                                    continue;
-            //                                }
-            //                                break;
-            //                            case etype_t.ev_entity:
-            //                                var testVal = NUM_FOR_EDICT(PROG_TO_EDICT(cast_int(theValue)));
-            //                                if (testVal == 0)
-            //                                {
-            //                                    continue;
-            //                                }
-            //                                value = cast_int(theValue);
-            //                                break;
-            //                            case etype_t.ev_field:
-            //                            case etype_t.ev_void:
-            //                            case etype_t.ev_pointer:
-            //                            case etype_t.ev_float:
-            //                                value = theValue;
-            //                                if ((double)value == 0.0)
-            //                                {
-            //                                    continue;
-            //                                }
-            //                                break;
-            //                            case etype_t.ev_vector:
-            //                                value = theValue;
-            //                                var dblVal = (double[])value;
-            //                                if (dblVal[0] == 0 && dblVal[1] == 0 && dblVal[2] == 0)
-            //                                {
-            //                                    continue;
-            //                                }
-            //                                break;
-            //                        }
-            //                    }
+                        }
+                        else
+                        {
+                            throw new Exception("d.ofs wrong");
+                        }
+                    }
+                    else
+                    {
+                        Debug.WriteLine("todo finish ED_Print");
+                        //globalval theValue;
+                        //todo  maybe use getvalue extension method that gets the globalval with the type?
+                        //object theValueObject = field == null ? prop.GetValue(ed.v, null) : field.GetValue(ed.v);
+                        //if (field != null)
+                        //{
+                            
+                        //}
+                        //else
+                        //{
+                            
+                        //}
+                        //switch ((etype_t)type)
+                        //{
+                        //    case etype_t.ev_function:
+                        //    case etype_t.ev_string:
+                        //        value = cast_int(theValue);
+                        //        if ((int)value == 0)
+                        //        {
+                        //            continue;
+                        //        }
+                        //        break;
+                        //    case etype_t.ev_entity:
+                        //        var testVal = NUM_FOR_EDICT(PROG_TO_EDICT(cast_int(theValue)));
+                        //        if (testVal == 0)
+                        //        {
+                        //            continue;
+                        //        }
+                        //        value = cast_int(theValue);
+                        //        break;
+                        //    case etype_t.ev_field:
+                        //    case etype_t.ev_void:
+                        //    case etype_t.ev_pointer:
+                        //    case etype_t.ev_float:
+                        //        value = theValue;
+                        //        if ((double)value == 0.0)
+                        //        {
+                        //            continue;
+                        //        }
+                        //        break;
+                        //    case etype_t.ev_vector:
+                        //        value = theValue;
+                        //        var dblVal = (double[])value;
+                        //        if (dblVal[0] == 0 && dblVal[1] == 0 && dblVal[2] == 0)
+                        //        {
+                        //            continue;
+                        //        }
+                        //        break;
+                        //}
+                    }
 
-            //                    output += name;
-            //                    l = name.Length;
-            //                    while (l++ < 15)
-            //                    {
-            //                        output += " ";
-            //                    }
+                    output += name;
+                    l = name.Length;
+                    while (l++ < 15)
+                    {
+                        output += " ";
+                    }
 
 
-            //                    output += (valStr ?? PR_ValueString(d.type, value)) + "\n";
-            //                }
-            //                catch (Exception e)
-            //                {
-            //                    output += "-----------\nBAD ON " + name + " type: " + d.type + "\n" + e.Message 
-            //#if SILVERLIGHT
-            //                    + e.StackTrace 
-            //#endif         
-            //                    + e + output
+                    output += (valStr ?? PR_ValueString(d.type, value)) + "\n";
+                }
+                catch (Exception e)
+                {
+                    output += "-----------\nBAD ON " + name + " type: " + d.type + "\n" + e.Message
+                    #if SILVERLIGHT
+                        + e.StackTrace
+                    #endif
+                        + e + output
 
-            //                              + "\n------------------------------\n";
-            //                }
-            //            }
+                              + "\n------------------------------\n";
+                }
+            }
 
-            //            return output;
+            return output;
         }
 
         ///*
@@ -996,6 +1001,7 @@ namespace quake
 
         public enum globalval_type
         {
+            Vector,
             Double,
             Float,
             Int,
@@ -1005,36 +1011,41 @@ namespace quake
         {
             public globalval_type Type;
             public object Value;
-
-
-            //public static implicit operator object(globalval m)
-            //{
-            //    return m.Value;
-            //}
-
+            
             public static implicit operator int(globalval m)
             {
                 return (int)m.Value;
             }
 
-            public static implicit operator globalval(int m)
+            public static implicit operator double[](globalval m)
             {
-                return new globalval{Type  = globalval_type.Int, Value=m};
+                return (double[])m.Value;
             }
 
-            public static implicit operator globalval(float m)
+            public static implicit operator globalval(int i)
             {
-                return new globalval{Type  = globalval_type.Float, Value=m};
+                return new globalval{Type  = globalval_type.Int, Value=i};
             }
 
-            public static implicit operator globalval(double m)
+            public static implicit operator globalval(float f)
             {
-                return new globalval{Type  = globalval_type.Double, Value=m};
+                return new globalval{Type  = globalval_type.Float, Value=f};
+            }
+
+            public static implicit operator globalval(double d)
+            {
+                return new globalval{Type  = globalval_type.Double, Value=d};
+            }
+
+            public static implicit operator globalval(double[] vec)
+            {
+                return new globalval{Type  = globalval_type.Vector, Value=vec};
             }
         }
 
-        public static void pr_globals_write(int address, globalval value/*,todo for JS - args: double doubleVal, double[] vecVal, int intVal - explicitly set them here */)
+        public static void pr_globals_write(int address, globalval value)
         {
+            Debug.WriteLine("pr_globals_write " + address);
             globalvars_t globalvars = pr_global_struct[address * 4 / sizeof_globalvars_t];
             int offset = address % (sizeof_globalvars_t / 4);
             switch (offset)
@@ -1140,6 +1151,7 @@ namespace quake
 
         public static globalval pr_globals_read(int address)
         {
+            Debug.WriteLine("pr_globals_read " + address);
             globalvars_t globalvars = pr_global_struct[address * 4 / sizeof_globalvars_t];
             int offset = address % (sizeof_globalvars_t / 4);
             switch (offset)
@@ -1245,34 +1257,49 @@ namespace quake
         }
 
 
-        // TODO COULD DO IMPLICIT CONVERSION WITH globalval??
         public static float cast_float(globalval value)
         {
+            float val;
             if (value == null)
-                return 0;
-            if (value.Type == globalval_type.Int)
-                return BitConverter.ToSingle(BitConverter.GetBytes((int)value.Value), 0);
+            {
+                val = 0;
+            }
+            else if (value.Type == globalval_type.Int)
+            {
+                val = BitConverter.ToSingle(BitConverter.GetBytes((int)value.Value), 0);
+            }
             else
-                return (float)(double)value.Value;
+            {
+                val= (float)(double)value.Value;
+            }
+            Debug.WriteLine("cast_float " + val);
+            return val;
         }
 
         public static int cast_int(globalval value)
         {
+            int val;
             if (value == null)
-                return 0;
-            if (value.Type == globalval_type.Float)
             {
-                var val = BitConverter.ToInt32(BitConverter.GetBytes((float)value.Value), 0);
-                return val;
+                val = 0;
+            }
+            else if (value.Type == globalval_type.Float)
+            {
+                val = BitConverter.ToInt32(BitConverter.GetBytes((float)value.Value), 0);
             }
             else if (value.Type == globalval_type.Double)
             {
-                var val = BitConverter.ToInt32(BitConverter.GetBytes((float)(double)value.Value), 0);
-                return val;
+                val = BitConverter.ToInt32(BitConverter.GetBytes((float)(double)value.Value), 0);
             }
             else
-                return (int)value.Value;
+            {
+                val = (int)value.Value;
+            }
+
+            Debug.WriteLine("cast_int " + val);
+            return val;
         }
+
         //public static float cast_float(globalval value)
         //{
         //    if (value == null)

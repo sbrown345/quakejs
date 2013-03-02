@@ -149,8 +149,8 @@ namespace quake
         {
             int i;
 
-            //if (prNum >= 8400)
-            if ((prNum >= 0 && prNum % 100 == 0) || prNum > 21900)
+            if (prNum >= 0)
+            //if ((prNum >= 0 && prNum % 100 == 0) || prNum > 21900)
             {
                 //Debug.WriteLine(prog.ED_PrintNum(1));
                 string output = "";
@@ -698,8 +698,10 @@ namespace quake
                     //Debug.WriteLine(string.Format("c {0}: {1} {2} {3}", st.c, pr_globals_read(st.c), pr_globals_read(st.c + 1), pr_globals_read(st.c + 2)));
                     //PR_StackTraceStr();
                 }
-                
-                bool eval;
+
+                Debug.WriteLine(string.Format("a: {0}", a, b, c));
+                Debug.WriteLine(string.Format("b: {1}", a, b, c));
+                Debug.WriteLine(string.Format("c: {2}", a, b, c));
                 switch ((opcode_t)st.op)
                 {
                     case opcode_t.OP_ADD_F:
