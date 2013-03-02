@@ -833,45 +833,54 @@ namespace quake
                         break;
                     case opcode_t.OP_NOT_S:
                         //c->_float = !a->string || !pr_strings[a->string];
-                        int astring = cast_int(pr_globals_read(st.a));
-                        //pr_globals_write(st.c, (double)(((astring == 0) || (pr_string(astring) == null)) ? 1 : 0));
-                        pr_globals_write(st.c, (double)(((astring == 0) || string.IsNullOrEmpty(pr_string(astring))) ? 1 : 0));
+                        c._float_b = (a._string == 0) || string.IsNullOrEmpty(pr_string(a._string));
+
+
+                        //int astring = cast_int(pr_globals_read(st.a));
+                        ////pr_globals_write(st.c, (double)(((astring == 0) || (pr_string(astring) == null)) ? 1 : 0));
+                        //pr_globals_write(st.c, (double)(((astring == 0) || string.IsNullOrEmpty(pr_string(astring))) ? 1 : 0));
                         break;
                     case opcode_t.OP_NOT_FNC:
                         //c->_float = !a->function;
-                        pr_globals_write(st.c, (double)(cast_int(pr_globals_read(st.a)) == 0 ? 1 : 0));
+                        c._float_b = a.function == 0;
+                        //pr_globals_write(st.c, (double)(cast_int(pr_globals_read(st.a)) == 0 ? 1 : 0));
                         break;
                     case opcode_t.OP_NOT_ENT:
                         //c->_float = (PROG_TO_EDICT(a->edict) == sv.edicts);
-                        pr_globals_write(
-                            st.c,
-                            (double)(PROG_TO_EDICT(cast_int(pr_globals_read(st.a))) == server.sv.edicts[0] ? 1 : 0));
+                        c._float_b = (PROG_TO_EDICT(a.edict) == server.sv.edicts[0]);
+                        //pr_globals_write(
+                        //    st.c,
+                        //    (double)(PROG_TO_EDICT(cast_int(pr_globals_read(st.a))) == server.sv.edicts[0] ? 1 : 0));
                         break;
 
                     case opcode_t.OP_EQ_F:
-                        //c->_float = a->_float == b->_float;
-                        pr_globals_write(
-                            st.c,
-                            (double)(cast_float(pr_globals_read(st.a)) == cast_float(pr_globals_read(st.b)) ? 1 : 0));
+                        c._float_b = a._float == b._float;
+                        //pr_globals_write(
+                        //    st.c,
+                        //    (double)(cast_float(pr_globals_read(st.a)) == cast_float(pr_globals_read(st.b)) ? 1 : 0));
                         break;
                     case opcode_t.OP_EQ_V:
                         /*c->_float = (a->vector[0] == b->vector[0]) &&
                                     (a->vector[1] == b->vector[1]) &&
                                     (a->vector[2] == b->vector[2]);*/
-                        eval = (cast_float(pr_globals_read(st.a)) == cast_float(pr_globals_read(st.b)))
-                               && (cast_float(pr_globals_read(st.a + 1)) == cast_float(pr_globals_read(st.b + 1)))
-                               && (cast_float(pr_globals_read(st.a + 2)) == cast_float(pr_globals_read(st.b + 2)));
-                        pr_globals_write(st.c, (double)(eval ? 1 : 0));
+                        c._float_b = (a.vector[0] == b.vector[0]) &&
+                                    (a.vector[1] == b.vector[1]) &&
+                                    (a.vector[2] == b.vector[2]);
+                        //eval = (cast_float(pr_globals_read(st.a)) == cast_float(pr_globals_read(st.b)))
+                        //       && (cast_float(pr_globals_read(st.a + 1)) == cast_float(pr_globals_read(st.b + 1)))
+                        //       && (cast_float(pr_globals_read(st.a + 2)) == cast_float(pr_globals_read(st.b + 2)));
+                        //pr_globals_write(st.c, (double)(eval ? 1 : 0));
                         break;
                     case opcode_t.OP_EQ_S:
                         //c->_float = !strcmp(pr_strings+a->string,pr_strings+b->string);
-                        pr_globals_write(
-                            st.c,
-                            (double)
-                            (pr_string(cast_int(pr_globals_read(st.a)))
-                                 .CompareTo(pr_string(cast_int(pr_globals_read(st.b)))) == 0
-                                 ? 1
-                                 : 0));
+                        c._float_b = pr_string(a).CompareTo(pr_string(b)) == 0;
+                        //pr_globals_write(
+                        //    st.c,
+                        //    (double)
+                        //    (pr_string(cast_int(pr_globals_read(st.a)))
+                        //         .CompareTo(pr_string(cast_int(pr_globals_read(st.b)))) == 0
+                        //         ? 1
+                        //         : 0));
                         break;
                     case   opcode_t. OP_EQ_E:
                         // 		c->_float = a->_int == b->_int;

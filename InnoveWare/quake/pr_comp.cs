@@ -145,6 +145,10 @@ namespace quake
 
             public class eval_t_alt
             {
+                private int i;
+
+                private string s;
+
                 public eval_t_alt(int address)
                 {
                     this.address = address;
@@ -182,9 +186,57 @@ namespace quake
                     }
                 }
 
-                public int _int { get; set; }
+                public int function
+                {
+                    get
+                    {
+                        return cast_int(pr_globals_read(address));
+                    }
+                    set
+                    {
+                        throw new NotImplementedException();
+                        //pr_globals_write(address, value);
+                    }
+                }
+
+                public int edict
+                {
+                    get
+                    {
+                        return cast_int(pr_globals_read(address));
+                    }
+                    set
+                    {
+                        throw new NotImplementedException();
+                        //pr_globals_write(address, value);
+                    }
+                }
+
+                public int _int
+                {
+                    get
+                    {
+                        throw  new NotImplementedException();
+                    }
+                    set
+                    {
+                        throw new NotImplementedException();
+                    }
+                }
 
                 public vec3_t vector { get; set; }
+
+                public int _string
+                {
+                    get
+                    {
+                        return cast_int(pr_globals_read(address));
+                    }
+                    set
+                    {
+                        throw new NotImplementedException();
+                    }
+                }
 
                 //indexer? implicit conversion between double[] ?
             }
