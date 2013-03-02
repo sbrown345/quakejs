@@ -642,7 +642,7 @@ namespace quake
         */
 
         private static int num_hullcheck = 0;
-        private static bool SV_RecursiveHullCheck(
+        public static bool SV_RecursiveHullCheck(
             model.hull_t hull, int num, double p1f, double p2f, double[] p1, double[] p2, trace_t trace)
         {
 

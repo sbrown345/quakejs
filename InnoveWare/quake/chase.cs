@@ -21,6 +21,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 namespace quake
 {
+    using System;
+
     public partial class chase
     {
         static cvar_t	chase_back = new cvar_t("chase_back", "100");
@@ -50,12 +52,12 @@ namespace quake
 
         static void TraceLine (double[] start, double[] end, double[] impact)
         {
-	        //trace_t	trace;
+            world.trace_t trace;
 
-	        //memset (&trace, 0, sizeof(trace));
-	        //SV_RecursiveHullCheck (cl.worldmodel->hulls, 0, 0, 1, start, end, &trace);
+            trace = new world.trace_t();
+            world.SV_RecursiveHullCheck(client.cl.worldmodel.hulls[0], 0, 0, 1, start, end, trace);
 
-	        //VectorCopy (trace.endpos, impact);
+            mathlib.VectorCopy(trace.endpos, impact);
         }
 
         public static void Chase_Update ()
@@ -64,30 +66,33 @@ namespace quake
 	        double	    dist;
             double[]    forward = new double[3], up = new double[3], right = new double[3];
             double[]    dest = new double[3], stop = new double[3];
-            
-	        // if can't see player, reset
-	        mathlib.AngleVectors (client.cl.viewangles, forward, right, up);
 
-	        // calc exact destination
-	        for (i=0 ; i<3 ; i++)
-		        chase_dest[i] = render.r_refdef.vieworg[i] 
-		        - forward[i]*chase_back.value
-		        - right[i]*chase_right.value;
-	        chase_dest[2] = render.r_refdef.vieworg[2] + chase_up.value;
+            // if can't see player, reset
+            mathlib.AngleVectors(client.cl.viewangles, forward, right, up);
 
-	        // find the spot the player is looking at
-	        mathlib.VectorMA (render.r_refdef.vieworg, 4096, forward, dest);
-	        //TraceLine (r_refdef.vieworg, dest, stop);
+            // calc exact destination
+            for (i = 0; i < 3; i++)
+                chase_dest[i] = render.r_refdef.vieworg[i]
+                - forward[i] * chase_back.value
+                - right[i] * chase_right.value;
+            chase_dest[2] = render.r_refdef.vieworg[2] + chase_up.value;
 
-	        // calculate pitch to look at the same spot from camera
-	        //VectorSubtract (stop, r_refdef.vieworg, stop);
-	        //dist = DotProduct (stop, forward);
-	        //if (dist < 1)
-		    //    dist = 1;
-	        //r_refdef.viewangles[PITCH] = -atan(stop[2] / dist) / M_PI * 180;
+            // find the spot the player is looking at
+            mathlib.VectorMA(render.r_refdef.vieworg, 4096, forward, dest);
+            TraceLine(render.r_refdef.vieworg, dest, stop);
 
-	        // move towards destination
-	        mathlib.VectorCopy (chase_dest, render.r_refdef.vieworg);
+            // calculate pitch to look at the same spot from camera
+            mathlib.VectorSubtract(stop,  render.r_refdef.vieworg, stop);
+            dist = mathlib.DotProduct(stop, forward);
+            if (dist < 1)
+                dist = 1;
+           render. r_refdef.viewangles[quakedef.PITCH] = -Math.Atan(stop[2] / dist) / mathlib.M_PI * 180;
+
+            // move towards destination
+           TraceLine(render.r_refdef.vieworg, chase_dest, stop);
+            if (mathlib.Length(stop) != 0)
+                mathlib.VectorCopy(stop, chase_dest);
+            mathlib.VectorCopy(chase_dest, render.r_refdef.vieworg);
         }
     }
 }

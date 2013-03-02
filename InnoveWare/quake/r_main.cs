@@ -510,10 +510,18 @@ namespace quake
 	        {
 		        currententity = client.cl_visedicts[i];
 
-		        if (currententity == client.cl_entities[client.cl.viewentity])
-			        continue;	// don't draw the player
-
-		        switch (currententity.model.type)
+	            if (currententity == client.cl_entities[client.cl.viewentity])
+	            {
+	                if (chase.chase_active.value == 0)
+	                {
+	                    continue; // don't draw the player
+	                }
+	                else
+	                {
+                        currententity.angles[0] *= 0.3;
+	                }
+	            }
+	            switch (currententity.model.type)
 		        {
 		        case model.modtype_t.mod_sprite:
 			        mathlib.VectorCopy (currententity.origin, r_entorigin);
@@ -585,6 +593,9 @@ namespace quake
 
 	        if (r_drawviewmodel.value == 0 || r_fov_greater_than_90)
 		        return;
+
+            if (chase.chase_active.value != 0)
+                return;
 
 	        if ((client.cl.items & quakedef.IT_INVISIBILITY) != 0)
 		        return;
