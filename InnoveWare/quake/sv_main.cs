@@ -1088,7 +1088,7 @@ namespace quake
             for (int kk = 0; kk < sv.max_edicts; kk++)
             {
                 sv.edicts[kk] = new prog.edict_t(kk);
-                sv.edicts[kk].v.variables = new Object[prog.pr_edict_size - prog.sizeof_edict_t];
+                sv.edicts[kk].v.variables = new prog.globalval[prog.pr_edict_size - prog.sizeof_edict_t];
             }
 
             sv.datagram.maxsize = sv.datagram_buf.Length;

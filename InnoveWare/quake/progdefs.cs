@@ -312,7 +312,7 @@ namespace quake
             public int noise3; // 104
 
             //public Dictionary<string, object> dictionary = new Dictionary<string, object>();
-            public Object[] variables;
+            public globalval[] variables;
 
             public void clear()
             {

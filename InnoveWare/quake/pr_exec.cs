@@ -383,7 +383,7 @@ namespace quake
 	        return pr_stack[pr_depth].s;
         }
 
-        static Object readentvar(entvars_t entvars, int offset)
+        static globalval readentvar(entvars_t entvars, int offset)
         {
             if (offset > 104)
                 return entvars.variables[offset - 105];
@@ -505,14 +505,14 @@ namespace quake
             return server.sv.edicts[address / pr_edict_size];
         }
 
-        static Object readptr(int address)
+        static globalval readptr(int address)
         {
             entvars_t entvars = getedict(address).v;
             int offset = ((address % pr_edict_size) - 96) / 4;
             return readentvar(entvars, offset);
         }
 
-        static void writeptr(int address, Object value, int addressOffset = 0 /*fix vectors on .variables, each value was overwriting the previous*/)
+        static void writeptr(int address, globalval value, int addressOffset = 0 /*fix vectors on .variables, each value was overwriting the previous*/)
         {
             entvars_t entvars = getedict(address).v;
             int offset = ((address % pr_edict_size) - 96) / 4;
@@ -863,7 +863,7 @@ namespace quake
                         break;
 
                     case opcode_t.OP_ADDRESS:
-                        ed = PROG_TO_EDICT(cast_int(pr_globals_read(st.a)));
+                        ed = PROG_TO_EDICT(a._int);
                         if (ed == server.sv.edicts[0] && server.sv.state == server.server_state_t.ss_active) 
                             PR_RunError("assignment to world entity");
                         //c->_int = (byte *)((int *)&ed->v + b->_int) - (byte *)sv.edicts;
@@ -882,7 +882,7 @@ namespace quake
                         break;
 
                     case opcode_t.OP_LOAD_V:
-                        ed = PROG_TO_EDICT(a._int);
+                        ed = PROG_TO_EDICT(a.edict);
                         //a = (eval_t *)((int *)&ed->v + b->_int);
                         //c.vector[0] = a.vector[0];
                         //c.vector[1] = a.vector[1];
