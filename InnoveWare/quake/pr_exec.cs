@@ -648,7 +648,7 @@ namespace quake
             int i;
             edict_t ed;
             int exitdepth;
-            //eval_t	*ptr;
+            eval_t ptr;
   //try{
             /*if (!fnum || fnum >= progs.numfunctions)
             {
@@ -674,9 +674,9 @@ namespace quake
 
                 st = pr_statements[s];
                 st_ = new dstatement_t_alt(st);    
-                dstatement_t_alt.eval_t_alt a = st_.a;
-                dstatement_t_alt.eval_t_alt b = st_.b;
-                dstatement_t_alt.eval_t_alt c = st_.c;
+                eval_t a = st_.a;
+                eval_t b = st_.b;
+                eval_t c = st_.c;
 
                 if (--runaway == 0) 
                     PR_RunError("runaway loop error");
@@ -769,7 +769,7 @@ namespace quake
                         c._float_b = !a._float_b;
                         break;
                     case opcode_t.OP_NOT_S:
-                        c._float_b = (a._string == 0) || string.IsNullOrEmpty(pr_string(a._string));
+                        c._float_b = (a.@string == 0) || string.IsNullOrEmpty(pr_string(a.@string));
                         break;
                     case opcode_t.OP_NOT_FNC:
                         c._float_b = a.function == 0;
@@ -787,7 +787,7 @@ namespace quake
                                     (a.vector[2] == b.vector[2]);
                         break;
                     case opcode_t.OP_EQ_S:
-                        c._float_b = pr_string(a._string).CompareTo(pr_string(b._string)) == 0;
+                        c._float_b = pr_string(a.@string).CompareTo(pr_string(b.@string)) == 0;
                         break;
                     case   opcode_t. OP_EQ_E:
                        	c._float_b = a._int == b._int;
@@ -804,7 +804,7 @@ namespace quake
                         break;
 
                     case opcode_t.OP_NE_S:
-                        c._float = pr_string(a._string).CompareTo(pr_string(b._string));
+                        c._float = pr_string(a.@string).CompareTo(pr_string(b.@string));
                         break;
 
                     case opcode_t.OP_NE_E:
@@ -838,6 +838,8 @@ namespace quake
                         //ptr->_int = a->_int;
                         //todo ptr = sv.edicts[b._int];
                         //ptr._int = a._int;
+
+                        //var test = server.sv.edicts[b._int];
                         writeptr(b._int, a._int);
                         break;
                     case opcode_t.OP_STOREP_V:

@@ -118,141 +118,18 @@ namespace quake
 	        OP_BITAND,
 	        OP_BITOR
         };
-        
+
         public class dstatement_t_alt
         {
-            public class vec3_t
-            {
-                private readonly eval_t_alt parent;
-
-                public vec3_t(eval_t_alt parent)
-                {
-                    this.parent = parent;
-                }
-
-                public double this[int index]
-                {
-                    get
-                    {
-                        return cast_float(pr_globals_read(parent.address + index));
-                    }
-                    set
-                    {
-                        pr_globals_write(parent.address + index, value);
-                    }
-                }
-            }
-
-            public class eval_t_alt
-            {
-                private int i;
-
-                private string s;
-
-                public eval_t_alt(int address)
-                {
-                    this.address = address;
-                    vector = new vec3_t(this);
-                }
-
-                public static implicit operator int(eval_t_alt m)
-                {
-                    return m.address;
-                }
-
-                public int address { get; set; }
-
-                public bool _float_b
-                {
-                    get
-                    {
-                        return _float != 0;
-                    }
-                    set
-                    {
-                        pr_globals_write(address, value ? 1: 0);
-                    }
-                }
-
-                public double _float
-                {
-                    get
-                    {
-                        return cast_float(pr_globals_read(address));
-                    }
-                    set
-                    {
-                        pr_globals_write(address, value);
-                    }
-                }
-
-                public int function
-                {
-                    get
-                    {
-                        return cast_int(pr_globals_read(address));
-                    }
-                    set
-                    {
-                        throw new NotImplementedException();
-                        //pr_globals_write(address, value);
-                    }
-                }
-
-                public int edict
-                {
-                    get
-                    {
-                        return cast_int(pr_globals_read(address));
-                    }
-                    set
-                    {
-                        throw new NotImplementedException();
-                        //pr_globals_write(address, value);
-                    }
-                }
-
-                public int _int
-                {
-                    get
-                    {
-                        return cast_int(pr_globals_read(address));
-                    }
-                    set
-                    {
-                        pr_globals_write(address, value);
-                    }
-                }
-
-                public vec3_t vector { get; set; }
-
-                public int _string
-                {
-                    get
-                    {
-                        return cast_int(pr_globals_read(address));
-                    }
-                    set
-                    {
-                        throw new NotImplementedException();
-                    }
-                }
-
-                //indexer? implicit conversion between double[] ?
-            }
-
-            public eval_t_alt a { get; set; }
-            public eval_t_alt b { get; set; }
-            public eval_t_alt c { get; set; }
-
-            //private readonly dstatement_t dstatementT;
+            public eval_t a { get; set; }
+            public eval_t b { get; set; }
+            public eval_t c { get; set; }
 
             public dstatement_t_alt(dstatement_t dstatement_t)
             {
-                //dstatementT = dstatement_t;
-                a = new eval_t_alt(dstatement_t.a);
-                b = new eval_t_alt(dstatement_t.b);
-                c = new eval_t_alt(dstatement_t.c);
+                a = new eval_t(dstatement_t.a);
+                b = new eval_t(dstatement_t.b);
+                c = new eval_t(dstatement_t.c);
             }
         }
 

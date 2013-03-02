@@ -25,15 +25,130 @@ namespace quake
 
     public partial class prog
     {
+        //public class eval_t
+        //{
+        //    int		        @string;
+        //    double			_float;
+        //    double[]		vector = new double[3];
+        //    int			    function;
+        //    int				_int;
+        //    int				edict;
+        //};	
+
+        public class vec3_t
+        {
+            private readonly eval_t parent;
+
+            public vec3_t(eval_t parent)
+            {
+                this.parent = parent;
+            }
+
+            public double this[int index]
+            {
+                get
+                {
+                    return cast_float(pr_globals_read(parent.address + index));
+                }
+                set
+                {
+                    pr_globals_write(parent.address + index, value);
+                }
+            }
+        }
+
         public class eval_t
         {
-	        int		        @string;
-	        double			_float;
-	        double[]		vector = new double[3];
-	        int			    function;
-	        int				_int;
-	        int				edict;
-        };	
+            public eval_t(int address)
+            {
+                this.address = address;
+                vector = new vec3_t(this);
+            }
+
+            public static implicit operator int(eval_t m)
+            {
+                return m.address;
+            }
+
+            public int address { get; private set; }
+
+            public bool _float_b
+            {
+                get
+                {
+                    return _float != 0;
+                }
+                set
+                {
+                    pr_globals_write(address, value ? 1 : 0);
+                }
+            }
+
+            public double _float
+            {
+                get
+                {
+                    return cast_float(pr_globals_read(address));
+                }
+                set
+                {
+                    pr_globals_write(address, value);
+                }
+            }
+
+            public int function
+            {
+                get
+                {
+                    return cast_int(pr_globals_read(address));
+                }
+                set
+                {
+                    //pr_globals_write(address, value);
+                }
+            }
+
+            public int edict
+            {
+                get
+                {
+                    return cast_int(pr_globals_read(address));
+                }
+                set
+                {
+                    throw new NotImplementedException();
+                    //pr_globals_write(address, value);
+                }
+            }
+
+            public int _int
+            {
+                get
+                {
+                    return cast_int(pr_globals_read(address));
+                }
+                set
+                {
+                    pr_globals_write(address, value);
+                }
+            }
+
+            public vec3_t vector { get; private set; }
+
+            public int @string
+            {
+                get
+                {
+                    return cast_int(pr_globals_read(address));
+                }
+                set
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            //indexer? implicit conversion between double[] ?
+        }
 
         public const int	MAX_ENT_LEAFS	= 16;
         public class edict_t// :  common.link_t
