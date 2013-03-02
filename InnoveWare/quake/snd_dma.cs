@@ -557,7 +557,7 @@ namespace quake
 #if SILVERLIGHT
             media.MediaEnded += media_MediaEnded;
 #else
-            throw new NotImplementedException("S_StaticSound todo!");
+            media.MediaEnded += () => media_MediaEnded(media, null);
 #endif
             SetVolume(ch_ss);
             Page.thePage.parentCanvas.Children.Add(media);
