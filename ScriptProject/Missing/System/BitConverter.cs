@@ -32,7 +32,14 @@
             throw new ImplementedInJavaScript();
         }
 
+        [ScriptName("getBytesFromFloat")]
         public static Uint8Array GetBytes(float value)
+        {
+            throw new ImplementedInJavaScript();
+        }
+
+        [ScriptName("getBytesFromInt")]
+        public static Uint8Array GetBytes(int value)
         {
             throw new ImplementedInJavaScript();
         }
