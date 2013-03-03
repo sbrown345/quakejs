@@ -44,14 +44,14 @@ namespace quake
             public double   parm14;
             public double   parm15;
             public double   parm16;
-            public double[] v_forward = new double[3]; // 59
-            public double[] v_up = new double[3]; // 62
-            public double[] v_right = new double[3]; // 65
+            public double[] v_forward = ArrayHelpers.ExplcitDoubleArray(3); // 59
+            public double[] v_up = ArrayHelpers.ExplcitDoubleArray(3); // 62
+            public double[] v_right = ArrayHelpers.ExplcitDoubleArray(3); // 65
             public double   trace_allsolid; // 68
             public double   trace_startsolid;
             public double   trace_fraction; // 70
-            public double[] trace_endpos = new double[3]; // 71
-            public double[] trace_plane_normal = new double[3]; // 74
+            public double[] trace_endpos = ArrayHelpers.ExplcitDoubleArray(3); // 71
+            public double[] trace_plane_normal = ArrayHelpers.ExplcitDoubleArray(3); // 74
             public double   trace_plane_dist; // 77
             public int      trace_ent;
             public double   trace_inopen;
@@ -159,9 +159,9 @@ namespace quake
             public double   modelindex; // 0
 
             [Reflectable]
-            public double[] absmin = new double[3]; // 1
+            public double[] absmin = ArrayHelpers.ExplcitDoubleArray(3); // 1
             [Reflectable]
-            public double[] absmax = new double[3]; // 4
+            public double[] absmax = ArrayHelpers.ExplcitDoubleArray(3); // 4
             [Reflectable]
             public double ltime; // 7
             [Reflectable]
@@ -169,17 +169,17 @@ namespace quake
             [Reflectable]
             public double solid;
             [Reflectable]
-            public double[] origin = new double[3]; // 10
+            public double[] origin = ArrayHelpers.ExplcitDoubleArray(3); // 10
             [Reflectable]
-            public double[] oldorigin = new double[3]; // 13
+            public double[] oldorigin = ArrayHelpers.ExplcitDoubleArray(3); // 13
             [Reflectable]
-            public double[] velocity = new double[3]; // 16
+            public double[] velocity = ArrayHelpers.ExplcitDoubleArray(3); // 16
             [Reflectable]
-            public double[] angles = new double[3]; // 19
+            public double[] angles = ArrayHelpers.ExplcitDoubleArray(3); // 19
             [Reflectable]
-            public double[] avelocity = new double[3]; // 22
+            public double[] avelocity = ArrayHelpers.ExplcitDoubleArray(3); // 22
             [Reflectable]
-            public double[] punchangle = new double[3]; // 25
+            public double[] punchangle = ArrayHelpers.ExplcitDoubleArray(3); // 25
             [Reflectable]
             public int classname; // 28
             [Reflectable]
@@ -191,11 +191,11 @@ namespace quake
             [Reflectable]
             public double effects;
             [Reflectable]
-            public double[] mins = new double[3]; // 33
+            public double[] mins = ArrayHelpers.ExplcitDoubleArray(3); // 33
             [Reflectable]
-            public double[] maxs = new double[3]; // 36
+            public double[] maxs = ArrayHelpers.ExplcitDoubleArray(3); // 36
             [Reflectable]
-            public double[] size = new double[3]; // 39
+            public double[] size = ArrayHelpers.ExplcitDoubleArray(3); // 39
             [Reflectable]
             public int touch; // 42
             [Reflectable]
@@ -237,7 +237,7 @@ namespace quake
             [Reflectable]
             public double deadflag;
             [Reflectable]
-            public double[] view_ofs = new double[3]; // 62
+            public double[] view_ofs = ArrayHelpers.ExplcitDoubleArray(3); // 62
             [Reflectable]
             public double button0; // 65
             [Reflectable]
@@ -249,7 +249,7 @@ namespace quake
             [Reflectable]
             public double fixangle;
             [Reflectable]
-            public double[] v_angle = new double[3]; // 70
+            public double[] v_angle = ArrayHelpers.ExplcitDoubleArray(3); // 70
             [Reflectable]
             public double idealpitch; // 73
             [Reflectable]
@@ -297,7 +297,7 @@ namespace quake
             [Reflectable]
             public int owner; // 95
             [Reflectable]
-            public double[] movedir = new double[3]; // 96
+            public double[] movedir = ArrayHelpers.ExplcitDoubleArray(3); // 96
             [Reflectable]
             public int message; // 99
             [Reflectable]
