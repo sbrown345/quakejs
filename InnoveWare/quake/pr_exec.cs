@@ -194,7 +194,7 @@ namespace quake
 
                 //if (prNum % 1000 == 0)
                 //if (prNum >= 69366)
-                prog.PF_coredump();
+                //prog.PF_coredump();
             }
         }
 
@@ -704,10 +704,10 @@ namespace quake
                     //PR_StackTraceStr();
                 }
 
-                //Debug.WriteLine(string.Format("prNum: {0}", prNum));
-                //Debug.WriteLine(string.Format("a: {0}", a, b, c));
-                //Debug.WriteLine(string.Format("b: {1}", a, b, c));
-                //Debug.WriteLine(string.Format("c: {2}", a, b, c));
+                Debug.WriteLine(string.Format("prNum: {0}", prNum));
+                Debug.WriteLine(string.Format("a: {0}", a, b, c));
+                Debug.WriteLine(string.Format("b: {1}", a, b, c));
+                Debug.WriteLine(string.Format("c: {2}", a, b, c));
                 switch ((opcode_t)st.op)
                 {
                     case opcode_t.OP_ADD_F:
@@ -848,6 +848,17 @@ namespace quake
 		                b._int = a._int;
                         break;
                     case opcode_t.OP_STORE_V:
+                        //b.vector[0] = a.vector[0];
+                        //TIODO: SOME NUMBERS ARE ALWASY NAN! NEED TO DO SOMETHING ELSE? ALWAYS STORE AS INT?
+                        //b._int = a._int; // todo: fix properly, this is a work around for if there's a NaN - which acts differently in JS. not all float values can convert to int I guess...?
+                        //maybe pass globalval instead of float?
+                        // log out everythingh and compare to original quake?
+                        // break point if NaN
+                        // dont cast to float?
+
+                        // COULD USE REFLECTION TO GET FIELDS DIRECTLY AND INTERACT WITH THEM
+                        // and or use "dynamic" and skip the cast_float stuff
+                        // eval_t can be a wrapper around, and globals funcs will get field Type info
                         b.vector[0] = a.vector[0];
                         b.vector[1] = a.vector[1];
                         b.vector[2] = a.vector[2];

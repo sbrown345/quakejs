@@ -1078,7 +1078,7 @@ namespace quake
 
         public static void pr_globals_write(int address, globalval value)
         {
-            //Debug.WriteLine(string.Format("pr_globals_write {0}: {1}", address, value));
+            Debug.WriteLine(string.Format("pr_globals_write {0}: {1}", address, value));
             globalvars_t globalvars = pr_global_struct[address * 4 / sizeof_globalvars_t];
             int offset = address % (sizeof_globalvars_t / 4);
             switch (offset)
@@ -1312,6 +1312,10 @@ namespace quake
 
             //Debug.WriteLine(string.Format("cast_float old: {0} ", value == null ? "null" : value.Value));
             //Debug.WriteLine(string.Format("cast_float new: {0} ", val));
+            if (float.IsNaN(val))
+            {
+                Debug.WriteLine(string.Format("cast_float NaN: ({0})", value.Value));
+            }
             return val;
         }
 
