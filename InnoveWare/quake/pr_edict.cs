@@ -771,8 +771,8 @@ namespace quake
             switch ((etype_t)(key.type & ~DEF_SAVEGLOBAL))
             {
                 case etype_t.ev_string:
-                    if (d != null) d.SetValue(@base, getStringIndex(ED_NewString(s)) - 15000);
-                    else variables[key.ofs - 105] = getStringIndex(ED_NewString(s)) - 15000;
+                    if (d != null) d.SetValue(@base, getStringIndex(ED_NewString(s)) - prog.stringPoolOffset);
+                    else variables[key.ofs - 105] = getStringIndex(ED_NewString(s)) - prog.stringPoolOffset;
                     break;
 
                 case etype_t.ev_float:
@@ -1015,10 +1015,12 @@ namespace quake
             console.Con_DPrintf(inhibit + " entities inhibited\n");
         }
 
+        public const int stringPoolOffset = 15000;
+
         public static string pr_string(int offset)
         {
             if (offset < 0)
-                return stringPool[offset + 15000];
+                return stringPool[offset + prog.stringPoolOffset];
             return common.parseString(pr_strings, progs.ofs_strings + offset);
         }
 
@@ -1314,7 +1316,7 @@ namespace quake
             //Debug.WriteLine(string.Format("cast_float new: {0} ", val));
             if (float.IsNaN(val))
             {
-                Debug.WriteLine(string.Format("cast_float NaN: ({0})", value.Value));
+                Debug.WriteLine(string.Format("cast_float NaN: {0} type: {1}", cast_int(value), value.Type));
             }
             return val;
         }

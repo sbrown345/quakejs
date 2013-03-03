@@ -1149,7 +1149,7 @@ namespace quake
             ent = prog.EDICT_NUM(0);
             ent.v.clear();
             ent.free = false;
-            ent.v.model = prog.getStringIndex(sv.worldmodel.name) - 15000;
+            ent.v.model = prog.getStringIndex(sv.worldmodel.name) - prog.stringPoolOffset;
             ent.v.modelindex = 1;		// world model
             ent.v.solid = SOLID_BSP;
             ent.v.movetype = MOVETYPE_PUSH;
@@ -1159,7 +1159,7 @@ namespace quake
 	        else
                 prog.pr_global_struct[0].deathmatch = host.deathmatch.value;
 
-            prog.pr_global_struct[0].mapname = prog.getStringIndex(sv.name) - 15000;
+            prog.pr_global_struct[0].mapname = prog.getStringIndex(sv.name) - prog.stringPoolOffset;
 
         // serverflags are for cross level information (sigils)
 	        prog.pr_global_struct[0].serverflags = svs.serverflags;

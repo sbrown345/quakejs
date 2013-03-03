@@ -256,7 +256,7 @@ namespace quake
 	        if (check == null)
 		        PR_RunError ("no precache: " + m + "\n");
         		
-	        e.v.model = getStringIndex(m) - 15000;
+	        e.v.model = getStringIndex(m) - prog.stringPoolOffset;
 	        e.v.modelindex = i; //SV_ModelIndex (m);
 
 	        mod = server.sv.models[ (int)e.v.modelindex];  // Mod_ForName (m, true);
@@ -924,9 +924,9 @@ namespace quake
             }
 
             //throw new Exception("todo PF_ftos G_INT(OFS_RETURN) = pr_string_temp - pr_strings;");
-            var index = getStringIndex(pr_string_temp) - 15000;
+            var index = getStringIndex(pr_string_temp) - prog.stringPoolOffset;
             pr_globals_write(OFS_RETURN, index);
-            //G_INT(OFS_RETURN) = pr_string_temp - pr_strings; =-- GET INDEX OF STRING AND WRITE TO GLOBALS AS INT opposite of  pr_string() ???? - has that 15000 index thing
+            //G_INT(OFS_RETURN) = pr_string_temp - pr_strings; =-- GET INDEX OF STRING AND WRITE TO GLOBALS AS INT opposite of  pr_string() ???? - has that prog.stringPoolOffset index thing
         }
 
         static void PF_fabs ()
@@ -941,11 +941,11 @@ namespace quake
         {
             //sprintf (pr_string_temp, "'%5.1f %5.1f %5.1f'", G_VECTOR(OFS_PARM0)[0], G_VECTOR(OFS_PARM0)[1], G_VECTOR(OFS_PARM0)[2]);
             ////G_INT(OFS_RETURN) = pr_string_temp - pr_strings;
-            //pr_globals_write(OFS_RETURN, pr_string_temp - pr_strings;); //todo: FIND INDEX OF IT IN ARRAAY AND WRITE TO GLOBAS AS INT? opposite of  pr_string() ???? - has that 15000 index thing
+            //pr_globals_write(OFS_RETURN, pr_string_temp - pr_strings;); //todo: FIND INDEX OF IT IN ARRAAY AND WRITE TO GLOBAS AS INT? opposite of  pr_string() ???? - has that prog.stringPoolOffset index thing
 
             //throw new Exception("todo TEST PF_vtos;");
             pr_string_temp= string.Format("{0:F5} {1:F5} {2:F5} ", G_VECTOR(OFS_PARM0)[0], G_VECTOR(OFS_PARM0)[1], G_VECTOR(OFS_PARM0)[2]);
-            var index = getStringIndex(pr_string_temp) - 15000;
+            var index = getStringIndex(pr_string_temp) - prog.stringPoolOffset;
             pr_globals_write(OFS_RETURN, index);
         }
 

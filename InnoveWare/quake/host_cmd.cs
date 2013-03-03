@@ -413,7 +413,7 @@ namespace quake
 		        if (host_client.name.CompareTo(newName) != 0)
 			        console.Con_Printf (host_client.name + " renamed to " + newName + "\n");
 	        host_client.name = newName;
-	        host_client.edict.v.netname = prog.getStringIndex(host_client.name) - 15000;
+	        host_client.edict.v.netname = prog.getStringIndex(host_client.name) - prog.stringPoolOffset;
         	
         // send notification to all clients
         	
@@ -607,7 +607,7 @@ namespace quake
                 ent.v.clear();
                 ent.v.colormap = prog.NUM_FOR_EDICT(ent);
                 ent.v.team = (host_client.colors & 15) + 1;
-                ent.v.netname = prog.getStringIndex(host_client.name) - 15000;
+                ent.v.netname = prog.getStringIndex(host_client.name) - prog.stringPoolOffset;
 
                 // copy spawn parms out of the client_t
 
