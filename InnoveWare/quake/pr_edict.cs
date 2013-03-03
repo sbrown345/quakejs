@@ -1041,11 +1041,16 @@ namespace quake
             {
                 return new globalval{Type  = globalval_type.Vector, Value=vec};
             }
+
+            public override string ToString()
+            {
+                return string.Format("globalval type: {0} int: {1} float {2:F6}", (int)Type, cast_int(this), cast_float(this));
+            }
         }
 
         public static void pr_globals_write(int address, globalval value)
         {
-            Debug.WriteLine("pr_globals_write " + address);
+            Debug.WriteLine(string.Format("pr_globals_write {0}: {1}", address, value));
             globalvars_t globalvars = pr_global_struct[address * 4 / sizeof_globalvars_t];
             int offset = address % (sizeof_globalvars_t / 4);
             switch (offset)
@@ -1151,7 +1156,7 @@ namespace quake
 
         public static globalval pr_globals_read(int address)
         {
-            Debug.WriteLine("pr_globals_read " + address);
+            //Debug.WriteLine("pr_globals_read " + address);
             globalvars_t globalvars = pr_global_struct[address * 4 / sizeof_globalvars_t];
             int offset = address % (sizeof_globalvars_t / 4);
             switch (offset)

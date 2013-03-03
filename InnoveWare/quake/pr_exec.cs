@@ -150,7 +150,7 @@ namespace quake
         {
             int i;
 
-            if (prNum >= 0)
+            if (prNum >= 400)
             //if ((prNum >= 0 && prNum % 100 == 0) || prNum > 21900)
             {
                 //Debug.WriteLine(prog.ED_PrintNum(1));
@@ -701,9 +701,9 @@ namespace quake
                 }
 
                 Debug.WriteLine(string.Format("prNum: {0}", prNum));
-                Debug.WriteLine(string.Format("a: {0}", a, b, c));
-                Debug.WriteLine(string.Format("b: {1}", a, b, c));
-                Debug.WriteLine(string.Format("c: {2}", a, b, c));
+                //Debug.WriteLine(string.Format("a: {0}", a, b, c));
+                //Debug.WriteLine(string.Format("b: {1}", a, b, c));
+                //Debug.WriteLine(string.Format("c: {2}", a, b, c));
                 switch ((opcode_t)st.op)
                 {
                     case opcode_t.OP_ADD_F:

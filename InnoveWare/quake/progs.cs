@@ -150,14 +150,13 @@ namespace quake
             public override string ToString()
             {
                 return string.Format(
-                    "address: {0} _int: {1} _float: {2} vector[0]: {3}",
+                    "address: {0} _int: {1} _float: {2:F1} vector[1]: {3:F1} vector[2]: {4:F1}",
                     this.address,
                     this._int,
                     this._float,
-                    this.vector[0]);
+                    this.vector[0],
+                    this.vector[1]);
             }
-
-            //indexer? implicit conversion between double[] ?
         }
 
         public const int	MAX_ENT_LEAFS	= 16;
@@ -225,7 +224,7 @@ namespace quake
 
         public static double G_FLOAT(int o) { return cast_float(pr_globals_read(o)); }
         static int G_INT(int o) { return cast_int(pr_globals_read(o)); }
-        static edict_t G_EDICT(int o) { return server.sv.edicts[(int)pr_globals_read(o) / pr_edict_size]; }
+        static edict_t G_EDICT(int o) { return server.sv.edicts[pr_globals_read(o) / pr_edict_size]; }
         static int G_EDICTNUM(int o) { return NUM_FOR_EDICT(G_EDICT(o)); }
         static double[] G_VECTOR(int o)
         {
@@ -243,7 +242,7 @@ namespace quake
             pr_globals_write(o + 2, (double)cast_float(vector[2]));
         }
 
-        static string G_STRING(int o) { return pr_string((int)pr_globals_read(o)); }
+        static string G_STRING(int o) { return pr_string(pr_globals_read(o)); }
         //#define	G_FUNCTION(o) (*(func_t *)&pr_globals[o])
 
         static string E_STRING(edict_t e, int o) { return pr_string(cast_int(readentvar(e.v, o))); }
