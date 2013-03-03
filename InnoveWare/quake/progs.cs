@@ -48,7 +48,7 @@ namespace quake
             {
                 get
                 {
-                    return cast_float(pr_globals_read(parent.address + index));
+                    return pr_globals_read(parent.address + index);
                 }
                 set
                 {
