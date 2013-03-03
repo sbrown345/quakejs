@@ -489,55 +489,77 @@ namespace quake
                     }
                     else
                     {
-                        Debug.WriteLine("todo finish ED_Print");
-                        //globalval theValue;
+                        globalval theValue = null;
                         //todo  maybe use getvalue extension method that gets the globalval with the type?
-                        //object theValueObject = field == null ? prop.GetValue(ed.v, null) : field.GetValue(ed.v);
-                        //if (field != null)
-                        //{
-                            
-                        //}
-                        //else
-                        //{
-                            
-                        //}
-                        //switch ((etype_t)type)
-                        //{
-                        //    case etype_t.ev_function:
-                        //    case etype_t.ev_string:
-                        //        value = cast_int(theValue);
-                        //        if ((int)value == 0)
-                        //        {
-                        //            continue;
-                        //        }
-                        //        break;
-                        //    case etype_t.ev_entity:
-                        //        var testVal = NUM_FOR_EDICT(PROG_TO_EDICT(cast_int(theValue)));
-                        //        if (testVal == 0)
-                        //        {
-                        //            continue;
-                        //        }
-                        //        value = cast_int(theValue);
-                        //        break;
-                        //    case etype_t.ev_field:
-                        //    case etype_t.ev_void:
-                        //    case etype_t.ev_pointer:
-                        //    case etype_t.ev_float:
-                        //        value = theValue;
-                        //        if ((double)value == 0.0)
-                        //        {
-                        //            continue;
-                        //        }
-                        //        break;
-                        //    case etype_t.ev_vector:
-                        //        value = theValue;
-                        //        var dblVal = (double[])value;
-                        //        if (dblVal[0] == 0 && dblVal[1] == 0 && dblVal[2] == 0)
-                        //        {
-                        //            continue;
-                        //        }
-                        //        break;
-                        //}
+                        object theValueObject = field == null ? prop.GetValue(ed.v, null) : field.GetValue(ed.v);
+         
+                        if (field != null)
+                        {
+                            if (field.FieldType == typeof(double[]))
+                            {
+                                theValue = (double[])theValueObject;
+                            }
+                            else if (field.FieldType == typeof(double))
+                            {
+                                theValue = (double)theValueObject;
+                            }
+                            else if (field.FieldType == typeof(int))
+                            {
+                                theValue = (int)theValueObject;
+                            }
+                        }
+                        else
+                        {
+                            if (prop.PropertyType == typeof(double[]))
+                            {
+                                theValue = (double[])theValueObject;
+                            }
+                            else if (prop.PropertyType == typeof(double))
+                            {
+                                theValue = (double)theValueObject;
+                            }
+                            else if (prop.PropertyType == typeof(int))
+                            {
+                                theValue = (int)theValueObject;
+                            }
+                        }
+                        switch ((etype_t)type)
+                        {
+                            case etype_t.ev_function:
+                            case etype_t.ev_string:
+                                value = cast_int(theValue);
+                                if ((int)value == 0)
+                                {
+                                    continue;
+                                }
+                                break;
+                            case etype_t.ev_entity:
+                                var testVal = NUM_FOR_EDICT(PROG_TO_EDICT(cast_int(theValue)));
+                                if (testVal == 0)
+                                {
+                                    continue;
+                                }
+                                value = cast_int(theValue);
+                                break;
+                            case etype_t.ev_field:
+                            case etype_t.ev_void:
+                            case etype_t.ev_pointer:
+                            case etype_t.ev_float:
+                                value = theValue;
+                                if ((double)value == 0.0)
+                                {
+                                    continue;
+                                }
+                                break;
+                            case etype_t.ev_vector:
+                                value = theValue;
+                                var dblVal = (double[])value;
+                                if (dblVal[0] == 0 && dblVal[1] == 0 && dblVal[2] == 0)
+                                {
+                                    continue;
+                                }
+                                break;
+                        }
                     }
 
                     output += name;
@@ -1018,6 +1040,11 @@ namespace quake
                 return (int)m.Value;
             }
 
+            public static implicit operator double(globalval m)
+            {
+                return (double)m.Value;
+            }
+
             public static implicit operator double[](globalval m)
             {
                 return (double[])m.Value;
@@ -1051,7 +1078,7 @@ namespace quake
 
         public static void pr_globals_write(int address, globalval value)
         {
-            Debug.WriteLine(string.Format("pr_globals_write {0}: {1}", address, value));
+            //Debug.WriteLine(string.Format("pr_globals_write {0}: {1}", address, value));
             globalvars_t globalvars = pr_global_struct[address * 4 / sizeof_globalvars_t];
             int offset = address % (sizeof_globalvars_t / 4);
             switch (offset)
