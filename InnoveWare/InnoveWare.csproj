@@ -71,6 +71,7 @@
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
     <Compile Include="Missing\ArrayHelpers.cs" />
+    <Compile Include="Missing\CastHelpers.cs" />
     <Compile Include="Missing\ReflectableAttribute.cs" />
     <Compile Include="Missing\Web\Uint8Array.cs" />
     <Compile Include="Missing\DateTimeExtensions.cs" />

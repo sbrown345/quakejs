@@ -1,4 +1,5 @@
 ﻿using System;
+using Missing;
 
 /*
 Copyright (C) 1996-1997 Id Software, Inc.
@@ -172,7 +173,7 @@ namespace quake
                 {
                     output += ("branch " + s.a);
                 }
-                else if ((uint)(s.op - (ushort)opcode_t.OP_STORE_F) < 6)
+                else if (CastHelpers.ToUint32(s.op - (ushort)opcode_t.OP_STORE_F) < 6)
                 {
                     output += (PR_GlobalString(s.a));
                     output += (PR_GlobalStringNoContents(s.b));
@@ -699,6 +700,7 @@ namespace quake
                     //PR_StackTraceStr();
                 }
 
+                Debug.WriteLine(string.Format("prNum: {0}", prNum));
                 Debug.WriteLine(string.Format("a: {0}", a, b, c));
                 Debug.WriteLine(string.Format("b: {1}", a, b, c));
                 Debug.WriteLine(string.Format("c: {2}", a, b, c));

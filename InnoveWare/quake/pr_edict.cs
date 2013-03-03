@@ -1272,8 +1272,9 @@ namespace quake
             {
                 val= (float)(double)value.Value;
             }
-            Debug.WriteLine(string.Format("cast_float old: {0} ", value == null ? "null" : value.Value));
-            Debug.WriteLine(string.Format("cast_float new: {0} ", val));
+
+            //Debug.WriteLine(string.Format("cast_float old: {0} ", value == null ? "null" : value.Value));
+            //Debug.WriteLine(string.Format("cast_float new: {0} ", val));
             return val;
         }
 
@@ -1297,8 +1298,8 @@ namespace quake
                 val = (int)value.Value;
             }
 
-            Debug.WriteLine(string.Format("cast_float old: {0} ", value == null ? "null" : value.Value));
-            Debug.WriteLine(string.Format("cast_float new: {0} ", val));
+            //Debug.WriteLine(string.Format("cast_float old: {0} ", value == null ? "null" : value.Value));
+            //Debug.WriteLine(string.Format("cast_float new: {0} ", val));
             return val;
         }
 

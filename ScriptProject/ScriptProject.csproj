@@ -274,6 +274,7 @@
       <Link>quake\world.cs</Link>
     </Compile>
     <Compile Include="InnoveWare\Page.cs" />
+    <Compile Include="Missing\CastHelpers.cs" />
     <Compile Include="Missing\Libs\Stats.cs" />
     <Compile Include="Missing\NotImplementedException.cs" />
     <Compile Include="Missing\Web\ArrayBuffer.cs" />
