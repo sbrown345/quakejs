@@ -150,8 +150,8 @@ namespace quake
         {
             int i;
 
-            if (prNum >= 400)
             //if ((prNum >= 0 && prNum % 100 == 0) || prNum > 21900)
+            if (prNum >= 0)
             {
                 //Debug.WriteLine(prog.ED_PrintNum(1));
                 string output = "";
@@ -165,10 +165,14 @@ namespace quake
                 {
                     output += (pr_opnames[s.op] + " ");
                     i = pr_opnames[s.op].Length;
-                    for (; i < 10; i++) output += (" ");
+                    for (; i < 10; i++) 
+                        output += (" ");
                 }
 
-                if (s.op == (ushort)opcode_t.OP_IF || s.op == (ushort)opcode_t.OP_IFNOT) output += (PR_GlobalString(s.a) + "branch " + s.b);
+                if (s.op == (ushort)opcode_t.OP_IF || s.op == (ushort)opcode_t.OP_IFNOT)
+                {
+                    output += (PR_GlobalString(s.a) + "branch " + s.b);
+                }
                 else if (s.op == (ushort)opcode_t.OP_GOTO)
                 {
                     output += ("branch " + s.a);
@@ -190,7 +194,7 @@ namespace quake
 
                 //if (prNum % 1000 == 0)
                 //if (prNum >= 69366)
-                //    prog.PF_coredump();
+                prog.PF_coredump();
             }
         }
 
@@ -700,7 +704,7 @@ namespace quake
                     //PR_StackTraceStr();
                 }
 
-                Debug.WriteLine(string.Format("prNum: {0}", prNum));
+                //Debug.WriteLine(string.Format("prNum: {0}", prNum));
                 //Debug.WriteLine(string.Format("a: {0}", a, b, c));
                 //Debug.WriteLine(string.Format("b: {1}", a, b, c));
                 //Debug.WriteLine(string.Format("c: {2}", a, b, c));
@@ -710,6 +714,16 @@ namespace quake
                         c._float = a._float + b._float;
                         break;
                     case opcode_t.OP_ADD_V:
+                        //var testWith = (float)a.vector[0] + (float)b.vector[0];
+                        //var testWithout = a.vector[0] + b.vector[0];
+                        //var testWithout2 = (float) (a.vector[0] + b.vector[0]);
+                        //var testglv1 = (globalval)testWith;
+                        //var testglv2 = (globalval)testWithout;
+                        //var testglv3 = (globalval)testWithout2;
+                        //var testWith4 = (globalval)((float)a.vector[0] + (float)b.vector[0]);
+                        //var testWithout4 = (globalval)(a.vector[0] + b.vector[0]);
+                        //var testWithout24 = (globalval)((float) (a.vector[0] + b.vector[0]));
+
                         c.vector[0] = a.vector[0] + b.vector[0];
                         c.vector[1] = a.vector[1] + b.vector[1];
                         c.vector[2] = a.vector[2] + b.vector[2];
