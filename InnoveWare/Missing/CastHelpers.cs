@@ -1,7 +1,10 @@
-﻿public static class CastHelpers
+﻿namespace Missing
 {
-    public static uint ToUint32(int num)
+    public static class CastHelpers
     {
-        return (uint)num;
+        public static uint ToUint32(int num)
+        {
+            return (uint)num;
+        }
     }
 }

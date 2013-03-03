@@ -43,5 +43,11 @@
         {
             throw new ImplementedInJavaScript();
         }
+
+        [ScriptName("getBytesFromInt")]
+        public static Uint8Array GetBytes(uint value)
+        {
+            throw new ImplementedInJavaScript();
+        }
     }
 }

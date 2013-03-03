@@ -44,7 +44,7 @@ namespace quake
                 this.parent = parent;
             }
 
-            public double this[int index]
+            public globalval this[int index]
             {
                 get
                 {

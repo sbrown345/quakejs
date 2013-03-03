@@ -1,4 +1,5 @@
 ﻿using Helper;
+using Missing;
 using System;
 using System.Reflection;
 using System.Collections.Generic;
@@ -1273,9 +1274,13 @@ namespace quake
             {
                 val = BitConverter.ToSingle(BitConverter.GetBytes((int)value.Value), 0);
             }
+            else if (value.Type == globalval_type.Float)
+            {
+                val = (float)value.Value;
+            }
             else
             {
-                val= (float)(double)value.Value;
+                val = (float)(double)value.Value;
             }
 
             //Debug.WriteLine(string.Format("cast_float old: {0} ", value == null ? "null" : value.Value));
@@ -1300,7 +1305,7 @@ namespace quake
             }
             else
             {
-                val = (int)value.Value;
+                val = (int)value.Value; //CastHelpers.ToUint32(?????
             }
 
             //Debug.WriteLine(string.Format("cast_float old: {0} ", value == null ? "null" : value.Value));
