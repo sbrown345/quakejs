@@ -44,11 +44,11 @@ namespace quake
                 this.parent = parent;
             }
 
-            public globalval this[int index]
+            public double this[int index]
             {
                 get
                 {
-                    return pr_globals_read(parent.address + index);
+                    return cast_float(pr_globals_read(parent.address + index));
                 }
                 set
                 {
