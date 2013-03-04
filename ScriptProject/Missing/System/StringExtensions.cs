@@ -8,7 +8,13 @@ namespace System
     {
         public static char[] ToCharArray(this string str)
         {
-            throw new ImplementedInJavaScript();
+            var array = new char[str.Length];
+            for (int index = 0; index < str.Length; index++)
+            {
+                var chr = str[index];
+                array[index] = chr;
+            }
+            return array;
         }
 
         public static string StringOfLength(int length)

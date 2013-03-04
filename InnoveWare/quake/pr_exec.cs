@@ -697,7 +697,7 @@ namespace quake
 
                 if (pr_trace)
                 {
-                    PR_PrintStatement(st);
+                    //PR_PrintStatement(st);
                     //Debug.WriteLine(string.Format("a {0}: {1} {2} {3}", st.a, pr_globals_read(st.a), pr_globals_read(st.a + 1), pr_globals_read(st.a + 2)));
                     //Debug.WriteLine(string.Format("b {0}: {1} {2} {3}", st.b, pr_globals_read(st.b), pr_globals_read(st.b + 1), pr_globals_read(st.b + 2)));
                     //Debug.WriteLine(string.Format("c {0}: {1} {2} {3}", st.c, pr_globals_read(st.c), pr_globals_read(st.c + 1), pr_globals_read(st.c + 2)));
@@ -705,9 +705,9 @@ namespace quake
                 }
 
                 Debug.WriteLine(string.Format("prNum: {0}", prNum));
-                Debug.WriteLine(string.Format("a: {0}", a, b, c));
-                Debug.WriteLine(string.Format("b: {1}", a, b, c));
-                Debug.WriteLine(string.Format("c: {2}", a, b, c));
+                //Debug.WriteLine(string.Format("a: {0}", a, b, c));
+                //Debug.WriteLine(string.Format("b: {1}", a, b, c));
+                //Debug.WriteLine(string.Format("c: {2}", a, b, c));
                 switch ((opcode_t)st.op)
                 {
                     case opcode_t.OP_ADD_F:
@@ -731,8 +731,6 @@ namespace quake
 
                     case opcode_t.OP_SUB_F:
                         c._float = a._float - b._float;
-                        pr_globals_write(
-                            st.c, (double)(cast_float(pr_globals_read(st.a)) - cast_float(pr_globals_read(st.b))));
                         break;
                     case opcode_t.OP_SUB_V:
                         c.vector[0] = a.vector[0] - b.vector[0];

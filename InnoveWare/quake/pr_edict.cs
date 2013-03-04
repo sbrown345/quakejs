@@ -1015,7 +1015,7 @@ namespace quake
             console.Con_DPrintf(inhibit + " entities inhibited\n");
         }
 
-        public const int stringPoolOffset = 15000;
+        public const int stringPoolOffset = 10000000;// possible bug: using 15000 produces NaN when converting to float, JS does not store the bytes of the NaN so it can't be converted back. so possibly a bug here if negative values are used!;
 
         public static string pr_string(int offset)
         {
@@ -1080,7 +1080,7 @@ namespace quake
 
         public static void pr_globals_write(int address, globalval value)
         {
-            Debug.WriteLine(string.Format("pr_globals_write {0}: {1}", address, value));
+            //Debug.WriteLine(string.Format("pr_globals_write {0}: {1}", address, value));
             globalvars_t globalvars = pr_global_struct[address * 4 / sizeof_globalvars_t];
             int offset = address % (sizeof_globalvars_t / 4);
             switch (offset)

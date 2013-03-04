@@ -13651,7 +13651,7 @@
 		return $quake_common.parseString($quake_prog.$pr_strings, $quake_prog.$progs.ofs_strings + offset);
 	};
 	$quake_prog.pr_globals_write = function(address, value) {
-		ss.Debug.writeln(ss.formatString('pr_globals_write {0}: {1}', address, value));
+		//Debug.WriteLine(string.Format("pr_globals_write {0}: {1}", address, value));
 		var globalvars = $quake_prog.pr_global_struct[ss.Int32.div(address * 4, $quake_prog.sizeof_globalvars_t)];
 		var offset = address % 92;
 		switch (offset) {
@@ -15296,16 +15296,16 @@
 			$quake_prog.$pr_xfunction.profile++;
 			$quake_prog.$pr_xstatement = s;
 			if ($quake_prog.$pr_trace) {
-				$quake_prog.$pR_PrintStatement(st);
+				//PR_PrintStatement(st);
 				//Debug.WriteLine(string.Format("a {0}: {1} {2} {3}", st.a, pr_globals_read(st.a), pr_globals_read(st.a + 1), pr_globals_read(st.a + 2)));
 				//Debug.WriteLine(string.Format("b {0}: {1} {2} {3}", st.b, pr_globals_read(st.b), pr_globals_read(st.b + 1), pr_globals_read(st.b + 2)));
 				//Debug.WriteLine(string.Format("c {0}: {1} {2} {3}", st.c, pr_globals_read(st.c), pr_globals_read(st.c + 1), pr_globals_read(st.c + 2)));
 				//PR_StackTraceStr();
 			}
 			ss.Debug.writeln(ss.formatString('prNum: {0}', $quake_prog.prNum));
-			ss.Debug.writeln(ss.formatString('a: {0}', a, b, c));
-			ss.Debug.writeln(ss.formatString('b: {1}', a, b, c));
-			ss.Debug.writeln(ss.formatString('c: {2}', a, b, c));
+			//Debug.WriteLine(string.Format("a: {0}", a, b, c));
+			//Debug.WriteLine(string.Format("b: {1}", a, b, c));
+			//Debug.WriteLine(string.Format("c: {2}", a, b, c));
 			switch (st.op) {
 				case 6: {
 					c.set__float(a.get__float() + b.get__float());
@@ -15328,7 +15328,6 @@
 				}
 				case 8: {
 					c.set__float(a.get__float() - b.get__float());
-					$quake_prog.pr_globals_write(st.c, $quake_prog$globalval.op_Implicit($quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) - $quake_prog.cast_float($quake_prog.pr_globals_read(st.b))));
 					break;
 				}
 				case 9: {
@@ -26693,7 +26692,12 @@
 	var $System_StringExtensions = function() {
 	};
 	$System_StringExtensions.toCharArray = function(str) {
-		throw new $System_ImplementedInJavaScript();
+		var array = new Array(str.length);
+		for (var index = 0; index < str.length; index++) {
+			var chr = str.charCodeAt(index);
+			array[index] = chr;
+		}
+		return array;
 	};
 	$System_StringExtensions.stringOfLength = function(length) {
 		return ss.stringFromChar(String.fromCharCode(0), length);
@@ -27564,7 +27568,7 @@
 	$quake_prog.$stringPool = new Array(1000);
 	$quake_prog.$strings = 0;
 	$quake_prog.$line = $System_StringExtensions.stringOfLength(256);
-	$quake_prog.stringPoolOffset = 15000;
+	$quake_prog.stringPoolOffset = 10000000;
 	$quake_prog.maX_STACK_DEPTH = 32;
 	$quake_prog.$pr_stack = $ArrayHelpers.initArray($quake_prog$prstack_t).call(null, $quake_prog.maX_STACK_DEPTH);
 	$quake_prog.$pr_depth = 0;
