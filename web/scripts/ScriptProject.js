@@ -98,7 +98,6 @@
 	};
 	$Helper_helper.rand = function() {
 		return 1000000000;
-		//return r.Next();//todo: maybe have this on !DEBUG
 	};
 	////////////////////////////////////////////////////////////////////////////////
 	// Helper.helper.ByteBuffer
@@ -735,10 +734,10 @@
 		//	start position 12 units behind head
 	};
 	$quake_chase.$traceLine = function(start, end, impact) {
-		//trace_t	trace;
-		//memset (&trace, 0, sizeof(trace));
-		//SV_RecursiveHullCheck (cl.worldmodel->hulls, 0, 0, 1, start, end, &trace);
-		//VectorCopy (trace.endpos, impact);
+		var trace;
+		trace = new $quake_world$trace_t();
+		$quake_world.sV_RecursiveHullCheck($quake_client.cl.worldmodel.hulls[0], 0, 0, 1, start, end, trace);
+		$quake_mathlib.vectorCopy(trace.endpos, impact);
 	};
 	$quake_chase.chase_Update = function() {
 		var i;
@@ -754,14 +753,19 @@
 		$quake_chase.$chase_dest[2] = $quake_render.r_refdef.vieworg[2] + $quake_chase.$chase_up.value;
 		// find the spot the player is looking at
 		$quake_mathlib.vectorMA($quake_render.r_refdef.vieworg, 4096, forward, dest);
-		//TraceLine (r_refdef.vieworg, dest, stop);
+		$quake_chase.$traceLine($quake_render.r_refdef.vieworg, dest, stop);
 		// calculate pitch to look at the same spot from camera
-		//VectorSubtract (stop, r_refdef.vieworg, stop);
-		//dist = DotProduct (stop, forward);
-		//if (dist < 1)
-		//    dist = 1;
-		//r_refdef.viewangles[PITCH] = -atan(stop[2] / dist) / M_PI * 180;
+		$quake_mathlib.vectorSubtract(stop, $quake_render.r_refdef.vieworg, stop);
+		dist = $quake_mathlib.dotProduct$1(stop, forward);
+		if (dist < 1) {
+			dist = 1;
+		}
+		$quake_render.r_refdef.viewangles[$quake_quakedef.PITCH] = -Math.atan(stop[2] / dist) / $quake_mathlib.m_PI * 180;
 		// move towards destination
+		$quake_chase.$traceLine($quake_render.r_refdef.vieworg, $quake_chase.$chase_dest, stop);
+		if ($quake_mathlib.length$1(stop) !== 0) {
+			$quake_mathlib.vectorCopy(stop, $quake_chase.$chase_dest);
+		}
 		$quake_mathlib.vectorCopy($quake_chase.$chase_dest, $quake_render.r_refdef.vieworg);
 	};
 	////////////////////////////////////////////////////////////////////////////////
@@ -2241,7 +2245,7 @@
 		sound_num = $quake_common.msG_ReadByte();
 		vol = $quake_common.msG_ReadByte();
 		atten = $quake_common.msG_ReadByte();
-		//sound.S_StaticSound(cl.sound_precache[sound_num], org, vol, atten);
+		$quake_sound.s_StaticSound($quake_client.cl.sound_precache[sound_num], org, vol, atten);
 	};
 	$quake_client.$cL_ParseServerMessage = function() {
 		var cmd;
@@ -2295,6 +2299,13 @@
 					$quake_client.$cL_ParseClientdata(i);
 					break;
 				}
+				case 4: {
+					i = $quake_common.msG_ReadLong();
+					if (i !== $quake_net.protocoL_VERSION) {
+						$quake_host.host_Error(ss.formatString('CL_ParseServerMessage: Server is protocol {0} instead of {1}\n', i, $quake_net.protocoL_VERSION));
+					}
+					break;
+				}
 				case 2: {
 					$quake_host.host_EndGame('Server disconnected\n');
 					break;
@@ -2344,6 +2355,11 @@
 					$quake_client.$cL_ParseStartSoundPacket();
 					break;
 				}
+				case 16: {
+					i = $quake_common.msG_ReadShort();
+					$quake_sound.s_StopSound(i >> 3, i & 7);
+					break;
+				}
 				case 13: {
 					$quake_sbar.sbar_Changed();
 					i = $quake_common.msG_ReadByte();
@@ -2390,6 +2406,9 @@
 					$quake_client.$cL_ParseTEnt();
 					break;
 				}
+				case 24: {
+					throw new $System_NotImplementedException.$ctor1('CL_ParseServerMessage net.svc_setpause');
+				}
 				case 25: {
 					i = $quake_common.msG_ReadByte();
 					if (i <= $quake_client.cls.signon) {
@@ -2423,6 +2442,33 @@
 				case 32: {
 					$quake_client.cl.cdtrack = $quake_common.msG_ReadByte();
 					$quake_client.cl.looptrack = $quake_common.msG_ReadByte();
+					break;
+				}
+				case 30: {
+					$quake_client.cl.intermission = 1;
+					$quake_client.cl.completed_time = ss.Int32.trunc($quake_client.cl.time);
+					$quake_screen.vid.recalc_refdef = true;
+					// go to full screen
+					break;
+				}
+				case 31: {
+					$quake_client.cl.intermission = 2;
+					$quake_client.cl.completed_time = ss.Int32.trunc($quake_client.cl.time);
+					$quake_screen.vid.recalc_refdef = true;
+					// go to full screen
+					$quake_screen.scR_CenterPrint($quake_common.msG_ReadString());
+					break;
+				}
+				case 34: {
+					$quake_client.cl.intermission = 3;
+					$quake_client.cl.completed_time = ss.Int32.trunc($quake_client.cl.time);
+					$quake_screen.vid.recalc_refdef = true;
+					// go to full screen
+					$quake_screen.scR_CenterPrint($quake_common.msG_ReadString());
+					break;
+				}
+				case 33: {
+					$quake_cmd.cmd_ExecuteString($System_StringExtensions.toCharArray('help\0'), 1);
 					break;
 				}
 			}
@@ -2752,7 +2798,7 @@
 		this.onground = false;
 		this.inwater = false;
 		this.intermission = 0;
-		this.$completed_time = 0;
+		this.completed_time = 0;
 		this.mtime = new Array(2);
 		this.time = 0;
 		this.oldtime = 0;
@@ -3289,18 +3335,21 @@
 		}
 	};
 	$quake_common.msG_WriteChar = function(sb, c) {
+		//Debug.WriteLine("MSG_WriteChar " + c);
 		var buf;
 		var offset = {};
 		buf = $quake_common.$sZ_GetSpace(sb, 1, offset);
 		buf[offset.$] = c;
 	};
 	$quake_common.msG_WriteByte = function(sb, c) {
+		//Debug.WriteLine("MSG_WriteByte " + c);
 		var buf;
 		var offset = {};
 		buf = $quake_common.$sZ_GetSpace(sb, 1, offset);
 		buf[offset.$] = c;
 	};
 	$quake_common.msG_WriteShort = function(sb, c) {
+		//Debug.WriteLine("MSG_WriteShort " + c);
 		var buf;
 		var offset = {};
 		buf = $quake_common.$sZ_GetSpace(sb, 2, offset);
@@ -3308,6 +3357,7 @@
 		buf[offset.$ + 1] = c >> 8;
 	};
 	$quake_common.msG_WriteLong = function(sb, c) {
+		//Debug.WriteLine("MSG_WriteLong " + c);
 		var buf;
 		var offset = {};
 		buf = $quake_common.$sZ_GetSpace(sb, 4, offset);
@@ -3318,10 +3368,12 @@
 	};
 	$quake_common.msG_WriteFloat = function(sb, f) {
 		var dat;
-		dat = BitConverter.getBytes(f);
+		//Debug.WriteLine(string.Format("MSG_WriteFloat {0:F1}", f));
+		dat = BitConverter.getBytesFromFloat(f);
 		$quake_common.sZ_Write(sb, dat, 4);
 	};
 	$quake_common.msG_WriteString = function(sb, s) {
+		//Debug.WriteLine("MSG_WriteString " + s);
 		var buf;
 		if (ss.isNullOrUndefined(s)) {
 			buf = new Uint8Array(1);
@@ -3337,9 +3389,11 @@
 		}
 	};
 	$quake_common.msG_WriteCoord = function(sb, f) {
+		//Debug.WriteLine(string.Format("MSG_WriteCoord {0:F1}", f));
 		$quake_common.msG_WriteShort(sb, ss.Int32.trunc(f * 8));
 	};
 	$quake_common.msG_WriteAngle = function(sb, f) {
+		//Debug.WriteLine(string.Format("MSG_WriteAngle {0:F1}", f));
 		$quake_common.msG_WriteByte(sb, ss.Int32.div(ss.Int32.trunc(f) * 256, 360) & 255);
 	};
 	$quake_common.msG_BeginReading = function() {
@@ -3462,10 +3516,14 @@
 		if (buf.data[buf.cursize - 1] !== 0) {
 			var offset = {};
 			var dst = $quake_common.$sZ_GetSpace(buf, len, offset);
-			for (var kk = 0; kk < data.length; kk++) {
-				dst[offset.$ + kk] = data.charCodeAt(kk);
+			for (var kk = 0; kk < len; kk++) {
+				if (kk < data.length) {
+					dst[offset.$ + kk] = data.charCodeAt(kk);
+				}
+				else {
+					dst[offset.$ + kk] = 0;
+				}
 			}
-			// no trailing 0
 		}
 		else {
 			var offset1 = {};
@@ -4244,6 +4302,7 @@
 		if (v > $quake_console.con_notifylines) {
 			$quake_console.con_notifylines = v;
 		}
+		// todo stuff with chat_buffer from Key_Message
 	};
 	$quake_console.con_DrawConsole = function(lines, drawinput) {
 		var i, x, y;
@@ -7030,62 +7089,58 @@
 	};
 	$quake_host.$_Host_Frame = function(time) {
 		var pass1, pass2, pass3;
-		try {
-			// decide the simulation time
-			if (!$quake_host.$host_FilterTime(time)) {
-				return;
-			}
-			// don't run too fast, or packets will flood out
-			// process console commands
-			$quake_cmd.cbuf_Execute();
-			$quake_net.neT_Poll();
-			// if running the server locally, make intentions now
-			if ($quake_server.sv.active) {
-				$quake_client.cL_SendCmd();
-			}
-			//-------------------
-			//
-			// server operations
-			//
-			//-------------------
-			if ($quake_server.sv.active) {
-				$quake_host.$host_ServerFrame();
-			}
-			//-------------------
-			//
-			// client operations
-			//
-			//-------------------
-			// if running the server remotely, send intentions now after
-			// the incoming messages have been read
-			if (!$quake_server.sv.active) {
-				$quake_client.cL_SendCmd();
-			}
-			$quake_host.host_time += $quake_host.host_frametime;
-			// fetch results from server
-			if ($quake_client.cls.state === 2) {
-				$quake_client.cL_ReadFromServer();
-			}
-			$quake_screen.scR_UpdateScreen();
-			// update audio
-			if ($quake_client.cls.signon === $quake_client.SIGNONS) {
-				$quake_sound.s_Update($quake_render.r_origin, $quake_render.vpn, $quake_render.vright, $quake_render.vup);
-				$quake_client.cL_DecayLights();
-			}
-			else {
-				$quake_sound.s_Update($quake_mathlib.vec3_origin, $quake_mathlib.vec3_origin, $quake_mathlib.vec3_origin, $quake_mathlib.vec3_origin);
-			}
-			$quake_host.host_framecount++;
+		//try
+		//{
+		// decide the simulation time
+		if (!$quake_host.$host_FilterTime(time)) {
+			return;
 		}
-		catch ($t1) {
-			$t1 = ss.Exception.wrap($t1);
-			if (ss.isInstanceOfType($t1, $quake_host_abortserver)) {
-				return;
-			}
-			else {
-				throw $t1;
-			}
+		// don't run too fast, or packets will flood out
+		// process console commands
+		$quake_cmd.cbuf_Execute();
+		$quake_net.neT_Poll();
+		// if running the server locally, make intentions now
+		if ($quake_server.sv.active) {
+			$quake_client.cL_SendCmd();
 		}
+		//-------------------
+		//
+		// server operations
+		//
+		//-------------------
+		if ($quake_server.sv.active) {
+			$quake_host.$host_ServerFrame();
+		}
+		//-------------------
+		//
+		// client operations
+		//
+		//-------------------
+		// if running the server remotely, send intentions now after
+		// the incoming messages have been read
+		if (!$quake_server.sv.active) {
+			$quake_client.cL_SendCmd();
+		}
+		$quake_host.host_time += $quake_host.host_frametime;
+		// fetch results from server
+		if ($quake_client.cls.state === 2) {
+			$quake_client.cL_ReadFromServer();
+		}
+		$quake_screen.scR_UpdateScreen();
+		// update audio
+		if ($quake_client.cls.signon === $quake_client.SIGNONS) {
+			$quake_sound.s_Update($quake_render.r_origin, $quake_render.vpn, $quake_render.vright, $quake_render.vup);
+			$quake_client.cL_DecayLights();
+		}
+		else {
+			$quake_sound.s_Update($quake_mathlib.vec3_origin, $quake_mathlib.vec3_origin, $quake_mathlib.vec3_origin, $quake_mathlib.vec3_origin);
+		}
+		$quake_host.host_framecount++;
+		//}
+		//catch (host_abortserver)
+		//{
+		//    return;
+		//}
 	};
 	$quake_host.host_Frame = function(time) {
 		var time1, time2;
@@ -7362,7 +7417,7 @@
 			}
 		}
 		$quake_host.host_client.name = newName;
-		$quake_host.host_client.edict.v.netname = $quake_prog.getStringIndex($quake_host.host_client.name) - 15000;
+		$quake_host.host_client.edict.v.netname = $quake_prog.getStringIndex($quake_host.host_client.name) - $quake_prog.stringPoolOffset;
 		// send notification to all clients
 		$quake_common.msG_WriteByte($quake_server.sv.reliable_datagram, $quake_net.svc_updatename);
 		$quake_common.msG_WriteByte($quake_server.sv.reliable_datagram, $quake_host.host_client.index);
@@ -7484,10 +7539,10 @@
 			ent.v.clear();
 			ent.v.colormap = $quake_prog.nuM_FOR_EDICT(ent);
 			ent.v.team = ($quake_host.host_client.colors & 15) + 1;
-			ent.v.netname = $quake_prog.getStringIndex($quake_host.host_client.name) - 15000;
+			ent.v.netname = $quake_prog.getStringIndex($quake_host.host_client.name) - $quake_prog.stringPoolOffset;
 			// copy spawn parms out of the client_t
 			for (i = 0; i < $quake_server.nuM_SPAWN_PARMS; i++) {
-				$quake_prog.pr_globals_write(43 + i, $quake_host.host_client.spawn_parms[i]);
+				$quake_prog.pr_globals_write(43 + i, $quake_prog$globalval.op_Implicit($quake_host.host_client.spawn_parms[i]));
 			}
 			// call the spawn function
 			$quake_prog.pr_global_struct[0].time = $quake_server.sv.time;
@@ -7663,10 +7718,12 @@
 	var $quake_keys = function() {
 	};
 	$quake_keys.prototype = {
-		$key_KeynumToString: function(keynum) {
-			return null;
-		},
 		$key_ClearStates: function() {
+			var i;
+			for (i = 0; i < 256; i++) {
+				$quake_keys.$keydown[i] = false;
+				$quake_keys.$key_repeats[i] = 0;
+			}
 		}
 	};
 	$quake_keys.$key_Console = function(key) {
@@ -7767,6 +7824,43 @@
 		}
 	};
 	$quake_keys.$key_Message = function(key) {
+		if (key === $quake_keys.k_ENTER) {
+			if ($quake_keys.$team_message) {
+				$quake_cmd.cbuf_AddText('say_team "');
+			}
+			else {
+				$quake_cmd.cbuf_AddText('say "');
+			}
+			$quake_cmd.cbuf_AddText(String.fromCharCode.apply(null, $quake_keys.chat_buffer));
+			$quake_cmd.cbuf_AddText('"\n');
+			$quake_keys.key_dest = 0;
+			$quake_keys.$chat_bufferlen = 0;
+			$quake_keys.chat_buffer[0] = 0;
+			return;
+		}
+		if (key === $quake_keys.k_ESCAPE) {
+			$quake_keys.key_dest = 0;
+			$quake_keys.$chat_bufferlen = 0;
+			$quake_keys.chat_buffer[0] = 0;
+			return;
+		}
+		if (key < 32 || key > 127) {
+			return;
+		}
+		// non printable
+		if (key === $quake_keys.k_BACKSPACE) {
+			if ($quake_keys.$chat_bufferlen !== 0) {
+				$quake_keys.$chat_bufferlen--;
+				$quake_keys.chat_buffer[$quake_keys.$chat_bufferlen] = 0;
+			}
+			return;
+		}
+		if ($quake_keys.$chat_bufferlen === 31) {
+			return;
+		}
+		// all full
+		$quake_keys.chat_buffer[$quake_keys.$chat_bufferlen++] = key;
+		$quake_keys.chat_buffer[$quake_keys.$chat_bufferlen] = 0;
 	};
 	$quake_keys.$key_StringToKeynum = function(str) {
 		var kn;
@@ -7782,6 +7876,26 @@
 			}
 		}
 		return -1;
+	};
+	$quake_keys.$key_KeynumToString = function(keynum) {
+		var kn;
+		var tinystr = new Array(2);
+		if (keynum === -1) {
+			return '<KEY NOT FOUND>';
+		}
+		if (keynum > 32 && keynum < 127) {
+			// printable ascii
+			tinystr[0] = keynum;
+			tinystr[1] = 0;
+			return String.fromCharCode.apply(null, tinystr);
+		}
+		for (var i = 0; i < $quake_keys.$keynames.length; i++) {
+			kn = $quake_keys.$keynames[i];
+			if (keynum === kn.$keynum) {
+				return kn.$name;
+			}
+		}
+		return '<UNKNOWN KEYNUM>';
 	};
 	$quake_keys.$key_SetBinding = function(keynum, binding) {
 		var new1;
@@ -7799,8 +7913,25 @@
 		$quake_keys.$keybindings[keynum] = new1;
 	};
 	$quake_keys.$key_Unbind_f = function() {
+		var b;
+		if ($quake_cmd.cmd_Argc() !== 2) {
+			$quake_console.con_Printf('unbind <key> : remove commands from a key\n');
+			return;
+		}
+		b = $quake_keys.$key_StringToKeynum($quake_cmd.cmd_Argv(1));
+		if (b === -1) {
+			$quake_console.con_Printf(ss.formatString('"{0}" isn\'t a valid key\n', $quake_cmd.cmd_Argv(1)));
+			return;
+		}
+		$quake_keys.$key_SetBinding(b, '');
 	};
 	$quake_keys.$key_Unbindall_f = function() {
+		var i;
+		for (i = 0; i < 256; i++) {
+			if (ss.isValue($quake_keys.$keybindings[i])) {
+				$quake_keys.$key_SetBinding(i, '');
+			}
+		}
 	};
 	$quake_keys.$key_Bind_f = function() {
 		var i, c, b;
@@ -7861,6 +7992,37 @@
 		$quake_keys.$consolekeys[$quake_keys.k_MWHEELDOWN] = true;
 		$quake_keys.$consolekeys[96] = false;
 		$quake_keys.$consolekeys[126] = false;
+		for (i = 0; i < 256; i++) {
+			$quake_keys.$keyshift[i] = i;
+		}
+		for (i = 97; i <= 122; i++) {
+			$quake_keys.$keyshift[i] = i - 97 + 65;
+		}
+		$quake_keys.$keyshift[49] = 33;
+		$quake_keys.$keyshift[50] = 64;
+		$quake_keys.$keyshift[51] = 35;
+		$quake_keys.$keyshift[52] = 36;
+		$quake_keys.$keyshift[53] = 37;
+		$quake_keys.$keyshift[54] = 94;
+		$quake_keys.$keyshift[55] = 38;
+		$quake_keys.$keyshift[56] = 42;
+		$quake_keys.$keyshift[57] = 40;
+		$quake_keys.$keyshift[48] = 41;
+		$quake_keys.$keyshift[45] = 95;
+		$quake_keys.$keyshift[61] = 43;
+		$quake_keys.$keyshift[44] = 60;
+		$quake_keys.$keyshift[46] = 62;
+		$quake_keys.$keyshift[47] = 63;
+		$quake_keys.$keyshift[59] = 58;
+		$quake_keys.$keyshift[39] = 34;
+		$quake_keys.$keyshift[91] = 123;
+		$quake_keys.$keyshift[93] = 125;
+		$quake_keys.$keyshift[96] = 126;
+		$quake_keys.$keyshift[92] = 124;
+		$quake_keys.$menubound[$quake_keys.k_ESCAPE] = true;
+		for (i = 0; i < 12; i++) {
+			$quake_keys.$menubound[$quake_keys.k_F1 + i] = true;
+		}
 		//
 		// register our functions
 		//
@@ -7871,10 +8033,31 @@
 	$quake_keys.key_Event = function(key, down) {
 		var kb;
 		var cmd = $System_StringExtensions.stringOfLength(1024);
+		$quake_keys.$keydown[key] = down;
+		if (!down) {
+			$quake_keys.$key_repeats[key] = 0;
+		}
+		$quake_keys.key_lastpress = key;
 		$quake_keys.$key_count++;
 		if ($quake_keys.$key_count <= 0) {
 			return;
 			// just catching keys for Con_NotifyBox
+		}
+		// update auto-repeat status
+		if (down) {
+			$quake_keys.$key_repeats[key]++;
+			if (key !== $quake_keys.k_BACKSPACE && key !== $quake_keys.k_PAUSE && $quake_keys.$key_repeats[key] > 1) {
+				ss.Debug.writeln('ignore most autorepeats repeats: ' + $quake_keys.$key_repeats[key]);
+				return;
+				// ignore most autorepeats
+			}
+			if (key >= 200 && ss.isNullOrUndefined($quake_keys.$keybindings[key])) {
+				$quake_console.con_Printf($quake_keys.$key_KeynumToString(key) + ' is unbound, hit F4 to set.\n');
+			}
+		}
+		if (key === $quake_keys.k_SHIFT) {
+			ss.Debug.writeln('shift down');
+			$quake_keys.shift_down = down;
 		}
 		//
 		// handle escape specialy, so the user can never unbind it
@@ -7916,6 +8099,16 @@
 			if (ss.isValue(kb) && kb.charCodeAt(0) === 43) {
 				cmd = '-' + kb.substring(1) + ' ' + key + '\n';
 				$quake_cmd.cbuf_AddText(cmd);
+				ss.Debug.writeln(cmd);
+			}
+			if ($quake_keys.$keyshift[key] !== key) {
+				kb = $quake_keys.$keybindings[$quake_keys.$keyshift[key]];
+				if (ss.isValue(kb) && kb.charCodeAt(0) === 43) {
+					//sprintf(cmd, "-%s %i\n", kb + 1, key);
+					ss.formatString('-{0} {1}\n', kb.charCodeAt(0) + 1, key);
+					$quake_cmd.cbuf_AddText(cmd);
+					ss.Debug.writeln(cmd);
+				}
 			}
 			return;
 		}
@@ -7935,10 +8128,12 @@
 				if (kb.charCodeAt(0) === 43) {
 					// button commands add keynum as a parm
 					cmd = kb + ' ' + key + '\n';
+					ss.Debug.writeln(cmd);
 					$quake_cmd.cbuf_AddText(cmd);
 				}
 				else {
 					$quake_cmd.cbuf_AddText(kb);
+					ss.Debug.writeln(kb);
 					$quake_cmd.cbuf_AddText('\n');
 				}
 			}
@@ -7948,6 +8143,9 @@
 			return;
 		}
 		// other systems only care about key down events
+		if ($quake_keys.shift_down) {
+			key = $quake_keys.$keyshift[key];
+		}
 		switch ($quake_keys.key_dest) {
 			case 2: {
 				$quake_keys.$key_Message(key);
@@ -10910,7 +11108,6 @@
 	////////////////////////////////////////////////////////////////////////////////
 	// quake.model.mleaf_t
 	var $quake_model$mleaf_t = function() {
-		this.compressed_vis = null;
 		this.efrags = null;
 		this.firstmarksurface = null;
 		this.nummarksurfaces = 0;
@@ -10921,8 +11118,6 @@
 	////////////////////////////////////////////////////////////////////////////////
 	// quake.model.mnode_t
 	var $quake_model$mnode_t = function() {
-		this.plane = null;
-		this.children = new Array(2);
 		this.firstsurface = 0;
 		this.numsurfaces = 0;
 		$quake_model$node_or_leaf_t.call(this);
@@ -11117,10 +11312,13 @@
 	////////////////////////////////////////////////////////////////////////////////
 	// quake.model.node_or_leaf_t
 	var $quake_model$node_or_leaf_t = function() {
+		this.compressed_vis = null;
 		this.contents = 0;
 		this.visframe = 0;
 		this.minmaxs = new Array(6);
 		this.parent = null;
+		this.children = new Array(2);
+		this.plane = null;
 	};
 	////////////////////////////////////////////////////////////////////////////////
 	// quake.model.spriteframetype_t
@@ -11860,7 +12058,7 @@
 		return $quake_prog.cast_int($quake_prog.pr_globals_read(o));
 	};
 	$quake_prog.$g_EDICT = function(o) {
-		return $quake_server.sv.edicts[ss.Int32.div(ss.Nullable.unbox(ss.cast($quake_prog.pr_globals_read(o), ss.Int32)), $quake_prog.pr_edict_size)];
+		return $quake_server.sv.edicts[ss.Int32.div($quake_prog$globalval.op_Implicit$6($quake_prog.pr_globals_read(o)), $quake_prog.pr_edict_size)];
 	};
 	$quake_prog.$g_EDICTNUM = function(o) {
 		return $quake_prog.nuM_FOR_EDICT($quake_prog.$g_EDICT(o));
@@ -11873,18 +12071,18 @@
 		return res;
 	};
 	$quake_prog.$g_VECTOR_WRITE = function(o, vector) {
-		$quake_prog.pr_globals_write(o, $quake_prog.cast_float(vector[0]));
-		$quake_prog.pr_globals_write(o + 1, $quake_prog.cast_float(vector[1]));
-		$quake_prog.pr_globals_write(o + 2, $quake_prog.cast_float(vector[2]));
+		$quake_prog.pr_globals_write(o, $quake_prog$globalval.op_Implicit($quake_prog.cast_float($quake_prog$globalval.op_Implicit(vector[0]))));
+		$quake_prog.pr_globals_write(o + 1, $quake_prog$globalval.op_Implicit($quake_prog.cast_float($quake_prog$globalval.op_Implicit(vector[1]))));
+		$quake_prog.pr_globals_write(o + 2, $quake_prog$globalval.op_Implicit($quake_prog.cast_float($quake_prog$globalval.op_Implicit(vector[2]))));
 	};
 	$quake_prog.$g_STRING = function(o) {
-		return $quake_prog.pr_string(ss.Nullable.unbox(ss.cast($quake_prog.pr_globals_read(o), ss.Int32)));
+		return $quake_prog.pr_string($quake_prog$globalval.op_Implicit$6($quake_prog.pr_globals_read(o)));
 	};
 	$quake_prog.$e_STRING = function(e, o) {
 		return $quake_prog.pr_string($quake_prog.cast_int($quake_prog.$readentvar(e.v, o)));
 	};
 	$quake_prog.$returN_EDICT = function(e) {
-		$quake_prog.pr_globals_write($quake_prog.ofS_RETURN, $quake_prog.edicT_TO_PROG(e));
+		$quake_prog.pr_globals_write($quake_prog.ofS_RETURN, $quake_prog$globalval.op_Implicit$2($quake_prog.edicT_TO_PROG(e)));
 	};
 	$quake_prog.$pF_VarString = function(first) {
 		var i;
@@ -12012,7 +12210,7 @@
 		if (ss.isNullOrUndefined(check)) {
 			$quake_prog.$pR_RunError('no precache: ' + m + '\n');
 		}
-		e.v.model = $quake_prog.getStringIndex(m) - 15000;
+		e.v.model = $quake_prog.getStringIndex(m) - $quake_prog.stringPoolOffset;
 		e.v.modelindex = i;
 		//SV_ModelIndex (m);
 		mod = $quake_server.sv.models[ss.Int32.trunc(e.v.modelindex)];
@@ -12083,7 +12281,7 @@
 		value1 = $quake_prog.$g_VECTOR($quake_prog.ofS_PARM0);
 		new1 = value1[0] * value1[0] + value1[1] * value1[1] + value1[2] * value1[2];
 		new1 = Math.sqrt(new1);
-		$quake_prog.pr_globals_write($quake_prog.ofS_RETURN, new1);
+		$quake_prog.pr_globals_write($quake_prog.ofS_RETURN, $quake_prog$globalval.op_Implicit(new1));
 	};
 	$quake_prog.$pF_vectoyaw = function() {
 		var value1;
@@ -12098,20 +12296,51 @@
 				yaw += 360;
 			}
 		}
-		$quake_prog.pr_globals_write($quake_prog.ofS_RETURN, yaw);
+		$quake_prog.pr_globals_write($quake_prog.ofS_RETURN, $quake_prog$globalval.op_Implicit(yaw));
 	};
 	$quake_prog.$pF_vectoangles = function() {
-		ss.Debug.writeln('PF_vectoangles');
-		ss.Debug.writeln('todo PF_vectoangles');
+		var value1;
+		var forward;
+		var yaw, pitch;
+		value1 = $quake_prog.$g_VECTOR($quake_prog.ofS_PARM0);
+		if (value1[1] === 0 && value1[0] === 0) {
+			yaw = 0;
+			if (value1[2] > 0) {
+				pitch = 90;
+			}
+			else {
+				pitch = 270;
+			}
+		}
+		else {
+			yaw = ss.Int32.trunc(Math.atan2(value1[1], value1[0]) * 180 / $quake_mathlib.m_PI);
+			if (yaw < 0) {
+				yaw += 360;
+			}
+			forward = Math.sqrt(value1[0] * value1[0] + value1[1] * value1[1]);
+			pitch = ss.Int32.trunc(Math.atan2(value1[2], forward) * 180 / $quake_mathlib.m_PI);
+			if (pitch < 0) {
+				pitch += 360;
+			}
+		}
+		$quake_prog.pr_globals_write($quake_prog.ofS_RETURN, $quake_prog$globalval.op_Implicit(pitch));
+		$quake_prog.pr_globals_write(2, $quake_prog$globalval.op_Implicit(yaw));
+		$quake_prog.pr_globals_write(3, $quake_prog$globalval.op_Implicit$2(0));
 	};
 	$quake_prog.$pF_random = function() {
 		var num;
 		num = ($Helper_helper.rand() & 32767) / 32767;
-		$quake_prog.pr_globals_write($quake_prog.ofS_RETURN, num);
+		$quake_prog.pr_globals_write($quake_prog.ofS_RETURN, $quake_prog$globalval.op_Implicit(num));
 	};
 	$quake_prog.$pF_particle = function() {
-		//todo
-		ss.Debug.writeln('PF_particle');
+		var org, dir;
+		var color;
+		var count;
+		org = $quake_prog.$g_VECTOR($quake_prog.ofS_PARM0);
+		dir = $quake_prog.$g_VECTOR($quake_prog.ofS_PARM1);
+		color = ss.Int32.trunc($quake_prog.g_FLOAT($quake_prog.ofS_PARM2));
+		count = ss.Int32.trunc($quake_prog.g_FLOAT($quake_prog.ofS_PARM3));
+		$quake_server.sV_StartParticle(org, dir, color, count);
 	};
 	$quake_prog.$pF_ambientsound = function() {
 		var check;
@@ -12138,8 +12367,8 @@
 			$quake_common.msG_WriteCoord($quake_server.sv.signon, pos[i]);
 		}
 		$quake_common.msG_WriteByte($quake_server.sv.signon, soundnum);
-		$quake_common.msG_WriteByte($quake_server.sv.signon, ss.Int32.trunc(vol) * 255);
-		$quake_common.msG_WriteByte($quake_server.sv.signon, ss.Int32.trunc(attenuation) * 64);
+		$quake_common.msG_WriteByte($quake_server.sv.signon, ss.Int32.trunc(vol * 255));
+		$quake_common.msG_WriteByte($quake_server.sv.signon, ss.Int32.trunc(attenuation * 64));
 	};
 	$quake_prog.$pF_sound = function() {
 		var sample;
@@ -12303,7 +12532,7 @@
 	$quake_prog.$pF_cvar = function() {
 		var str;
 		str = $quake_prog.$g_STRING($quake_prog.ofS_PARM0);
-		$quake_prog.pr_globals_write($quake_prog.ofS_RETURN, $quake_cvar_t.cvar_VariableValue(str));
+		$quake_prog.pr_globals_write($quake_prog.ofS_RETURN, $quake_prog$globalval.op_Implicit($quake_cvar_t.cvar_VariableValue(str)));
 	};
 	$quake_prog.$pF_cvar_set = function() {
 		var var1, val;
@@ -12312,7 +12541,32 @@
 		$quake_cvar_t.cvar_Set(var1, val);
 	};
 	$quake_prog.$pF_findradius = function() {
-		ss.Debug.writeln('PF_findradius');
+		var ent, chain;
+		var rad;
+		var org;
+		var eorg = $ArrayHelpers.explcitDoubleArray(3);
+		var i, j;
+		chain = $quake_server.sv.edicts[0];
+		org = $quake_prog.$g_VECTOR($quake_prog.ofS_PARM0);
+		rad = $quake_prog.g_FLOAT($quake_prog.ofS_PARM1);
+		ent = $quake_prog.nexT_EDICT($quake_server.sv.edicts[0]);
+		for (i = 1; i < $quake_server.sv.num_edicts; i++, ent = $quake_prog.nexT_EDICT(ent)) {
+			if (ent.free) {
+				continue;
+			}
+			if (ent.v.solid === 0) {
+				continue;
+			}
+			for (j = 0; j < 3; j++) {
+				eorg[j] = org[j] - (ent.v.origin[j] + (ent.v.mins[j] + ent.v.maxs[j]) * 0.5);
+			}
+			if ($quake_mathlib.length$1(eorg) > rad) {
+				continue;
+			}
+			ent.v.chain = $quake_prog.edicT_TO_PROG(chain);
+			chain = ent;
+		}
+		$quake_prog.$returN_EDICT(chain);
 	};
 	$quake_prog.$pF_dprint = function() {
 		try {
@@ -12332,22 +12586,22 @@
 			$quake_prog.$pr_string_temp = ss.formatString('{0:F5}', v);
 		}
 		//throw new Exception("todo PF_ftos G_INT(OFS_RETURN) = pr_string_temp - pr_strings;");
-		var index = $quake_prog.getStringIndex($quake_prog.$pr_string_temp) - 15000;
-		$quake_prog.pr_globals_write($quake_prog.ofS_RETURN, index);
-		//G_INT(OFS_RETURN) = pr_string_temp - pr_strings; =-- GET INDEX OF STRING AND WRITE TO GLOBALS AS INT opposite of  pr_string() ???? - has that 15000 index thing
+		var index = $quake_prog.getStringIndex($quake_prog.$pr_string_temp) - $quake_prog.stringPoolOffset;
+		$quake_prog.pr_globals_write($quake_prog.ofS_RETURN, $quake_prog$globalval.op_Implicit$2(index));
+		//G_INT(OFS_RETURN) = pr_string_temp - pr_strings; =-- GET INDEX OF STRING AND WRITE TO GLOBALS AS INT opposite of  pr_string() ???? - has that prog.stringPoolOffset index thing
 	};
 	$quake_prog.$pF_fabs = function() {
 		var v;
 		v = $quake_prog.g_FLOAT($quake_prog.ofS_PARM0);
-		$quake_prog.pr_globals_write($quake_prog.ofS_RETURN, Math.abs(v));
+		$quake_prog.pr_globals_write($quake_prog.ofS_RETURN, $quake_prog$globalval.op_Implicit(Math.abs(v)));
 	};
 	$quake_prog.$pF_vtos = function() {
 		//sprintf (pr_string_temp, "'%5.1f %5.1f %5.1f'", G_VECTOR(OFS_PARM0)[0], G_VECTOR(OFS_PARM0)[1], G_VECTOR(OFS_PARM0)[2]);
-		//pr_globals_write(OFS_RETURN, pr_string_temp - pr_strings;); //todo: FIND INDEX OF IT IN ARRAAY AND WRITE TO GLOBAS AS INT? opposite of  pr_string() ???? - has that 15000 index thing
+		//pr_globals_write(OFS_RETURN, pr_string_temp - pr_strings;); //todo: FIND INDEX OF IT IN ARRAAY AND WRITE TO GLOBAS AS INT? opposite of  pr_string() ???? - has that prog.stringPoolOffset index thing
 		//throw new Exception("todo TEST PF_vtos;");
 		$quake_prog.$pr_string_temp = ss.formatString('{0:F5} {1:F5} {2:F5} ', $quake_prog.$g_VECTOR($quake_prog.ofS_PARM0)[0], $quake_prog.$g_VECTOR($quake_prog.ofS_PARM0)[1], $quake_prog.$g_VECTOR($quake_prog.ofS_PARM0)[2]);
-		var index = $quake_prog.getStringIndex($quake_prog.$pr_string_temp) - 15000;
-		$quake_prog.pr_globals_write($quake_prog.ofS_RETURN, index);
+		var index = $quake_prog.getStringIndex($quake_prog.$pr_string_temp) - $quake_prog.stringPoolOffset;
+		$quake_prog.pr_globals_write($quake_prog.ofS_RETURN, $quake_prog$globalval.op_Implicit$2(index));
 	};
 	$quake_prog.$pF_Spawn = function() {
 		var ed;
@@ -12402,7 +12656,7 @@
 			$quake_prog.$pR_RunError('PF_Precache_*: Precache can only be done in spawn functions');
 		}
 		s = $quake_prog.$g_STRING($quake_prog.ofS_PARM0);
-		$quake_prog.pr_globals_write($quake_prog.ofS_RETURN, $quake_prog.$g_INT($quake_prog.ofS_PARM0));
+		$quake_prog.pr_globals_write($quake_prog.ofS_RETURN, $quake_prog$globalval.op_Implicit$2($quake_prog.$g_INT($quake_prog.ofS_PARM0)));
 		$quake_prog.$pR_CheckEmptyString(s);
 		for (i = 0; i < $quake_quakedef.maX_SOUNDS; i++) {
 			if (ss.isNullOrUndefined($quake_server.sv.sound_precache[i])) {
@@ -12422,7 +12676,7 @@
 			$quake_prog.$pR_RunError('PF_Precache_*: Precache can only be done in spawn functions');
 		}
 		s = $quake_prog.$g_STRING($quake_prog.ofS_PARM0);
-		$quake_prog.pr_globals_write($quake_prog.ofS_RETURN, $quake_prog.$g_INT($quake_prog.ofS_PARM0));
+		$quake_prog.pr_globals_write($quake_prog.ofS_RETURN, $quake_prog$globalval.op_Implicit$2($quake_prog.$g_INT($quake_prog.ofS_PARM0)));
 		$quake_prog.$pR_CheckEmptyString(s);
 		for (i = 0; i < $quake_quakedef.maX_MODELS; i++) {
 			if (ss.isNullOrUndefined($quake_server.sv.model_precache[i])) {
@@ -12459,7 +12713,7 @@
 		yaw = $quake_prog.g_FLOAT($quake_prog.ofS_PARM0);
 		dist = $quake_prog.g_FLOAT($quake_prog.ofS_PARM1);
 		if (!((ss.Int32.trunc(ent.v.flags) & 515) !== 0)) {
-			$quake_prog.pr_globals_write($quake_prog.ofS_RETURN, 0);
+			$quake_prog.pr_globals_write($quake_prog.ofS_RETURN, $quake_prog$globalval.op_Implicit$2(0));
 			return;
 		}
 		yaw = yaw * $quake_mathlib.m_PI * 2 / 360;
@@ -12469,7 +12723,7 @@
 		// save program state, because SV_movestep may call other progs
 		oldf = $quake_prog.$pr_xfunction;
 		oldself = $quake_prog.pr_global_struct[0].self;
-		$quake_prog.pr_globals_write($quake_prog.ofS_RETURN, ($quake_server.sV_Movestep(ent, move, true) ? 1 : 0));
+		$quake_prog.pr_globals_write($quake_prog.ofS_RETURN, $quake_prog$globalval.op_Implicit$2(($quake_server.sV_Movestep(ent, move, true) ? 1 : 0)));
 		// restore program state
 		$quake_prog.$pr_xfunction = oldf;
 		$quake_prog.pr_global_struct[0].self = oldself;
@@ -12483,14 +12737,14 @@
 		end[2] -= 256;
 		trace = $quake_world.sV_Move(ent.v.origin, ent.v.mins, ent.v.maxs, end, 0, ent);
 		if (trace.fraction === 1 || trace.allsolid) {
-			$quake_prog.pr_globals_write($quake_prog.ofS_RETURN, 0);
+			$quake_prog.pr_globals_write($quake_prog.ofS_RETURN, $quake_prog$globalval.op_Implicit$2(0));
 		}
 		else {
 			$quake_mathlib.vectorCopy(trace.endpos, ent.v.origin);
 			$quake_world.sV_LinkEdict(ent, false);
 			ent.v.flags = ss.Int32.trunc(ent.v.flags) | $quake_server.fL_ONGROUND;
 			ent.v.groundentity = $quake_prog.edicT_TO_PROG(trace.ent);
-			$quake_prog.pr_globals_write($quake_prog.ofS_RETURN, 1);
+			$quake_prog.pr_globals_write($quake_prog.ofS_RETURN, $quake_prog$globalval.op_Implicit$2(1));
 			//G_FLOAT(OFS_RETURN) = 1;
 		}
 	};
@@ -12520,28 +12774,31 @@
 		var f;
 		f = $quake_prog.g_FLOAT($quake_prog.ofS_PARM0);
 		if (f > 0) {
-			$quake_prog.pr_globals_write($quake_prog.ofS_RETURN, ss.Int32.trunc(f + 0.5));
+			$quake_prog.pr_globals_write($quake_prog.ofS_RETURN, $quake_prog$globalval.op_Implicit(ss.Int32.trunc(f + 0.5)));
 		}
 		else {
-			$quake_prog.pr_globals_write($quake_prog.ofS_RETURN, ss.Int32.trunc(f - 0.5));
+			$quake_prog.pr_globals_write($quake_prog.ofS_RETURN, $quake_prog$globalval.op_Implicit(ss.Int32.trunc(f - 0.5)));
 		}
 	};
 	$quake_prog.$pF_floor = function() {
-		$quake_prog.pr_globals_write($quake_prog.ofS_RETURN, Math.floor($quake_prog.g_FLOAT($quake_prog.ofS_PARM0)));
+		$quake_prog.pr_globals_write($quake_prog.ofS_RETURN, $quake_prog$globalval.op_Implicit(Math.floor($quake_prog.g_FLOAT($quake_prog.ofS_PARM0))));
 	};
 	$quake_prog.$pF_ceil = function() {
-		$quake_prog.pr_globals_write($quake_prog.ofS_RETURN, Math.ceil($quake_prog.g_FLOAT($quake_prog.ofS_PARM0)));
+		$quake_prog.pr_globals_write($quake_prog.ofS_RETURN, $quake_prog$globalval.op_Implicit(Math.ceil($quake_prog.g_FLOAT($quake_prog.ofS_PARM0))));
 	};
 	$quake_prog.$pF_checkbottom = function() {
-		ss.Debug.writeln('PF_checkbottom');
-		throw new ss.Exception('PF_checkbottom');
+		var ent;
+		ent = $quake_prog.$g_EDICT($quake_prog.ofS_PARM0);
+		$quake_prog.pr_globals_write($quake_prog.ofS_RETURN, $quake_prog$globalval.op_Implicit$2(($quake_server.sV_CheckBottom(ent) ? 1 : 0)));
 	};
 	$quake_prog.$pF_pointcontents = function() {
-		ss.Debug.writeln('PF_pointcontents');
-		throw new ss.Exception('PF_pointcontents');
+		var v;
+		v = $quake_prog.$g_VECTOR($quake_prog.ofS_PARM0);
+		$quake_prog.pr_globals_write($quake_prog.ofS_RETURN, $quake_prog$globalval.op_Implicit$2($quake_world.sV_PointContents(v)));
 	};
 	$quake_prog.$pF_nextent = function() {
 		ss.Debug.writeln('PF_nextent');
+		throw new ss.Exception('PF_nextent');
 	};
 	$quake_prog.$pF_aim = function() {
 		var ent, check, bestent;
@@ -12699,16 +12956,13 @@
 	};
 	$quake_prog.$pF_WriteCoord = function() {
 		var val = $quake_prog.g_FLOAT($quake_prog.ofS_PARM1);
-		ss.Debug.writeln('PF_WriteCoord ' + val);
 		$quake_common.msG_WriteCoord($quake_prog.$writeDest(), val);
 	};
 	$quake_prog.$pF_WriteString = function() {
-		ss.Debug.writeln('PF_WriteString');
-		throw new ss.Exception('PF_WriteString');
+		$quake_common.msG_WriteString($quake_prog.$writeDest(), $quake_prog.$g_STRING($quake_prog.ofS_PARM1));
 	};
 	$quake_prog.$pF_WriteEntity = function() {
-		ss.Debug.writeln('PF_WriteEntity');
-		throw new ss.Exception('PF_WriteEntity');
+		$quake_common.msG_WriteShort($quake_prog.$writeDest(), $quake_prog.$g_EDICTNUM($quake_prog.ofS_PARM1));
 	};
 	$quake_prog.$pF_makestatic = function() {
 		var ent;
@@ -12860,7 +13114,7 @@
 				break;
 			}
 			case 3: {
-				var vec = ss.cast(val, Array);
+				var vec = $quake_prog$globalval.op_Implicit$5(val);
 				//line = "'" + vec[0] + " " + vec[1] + " " + vec[2] + "'";
 				$quake_prog.$line = ss.formatString('\'{0:F1} {1:F1} {2:F1}\'', vec[0], vec[1], vec[2]);
 				break;
@@ -12915,8 +13169,8 @@
 			return false;
 		}
 		else if (def.type === 3 || 3 === (def.type & -32769)) {
-			var val2 = ss.Nullable.unbox(ss.cast($quake_prog.pr_globals_read(ofs + 1), Number));
-			var val3 = ss.Nullable.unbox(ss.cast($quake_prog.pr_globals_read(ofs + 2), Number));
+			var val2 = $quake_prog$globalval.op_Implicit$4($quake_prog.pr_globals_read(ofs + 1));
+			var val3 = $quake_prog$globalval.op_Implicit$4($quake_prog.pr_globals_read(ofs + 2));
 			return ss.Nullable.unbox(ss.cast(val, Number)) + val2 + val3 === 0;
 		}
 		else {
@@ -12945,8 +13199,6 @@
 		var output = '\nEDICT ' + $quake_prog.nuM_FOR_EDICT(ed) + ':\n';
 		var l;
 		var d;
-		//C++ TO C# CONVERTER TODO TASK: C# does not have an equivalent for pointers to value types:
-		//ORIGINAL LINE: int *v;
 		var v;
 		var i;
 		var j;
@@ -13005,7 +13257,7 @@
 								if (testVal === 0) {
 									continue;
 								}
-								value = $quake_prog.cast_int(tempval);
+								value = $quake_prog$globalval.op_Implicit$2($quake_prog.cast_int(tempval));
 								break;
 							}
 							case 5:
@@ -13022,7 +13274,7 @@
 								if ($quake_prog.cast_float(ed.v.variables[d.ofs - 105]) === 0 && $quake_prog.cast_float(ed.v.variables[d.ofs - 105 + 1]) === 0 && $quake_prog.cast_float(ed.v.variables[d.ofs - 105 + 2]) === 0) {
 									continue;
 								}
-								value = [$quake_prog.cast_float(ed.v.variables[d.ofs - 105]), $quake_prog.cast_float(ed.v.variables[d.ofs - 105 + 1]), $quake_prog.cast_float(ed.v.variables[d.ofs - 105 + 2])];
+								value = $quake_prog$globalval.op_Implicit$1([$quake_prog.cast_float(ed.v.variables[d.ofs - 105]), $quake_prog.cast_float(ed.v.variables[d.ofs - 105 + 1]), $quake_prog.cast_float(ed.v.variables[d.ofs - 105 + 2])]);
 								break;
 							}
 							default: {
@@ -13035,12 +13287,34 @@
 					}
 				}
 				else {
-					var theValue = (ss.isNullOrUndefined(field) ? ss.midel(prop.getter, ed.v).apply(null, null) : ss.fieldAccess(field, ed.v));
+					var theValue = null;
+					//todo  maybe use getvalue extension method that gets the globalval with the type?
+					var theValueObject = (ss.isNullOrUndefined(field) ? ss.midel(prop.getter, ed.v).apply(null, null) : ss.fieldAccess(field, ed.v));
+					if (ss.isValue(field)) {
+						if (ss.referenceEquals(field.fieldType, Array)) {
+							theValue = $quake_prog$globalval.op_Implicit$1(ss.cast(theValueObject, Array));
+						}
+						else if (ss.referenceEquals(field.fieldType, Number)) {
+							theValue = $quake_prog$globalval.op_Implicit(ss.Nullable.unbox(ss.cast(theValueObject, Number)));
+						}
+						else if (ss.referenceEquals(field.fieldType, ss.Int32)) {
+							theValue = $quake_prog$globalval.op_Implicit$2(ss.Nullable.unbox(ss.cast(theValueObject, ss.Int32)));
+						}
+					}
+					else if (ss.referenceEquals(prop.propertyType, Array)) {
+						theValue = $quake_prog$globalval.op_Implicit$1(ss.cast(theValueObject, Array));
+					}
+					else if (ss.referenceEquals(prop.propertyType, Number)) {
+						theValue = $quake_prog$globalval.op_Implicit(ss.Nullable.unbox(ss.cast(theValueObject, Number)));
+					}
+					else if (ss.referenceEquals(prop.propertyType, ss.Int32)) {
+						theValue = $quake_prog$globalval.op_Implicit$2(ss.Nullable.unbox(ss.cast(theValueObject, ss.Int32)));
+					}
 					switch (type) {
 						case 6:
 						case 1: {
-							value = $quake_prog.cast_int(theValue);
-							if (ss.Nullable.unbox(ss.cast(value, ss.Int32)) === 0) {
+							value = $quake_prog$globalval.op_Implicit$2($quake_prog.cast_int(theValue));
+							if ($quake_prog$globalval.op_Implicit$6(value) === 0) {
 								continue;
 							}
 							break;
@@ -13050,7 +13324,7 @@
 							if (testVal1 === 0) {
 								continue;
 							}
-							value = $quake_prog.cast_int(theValue);
+							value = $quake_prog$globalval.op_Implicit$2($quake_prog.cast_int(theValue));
 							break;
 						}
 						case 5:
@@ -13058,14 +13332,14 @@
 						case 7:
 						case 2: {
 							value = theValue;
-							if (ss.Nullable.unbox(ss.cast(value, Number)) === 0) {
+							if ($quake_prog$globalval.op_Implicit$4(value) === 0) {
 								continue;
 							}
 							break;
 						}
 						case 3: {
 							value = theValue;
-							var dblVal = ss.cast(value, Array);
+							var dblVal = $quake_prog$globalval.op_Implicit$5(value);
 							if (dblVal[0] === 0 && dblVal[1] === 0 && dblVal[2] === 0) {
 								continue;
 							}
@@ -13165,10 +13439,10 @@
 		switch (key.type & -32769) {
 			case 1: {
 				if (ss.isValue(d)) {
-					ss.fieldAccess(d, base, $quake_prog.getStringIndex($quake_prog.eD_NewString(s)) - 15000);
+					ss.fieldAccess(d, base, $quake_prog.getStringIndex($quake_prog.eD_NewString(s)) - $quake_prog.stringPoolOffset);
 				}
 				else {
-					variables[key.ofs - 105] = $quake_prog.getStringIndex($quake_prog.eD_NewString(s)) - 15000;
+					variables[key.ofs - 105] = $quake_prog$globalval.op_Implicit$2($quake_prog.getStringIndex($quake_prog.eD_NewString(s)) - $quake_prog.stringPoolOffset);
 				}
 				break;
 			}
@@ -13177,7 +13451,7 @@
 					ss.fieldAccess(d, base, $quake_common.q_atof(s));
 				}
 				else {
-					variables[key.ofs - 105] = $quake_common.q_atof(s);
+					variables[key.ofs - 105] = $quake_prog$globalval.op_Implicit($quake_common.q_atof(s));
 				}
 				break;
 			}
@@ -13196,7 +13470,7 @@
 				}
 				else {
 					for (i = 0; i < 3; i++) {
-						variables[key.ofs - 105 + i] = values[i];
+						variables[key.ofs - 105 + i] = $quake_prog$globalval.op_Implicit(values[i]);
 					}
 				}
 				break;
@@ -13372,11 +13646,12 @@
 	};
 	$quake_prog.pr_string = function(offset) {
 		if (offset < 0) {
-			return $quake_prog.$stringPool[offset + 15000];
+			return $quake_prog.$stringPool[offset + $quake_prog.stringPoolOffset];
 		}
 		return $quake_common.parseString($quake_prog.$pr_strings, $quake_prog.$progs.ofs_strings + offset);
 	};
 	$quake_prog.pr_globals_write = function(address, value) {
+		ss.Debug.writeln(ss.formatString('pr_globals_write {0}: {1}', address, value));
 		var globalvars = $quake_prog.pr_global_struct[ss.Int32.div(address * 4, $quake_prog.sizeof_globalvars_t)];
 		var offset = address % 92;
 		switch (offset) {
@@ -13408,7 +13683,7 @@
 			case 25:
 			case 26:
 			case 27: {
-				globalvars.pad[offset] = $quake_prog.cast_int(value);
+				globalvars.pad[offset] = $quake_prog$globalval.op_Implicit$2($quake_prog.cast_int(value));
 				break;
 			}
 			case 28: {
@@ -13674,6 +13949,7 @@
 		}
 	};
 	$quake_prog.pr_globals_read = function(address) {
+		//Debug.WriteLine("pr_globals_read " + address);
 		var globalvars = $quake_prog.pr_global_struct[ss.Int32.div(address * 4, $quake_prog.sizeof_globalvars_t)];
 		var offset = address % 92;
 		switch (offset) {
@@ -13708,196 +13984,196 @@
 				return globalvars.pad[offset];
 			}
 			case 28: {
-				return globalvars.self;
+				return $quake_prog$globalval.op_Implicit$2(globalvars.self);
 			}
 			case 29: {
-				return globalvars.other;
+				return $quake_prog$globalval.op_Implicit$2(globalvars.other);
 			}
 			case 30: {
-				return globalvars.world;
+				return $quake_prog$globalval.op_Implicit$2(globalvars.world);
 			}
 			case 31: {
-				return globalvars.time;
+				return $quake_prog$globalval.op_Implicit(globalvars.time);
 			}
 			case 32: {
-				return globalvars.frametime;
+				return $quake_prog$globalval.op_Implicit(globalvars.frametime);
 			}
 			case 33: {
-				return globalvars.force_retouch;
+				return $quake_prog$globalval.op_Implicit(globalvars.force_retouch);
 			}
 			case 34: {
-				return globalvars.mapname;
+				return $quake_prog$globalval.op_Implicit$2(globalvars.mapname);
 			}
 			case 35: {
-				return globalvars.deathmatch;
+				return $quake_prog$globalval.op_Implicit(globalvars.deathmatch);
 			}
 			case 36: {
-				return globalvars.coop;
+				return $quake_prog$globalval.op_Implicit(globalvars.coop);
 			}
 			case 37: {
-				return globalvars.teamplay;
+				return $quake_prog$globalval.op_Implicit(globalvars.teamplay);
 			}
 			case 38: {
-				return globalvars.serverflags;
+				return $quake_prog$globalval.op_Implicit(globalvars.serverflags);
 			}
 			case 39: {
-				return globalvars.total_secrets;
+				return $quake_prog$globalval.op_Implicit(globalvars.total_secrets);
 			}
 			case 40: {
-				return globalvars.total_monsters;
+				return $quake_prog$globalval.op_Implicit(globalvars.total_monsters);
 			}
 			case 41: {
-				return globalvars.found_secrets;
+				return $quake_prog$globalval.op_Implicit(globalvars.found_secrets);
 			}
 			case 42: {
-				return globalvars.killed_monsters;
+				return $quake_prog$globalval.op_Implicit(globalvars.killed_monsters);
 			}
 			case 43: {
-				return globalvars.parm1;
+				return $quake_prog$globalval.op_Implicit(globalvars.parm1);
 			}
 			case 44: {
-				return globalvars.parm2;
+				return $quake_prog$globalval.op_Implicit(globalvars.parm2);
 			}
 			case 45: {
-				return globalvars.parm3;
+				return $quake_prog$globalval.op_Implicit(globalvars.parm3);
 			}
 			case 46: {
-				return globalvars.parm4;
+				return $quake_prog$globalval.op_Implicit(globalvars.parm4);
 			}
 			case 47: {
-				return globalvars.parm5;
+				return $quake_prog$globalval.op_Implicit(globalvars.parm5);
 			}
 			case 48: {
-				return globalvars.parm6;
+				return $quake_prog$globalval.op_Implicit(globalvars.parm6);
 			}
 			case 49: {
-				return globalvars.parm7;
+				return $quake_prog$globalval.op_Implicit(globalvars.parm7);
 			}
 			case 50: {
-				return globalvars.parm8;
+				return $quake_prog$globalval.op_Implicit(globalvars.parm8);
 			}
 			case 51: {
-				return globalvars.parm9;
+				return $quake_prog$globalval.op_Implicit(globalvars.parm9);
 			}
 			case 52: {
-				return globalvars.parm10;
+				return $quake_prog$globalval.op_Implicit(globalvars.parm10);
 			}
 			case 53: {
-				return globalvars.parm11;
+				return $quake_prog$globalval.op_Implicit(globalvars.parm11);
 			}
 			case 54: {
-				return globalvars.parm12;
+				return $quake_prog$globalval.op_Implicit(globalvars.parm12);
 			}
 			case 55: {
-				return globalvars.parm13;
+				return $quake_prog$globalval.op_Implicit(globalvars.parm13);
 			}
 			case 56: {
-				return globalvars.parm14;
+				return $quake_prog$globalval.op_Implicit(globalvars.parm14);
 			}
 			case 57: {
-				return globalvars.parm15;
+				return $quake_prog$globalval.op_Implicit(globalvars.parm15);
 			}
 			case 58: {
-				return globalvars.parm16;
+				return $quake_prog$globalval.op_Implicit(globalvars.parm16);
 			}
 			case 59: {
-				return globalvars.v_forward[0];
+				return $quake_prog$globalval.op_Implicit(globalvars.v_forward[0]);
 			}
 			case 60: {
-				return globalvars.v_forward[1];
+				return $quake_prog$globalval.op_Implicit(globalvars.v_forward[1]);
 			}
 			case 61: {
-				return globalvars.v_forward[2];
+				return $quake_prog$globalval.op_Implicit(globalvars.v_forward[2]);
 			}
 			case 62: {
-				return globalvars.v_up[0];
+				return $quake_prog$globalval.op_Implicit(globalvars.v_up[0]);
 			}
 			case 63: {
-				return globalvars.v_up[1];
+				return $quake_prog$globalval.op_Implicit(globalvars.v_up[1]);
 			}
 			case 64: {
-				return globalvars.v_up[2];
+				return $quake_prog$globalval.op_Implicit(globalvars.v_up[2]);
 			}
 			case 65: {
-				return globalvars.v_right[0];
+				return $quake_prog$globalval.op_Implicit(globalvars.v_right[0]);
 			}
 			case 66: {
-				return globalvars.v_right[1];
+				return $quake_prog$globalval.op_Implicit(globalvars.v_right[1]);
 			}
 			case 67: {
-				return globalvars.v_right[2];
+				return $quake_prog$globalval.op_Implicit(globalvars.v_right[2]);
 			}
 			case 68: {
-				return globalvars.trace_allsolid;
+				return $quake_prog$globalval.op_Implicit(globalvars.trace_allsolid);
 			}
 			case 69: {
-				return globalvars.trace_startsolid;
+				return $quake_prog$globalval.op_Implicit(globalvars.trace_startsolid);
 			}
 			case 70: {
-				return globalvars.trace_fraction;
+				return $quake_prog$globalval.op_Implicit(globalvars.trace_fraction);
 			}
 			case 71: {
-				return globalvars.trace_endpos[0];
+				return $quake_prog$globalval.op_Implicit(globalvars.trace_endpos[0]);
 			}
 			case 72: {
-				return globalvars.trace_endpos[1];
+				return $quake_prog$globalval.op_Implicit(globalvars.trace_endpos[1]);
 			}
 			case 73: {
-				return globalvars.trace_endpos[2];
+				return $quake_prog$globalval.op_Implicit(globalvars.trace_endpos[2]);
 			}
 			case 74: {
-				return globalvars.trace_plane_normal[0];
+				return $quake_prog$globalval.op_Implicit(globalvars.trace_plane_normal[0]);
 			}
 			case 75: {
-				return globalvars.trace_plane_normal[1];
+				return $quake_prog$globalval.op_Implicit(globalvars.trace_plane_normal[1]);
 			}
 			case 76: {
-				return globalvars.trace_plane_normal[2];
+				return $quake_prog$globalval.op_Implicit(globalvars.trace_plane_normal[2]);
 			}
 			case 77: {
-				return globalvars.trace_plane_dist;
+				return $quake_prog$globalval.op_Implicit(globalvars.trace_plane_dist);
 			}
 			case 78: {
-				return globalvars.trace_ent;
+				return $quake_prog$globalval.op_Implicit$2(globalvars.trace_ent);
 			}
 			case 79: {
-				return globalvars.trace_inopen;
+				return $quake_prog$globalval.op_Implicit(globalvars.trace_inopen);
 			}
 			case 80: {
-				return globalvars.trace_inwater;
+				return $quake_prog$globalval.op_Implicit(globalvars.trace_inwater);
 			}
 			case 81: {
-				return globalvars.msg_entity;
+				return $quake_prog$globalval.op_Implicit$2(globalvars.msg_entity);
 			}
 			case 82: {
-				return globalvars.main;
+				return $quake_prog$globalval.op_Implicit$2(globalvars.main);
 			}
 			case 83: {
-				return globalvars.startFrame;
+				return $quake_prog$globalval.op_Implicit$2(globalvars.startFrame);
 			}
 			case 84: {
-				return globalvars.playerPreThink;
+				return $quake_prog$globalval.op_Implicit$2(globalvars.playerPreThink);
 			}
 			case 85: {
-				return globalvars.playerPostThink;
+				return $quake_prog$globalval.op_Implicit$2(globalvars.playerPostThink);
 			}
 			case 86: {
-				return globalvars.clientKill;
+				return $quake_prog$globalval.op_Implicit$2(globalvars.clientKill);
 			}
 			case 87: {
-				return globalvars.clientConnect;
+				return $quake_prog$globalval.op_Implicit$2(globalvars.clientConnect);
 			}
 			case 88: {
-				return globalvars.putClientInServer;
+				return $quake_prog$globalval.op_Implicit$2(globalvars.putClientInServer);
 			}
 			case 89: {
-				return globalvars.clientDisconnect;
+				return $quake_prog$globalval.op_Implicit$2(globalvars.clientDisconnect);
 			}
 			case 90: {
-				return globalvars.setNewParms;
+				return $quake_prog$globalval.op_Implicit$2(globalvars.setNewParms);
 			}
 			case 91: {
-				return globalvars.setChangeParms;
+				return $quake_prog$globalval.op_Implicit$2(globalvars.setChangeParms);
 			}
 			default: {
 				ss.Debug.writeln('read write global var offset' + offset);
@@ -13907,27 +14183,44 @@
 		return null;
 	};
 	$quake_prog.cast_float = function(value) {
+		var val;
 		if (ss.isNullOrUndefined(value)) {
-			return 0;
+			val = 0;
 		}
-		if (ss.referenceEquals(ss.getInstanceType(value), ss.Int32)) {
-			return BitConverter.toSingle(BitConverter.getBytes(ss.Nullable.unbox(ss.cast(value, ss.Int32))), 0);
+		else if (value.type === 3) {
+			val = BitConverter.toSingle(BitConverter.getBytesFromInt(ss.Nullable.unbox(ss.cast(value.value, ss.Int32))), 0);
+		}
+		else if (value.type === 2) {
+			val = ss.Nullable.unbox(ss.cast(value.value, Number));
 		}
 		else {
-			return ss.Nullable.unbox(ss.cast(value, Number));
+			val = ss.Nullable.unbox(ss.cast(value.value, Number));
 		}
+		//Debug.WriteLine(string.Format("cast_float old: {0} ", value == null ? "null" : value.Value));
+		//Debug.WriteLine(string.Format("cast_float new: {0} ", val));
+		if (isNaN(val)) {
+			ss.Debug.writeln(ss.formatString('cast_float NaN: {0} type: {1}', $quake_prog.cast_int(value), value.type));
+		}
+		return val;
 	};
 	$quake_prog.cast_int = function(value) {
+		var val;
 		if (ss.isNullOrUndefined(value)) {
-			return 0;
+			val = 0;
 		}
-		if (ss.referenceEquals(ss.getInstanceType(value), Number)) {
-			var val = BitConverter.toInt32(BitConverter.getBytes(ss.Nullable.unbox(ss.cast(value, Number))), 0);
-			return val;
+		else if (value.type === 2) {
+			val = BitConverter.toInt32(BitConverter.getBytesFromFloat(ss.Nullable.unbox(ss.cast(value.value, Number))), 0);
+		}
+		else if (value.type === 1) {
+			val = BitConverter.toInt32(BitConverter.getBytesFromFloat(ss.Nullable.unbox(ss.cast(value.value, Number))), 0);
 		}
 		else {
-			return ss.Nullable.unbox(ss.cast(value, ss.Int32));
+			val = ss.Nullable.unbox(ss.cast(value.value, ss.Int32));
+			//CastHelpers.ToUint32(?????
 		}
+		//Debug.WriteLine(string.Format("cast_float old: {0} ", value == null ? "null" : value.Value));
+		//Debug.WriteLine(string.Format("cast_float new: {0} ", val));
+		return val;
 	};
 	$quake_prog.getStringIndex = function(str) {
 		var index = {};
@@ -14032,11 +14325,12 @@
 	};
 	$quake_prog.$pR_PrintStatement = function(s) {
 		var i;
-		if ($quake_prog.prNum >= 0 && $quake_prog.prNum % 100 === 0) {
+		//if ((prNum >= 0 && prNum % 100 == 0) || prNum > 21900)
+		if ($quake_prog.prNum >= 0) {
+			//Debug.WriteLine(prog.ED_PrintNum(1));
 			var output = '';
-			if ($quake_prog.prNum % 1000 === 0) {
-				ss.Debug.writeln($quake_prog.$eD_Count_str());
-			}
+			//if (prNum % 1000 == 0)
+			//    Debug.WriteLine(ED_Count_str());
 			$quake_prog.$pR_StackTraceStr();
 			output += $quake_prog.prNum + ' ********************************************************************\n';
 			if (s.op < $quake_prog.$pr_opnames.length) {
@@ -14052,7 +14346,7 @@
 			else if (s.op === 61) {
 				output += 'branch ' + s.a;
 			}
-			else if (s.op - 31 < 6) {
+			else if (CastHelpers.toUint32(s.op - 31) < 6) {
 				output += $quake_prog.$pR_GlobalString(s.a);
 				output += $quake_prog.$pR_GlobalStringNoContents(s.b);
 			}
@@ -14069,9 +14363,9 @@
 			}
 			//console.Con_Printf(output + "\n");//todo: fix up like proper quake cmd
 			ss.Debug.writeln(output);
-			if ($quake_prog.prNum % 1000 === 0) {
-				$quake_prog.$pF_coredump();
-			}
+			//if (prNum % 1000 == 0)
+			//if (prNum >= 69366)
+			//prog.PF_coredump();
 		}
 	};
 	$quake_prog.$pR_StackTrace = function() {
@@ -14187,7 +14481,7 @@
 			$quake_prog.$pR_RunError('PR_ExecuteProgram: locals stack underflow\n');
 		}
 		for (i = 0; i < c; i++) {
-			$quake_prog.pr_globals_write($quake_prog.$pr_xfunction.parm_start + i, $quake_prog.$localstack[$quake_prog.$localstack_used + i]);
+			$quake_prog.pr_globals_write($quake_prog.$pr_xfunction.parm_start + i, $quake_prog$globalval.op_Implicit$2($quake_prog.$localstack[$quake_prog.$localstack_used + i]));
 		}
 		// up stack
 		$quake_prog.$pr_depth--;
@@ -14200,331 +14494,334 @@
 		}
 		switch (offset) {
 			case 0: {
-				return entvars.modelindex;
+				return $quake_prog$globalval.op_Implicit(entvars.modelindex);
 			}
 			case 1: {
-				return entvars.absmin[0];
+				return $quake_prog$globalval.op_Implicit(entvars.absmin[0]);
 			}
 			case 2: {
-				return entvars.absmin[1];
+				return $quake_prog$globalval.op_Implicit(entvars.absmin[1]);
 			}
 			case 3: {
-				return entvars.absmin[2];
+				return $quake_prog$globalval.op_Implicit(entvars.absmin[2]);
 			}
 			case 4: {
-				return entvars.absmax[0];
+				return $quake_prog$globalval.op_Implicit(entvars.absmax[0]);
 			}
 			case 5: {
-				return entvars.absmax[1];
+				return $quake_prog$globalval.op_Implicit(entvars.absmax[1]);
 			}
 			case 6: {
-				return entvars.absmax[2];
+				return $quake_prog$globalval.op_Implicit(entvars.absmax[2]);
 			}
 			case 7: {
-				return entvars.ltime;
+				return $quake_prog$globalval.op_Implicit(entvars.ltime);
 			}
 			case 8: {
-				return entvars.movetype;
+				return $quake_prog$globalval.op_Implicit(entvars.movetype);
 			}
 			case 9: {
-				return entvars.solid;
+				return $quake_prog$globalval.op_Implicit(entvars.solid);
 			}
 			case 10: {
-				return entvars.origin[0];
+				return $quake_prog$globalval.op_Implicit(entvars.origin[0]);
 			}
 			case 11: {
-				return entvars.origin[1];
+				return $quake_prog$globalval.op_Implicit(entvars.origin[1]);
 			}
 			case 12: {
-				return entvars.origin[2];
+				return $quake_prog$globalval.op_Implicit(entvars.origin[2]);
 			}
 			case 13: {
-				return entvars.oldorigin[0];
+				return $quake_prog$globalval.op_Implicit(entvars.oldorigin[0]);
 			}
 			case 14: {
-				return entvars.oldorigin[1];
+				return $quake_prog$globalval.op_Implicit(entvars.oldorigin[1]);
 			}
 			case 15: {
-				return entvars.oldorigin[2];
+				return $quake_prog$globalval.op_Implicit(entvars.oldorigin[2]);
 			}
 			case 16: {
-				return entvars.velocity[0];
+				return $quake_prog$globalval.op_Implicit(entvars.velocity[0]);
 			}
 			case 17: {
-				return entvars.velocity[1];
+				return $quake_prog$globalval.op_Implicit(entvars.velocity[1]);
 			}
 			case 18: {
-				return entvars.velocity[2];
+				return $quake_prog$globalval.op_Implicit(entvars.velocity[2]);
 			}
 			case 19: {
-				return entvars.angles[0];
+				return $quake_prog$globalval.op_Implicit(entvars.angles[0]);
 			}
 			case 20: {
-				return entvars.angles[1];
+				return $quake_prog$globalval.op_Implicit(entvars.angles[1]);
 			}
 			case 21: {
-				return entvars.angles[2];
+				return $quake_prog$globalval.op_Implicit(entvars.angles[2]);
 			}
 			case 22: {
-				return entvars.avelocity[0];
+				return $quake_prog$globalval.op_Implicit(entvars.avelocity[0]);
 			}
 			case 23: {
-				return entvars.avelocity[1];
+				return $quake_prog$globalval.op_Implicit(entvars.avelocity[1]);
 			}
 			case 24: {
-				return entvars.avelocity[2];
+				return $quake_prog$globalval.op_Implicit(entvars.avelocity[2]);
 			}
 			case 25: {
-				return entvars.punchangle[0];
+				return $quake_prog$globalval.op_Implicit(entvars.punchangle[0]);
 			}
 			case 26: {
-				return entvars.punchangle[1];
+				return $quake_prog$globalval.op_Implicit(entvars.punchangle[1]);
 			}
 			case 27: {
-				return entvars.punchangle[2];
+				return $quake_prog$globalval.op_Implicit(entvars.punchangle[2]);
 			}
 			case 28: {
-				return entvars.classname;
+				return $quake_prog$globalval.op_Implicit$2(entvars.classname);
 			}
 			case 29: {
-				return entvars.model;
+				return $quake_prog$globalval.op_Implicit$2(entvars.model);
 			}
 			case 30: {
-				return entvars.frame;
+				return $quake_prog$globalval.op_Implicit(entvars.frame);
 			}
 			case 31: {
-				return entvars.skin;
+				return $quake_prog$globalval.op_Implicit(entvars.skin);
 			}
 			case 32: {
-				return entvars.effects;
+				return $quake_prog$globalval.op_Implicit(entvars.effects);
 			}
 			case 33: {
-				return entvars.mins[0];
+				return $quake_prog$globalval.op_Implicit(entvars.mins[0]);
 			}
 			case 34: {
-				return entvars.mins[1];
+				return $quake_prog$globalval.op_Implicit(entvars.mins[1]);
 			}
 			case 35: {
-				return entvars.mins[2];
+				return $quake_prog$globalval.op_Implicit(entvars.mins[2]);
 			}
 			case 36: {
-				return entvars.maxs[0];
+				return $quake_prog$globalval.op_Implicit(entvars.maxs[0]);
 			}
 			case 37: {
-				return entvars.maxs[1];
+				return $quake_prog$globalval.op_Implicit(entvars.maxs[1]);
 			}
 			case 38: {
-				return entvars.maxs[2];
+				return $quake_prog$globalval.op_Implicit(entvars.maxs[2]);
 			}
 			case 39: {
-				return entvars.size[0];
+				return $quake_prog$globalval.op_Implicit(entvars.size[0]);
 			}
 			case 40: {
-				return entvars.size[1];
+				return $quake_prog$globalval.op_Implicit(entvars.size[1]);
 			}
 			case 41: {
-				return entvars.size[2];
+				return $quake_prog$globalval.op_Implicit(entvars.size[2]);
 			}
 			case 42: {
-				return entvars.touch;
+				return $quake_prog$globalval.op_Implicit$2(entvars.touch);
 			}
 			case 43: {
-				return entvars.use$1;
+				return $quake_prog$globalval.op_Implicit$2(entvars.use$1);
 			}
 			case 44: {
-				return entvars.think;
+				return $quake_prog$globalval.op_Implicit$2(entvars.think);
 			}
 			case 45: {
-				return entvars.blocked;
+				return $quake_prog$globalval.op_Implicit$2(entvars.blocked);
 			}
 			case 46: {
-				return entvars.nextthink;
+				return $quake_prog$globalval.op_Implicit(entvars.nextthink);
 			}
 			case 47: {
-				return entvars.groundentity;
+				return $quake_prog$globalval.op_Implicit$2(entvars.groundentity);
 			}
 			case 48: {
-				return entvars.health;
+				return $quake_prog$globalval.op_Implicit(entvars.health);
 			}
 			case 49: {
-				return entvars.frags;
+				return $quake_prog$globalval.op_Implicit(entvars.frags);
 			}
 			case 50: {
-				return entvars.weapon;
+				return $quake_prog$globalval.op_Implicit(entvars.weapon);
 			}
 			case 51: {
-				return entvars.weaponmodel;
+				return $quake_prog$globalval.op_Implicit$2(entvars.weaponmodel);
 			}
 			case 52: {
-				return entvars.weaponframe;
+				return $quake_prog$globalval.op_Implicit(entvars.weaponframe);
 			}
 			case 53: {
-				return entvars.currentammo;
+				return $quake_prog$globalval.op_Implicit(entvars.currentammo);
 			}
 			case 54: {
-				return entvars.ammo_shells;
+				return $quake_prog$globalval.op_Implicit(entvars.ammo_shells);
 			}
 			case 55: {
-				return entvars.ammo_nails;
+				return $quake_prog$globalval.op_Implicit(entvars.ammo_nails);
 			}
 			case 56: {
-				return entvars.ammo_rockets;
+				return $quake_prog$globalval.op_Implicit(entvars.ammo_rockets);
 			}
 			case 57: {
-				return entvars.ammo_cells;
+				return $quake_prog$globalval.op_Implicit(entvars.ammo_cells);
 			}
 			case 58: {
-				return entvars.items;
+				return $quake_prog$globalval.op_Implicit(entvars.items);
 			}
 			case 59: {
-				return entvars.takedamage;
+				return $quake_prog$globalval.op_Implicit(entvars.takedamage);
 			}
 			case 60: {
-				return entvars.chain;
+				return $quake_prog$globalval.op_Implicit$2(entvars.chain);
 			}
 			case 61: {
-				return entvars.deadflag;
+				return $quake_prog$globalval.op_Implicit(entvars.deadflag);
 			}
 			case 62: {
-				return entvars.view_ofs[0];
+				return $quake_prog$globalval.op_Implicit(entvars.view_ofs[0]);
 			}
 			case 63: {
-				return entvars.view_ofs[1];
+				return $quake_prog$globalval.op_Implicit(entvars.view_ofs[1]);
 			}
 			case 64: {
-				return entvars.view_ofs[2];
+				return $quake_prog$globalval.op_Implicit(entvars.view_ofs[2]);
 			}
 			case 65: {
-				return entvars.button0;
+				return $quake_prog$globalval.op_Implicit(entvars.button0);
 			}
 			case 66: {
-				return entvars.button1;
+				return $quake_prog$globalval.op_Implicit(entvars.button1);
 			}
 			case 67: {
-				return entvars.button2;
+				return $quake_prog$globalval.op_Implicit(entvars.button2);
 			}
 			case 68: {
-				return entvars.impulse;
+				return $quake_prog$globalval.op_Implicit(entvars.impulse);
 			}
 			case 69: {
-				return entvars.fixangle;
+				return $quake_prog$globalval.op_Implicit(entvars.fixangle);
 			}
 			case 70: {
-				return entvars.v_angle[0];
+				return $quake_prog$globalval.op_Implicit(entvars.v_angle[0]);
 			}
 			case 71: {
-				return entvars.v_angle[1];
+				return $quake_prog$globalval.op_Implicit(entvars.v_angle[1]);
 			}
 			case 72: {
-				return entvars.v_angle[2];
+				return $quake_prog$globalval.op_Implicit(entvars.v_angle[2]);
 			}
 			case 73: {
-				return entvars.idealpitch;
+				return $quake_prog$globalval.op_Implicit(entvars.idealpitch);
 			}
 			case 74: {
-				return entvars.netname;
+				return $quake_prog$globalval.op_Implicit$2(entvars.netname);
 			}
 			case 75: {
-				return entvars.enemy;
+				return $quake_prog$globalval.op_Implicit$2(entvars.enemy);
 			}
 			case 76: {
-				return entvars.flags;
+				return $quake_prog$globalval.op_Implicit(entvars.flags);
 			}
 			case 77: {
-				return entvars.colormap;
+				return $quake_prog$globalval.op_Implicit(entvars.colormap);
 			}
 			case 78: {
-				return entvars.team;
+				return $quake_prog$globalval.op_Implicit(entvars.team);
 			}
 			case 79: {
-				return entvars.max_health;
+				return $quake_prog$globalval.op_Implicit(entvars.max_health);
 			}
 			case 80: {
-				return entvars.teleport_time;
+				return $quake_prog$globalval.op_Implicit(entvars.teleport_time);
 			}
 			case 81: {
-				return entvars.armortype;
+				return $quake_prog$globalval.op_Implicit(entvars.armortype);
 			}
 			case 82: {
-				return entvars.armorvalue;
+				return $quake_prog$globalval.op_Implicit(entvars.armorvalue);
 			}
 			case 83: {
-				return entvars.waterlevel;
+				return $quake_prog$globalval.op_Implicit(entvars.waterlevel);
 			}
 			case 84: {
-				return entvars.watertype;
+				return $quake_prog$globalval.op_Implicit(entvars.watertype);
 			}
 			case 85: {
-				return entvars.ideal_yaw;
+				return $quake_prog$globalval.op_Implicit(entvars.ideal_yaw);
 			}
 			case 86: {
-				return entvars.yaw_speed;
+				return $quake_prog$globalval.op_Implicit(entvars.yaw_speed);
 			}
 			case 87: {
-				return entvars.aiment;
+				return $quake_prog$globalval.op_Implicit$2(entvars.aiment);
 			}
 			case 88: {
-				return entvars.goalentity;
+				return $quake_prog$globalval.op_Implicit$2(entvars.goalentity);
 			}
 			case 89: {
-				return entvars.spawnflags;
+				return $quake_prog$globalval.op_Implicit(entvars.spawnflags);
 			}
 			case 90: {
-				return entvars.target;
+				return $quake_prog$globalval.op_Implicit$2(entvars.target);
 			}
 			case 91: {
-				return entvars.targetname;
+				return $quake_prog$globalval.op_Implicit$2(entvars.targetname);
 			}
 			case 92: {
-				return entvars.dmg_take;
+				return $quake_prog$globalval.op_Implicit(entvars.dmg_take);
 			}
 			case 93: {
-				return entvars.dmg_save;
+				return $quake_prog$globalval.op_Implicit(entvars.dmg_save);
 			}
 			case 94: {
-				return entvars.dmg_inflictor;
+				return $quake_prog$globalval.op_Implicit$2(entvars.dmg_inflictor);
 			}
 			case 95: {
-				return entvars.owner;
+				return $quake_prog$globalval.op_Implicit$2(entvars.owner);
 			}
 			case 96: {
-				return entvars.movedir[0];
+				return $quake_prog$globalval.op_Implicit(entvars.movedir[0]);
 			}
 			case 97: {
-				return entvars.movedir[1];
+				return $quake_prog$globalval.op_Implicit(entvars.movedir[1]);
 			}
 			case 98: {
-				return entvars.movedir[2];
+				return $quake_prog$globalval.op_Implicit(entvars.movedir[2]);
 			}
 			case 99: {
-				return entvars.message;
+				return $quake_prog$globalval.op_Implicit$2(entvars.message);
 			}
 			case 100: {
-				return entvars.sounds;
+				return $quake_prog$globalval.op_Implicit(entvars.sounds);
 			}
 			case 101: {
-				return entvars.noise;
+				return $quake_prog$globalval.op_Implicit$2(entvars.noise);
 			}
 			case 102: {
-				return entvars.noise1;
+				return $quake_prog$globalval.op_Implicit$2(entvars.noise1);
 			}
 			case 103: {
-				return entvars.noise2;
+				return $quake_prog$globalval.op_Implicit$2(entvars.noise2);
 			}
 			case 104: {
-				return entvars.noise3;
+				return $quake_prog$globalval.op_Implicit$2(entvars.noise3);
 			}
 		}
 		ss.Debug.writeln('cant read offset ' + offset);
 		return null;
 	};
+	$quake_prog.$getedict = function(address) {
+		return $quake_server.sv.edicts[ss.Int32.div(address, $quake_prog.pr_edict_size)];
+	};
 	$quake_prog.$readptr = function(address) {
-		var entvars = $quake_server.sv.edicts[ss.Int32.div(address, $quake_prog.pr_edict_size)].v;
+		var entvars = $quake_prog.$getedict(address).v;
 		var offset = ss.Int32.div(address % $quake_prog.pr_edict_size - 96, 4);
 		return $quake_prog.$readentvar(entvars, offset);
 	};
 	$quake_prog.$writeptr = function(address, value, addressOffset) {
-		var entvars = $quake_server.sv.edicts[ss.Int32.div(address, $quake_prog.pr_edict_size)].v;
+		var entvars = $quake_prog.$getedict(address).v;
 		var offset = ss.Int32.div(address % $quake_prog.pr_edict_size - 96, 4);
 		offset += addressOffset;
 		if (offset > 104) {
@@ -14962,13 +15259,14 @@
 		//	        eval_t	*a, *b, *c;
 		var s;
 		var st;
+		var st_;
 		var newf;
 		//dfunction_t	*f;
 		var runaway;
 		var i;
 		var ed;
 		var exitdepth;
-		//eval_t	*ptr;
+		var ptr;
 		//try{
 		//if (!fnum || fnum >= progs.numfunctions)
 		//{
@@ -14988,6 +15286,10 @@
 			// next statement
 			$quake_prog.prNum++;
 			st = $quake_prog.$pr_statements[s];
+			st_ = new $quake_prog$dstatement_t_alt(st);
+			var a = st_.get_a();
+			var b = st_.get_b();
+			var c = st_.get_c();
 			if (--runaway === 0) {
 				$quake_prog.$pR_RunError('runaway loop error');
 			}
@@ -15000,183 +15302,147 @@
 				//Debug.WriteLine(string.Format("c {0}: {1} {2} {3}", st.c, pr_globals_read(st.c), pr_globals_read(st.c + 1), pr_globals_read(st.c + 2)));
 				//PR_StackTraceStr();
 			}
-			var eval;
+			ss.Debug.writeln(ss.formatString('prNum: {0}', $quake_prog.prNum));
+			ss.Debug.writeln(ss.formatString('a: {0}', a, b, c));
+			ss.Debug.writeln(ss.formatString('b: {1}', a, b, c));
+			ss.Debug.writeln(ss.formatString('c: {2}', a, b, c));
 			switch (st.op) {
 				case 6: {
-					//c->_float = a->_float + b->_float;
-					$quake_prog.pr_globals_write(st.c, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) + $quake_prog.cast_float($quake_prog.pr_globals_read(st.b)));
+					c.set__float(a.get__float() + b.get__float());
 					break;
 				}
 				case 7: {
-					//c->vector[0] = a->vector[0] + b->vector[0];
-					//c->vector[1] = a->vector[1] + b->vector[1];
-					//c->vector[2] = a->vector[2] + b->vector[2];
-					$quake_prog.pr_globals_write(st.c, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) + $quake_prog.cast_float($quake_prog.pr_globals_read(st.b)));
-					$quake_prog.pr_globals_write(st.c + 1, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 1)) + $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 1)));
-					$quake_prog.pr_globals_write(st.c + 2, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 2)) + $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 2)));
+					//var testWith = (float)a.vector[0] + (float)b.vector[0];
+					//var testWithout = a.vector[0] + b.vector[0];
+					//var testWithout2 = (float) (a.vector[0] + b.vector[0]);
+					//var testglv1 = (globalval)testWith;
+					//var testglv2 = (globalval)testWithout;
+					//var testglv3 = (globalval)testWithout2;
+					//var testWith4 = (globalval)((float)a.vector[0] + (float)b.vector[0]);
+					//var testWithout4 = (globalval)(a.vector[0] + b.vector[0]);
+					//var testWithout24 = (globalval)((float) (a.vector[0] + b.vector[0]));
+					c.get_vector().set_item(0, a.get_vector().get_item(0) + b.get_vector().get_item(0));
+					c.get_vector().set_item(1, a.get_vector().get_item(1) + b.get_vector().get_item(1));
+					c.get_vector().set_item(2, a.get_vector().get_item(2) + b.get_vector().get_item(2));
 					break;
 				}
 				case 8: {
-					//c->_float = a->_float - b->_float;
-					$quake_prog.pr_globals_write(st.c, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) - $quake_prog.cast_float($quake_prog.pr_globals_read(st.b)));
+					c.set__float(a.get__float() - b.get__float());
+					$quake_prog.pr_globals_write(st.c, $quake_prog$globalval.op_Implicit($quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) - $quake_prog.cast_float($quake_prog.pr_globals_read(st.b))));
 					break;
 				}
 				case 9: {
-					//c->vector[0] = a->vector[0] - b->vector[0];
-					//c->vector[1] = a->vector[1] - b->vector[1];
-					//c->vector[2] = a->vector[2] - b->vector[2];
-					$quake_prog.pr_globals_write(st.c, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) - $quake_prog.cast_float($quake_prog.pr_globals_read(st.b)));
-					$quake_prog.pr_globals_write(st.c + 1, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 1)) - $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 1)));
-					$quake_prog.pr_globals_write(st.c + 2, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 2)) - $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 2)));
+					c.get_vector().set_item(0, a.get_vector().get_item(0) - b.get_vector().get_item(0));
+					c.get_vector().set_item(1, a.get_vector().get_item(1) - b.get_vector().get_item(1));
+					c.get_vector().set_item(2, a.get_vector().get_item(2) - b.get_vector().get_item(2));
 					break;
 				}
 				case 1: {
-					//c->_float = a->_float * b->_float;
-					$quake_prog.pr_globals_write(st.c, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) * $quake_prog.cast_float($quake_prog.pr_globals_read(st.b)));
+					c.set__float(a.get__float() * b.get__float());
 					break;
 				}
 				case 2: {
-					//c->_float = a->vector[0] * b->vector[0]
-					//+ a->vector[1] * b->vector[1]
-					//+ a->vector[2] * b->vector[2];
-					var res = $quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) * $quake_prog.cast_float($quake_prog.pr_globals_read(st.b)) + $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 1)) * $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 1)) + $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 2)) * $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 2));
-					$quake_prog.pr_globals_write(st.c, res);
+					c.set__float(a.get_vector().get_item(0) * b.get_vector().get_item(0) + a.get_vector().get_item(1) * b.get_vector().get_item(1) + a.get_vector().get_item(2) * b.get_vector().get_item(2));
 					break;
 				}
 				case 3: {
-					//c->vector[0] = a->_float * b->vector[0];
-					//c->vector[1] = a->_float * b->vector[1];
-					//c->vector[2] = a->_float * b->vector[2];
-					var a_float = $quake_prog.cast_float($quake_prog.pr_globals_read(st.a));
-					$quake_prog.pr_globals_write(st.c, a_float * $quake_prog.cast_float($quake_prog.pr_globals_read(st.b)));
-					$quake_prog.pr_globals_write(st.c + 1, a_float * $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 1)));
-					$quake_prog.pr_globals_write(st.c + 2, a_float * $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 2)));
+					c.get_vector().set_item(0, a.get__float() * b.get_vector().get_item(0));
+					c.get_vector().set_item(1, a.get__float() * b.get_vector().get_item(1));
+					c.get_vector().set_item(2, a.get__float() * b.get_vector().get_item(2));
 					break;
 				}
 				case 4: {
-					//c->vector[0] = b->_float * a->vector[0];
-					//c->vector[1] = b->_float * a->vector[1];
-					//c->vector[2] = b->_float * a->vector[2];
-					var b_float = $quake_prog.cast_float($quake_prog.pr_globals_read(st.b));
-					$quake_prog.pr_globals_write(st.c, b_float * $quake_prog.cast_float($quake_prog.pr_globals_read(st.a)));
-					$quake_prog.pr_globals_write(st.c + 1, b_float * $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 1)));
-					$quake_prog.pr_globals_write(st.c + 2, b_float * $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 2)));
+					c.get_vector().set_item(0, b.get__float() * a.get_vector().get_item(0));
+					c.get_vector().set_item(1, b.get__float() * a.get_vector().get_item(1));
+					c.get_vector().set_item(2, b.get__float() * a.get_vector().get_item(2));
 					break;
 				}
 				case 5: {
-					//c->_float = a->_float / b->_float;
-					$quake_prog.pr_globals_write(st.c, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) / $quake_prog.cast_float($quake_prog.pr_globals_read(st.b)));
+					c.set__float(a.get__float() / b.get__float());
 					break;
 				}
 				case 64: {
-					//c->_float = (int)a->_float & (int)b->_float;
-					$quake_prog.pr_globals_write(st.c, ss.Int32.trunc($quake_prog.cast_float($quake_prog.pr_globals_read(st.a))) & ss.Int32.trunc($quake_prog.cast_float($quake_prog.pr_globals_read(st.b))));
+					c.set__float(ss.Int32.trunc(a.get__float()) & ss.Int32.trunc(b.get__float()));
 					break;
 				}
 				case 65: {
-					//c->_float = (int)a->_float | (int)b->_float;
-					$quake_prog.pr_globals_write(st.c, ss.Int32.trunc($quake_prog.cast_float($quake_prog.pr_globals_read(st.a))) | ss.Int32.trunc($quake_prog.cast_float($quake_prog.pr_globals_read(st.b))));
+					c.set__float(ss.Int32.trunc(a.get__float()) | ss.Int32.trunc(b.get__float()));
 					break;
 				}
 				case 21: {
-					//c->_float = a->_float >= b->_float;
-					$quake_prog.pr_globals_write(st.c, (($quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) >= $quake_prog.cast_float($quake_prog.pr_globals_read(st.b))) ? 1 : 0));
+					c.set__float_b(a.get__float() >= b.get__float());
 					break;
 				}
 				case 20: {
-					//c->_float = a->_float <= b->_float;
-					$quake_prog.pr_globals_write(st.c, (($quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) <= $quake_prog.cast_float($quake_prog.pr_globals_read(st.b))) ? 1 : 0));
+					c.set__float_b(a.get__float() <= b.get__float());
 					break;
 				}
 				case 23: {
-					//c->_float = a->_float > b->_float;
-					$quake_prog.pr_globals_write(st.c, (($quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) > $quake_prog.cast_float($quake_prog.pr_globals_read(st.b))) ? 1 : 0));
+					c.set__float_b(a.get__float() > b.get__float());
 					break;
 				}
 				case 22: {
-					//c->_float = a->_float < b->_float;
-					$quake_prog.pr_globals_write(st.c, (($quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) < $quake_prog.cast_float($quake_prog.pr_globals_read(st.b))) ? 1 : 0));
+					c.set__float_b(a.get__float() < b.get__float());
 					break;
 				}
 				case 62: {
-					//c->_float = a->_float && b->_float;
-					$quake_prog.pr_globals_write(st.c, (($quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) !== 0 && $quake_prog.cast_float($quake_prog.pr_globals_read(st.b)) !== 0) ? 1 : 0));
+					c.set__float_b(a.get__float() !== 0 && b.get__float() !== 0);
 					break;
 				}
 				case 63: {
-					//c->_float = a->_float || b->_float;
-					$quake_prog.pr_globals_write(st.c, (($quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) !== 0 || $quake_prog.cast_float($quake_prog.pr_globals_read(st.b)) !== 0) ? 1 : 0));
+					c.set__float_b(a.get__float() !== 0 || b.get__float() !== 0);
 					break;
 				}
 				case 44: {
-					//c->_float = !a->_float;
-					$quake_prog.pr_globals_write(st.c, (($quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) === 0) ? 1 : 0));
+					c.set__float_b(!a.get__float_b());
 					break;
 				}
 				case 46: {
-					//c->_float = !a->string || !pr_strings[a->string];
-					var astring = $quake_prog.cast_int($quake_prog.pr_globals_read(st.a));
-					$quake_prog.pr_globals_write(st.c, ((astring === 0 || ss.isNullOrUndefined($quake_prog.pr_string(astring))) ? 1 : 0));
+					c.set__float_b(a.get_string() === 0 || ss.isNullOrEmptyString($quake_prog.pr_string(a.get_string())));
 					break;
 				}
 				case 48: {
-					//c->_float = !a->function;
-					$quake_prog.pr_globals_write(st.c, (($quake_prog.cast_int($quake_prog.pr_globals_read(st.a)) === 0) ? 1 : 0));
+					c.set__float_b(a.get_function() === 0);
 					break;
 				}
 				case 47: {
-					//c->_float = (PROG_TO_EDICT(a->edict) == sv.edicts);
-					$quake_prog.pr_globals_write(st.c, (ss.referenceEquals($quake_prog.proG_TO_EDICT($quake_prog.cast_int($quake_prog.pr_globals_read(st.a))), $quake_server.sv.edicts[0]) ? 1 : 0));
+					c.set__float_b(ss.referenceEquals($quake_prog.proG_TO_EDICT(a.get_edict()), $quake_server.sv.edicts[0]));
 					break;
 				}
 				case 10: {
-					//c->_float = a->_float == b->_float;
-					$quake_prog.pr_globals_write(st.c, (($quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) === $quake_prog.cast_float($quake_prog.pr_globals_read(st.b))) ? 1 : 0));
+					c.set__float_b(a.get__float() === b.get__float());
 					break;
 				}
 				case 11: {
-					//c->_float = (a->vector[0] == b->vector[0]) &&
-					//(a->vector[1] == b->vector[1]) &&
-					//(a->vector[2] == b->vector[2]);
-					eval = $quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) === $quake_prog.cast_float($quake_prog.pr_globals_read(st.b)) && $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 1)) === $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 1)) && $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 2)) === $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 2));
-					$quake_prog.pr_globals_write(st.c, (eval ? 1 : 0));
+					c.set__float_b(a.get_vector().get_item(0) === b.get_vector().get_item(0) && a.get_vector().get_item(1) === b.get_vector().get_item(1) && a.get_vector().get_item(2) === b.get_vector().get_item(2));
 					break;
 				}
 				case 12: {
-					//c->_float = !strcmp(pr_strings+a->string,pr_strings+b->string);
-					$quake_prog.pr_globals_write(st.c, ((ss.compare($quake_prog.pr_string($quake_prog.cast_int($quake_prog.pr_globals_read(st.a))), $quake_prog.pr_string($quake_prog.cast_int($quake_prog.pr_globals_read(st.b)))) === 0) ? 1 : 0));
+					c.set__float_b(ss.compare($quake_prog.pr_string(a.get_string()), $quake_prog.pr_string(b.get_string())) === 0);
 					break;
 				}
 				case 13: {
-					// 		c->_float = a->_int == b->_int;
-					$quake_prog.pr_globals_write(st.c, (($quake_prog.cast_int($quake_prog.pr_globals_read(st.a)) === $quake_prog.cast_int($quake_prog.pr_globals_read(st.b))) ? 1 : 0));
+					c.set__float_b(a.get__int() === b.get__int());
 					break;
 				}
 				case 15: {
-					eval = $quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) !== $quake_prog.cast_float($quake_prog.pr_globals_read(st.b));
-					$quake_prog.pr_globals_write(st.c, (eval ? 1 : 0));
+					c.set__float_b(a.get__float() !== b.get__float());
 					break;
 				}
 				case 16: {
-					//c->_float = (a->vector[0] != b->vector[0]) ||
-					//(a->vector[1] != b->vector[1]) ||
-					//(a->vector[2] != b->vector[2]);
-					eval = $quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) !== $quake_prog.cast_float($quake_prog.pr_globals_read(st.b)) || $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 1)) !== $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 1)) || $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 2)) !== $quake_prog.cast_float($quake_prog.pr_globals_read(st.b + 2));
-					$quake_prog.pr_globals_write(st.c, (eval ? 1 : 0));
+					c.set__float_b(a.get_vector().get_item(0) !== b.get_vector().get_item(0) || a.get_vector().get_item(1) !== b.get_vector().get_item(1) || a.get_vector().get_item(2) !== b.get_vector().get_item(2));
 					break;
 				}
 				case 17: {
-					$quake_prog.pr_globals_write(st.c, ss.compare($quake_prog.pr_string($quake_prog.cast_int($quake_prog.pr_globals_read(st.a))), $quake_prog.pr_string($quake_prog.cast_int($quake_prog.pr_globals_read(st.b)))));
+					c.set__float(ss.compare($quake_prog.pr_string(a.get_string()), $quake_prog.pr_string(b.get_string())));
 					break;
 				}
 				case 18: {
-					//c->_float = a->_int != b->_int;
-					eval = $quake_prog.cast_int($quake_prog.pr_globals_read(st.a)) !== $quake_prog.cast_int($quake_prog.pr_globals_read(st.b));
-					$quake_prog.pr_globals_write(st.c, (eval ? 1 : 0));
+					c.set__float_b(a.get__int() !== b.get__int());
 					break;
 				}
 				case 19: {
-					//c->_float = a->function != b->function;
+					c.set__float_b(a.get_function() !== b.get_function());
 					break;
 				}
 				case 31:
@@ -15186,16 +15452,23 @@
 				case 36: {
 					// integers
 					// pointers
-					$quake_prog.pr_globals_write(st.b, $quake_prog.pr_globals_read(st.a));
+					b.set__int(a.get__int());
 					break;
 				}
 				case 32: {
-					//b->vector[0] = a->vector[0];
-					//b->vector[1] = a->vector[1];
-					//b->vector[2] = a->vector[2];
-					$quake_prog.pr_globals_write(st.b, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a)));
-					$quake_prog.pr_globals_write(st.b + 1, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 1)));
-					$quake_prog.pr_globals_write(st.b + 2, $quake_prog.cast_float($quake_prog.pr_globals_read(st.a + 2)));
+					//b.vector[0] = a.vector[0];
+					//TIODO: SOME NUMBERS ARE ALWASY NAN! NEED TO DO SOMETHING ELSE? ALWAYS STORE AS INT?
+					//b._int = a._int; // todo: fix properly, this is a work around for if there's a NaN - which acts differently in JS. not all float values can convert to int I guess...?
+					//maybe pass globalval instead of float?
+					// log out everythingh and compare to original quake?
+					// break point if NaN
+					// dont cast to float?
+					// COULD USE REFLECTION TO GET FIELDS DIRECTLY AND INTERACT WITH THEM
+					// and or use "dynamic" and skip the cast_float stuff
+					// eval_t can be a wrapper around, and globals funcs will get field Type info
+					b.get_vector().set_item(0, a.get_vector().get_item(0));
+					b.get_vector().set_item(1, a.get_vector().get_item(1));
+					b.get_vector().set_item(2, a.get_vector().get_item(2));
 					break;
 				}
 				case 37:
@@ -15207,7 +15480,10 @@
 					// pointers
 					//ptr = (eval_t*)((byte*)sv.edicts + b->_int);
 					//ptr->_int = a->_int;
-					$quake_prog.$writeptr($quake_prog.cast_int($quake_prog.pr_globals_read(st.b)), $quake_prog.cast_int($quake_prog.pr_globals_read(st.a)), 0);
+					//todo ptr = sv.edicts[b._int];
+					//ptr._int = a._int;
+					//var test = server.sv.edicts[b._int];
+					$quake_prog.$writeptr(b.get__int(), $quake_prog$globalval.op_Implicit$2(a.get__int()), 0);
 					break;
 				}
 				case 38: {
@@ -15215,18 +15491,20 @@
 					//ptr->vector[0] = a->vector[0];
 					//ptr->vector[1] = a->vector[1];
 					//ptr->vector[2] = a->vector[2];
-					$quake_prog.$writeptr($quake_prog.cast_int($quake_prog.pr_globals_read(st.b)), $quake_prog.cast_int($quake_prog.pr_globals_read(st.a)), 0);
-					$quake_prog.$writeptr($quake_prog.cast_int($quake_prog.pr_globals_read(st.b)), $quake_prog.cast_int($quake_prog.pr_globals_read(st.a + 1)), 1);
-					$quake_prog.$writeptr($quake_prog.cast_int($quake_prog.pr_globals_read(st.b)), $quake_prog.cast_int($quake_prog.pr_globals_read(st.a + 2)), 2);
+					//ptr = getptr(b._int); //sv.edicts[b._int];
+					//ptr.vector[0] = a.vector[0] etc
+					$quake_prog.$writeptr(b.get__int(), $quake_prog$globalval.op_Implicit(a.get_vector().get_item(0)), 0);
+					$quake_prog.$writeptr(b.get__int(), $quake_prog$globalval.op_Implicit(a.get_vector().get_item(1)), 1);
+					$quake_prog.$writeptr(b.get__int(), $quake_prog$globalval.op_Implicit(a.get_vector().get_item(2)), 2);
 					break;
 				}
 				case 30: {
-					ed = $quake_prog.proG_TO_EDICT($quake_prog.cast_int($quake_prog.pr_globals_read(st.a)));
+					ed = $quake_prog.proG_TO_EDICT(a.get__int());
 					if (ss.referenceEquals(ed, $quake_server.sv.edicts[0]) && $quake_server.sv.state === 1) {
 						$quake_prog.$pR_RunError('assignment to world entity');
 					}
 					//c->_int = (byte *)((int *)&ed->v + b->_int) - (byte *)sv.edicts;
-					$quake_prog.pr_globals_write(st.c, ed.index * $quake_prog.pr_edict_size + 96 + $quake_prog.cast_int($quake_prog.pr_globals_read(st.b)) * 4);
+					c.set__int(ed.index * $quake_prog.pr_edict_size + 96 + b.get__int() * 4);
 					break;
 				}
 				case 24:
@@ -15234,32 +15512,32 @@
 				case 27:
 				case 26:
 				case 29: {
-					ed = $quake_prog.proG_TO_EDICT($quake_prog.cast_int($quake_prog.pr_globals_read(st.a)));
+					ed = $quake_prog.proG_TO_EDICT(a.get__int());
 					//a = (eval_t *)((int *)&ed->v + b->_int);
 					//c->_int = a->_int;
-					$quake_prog.pr_globals_write(st.c, $quake_prog.cast_int($quake_prog.$readptr(ed.index * $quake_prog.pr_edict_size + 96 + $quake_prog.cast_int($quake_prog.pr_globals_read(st.b)) * 4)));
+					c.set__int($quake_prog.cast_int($quake_prog.$readptr(ed.index * $quake_prog.pr_edict_size + 96 + b.get__int() * 4)));
 					break;
 				}
 				case 25: {
-					ed = $quake_prog.proG_TO_EDICT($quake_prog.cast_int($quake_prog.pr_globals_read(st.a)));
+					ed = $quake_prog.proG_TO_EDICT(a.get_edict());
 					//a = (eval_t *)((int *)&ed->v + b->_int);
-					//c->vector[0] = a->vector[0];
-					//c->vector[1] = a->vector[1];
-					//c->vector[2] = a->vector[2];
-					$quake_prog.pr_globals_write(st.c, $quake_prog.cast_float($quake_prog.$readptr(ed.index * $quake_prog.pr_edict_size + 96 + $quake_prog.cast_int($quake_prog.pr_globals_read(st.b)) * 4)));
-					$quake_prog.pr_globals_write(st.c + 1, $quake_prog.cast_float($quake_prog.$readptr(ed.index * $quake_prog.pr_edict_size + 96 + ($quake_prog.cast_int($quake_prog.pr_globals_read(st.b)) + 1) * 4)));
-					$quake_prog.pr_globals_write(st.c + 2, $quake_prog.cast_float($quake_prog.$readptr(ed.index * $quake_prog.pr_edict_size + 96 + ($quake_prog.cast_int($quake_prog.pr_globals_read(st.b)) + 2) * 4)));
+					//c.vector[0] = a.vector[0];
+					//c.vector[1] = a.vector[1];
+					//c.vector[2] = a.vector[2];
+					c.get_vector().set_item(0, $quake_prog.cast_float($quake_prog.$readptr(ed.index * $quake_prog.pr_edict_size + 96 + b.get__int() * 4)));
+					c.get_vector().set_item(1, $quake_prog.cast_float($quake_prog.$readptr(ed.index * $quake_prog.pr_edict_size + 96 + (b.get__int() + 1) * 4)));
+					c.get_vector().set_item(2, $quake_prog.cast_float($quake_prog.$readptr(ed.index * $quake_prog.pr_edict_size + 96 + (b.get__int() + 2) * 4)));
 					break;
 				}
 				case 50: {
-					if ($quake_prog.cast_int($quake_prog.pr_globals_read(st.a)) === 0) {
+					if (a.get__int() === 0) {
 						s += st.b - 1;
 					}
 					// offset the s++
 					break;
 				}
 				case 49: {
-					if ($quake_prog.cast_int($quake_prog.pr_globals_read(st.a)) !== 0) {
+					if (a.get__int() !== 0) {
 						s += st.b - 1;
 					}
 					// offset the s++
@@ -15280,7 +15558,7 @@
 				case 58:
 				case 59: {
 					$quake_prog.$pr_argc = st.op - 51;
-					var afunction = $quake_prog.cast_int($quake_prog.pr_globals_read(st.a));
+					var afunction = a.get_function();
 					if (afunction === 0) {
 						$quake_prog.$pR_RunError('NULL function');
 					}
@@ -15316,10 +15594,10 @@
 				case 60: {
 					ed = $quake_prog.proG_TO_EDICT($quake_prog.pr_global_struct[0].self);
 					ed.v.nextthink = $quake_prog.pr_global_struct[0].time + 0.1;
-					if ($quake_prog.cast_float($quake_prog.pr_globals_read(st.a)) !== ed.v.frame) {
-						ed.v.frame = $quake_prog.cast_float($quake_prog.pr_globals_read(st.a));
+					if (a.get__float() !== ed.v.frame) {
+						ed.v.frame = a.get__float();
 					}
-					ed.v.think = $quake_prog.cast_int($quake_prog.pr_globals_read(st.b));
+					ed.v.think = b.get_function();
 					break;
 				}
 				default: {
@@ -15464,6 +15742,36 @@
 		return dstatement;
 	};
 	////////////////////////////////////////////////////////////////////////////////
+	// quake.prog.dstatement_t_alt
+	var $quake_prog$dstatement_t_alt = function(dstatement_t) {
+		this.$1$aField = null;
+		this.$1$bField = null;
+		this.$1$cField = null;
+		this.set_a(new $quake_prog$eval_t(dstatement_t.a));
+		this.set_b(new $quake_prog$eval_t(dstatement_t.b));
+		this.set_c(new $quake_prog$eval_t(dstatement_t.c));
+	};
+	$quake_prog$dstatement_t_alt.prototype = {
+		get_a: function() {
+			return this.$1$aField;
+		},
+		set_a: function(value) {
+			this.$1$aField = value;
+		},
+		get_b: function() {
+			return this.$1$bField;
+		},
+		set_b: function(value) {
+			this.$1$bField = value;
+		},
+		get_c: function() {
+			return this.$1$cField;
+		},
+		set_c: function(value) {
+			this.$1$cField = value;
+		}
+	};
+	////////////////////////////////////////////////////////////////////////////////
 	// quake.prog.edict_t
 	var $quake_prog$edict_t = function(index) {
 		this.index = 0;
@@ -15480,25 +15788,25 @@
 	// quake.prog.entvars_t
 	var $quake_prog$entvars_t = function() {
 		this.modelindex = 0;
-		this.absmin = new Array(3);
-		this.absmax = new Array(3);
+		this.absmin = $ArrayHelpers.explcitDoubleArray(3);
+		this.absmax = $ArrayHelpers.explcitDoubleArray(3);
 		this.ltime = 0;
 		this.movetype = 0;
 		this.solid = 0;
-		this.origin = new Array(3);
-		this.oldorigin = new Array(3);
-		this.velocity = new Array(3);
-		this.angles = new Array(3);
-		this.avelocity = new Array(3);
-		this.punchangle = new Array(3);
+		this.origin = $ArrayHelpers.explcitDoubleArray(3);
+		this.oldorigin = $ArrayHelpers.explcitDoubleArray(3);
+		this.velocity = $ArrayHelpers.explcitDoubleArray(3);
+		this.angles = $ArrayHelpers.explcitDoubleArray(3);
+		this.avelocity = $ArrayHelpers.explcitDoubleArray(3);
+		this.punchangle = $ArrayHelpers.explcitDoubleArray(3);
 		this.classname = 0;
 		this.model = 0;
 		this.frame = 0;
 		this.skin = 0;
 		this.effects = 0;
-		this.mins = new Array(3);
-		this.maxs = new Array(3);
-		this.size = new Array(3);
+		this.mins = $ArrayHelpers.explcitDoubleArray(3);
+		this.maxs = $ArrayHelpers.explcitDoubleArray(3);
+		this.size = $ArrayHelpers.explcitDoubleArray(3);
 		this.touch = 0;
 		this.use$1 = 0;
 		this.think = 0;
@@ -15519,13 +15827,13 @@
 		this.takedamage = 0;
 		this.chain = 0;
 		this.deadflag = 0;
-		this.view_ofs = new Array(3);
+		this.view_ofs = $ArrayHelpers.explcitDoubleArray(3);
 		this.button0 = 0;
 		this.button1 = 0;
 		this.button2 = 0;
 		this.impulse = 0;
 		this.fixangle = 0;
-		this.v_angle = new Array(3);
+		this.v_angle = $ArrayHelpers.explcitDoubleArray(3);
 		this.idealpitch = 0;
 		this.netname = 0;
 		this.enemy = 0;
@@ -15549,7 +15857,7 @@
 		this.dmg_save = 0;
 		this.dmg_inflictor = 0;
 		this.owner = 0;
-		this.movedir = new Array(3);
+		this.movedir = $ArrayHelpers.explcitDoubleArray(3);
 		this.message = 0;
 		this.sounds = 0;
 		this.noise = 0;
@@ -15652,14 +15960,118 @@
 	$quake_prog$etype_t.prototype = { ev_void: 0, ev_string: 1, ev_float: 2, ev_vector: 3, ev_entity: 4, ev_field: 5, ev_function: 6, ev_pointer: 7 };
 	////////////////////////////////////////////////////////////////////////////////
 	// quake.prog.eval_t
-	var $quake_prog$eval_t = function() {
-		this.$string = 0;
-		this.$_float = 0;
-		this.$vector = new Array(3);
-		this.$function = 0;
-		this.$_int = 0;
-		this.$edict = 0;
+	var $quake_prog$eval_t = function(address) {
+		this.$1$addressField = 0;
+		this.$1$vectorField = null;
+		this.set_address(address);
+		this.set_vector(new $quake_prog$vec3_t(this));
 	};
+	$quake_prog$eval_t.prototype = {
+		get_address: function() {
+			return this.$1$addressField;
+		},
+		set_address: function(value) {
+			this.$1$addressField = value;
+		},
+		get__float_b: function() {
+			return this.get__float() !== 0;
+		},
+		set__float_b: function(value) {
+			$quake_prog.pr_globals_write(this.get_address(), $quake_prog$globalval.op_Implicit$2((value ? 1 : 0)));
+		},
+		get__float: function() {
+			return $quake_prog.cast_float($quake_prog.pr_globals_read(this.get_address()));
+		},
+		set__float: function(value) {
+			$quake_prog.pr_globals_write(this.get_address(), $quake_prog$globalval.op_Implicit(value));
+		},
+		get_function: function() {
+			return $quake_prog.cast_int($quake_prog.pr_globals_read(this.get_address()));
+		},
+		set_function: function(value) {
+			//pr_globals_write(address, value);
+		},
+		get_edict: function() {
+			return $quake_prog.cast_int($quake_prog.pr_globals_read(this.get_address()));
+		},
+		set_edict: function(value) {
+			throw new $System_NotImplementedException();
+			//pr_globals_write(address, value);
+		},
+		get__int: function() {
+			return $quake_prog.cast_int($quake_prog.pr_globals_read(this.get_address()));
+		},
+		set__int: function(value) {
+			$quake_prog.pr_globals_write(this.get_address(), $quake_prog$globalval.op_Implicit$2(value));
+		},
+		get_vector: function() {
+			return this.$1$vectorField;
+		},
+		set_vector: function(value) {
+			this.$1$vectorField = value;
+		},
+		get_string: function() {
+			return $quake_prog.cast_int($quake_prog.pr_globals_read(this.get_address()));
+		},
+		set_string: function(value) {
+			throw new $System_NotImplementedException();
+		},
+		toString: function() {
+			return ss.formatString('address: {0} _int: {1} _float: {2:F1} vector[1]: {3:F1} vector[2]: {4:F1}', this.get_address(), this.get__int(), this.get__float(), this.get_vector().get_item(0), this.get_vector().get_item(1));
+		}
+	};
+	$quake_prog$eval_t.op_Implicit = function(m) {
+		return m.get_address();
+	};
+	////////////////////////////////////////////////////////////////////////////////
+	// quake.prog.globalval
+	var $quake_prog$globalval = function() {
+		this.type = 0;
+		this.value = null;
+	};
+	$quake_prog$globalval.prototype = {
+		toString: function() {
+			return ss.formatString('globalval type: {0} int: {1} float {2:F6}', this.type, $quake_prog.cast_int(this), $quake_prog.cast_float(this));
+		}
+	};
+	$quake_prog$globalval.op_Implicit$6 = function(m) {
+		return ss.Nullable.unbox(ss.cast(m.value, ss.Int32));
+	};
+	$quake_prog$globalval.op_Implicit$4 = function(m) {
+		return ss.Nullable.unbox(ss.cast(m.value, Number));
+	};
+	$quake_prog$globalval.op_Implicit$5 = function(m) {
+		return ss.cast(m.value, Array);
+	};
+	$quake_prog$globalval.op_Implicit$2 = function(i) {
+		var $t1 = new $quake_prog$globalval();
+		$t1.type = 3;
+		$t1.value = i;
+		return $t1;
+	};
+	$quake_prog$globalval.op_Implicit$3 = function(f) {
+		var $t1 = new $quake_prog$globalval();
+		$t1.type = 2;
+		$t1.value = f;
+		return $t1;
+	};
+	$quake_prog$globalval.op_Implicit = function(d) {
+		var $t1 = new $quake_prog$globalval();
+		$t1.type = 1;
+		$t1.value = d;
+		return $t1;
+	};
+	$quake_prog$globalval.op_Implicit$1 = function(vec) {
+		var $t1 = new $quake_prog$globalval();
+		$t1.type = 0;
+		$t1.value = vec;
+		return $t1;
+	};
+	////////////////////////////////////////////////////////////////////////////////
+	// quake.prog.globalval_type
+	var $quake_prog$globalval_type = function() {
+	};
+	$quake_prog$globalval_type.prototype = { vector: 0, double$1: 1, float$1: 2, int$1: 3 };
 	////////////////////////////////////////////////////////////////////////////////
 	// quake.prog.globalvars_t
 	var $quake_prog$globalvars_t = function() {
@@ -15695,14 +16107,14 @@
 		this.parm14 = 0;
 		this.parm15 = 0;
 		this.parm16 = 0;
-		this.v_forward = new Array(3);
-		this.v_up = new Array(3);
-		this.v_right = new Array(3);
+		this.v_forward = $ArrayHelpers.explcitDoubleArray(3);
+		this.v_up = $ArrayHelpers.explcitDoubleArray(3);
+		this.v_right = $ArrayHelpers.explcitDoubleArray(3);
 		this.trace_allsolid = 0;
 		this.trace_startsolid = 0;
 		this.trace_fraction = 0;
-		this.trace_endpos = new Array(3);
-		this.trace_plane_normal = new Array(3);
+		this.trace_endpos = $ArrayHelpers.explcitDoubleArray(3);
+		this.trace_plane_normal = $ArrayHelpers.explcitDoubleArray(3);
 		this.trace_plane_dist = 0;
 		this.trace_ent = 0;
 		this.trace_inopen = 0;
@@ -15724,7 +16136,7 @@
 		var kk;
 		var globalvars = new $quake_prog$globalvars_t();
 		for (kk = 0; kk < 28; kk++) {
-			globalvars.pad[kk] = BitConverter.toInt32(buf.buffer, ofs);
+			globalvars.pad[kk] = $quake_prog$globalval.op_Implicit$2(BitConverter.toInt32(buf.buffer, ofs));
 			ofs += 4;
 		}
 		globalvars.self = BitConverter.toInt32(buf.buffer, ofs);
@@ -15857,6 +16269,20 @@
 	var $quake_prog$prstack_t = function() {
 		this.s = 0;
 		this.f = null;
+	};
+	////////////////////////////////////////////////////////////////////////////////
+	// quake.prog.vec3_t
+	var $quake_prog$vec3_t = function(parent) {
+		this.$parent = null;
+		this.$parent = parent;
+	};
+	$quake_prog$vec3_t.prototype = {
+		get_item: function(index) {
+			return $quake_prog.cast_float($quake_prog.pr_globals_read(this.$parent.get_address() + index));
+		},
+		set_item: function(index, value) {
+			$quake_prog.pr_globals_write(this.$parent.get_address() + index, $quake_prog$globalval.op_Implicit(value));
+		}
 	};
 	////////////////////////////////////////////////////////////////////////////////
 	// quake.quakedef
@@ -18583,9 +19009,14 @@
 		for (i = 0; i < $quake_client.cl_numvisedicts; i++) {
 			$quake_render.currententity = $quake_client.cl_visedicts[i];
 			if (ss.referenceEquals($quake_render.currententity, $quake_client.cl_entities[$quake_client.cl.viewentity])) {
-				continue;
+				if ($quake_chase.chase_active.value === 0) {
+					continue;
+					// don't draw the player
+				}
+				else {
+					$quake_render.currententity.angles[0] *= 0.3;
+				}
 			}
-			// don't draw the player
 			switch ($quake_render.currententity.model.type) {
 				case 1: {
 					$quake_mathlib.vectorCopy($quake_render.currententity.origin, $quake_render.$r_entorigin);
@@ -18640,6 +19071,9 @@
 		var add;
 		var dl;
 		if ($quake_render.$r_drawviewmodel.value === 0 || $quake_render.$r_fov_greater_than_90) {
+			return;
+		}
+		if ($quake_chase.chase_active.value !== 0) {
 			return;
 		}
 		if (($quake_client.cl.items & $quake_quakedef.iT_INVISIBILITY) !== 0) {
@@ -20398,14 +20832,6 @@
 		this.$scoreboardlines = 0;
 	};
 	$quake_sbar.prototype = {
-		$sbar_DrawString: function(x, y, str) {
-			if ($quake_client.cl.gametype === $quake_net.gamE_DEATHMATCH) {
-				$quake_draw.draw_String(x, y + $quake_screen.vid.height - $quake_sbar.$sbaR_HEIGHT, str);
-			}
-			else {
-				$quake_draw.draw_String(x + ($quake_screen.vid.width - 320 >> 1), y + $quake_screen.vid.height - $quake_sbar.$sbaR_HEIGHT, str);
-			}
-		},
 		$sbar_itoa: function(num, buf) {
 			return -1;
 		},
@@ -20573,6 +20999,14 @@
 			$quake_draw.draw_Character(x + ($quake_screen.vid.width - 320 >> 1) + 4, y + $quake_screen.vid.height - $quake_sbar.$sbaR_HEIGHT, num);
 		}
 	};
+	$quake_sbar.$sbar_DrawString = function(x, y, str) {
+		if ($quake_client.cl.gametype === $quake_net.gamE_DEATHMATCH) {
+			$quake_draw.draw_String(x, y + $quake_screen.vid.height - $quake_sbar.$sbaR_HEIGHT, str);
+		}
+		else {
+			$quake_draw.draw_String(x + ($quake_screen.vid.width - 320 >> 1), y + $quake_screen.vid.height - $quake_sbar.$sbaR_HEIGHT, str);
+		}
+	};
 	$quake_sbar.$sbar_DrawNum = function(x, y, num, digits, color) {
 		var str;
 		var ptr;
@@ -20600,7 +21034,26 @@
 		}
 	};
 	$quake_sbar.$sbar_SoloScoreboard = function() {
-		ss.Debug.writeln('Sbar_SoloScoreboard');
+		var str = '';
+		var minutes, seconds, tens, units;
+		var l;
+		//sprintf (str,"Monsters:%3i /%3i", client.cl.stats[quakedef.STAT_MONSTERS],  client.cl.stats[quakedef.STAT_TOTALMONSTERS]);
+		str = ss.formatString('Monsters:{0} /{1}', $quake_client.cl.stats[$quake_quakedef.staT_MONSTERS], $quake_client.cl.stats[$quake_quakedef.staT_TOTALMONSTERS]);
+		$quake_sbar.$sbar_DrawString(8, 4, str);
+		//sprintf (str,"Secrets :%3i /%3i",  client.cl.stats[quakedef.STAT_SECRETS], client. cl.stats[quakedef.STAT_TOTALSECRETS]);
+		str += ss.formatString('Secrets :{0} /{1}', $quake_client.cl.stats[$quake_quakedef.staT_SECRETS], $quake_client.cl.stats[$quake_quakedef.staT_TOTALSECRETS]);
+		$quake_sbar.$sbar_DrawString(8, 12, str);
+		// time
+		minutes = ss.Int32.div(ss.Int32.trunc($quake_client.cl.time), 60);
+		seconds = ss.Int32.trunc($quake_client.cl.time) - 60 * minutes;
+		tens = ss.Int32.div(seconds, 10);
+		units = seconds - 10 * tens;
+		//sprintf (str,"Time :%3i:%i%i", minutes, tens, units);
+		str += ss.formatString('Time :{0}:{1}{2}', minutes, tens, units);
+		$quake_sbar.$sbar_DrawString(184, 4, str);
+		// draw level name
+		l = $quake_client.cl.levelname.length;
+		$quake_sbar.$sbar_DrawString(232 - l * 4, 12, $quake_client.cl.levelname);
 	};
 	$quake_sbar.$sbar_DrawScoreboard = function() {
 		$quake_sbar.$sbar_SoloScoreboard();
@@ -20753,38 +21206,43 @@
 		ss.Debug.writeln('Sbar_DrawFrags');
 	};
 	$quake_sbar.$sbar_DrawFace = function() {
-		var f, anim;
-		if (($quake_client.cl.items & 1572864) === 1572864) {
-			$quake_sbar.$sbar_DrawPic(112, 0, $quake_sbar.$sb_face_invis_invuln);
-			return;
+		try {
+			var f, anim;
+			if (($quake_client.cl.items & 1572864) === 1572864) {
+				$quake_sbar.$sbar_DrawPic(112, 0, $quake_sbar.$sb_face_invis_invuln);
+				return;
+			}
+			if (($quake_client.cl.items & $quake_quakedef.iT_QUAD) !== 0) {
+				$quake_sbar.$sbar_DrawPic(112, 0, $quake_sbar.$sb_face_quad);
+				return;
+			}
+			if (($quake_client.cl.items & $quake_quakedef.iT_INVISIBILITY) !== 0) {
+				$quake_sbar.$sbar_DrawPic(112, 0, $quake_sbar.$sb_face_invis);
+				return;
+			}
+			if (($quake_client.cl.items & $quake_quakedef.iT_INVULNERABILITY) !== 0) {
+				$quake_sbar.$sbar_DrawPic(112, 0, $quake_sbar.$sb_face_invuln);
+				return;
+			}
+			if ($quake_client.cl.stats[$quake_quakedef.staT_HEALTH] >= 100) {
+				f = 4;
+			}
+			else {
+				f = ss.Int32.div($quake_client.cl.stats[$quake_quakedef.staT_HEALTH], 20);
+			}
+			if ($quake_client.cl.time <= $quake_client.cl.faceanimtime) {
+				anim = 1;
+				$quake_sbar.$sb_updates = 0;
+				// make sure the anim gets drawn over
+			}
+			else {
+				anim = 0;
+			}
+			$quake_sbar.$sbar_DrawPic(112, 0, ss.arrayGet($quake_sbar.$sb_faces, f, anim));
 		}
-		if (($quake_client.cl.items & $quake_quakedef.iT_QUAD) !== 0) {
-			$quake_sbar.$sbar_DrawPic(112, 0, $quake_sbar.$sb_face_quad);
-			return;
+		catch ($t1) {
+			ss.Debug.writeln('gotcha');
 		}
-		if (($quake_client.cl.items & $quake_quakedef.iT_INVISIBILITY) !== 0) {
-			$quake_sbar.$sbar_DrawPic(112, 0, $quake_sbar.$sb_face_invis);
-			return;
-		}
-		if (($quake_client.cl.items & $quake_quakedef.iT_INVULNERABILITY) !== 0) {
-			$quake_sbar.$sbar_DrawPic(112, 0, $quake_sbar.$sb_face_invuln);
-			return;
-		}
-		if ($quake_client.cl.stats[$quake_quakedef.staT_HEALTH] >= 100) {
-			f = 4;
-		}
-		else {
-			f = ss.Int32.div($quake_client.cl.stats[$quake_quakedef.staT_HEALTH], 20);
-		}
-		if ($quake_client.cl.time <= $quake_client.cl.faceanimtime) {
-			anim = 1;
-			$quake_sbar.$sb_updates = 0;
-			// make sure the anim gets drawn over
-		}
-		else {
-			anim = 0;
-		}
-		$quake_sbar.$sbar_DrawPic(112, 0, ss.arrayGet($quake_sbar.$sb_faces, f, anim));
 	};
 	$quake_sbar.sbar_Draw = function() {
 		if ($quake_screen.scr_con_current === $quake_screen.vid.height) {
@@ -21484,7 +21942,7 @@
 			$quake_common.msG_WriteByte($quake_server.sv.datagram, volume);
 		}
 		if ((field_mask & $quake_net.snD_ATTENUATION) !== 0) {
-			$quake_common.msG_WriteByte($quake_server.sv.datagram, ss.Int32.trunc(attenuation) * 64);
+			$quake_common.msG_WriteByte($quake_server.sv.datagram, ss.Int32.trunc(attenuation * 64));
 		}
 		$quake_common.msG_WriteShort($quake_server.sv.datagram, channel);
 		$quake_common.msG_WriteByte($quake_server.sv.datagram, sound_num);
@@ -21513,12 +21971,16 @@
 		$quake_common.msG_WriteString(client.message, message);
 		for (i = 1, s = $quake_server.sv.model_precache[i]; ss.isValue(s); i++) {
 			s = $quake_server.sv.model_precache[i];
-			$quake_common.msG_WriteString(client.message, s);
+			if (ss.isValue(s)) {
+				$quake_common.msG_WriteString(client.message, s);
+			}
 		}
 		$quake_common.msG_WriteByte(client.message, 0);
 		for (i = 1, s = $quake_server.sv.sound_precache[i]; ss.isValue(s); i++) {
 			s = $quake_server.sv.sound_precache[i];
-			$quake_common.msG_WriteString(client.message, s);
+			if (ss.isValue(s)) {
+				$quake_common.msG_WriteString(client.message, s);
+			}
 		}
 		$quake_common.msG_WriteByte(client.message, 0);
 		// send music
@@ -21604,22 +22066,74 @@
 	$quake_server.sV_ClearDatagram = function() {
 		$quake_common.sZ_Clear($quake_server.sv.datagram);
 	};
+	$quake_server.$sV_AddToFatPVS = function(org, node) {
+		var i;
+		var pvs;
+		var plane;
+		var d;
+		while (true) {
+			// if this is a leaf, accumulate the pvs bits
+			if (node.contents < 0) {
+				if (node.contents !== $quake_bspfile.contentS_SOLID) {
+					pvs = $quake_model.mod_LeafPVS(node, $quake_server.sv.worldmodel);
+					for (i = 0; i < $quake_server.$fatbytes; i++) {
+						$quake_server.$fatpvs[i] |= pvs[i];
+					}
+				}
+				return;
+			}
+			plane = node.plane;
+			d = $quake_mathlib.dotProduct$1(org, plane.normal) - plane.dist;
+			if (d > 8) {
+				node = node.children[0];
+			}
+			else if (d < -8) {
+				node = node.children[1];
+			}
+			else {
+				// go down both
+				$quake_server.$sV_AddToFatPVS(org, node.children[0]);
+				node = node.children[1];
+			}
+		}
+	};
+	$quake_server.$sV_FatPVS = function(org) {
+		$quake_server.$fatbytes = $quake_server.sv.worldmodel.numleafs + 31 >> 3;
+		//Q_memset (fatpvs, 0, fatbytes);
+		for (var i = 0; i < $quake_server.$fatbytes; i++) {
+			$quake_server.$fatpvs[i] = 0;
+		}
+		$quake_server.$sV_AddToFatPVS(org, $quake_server.sv.worldmodel.nodes[0]);
+		return $quake_server.$fatpvs;
+	};
 	$quake_server.$sV_WriteEntitiesToClient = function(clent, msg) {
 		var e, i;
 		var bits;
+		var pvs;
 		var org = new Array(3);
 		var miss;
 		var ent;
+		// find the client's PVS
+		$quake_mathlib.vectorAdd(clent.v.origin, clent.v.view_ofs, org);
+		pvs = $quake_server.$sV_FatPVS(org);
 		// send over all entities (excpet the client) that touch the pvs
 		for (e = 1; e < $quake_server.sv.num_edicts; e++) {
 			ent = $quake_server.sv.edicts[e];
 			// ignore if not touching a PV leaf
 			if (!ss.referenceEquals(ent, clent)) {
 				// ignore ents without visible models
-				if (ent.v.modelindex === 0 || ss.isNullOrUndefined($quake_prog.pr_string(ent.v.model))) {
+				if (ent.v.modelindex === 0 || ss.isNullOrEmptyString($quake_prog.pr_string(ent.v.model))) {
 					continue;
 				}
-				//todo: winquake has some PVS stuff here, is it important?
+				for (i = 0; i < ent.num_leafs; i++) {
+					if ((pvs[ent.leafnums[i] >> 3] & 1 << (ent.leafnums[i] & 7)) !== 0) {
+						break;
+					}
+				}
+				if (i === ent.num_leafs) {
+					continue;
+				}
+				// not visible
 			}
 			if (msg.maxsize - msg.cursize < 16) {
 				$quake_console.con_Printf('packet overflow\n');
@@ -21795,6 +22309,7 @@
 		// send the data
 		$quake_common.msG_WriteByte(msg, $quake_net.svc_clientdata);
 		$quake_common.msG_WriteShort(msg, bits);
+		ss.Debug.writeln('bits ' + bits);
 		if ((bits & $quake_net.sU_VIEWHEIGHT) !== 0) {
 			$quake_common.msG_WriteChar(msg, ss.Int32.trunc(ent.v.view_ofs[2]));
 		}
@@ -21806,7 +22321,7 @@
 				$quake_common.msG_WriteChar(msg, ss.Int32.trunc(ent.v.punchangle[i]));
 			}
 			if ((bits & $quake_net.sU_VELOCITY1 << i) !== 0) {
-				$quake_common.msG_WriteChar(msg, ss.Int32.div(ss.Int32.trunc(ent.v.velocity[i]), 16));
+				$quake_common.msG_WriteChar(msg, ss.Int32.trunc(ent.v.velocity[i] / 16));
 			}
 		}
 		// [always sent]	if (bits & SU_ITEMS)
@@ -22129,11 +22644,11 @@
 			return;
 		}
 		$quake_server.sv.models[1] = $quake_server.sv.worldmodel;
-		ss.Debug.writeln('world firstclipnode ' + $quake_server.sv.worldmodel.hulls[0].firstclipnode);
 		//
 		// clear world interaction links
 		//
 		$quake_world.sV_ClearWorld();
+		$quake_server.sv.sound_precache[0] = $quake_prog.pr_string(0);
 		//sv.model_precache[0] = pr_strings;
 		$quake_server.sv.model_precache[0] = '';
 		$quake_server.sv.model_precache[1] = $quake_server.sv.modelname;
@@ -22147,7 +22662,7 @@
 		ent = $quake_prog.edicT_NUM(0);
 		ent.v.clear();
 		ent.free = false;
-		ent.v.model = $quake_prog.getStringIndex($quake_server.sv.worldmodel.name) - 15000;
+		ent.v.model = $quake_prog.getStringIndex($quake_server.sv.worldmodel.name) - $quake_prog.stringPoolOffset;
 		ent.v.modelindex = 1;
 		// world model
 		ent.v.solid = 4;
@@ -22158,7 +22673,7 @@
 		else {
 			$quake_prog.pr_global_struct[0].deathmatch = $quake_host.deathmatch.value;
 		}
-		$quake_prog.pr_global_struct[0].mapname = $quake_prog.getStringIndex($quake_server.sv.name) - 15000;
+		$quake_prog.pr_global_struct[0].mapname = $quake_prog.getStringIndex($quake_server.sv.name) - $quake_prog.stringPoolOffset;
 		// serverflags are for cross level information (sigils)
 		$quake_prog.pr_global_struct[0].serverflags = $quake_server.svs.serverflags;
 		$quake_prog.eD_LoadFromFile($quake_server.sv.worldmodel.entities);
@@ -22180,7 +22695,7 @@
 		}
 		$quake_console.con_DPrintf('Server spawned.\n');
 	};
-	$quake_server.$sV_CheckBottom = function(ent) {
+	$quake_server.sV_CheckBottom = function(ent) {
 		var $state = 0, mins, maxs, start, stop, trace, x, y, mid, bottom;
 		$sm1:
 		for (;;) {
@@ -22331,7 +22846,7 @@
 		}
 		// check point traces down for dangling corners
 		$quake_mathlib.vectorCopy(trace.endpos, ent.v.origin);
-		if (!$quake_server.$sV_CheckBottom(ent)) {
+		if (!$quake_server.sV_CheckBottom(ent)) {
 			ss.Debug.writeln('!SV_CheckBottom(ent)');
 			if ((ss.Int32.trunc(ent.v.flags) & $quake_server.fL_PARTIALGROUND) !== 0) {
 				// entity had floor mostly pulled out from underneath it
@@ -22459,7 +22974,7 @@
 		// can't move
 		// if a bridge was pulled out from underneath a monster, it may not have
 		// a valid standing position at all
-		if (!$quake_server.$sV_CheckBottom(actor)) {
+		if (!$quake_server.sV_CheckBottom(actor)) {
 			$quake_server.$sV_FixCheckBottom(actor);
 		}
 	};
@@ -22484,7 +22999,7 @@
 		dist = $quake_prog.g_FLOAT($quake_prog.ofS_PARM0);
 		if (!((ss.Int32.trunc(ent.v.flags) & 515) !== 0)) {
 			//prog.G_FLOAT(prog.OFS_RETURN) = 0;
-			$quake_prog.pr_globals_write($quake_prog.ofS_RETURN, 0);
+			$quake_prog.pr_globals_write($quake_prog.ofS_RETURN, $quake_prog$globalval.op_Implicit$2(0));
 			return;
 		}
 		// if the next step hits the enemy, return immediately
@@ -22492,8 +23007,6 @@
 			return;
 		}
 		// bump around...
-		ss.Debug.writeln(ss.formatString('ideal_yaw {0:F6}', ent.v.ideal_yaw));
-		ss.Debug.writeln(ss.formatString('dist {0:F6}', dist));
 		if (($Helper_helper.rand() & 3) === 1 || !$quake_server.$sV_StepDirection(ent, ent.v.ideal_yaw, dist)) {
 			$quake_server.sV_NewChaseDir(ent, goal, dist);
 		}
@@ -22618,7 +23131,7 @@
 		$quake_mathlib.vectorCopy(ent.v.velocity, primal_velocity);
 		numplanes = 0;
 		time_left = time;
-		ss.Debug.writeln('SV_FlyMove');
+		//Debug.WriteLine("SV_FlyMove");
 		for (bumpcount = 0; bumpcount < numbumps; bumpcount++) {
 			if (ent.v.velocity[0] === 0 && ent.v.velocity[1] === 0 && ent.v.velocity[2] === 0) {
 				break;
@@ -22628,12 +23141,12 @@
 			}
 			trace = $quake_world.sV_Move(ent.v.origin, ent.v.mins, ent.v.maxs, end, 0, ent);
 			if (trace.allsolid) {
-				ss.Debug.writeln('allsolid');
+				//Debug.WriteLine("allsolid");
 				// entity is trapped in another solid
 				$quake_mathlib.vectorCopy($quake_mathlib.vec3_origin, ent.v.velocity);
 				return 3;
 			}
-			ss.Debug.writeln(ss.formatString('fraction {0}', trace.fraction));
+			//Debug.WriteLine(string.Format("fraction {0}", trace.fraction));
 			if (trace.fraction > 0) {
 				// actually covered some distance
 				$quake_mathlib.vectorCopy(trace.endpos, ent.v.origin);
@@ -22648,7 +23161,7 @@
 				$quake_sys_linux.sys_Error('SV_FlyMove: !trace.ent');
 			}
 			if (trace.plane.normal[2] > 0.7) {
-				ss.Debug.writeln('trace.plane.normal[2] > 0.7');
+				//Debug.WriteLine("trace.plane.normal[2] > 0.7");
 				blocked |= 1;
 				// floor
 				if (trace.ent.v.solid === 4) {
@@ -22657,28 +23170,28 @@
 				}
 			}
 			if (!(trace.plane.normal[2] !== 0)) {
-				ss.Debug.writeln('!trace.plane.normal[2]');
+				//Debug.WriteLine("!trace.plane.normal[2]");
 				blocked |= 2;
 				// step
-				if (ss.isValue(steptrace)) {
-					steptrace = trace;
+				if (ss.isValue(steptrace.$)) {
+					steptrace.$ = trace;
 				}
 				// save for player extrafriction
 			}
 			//
 			// run the impact function
 			//
-			ss.Debug.writeln('SV_Impact');
+			//Debug.WriteLine("SV_Impact");
 			$quake_server.$sV_Impact(ent, trace.ent);
 			if (ent.free) {
-				ss.Debug.writeln('ent.fre');
+				//Debug.WriteLine("ent.fre");
 				break;
 				// removed by the impact function
 			}
 			time_left -= time_left * trace.fraction;
 			// cliped to another plane
 			if (numplanes >= $quake_server.$maX_CLIP_PLANES) {
-				ss.Debug.writeln('numplanes >= MAX_CLIP_PLANES');
+				//Debug.WriteLine("numplanes >= MAX_CLIP_PLANES");
 				// this shouldn't really happen
 				$quake_mathlib.vectorCopy($quake_mathlib.vec3_origin, ent.v.velocity);
 				return 3;
@@ -22704,7 +23217,7 @@
 			}
 			if (i !== numplanes) {
 				// go along this plane
-				ss.Debug.writeln('i != numplanes');
+				//Debug.WriteLine("i != numplanes");
 				$quake_mathlib.vectorCopy(new_velocity, ent.v.velocity);
 			}
 			else {
@@ -22723,7 +23236,7 @@
 			// to avoid tiny occilations in sloping corners
 			//
 			if ($quake_mathlib.dotProduct$1(ent.v.velocity, primal_velocity) <= 0) {
-				ss.Debug.writeln('DotProductstuff');
+				//Debug.WriteLine("DotProductstuff");
 				$quake_mathlib.vectorCopy($quake_mathlib.vec3_origin, ent.v.velocity);
 				return blocked;
 			}
@@ -22790,7 +23303,7 @@
 			if (check.free) {
 				continue;
 			}
-			ss.Debug.writeln(ss.formatString('e: {0} movetype:{1}', e, ss.Int32.trunc(check.v.movetype)));
+			//Debug.WriteLine(string.Format("e: {0} movetype:{1}", e, (int)check.v.movetype));
 			if (check.v.movetype === 7 || check.v.movetype === 0 || check.v.movetype === 8) {
 				continue;
 			}
@@ -22841,7 +23354,6 @@
 				// otherwise, just stay in place until the obstacle is gone
 				if (ss.Nullable.ne(pusher.v.blocked, null)) {
 					$quake_prog.pr_global_struct[0].self = $quake_prog.edicT_TO_PROG(pusher);
-					//todo [0] is this right??
 					$quake_prog.pr_global_struct[0].other = $quake_prog.edicT_TO_PROG(check);
 					$quake_prog.pR_ExecuteProgram($quake_prog.pr_functions[pusher.v.blocked]);
 				}
@@ -22873,7 +23385,6 @@
 			$quake_server.$sV_PushMove(ent, movetime);
 			// advances ent.v.ltime if not blocked
 		}
-		// todo: this float thing may have issues with JS!
 		if (thinktime > oldltime && thinktime <= ent.v.ltime) {
 			ent.v.nextthink = 0;
 			$quake_prog.pr_global_struct[0].time = $quake_server.sv.time;
@@ -22966,7 +23477,7 @@
 		var oldorg = new Array(3);
 		var dir = new Array(3);
 		var clip;
-		var steptrace = new $quake_world$trace_t();
+		var steptrace = { $: new $quake_world$trace_t() };
 		$quake_mathlib.vectorCopy(ent.v.origin, oldorg);
 		$quake_mathlib.vectorCopy($quake_mathlib.vec3_origin, dir);
 		for (i = 0; i < 8; i++) {
@@ -23036,7 +23547,7 @@
 		var nosteporg = new Array(3), nostepvel = new Array(3);
 		var clip;
 		var oldonground;
-		var steptrace = new $quake_world$trace_t(), downtrace = new $quake_world$trace_t();
+		var steptrace = { $: new $quake_world$trace_t() }, downtrace = new $quake_world$trace_t();
 		//
 		// do a regular slide move unless it looks like you ran into a step
 		//
@@ -23092,7 +23603,7 @@
 		}
 		// extra friction based on view angle
 		if ((clip & 2) !== 0) {
-			$quake_server.$sV_WallFriction(ent, steptrace);
+			$quake_server.$sV_WallFriction(ent, steptrace.$);
 		}
 		// move down
 		downtrace = $quake_server.$sV_PushEntity(ent, downmove);
@@ -23157,7 +23668,9 @@
 				if (!$quake_server.$sV_RunThink(ent)) {
 					return;
 				}
-				$quake_server.$sV_FlyMove(ent, $quake_host.host_frametime, null);
+				var unused_trace_t = { $: new $quake_world$trace_t() };
+				// null was passed into SV_FlyMove in original
+				$quake_server.$sV_FlyMove(ent, $quake_host.host_frametime, unused_trace_t);
 				break;
 			}
 			case 8: {
@@ -23278,7 +23791,9 @@
 			}
 			$quake_server.$sV_AddGravity(ent);
 			$quake_server.$sV_CheckVelocity(ent);
-			$quake_server.$sV_FlyMove(ent, $quake_host.host_frametime, null);
+			var unused_trace_t = { $: new $quake_world$trace_t() };
+			// null was passed into SV_FlyMove in original
+			$quake_server.$sV_FlyMove(ent, $quake_host.host_frametime, unused_trace_t);
 			$quake_world.sV_LinkEdict(ent, true);
 			if ((ss.Int32.trunc(ent.v.flags) & $quake_server.fL_ONGROUND) !== 0) {
 				if (hitsound) {
@@ -23304,7 +23819,8 @@
 		//
 		for (i = 0; i < $quake_server.sv.num_edicts; i++) {
 			ent = $quake_server.sv.edicts[i];
-			ss.Debug.writeln(ss.formatString('phys_num {0} edict {1} movetype {2} absmin[0] {3}', $quake_server.$phys_num, i, ss.Int32.trunc(ent.v.movetype), ss.Int32.trunc(ent.v.absmin[0])));
+			//if (phys_num >= 2300)
+			//    Debug.WriteLine(string.Format("phys_num {0} edict {1} movetype {2} absmin[0] {3}", phys_num, i, (int)ent.v.movetype, (int)ent.v.absmin[0]));
 			$quake_server.$phys_num++;
 			if (ent.free) {
 				//Debug.WriteLine("free");
@@ -23327,7 +23843,6 @@
 				$quake_server.$sV_Physics_Noclip(ent);
 			}
 			else if (ent.v.movetype === 4) {
-				//todo!!! step phys
 				$quake_server.$sV_Physics_Step(ent);
 			}
 			else if (ent.v.movetype === 6 || ent.v.movetype === 10 || ent.v.movetype === 5 || ent.v.movetype === 9) {
@@ -24184,7 +24699,7 @@
 		ch.media.set_volume(configVolume);
 	};
 	$quake_sound.s_StaticSound = function(sfx, origin, vol, attenuation) {
-		var ss;
+		var ch_ss;
 		var sc;
 		if (ss.isNullOrUndefined(sfx)) {
 			return;
@@ -24193,7 +24708,7 @@
 			$quake_console.con_Printf('total_channels == MAX_CHANNELS\n');
 			return;
 		}
-		ss = $quake_sound.channels[$quake_sound.$total_channels];
+		ch_ss = $quake_sound.channels[$quake_sound.$total_channels];
 		$quake_sound.$total_channels++;
 		sc = $quake_sound.s_LoadSound(sfx);
 		if (ss.isNullOrUndefined(sc)) {
@@ -24203,18 +24718,20 @@
 			$quake_console.con_Printf('Sound ' + sfx.name + ' not looped\n');
 			return;
 		}
-		ss.sfx = sfx;
-		$quake_mathlib.vectorCopy(origin, ss.origin);
-		ss.master_vol = ss.Int32.trunc(vol);
-		ss.dist_mult = attenuation / 64 / $quake_sound.$sound_nominal_clip_dist;
-		$quake_sound.snD_Spatialize(ss);
+		ch_ss.sfx = sfx;
+		$quake_mathlib.vectorCopy(origin, ch_ss.origin);
+		ch_ss.master_vol = ss.Int32.trunc(vol);
+		ch_ss.dist_mult = attenuation / 64 / $quake_sound.$sound_nominal_clip_dist;
+		$quake_sound.snD_Spatialize(ch_ss);
 		var media = new $System_Windows_Controls_MediaElement();
-		ss.media = media;
+		ch_ss.media = media;
 		media.set_autoPlay(true);
 		media.setSource(new MemoryStream(sc.data));
-		media.set_tag(ss);
-		throw new $System_NotImplementedException.$ctor1('S_StaticSound todo!');
-		$quake_sound.setVolume(ss);
+		media.set_tag(ch_ss);
+		media.add_mediaEnded(function() {
+			$quake_sound.$media_MediaEnded(media, null);
+		});
+		$quake_sound.setVolume(ch_ss);
 		ss.add($InnoveWare_Page.thePage.get_parentCanvas().get_children(), media);
 	};
 	$quake_sound.$media_MediaEnded = function(sender, e) {
@@ -25554,7 +26071,7 @@
 		var mins1 = new Array(3), maxs1 = new Array(3), mins2 = new Array(3), maxs2 = new Array(3);
 		anode = $quake_world.$sv_areanodes[$quake_world.$sv_numareanodes];
 		$quake_world.$sv_numareanodes++;
-		ss.Debug.writeln('SV_CreateAreaNode');
+		//Debug.WriteLine("SV_CreateAreaNode");
 		$quake_common.clearLink(anode.$trigger_edicts);
 		$quake_common.clearLink(anode.$solid_edicts);
 		if (depth === $quake_world.$areA_DEPTH) {
@@ -25600,7 +26117,7 @@
 		$quake_world.$tchlinksFunc++;
 		// touch linked edicts
 		for (l = node.$trigger_edicts.next; !ss.referenceEquals(l, node.$trigger_edicts); l = next) {
-			ss.Debug.writeln('SV_TouchLinks loop ' + $quake_world.$tchlinks);
+			//Debug.WriteLine("SV_TouchLinks loop "+ tchlinks);
 			$quake_world.$tchlinks++;
 			next = l.next;
 			touch = $quake_prog.edicT_FROM_AREA(l);
@@ -25657,8 +26174,8 @@
 			leafnum = i - 1;
 			ent.leafnums[ent.num_leafs] = leafnum;
 			ent.num_leafs++;
-			ss.Debug.writeln('num_leafs ' + ent.num_leafs);
-			ss.Debug.writeln('leafnum_ ' + leafnum);
+			//Debug.WriteLine("num_leafs " + ent.num_leafs);
+			//Debug.WriteLine("leafnum_ " + leafnum);
 			return;
 		}
 		// NODE_MIXED
@@ -25674,7 +26191,7 @@
 	};
 	$quake_world.sV_LinkEdict = function(ent, touch_triggers) {
 		var node;
-		ss.Debug.writeln('SV_LinkEdict_count ' + $quake_world.$sV_LinkEdict_count);
+		//Debug.WriteLine("SV_LinkEdict_count " + SV_LinkEdict_count);
 		$quake_world.$sV_LinkEdict_count++;
 		if (ss.isValue(ent.area.prev)) {
 			$quake_world.sV_UnlinkEdict(ent);
@@ -25703,7 +26220,7 @@
 			ent.v.absmin[1] -= 15;
 			ent.v.absmax[0] += 15;
 			ent.v.absmax[1] += 15;
-			ss.Debug.writeln(ss.formatString('(int)ent->v.flags & FL_ITEM {0:F6}', ent.v.absmin[0]));
+			//Debug.WriteLine(string.Format("(int)ent->v.flags & FL_ITEM {0:F6}", ent.v.absmin[0]));
 		}
 		else {
 			// because movement is clipped an epsilon away from an actual edge,
@@ -25743,11 +26260,11 @@
 		}
 		// link it in	
 		if (ent.v.solid === 1) {
-			ss.Debug.writeln('ent.v.solid == server.SOLID_TRIGGER');
+			//Debug.WriteLine("ent.v.solid == server.SOLID_TRIGGER");
 			$quake_common.insertLinkBefore(ent.area, node.$trigger_edicts);
 		}
 		else {
-			ss.Debug.writeln('ELSE!');
+			//Debug.WriteLine("ELSE!");
 			$quake_common.insertLinkBefore(ent.area, node.$solid_edicts);
 		}
 		// if touch_triggers, touch all entities at this node and decend for more
@@ -25778,7 +26295,7 @@
 				num = node.children[0];
 			}
 		}
-		ss.Debug.writeln('SV_HullPointContents ' + num);
+		//Debug.WriteLine("SV_HullPointContents " + num);
 		return num;
 	};
 	$quake_world.sV_PointContents = function(p) {
@@ -25800,7 +26317,7 @@
 		}
 		return null;
 	};
-	$quake_world.$sV_RecursiveHullCheck = function(hull, num, p1f, p2f, p1, p2, trace) {
+	$quake_world.sV_RecursiveHullCheck = function(hull, num, p1f, p2f, p1, p2, trace) {
 		var node;
 		var plane;
 		var t1, t2;
@@ -25847,10 +26364,10 @@
 		}
 		//Debug.WriteLine(string.Format("t1: {0:F6} t2: {1:F6}", (float)t1, (float)t2));
 		if (t1 >= 0 && t2 >= 0) {
-			return $quake_world.$sV_RecursiveHullCheck(hull, node.children[0], p1f, p2f, p1, p2, trace);
+			return $quake_world.sV_RecursiveHullCheck(hull, node.children[0], p1f, p2f, p1, p2, trace);
 		}
 		if (t1 < 0 && t2 < 0) {
-			return $quake_world.$sV_RecursiveHullCheck(hull, node.children[1], p1f, p2f, p1, p2, trace);
+			return $quake_world.sV_RecursiveHullCheck(hull, node.children[1], p1f, p2f, p1, p2, trace);
 		}
 		// put the crosspoint DIST_EPSILON pixels on the near side
 		if (t1 < 0) {
@@ -25871,11 +26388,11 @@
 		}
 		side = ((t1 < 0) ? 1 : 0);
 		// move up to the node
-		if (!$quake_world.$sV_RecursiveHullCheck(hull, node.children[side], p1f, midf, p1, mid, trace)) {
+		if (!$quake_world.sV_RecursiveHullCheck(hull, node.children[side], p1f, midf, p1, mid, trace)) {
 			return false;
 		}
 		if ($quake_world.sV_HullPointContents(hull, node.children[side ^ 1], mid) !== $quake_bspfile.contentS_SOLID) {
-			return $quake_world.$sV_RecursiveHullCheck(hull, node.children[side ^ 1], midf, p2f, mid, p2, trace);
+			return $quake_world.sV_RecursiveHullCheck(hull, node.children[side ^ 1], midf, p2f, mid, p2, trace);
 		}
 		if (trace.allsolid) {
 			return false;
@@ -25927,7 +26444,7 @@
 		//Debug.WriteLine(string.Format("end[2] {0:F6}", (float)end[2]));
 		// trace a line through the apropriate clipping hull
 		//Debug.WriteLine(string.Format("end_l[2] {0:F6}",(float)  end_l[2]));
-		$quake_world.$sV_RecursiveHullCheck(hull, hull.firstclipnode, 0, 1, start_l, end_l, trace);
+		$quake_world.sV_RecursiveHullCheck(hull, hull.firstclipnode, 0, 1, start_l, end_l, trace);
 		// fix trace up by the offset
 		if (trace.fraction !== 1) {
 			$quake_mathlib.vectorAdd(trace.endpos, offset, trace.endpos);
@@ -25944,7 +26461,7 @@
 		var trace;
 		// touch linked edicts
 		for (l = node.$solid_edicts.next; !ss.referenceEquals(l, node.$solid_edicts); l = next) {
-			ss.Debug.writeln('ClipToLinks_for_num ' + $quake_world.$clipToLinks_for_num);
+			//Debug.WriteLine("ClipToLinks_for_num " + ClipToLinks_for_num);
 			$quake_world.$clipToLinks_for_num++;
 			next = l.next;
 			touch = $quake_prog.edicT_FROM_AREA(l);
@@ -26057,7 +26574,7 @@
 		// create the bounding box of the entire move
 		$quake_world.$sV_MoveBounds(start, clip.mins2, clip.maxs2, end, clip.boxmins, clip.boxmaxs);
 		// clip to entities
-		ss.Debug.writeln('SV_Move - SV_ClipToLinks');
+		//Debug.WriteLine("SV_Move - SV_ClipToLinks");
 		$quake_world.$sV_ClipToLinks($quake_world.$sv_areanodes[0], clip);
 		return clip.trace;
 	};
@@ -26571,13 +27088,17 @@
 	ss.registerClass(global, 'quake.prog$dfunction_t', $quake_prog$dfunction_t);
 	ss.registerClass(global, 'quake.prog$dprograms_t', $quake_prog$dprograms_t);
 	ss.registerClass(global, 'quake.prog$dstatement_t', $quake_prog$dstatement_t);
+	ss.registerClass(global, 'quake.prog$dstatement_t_alt', $quake_prog$dstatement_t_alt);
 	ss.registerClass(global, 'quake.prog$edict_t', $quake_prog$edict_t);
 	ss.registerClass(global, 'quake.prog$entvars_t', $quake_prog$entvars_t, null, [], { members: [{ name: 'modelindex', type: 4, fieldType: Number, js: 'modelindex' }, { name: 'absmin', type: 4, fieldType: Array, js: 'absmin' }, { name: 'absmax', type: 4, fieldType: Array, js: 'absmax' }, { name: 'ltime', type: 4, fieldType: Number, js: 'ltime' }, { name: 'movetype', type: 4, fieldType: Number, js: 'movetype' }, { name: 'solid', type: 4, fieldType: Number, js: 'solid' }, { name: 'origin', type: 4, fieldType: Array, js: 'origin' }, { name: 'oldorigin', type: 4, fieldType: Array, js: 'oldorigin' }, { name: 'velocity', type: 4, fieldType: Array, js: 'velocity' }, { name: 'angles', type: 4, fieldType: Array, js: 'angles' }, { name: 'avelocity', type: 4, fieldType: Array, js: 'avelocity' }, { name: 'punchangle', type: 4, fieldType: Array, js: 'punchangle' }, { name: 'classname', type: 4, fieldType: ss.Int32, js: 'classname' }, { name: 'model', type: 4, fieldType: ss.Int32, js: 'model' }, { name: 'frame', type: 4, fieldType: Number, js: 'frame' }, { name: 'skin', type: 4, fieldType: Number, js: 'skin' }, { name: 'effects', type: 4, fieldType: Number, js: 'effects' }, { name: 'mins', type: 4, fieldType: Array, js: 'mins' }, { name: 'maxs', type: 4, fieldType: Array, js: 'maxs' }, { name: 'size', type: 4, fieldType: Array, js: 'size' }, { name: 'touch', type: 4, fieldType: ss.Int32, js: 'touch' }, { name: 'use', type: 4, fieldType: ss.Int32, js: 'use$1' }, { name: 'think', type: 4, fieldType: ss.Int32, js: 'think' }, { name: 'blocked', type: 4, fieldType: ss.Int32, js: 'blocked' }, { name: 'nextthink', type: 4, fieldType: Number, js: 'nextthink' }, { name: 'groundentity', type: 4, fieldType: ss.Int32, js: 'groundentity' }, { name: 'health', type: 4, fieldType: Number, js: 'health' }, { name: 'frags', type: 4, fieldType: Number, js: 'frags' }, { name: 'weapon', type: 4, fieldType: Number, js: 'weapon' }, { name: 'weaponmodel', type: 4, fieldType: ss.Int32, js: 'weaponmodel' }, { name: 'weaponframe', type: 4, fieldType: Number, js: 'weaponframe' }, { name: 'currentammo', type: 4, fieldType: Number, js: 'currentammo' }, { name: 'ammo_shells', type: 4, fieldType: Number, js: 'ammo_shells' }, { name: 'ammo_nails', type: 4, fieldType: Number, js: 'ammo_nails' }, { name: 'ammo_rockets', type: 4, fieldType: Number, js: 'ammo_rockets' }, { name: 'ammo_cells', type: 4, fieldType: Number, js: 'ammo_cells' }, { name: 'items', type: 4, fieldType: Number, js: 'items' }, { name: 'takedamage', type: 4, fieldType: Number, js: 'takedamage' }, { name: 'chain', type: 4, fieldType: ss.Int32, js: 'chain' }, { name: 'deadflag', type: 4, fieldType: Number, js: 'deadflag' }, { name: 'view_ofs', type: 4, fieldType: Array, js: 'view_ofs' }, { name: 'button0', type: 4, fieldType: Number, js: 'button0' }, { name: 'button1', type: 4, fieldType: Number, js: 'button1' }, { name: 'button2', type: 4, fieldType: Number, js: 'button2' }, { name: 'impulse', type: 4, fieldType: Number, js: 'impulse' }, { name: 'fixangle', type: 4, fieldType: Number, js: 'fixangle' }, { name: 'v_angle', type: 4, fieldType: Array, js: 'v_angle' }, { name: 'idealpitch', type: 4, fieldType: Number, js: 'idealpitch' }, { name: 'netname', type: 4, fieldType: ss.Int32, js: 'netname' }, { name: 'enemy', type: 4, fieldType: ss.Int32, js: 'enemy' }, { name: 'flags', type: 4, fieldType: Number, js: 'flags' }, { name: 'colormap', type: 4, fieldType: Number, js: 'colormap' }, { name: 'team', type: 4, fieldType: Number, js: 'team' }, { name: 'max_health', type: 4, fieldType: Number, js: 'max_health' }, { name: 'teleport_time', type: 4, fieldType: Number, js: 'teleport_time' }, { name: 'armortype', type: 4, fieldType: Number, js: 'armortype' }, { name: 'armorvalue', type: 4, fieldType: Number, js: 'armorvalue' }, { name: 'waterlevel', type: 4, fieldType: Number, js: 'waterlevel' }, { name: 'watertype', type: 4, fieldType: Number, js: 'watertype' }, { name: 'ideal_yaw', type: 4, fieldType: Number, js: 'ideal_yaw' }, { name: 'yaw_speed', type: 4, fieldType: Number, js: 'yaw_speed' }, { name: 'aiment', type: 4, fieldType: ss.Int32, js: 'aiment' }, { name: 'goalentity', type: 4, fieldType: ss.Int32, js: 'goalentity' }, { name: 'spawnflags', type: 4, fieldType: Number, js: 'spawnflags' }, { name: 'target', type: 4, fieldType: ss.Int32, js: 'target' }, { name: 'targetname', type: 4, fieldType: ss.Int32, js: 'targetname' }, { name: 'dmg_take', type: 4, fieldType: Number, js: 'dmg_take' }, { name: 'dmg_save', type: 4, fieldType: Number, js: 'dmg_save' }, { name: 'dmg_inflictor', type: 4, fieldType: ss.Int32, js: 'dmg_inflictor' }, { name: 'owner', type: 4, fieldType: ss.Int32, js: 'owner' }, { name: 'movedir', type: 4, fieldType: Array, js: 'movedir' }, { name: 'message', type: 4, fieldType: ss.Int32, js: 'message' }, { name: 'sounds', type: 4, fieldType: Number, js: 'sounds' }, { name: 'noise', type: 4, fieldType: ss.Int32, js: 'noise' }, { name: 'noise1', type: 4, fieldType: ss.Int32, js: 'noise1' }, { name: 'noise2', type: 4, fieldType: ss.Int32, js: 'noise2' }, { name: 'noise3', type: 4, fieldType: ss.Int32, js: 'noise3' }] });
 	ss.registerEnum(global, 'quake.prog$etype_t', $quake_prog$etype_t);
 	ss.registerClass(global, 'quake.prog$eval_t', $quake_prog$eval_t);
+	ss.registerClass(global, 'quake.prog$globalval', $quake_prog$globalval);
+	ss.registerEnum(global, 'quake.prog$globalval_type', $quake_prog$globalval_type);
 	ss.registerClass(global, 'quake.prog$globalvars_t', $quake_prog$globalvars_t);
 	ss.registerEnum(global, 'quake.prog$opcode_t', $quake_prog$opcode_t);
 	ss.registerClass(global, 'quake.prog$prstack_t', $quake_prog$prstack_t);
+	ss.registerClass(global, 'quake.prog$vec3_t', $quake_prog$vec3_t);
 	ss.registerClass(global, 'quake.quakedef', $quake_quakedef);
 	ss.registerClass(global, 'quake.quakedef$entity_state_t', $quake_quakedef$entity_state_t);
 	ss.registerClass(global, 'quake.quakedef$quakeparms_t', $quake_quakedef$quakeparms_t);
@@ -26836,6 +27357,20 @@
 	$InnoveWare_Page.bitmap = new $System_Windows_Media_Imaging_BitmapImage();
 	$InnoveWare_Page.thePage = null;
 	$InnoveWare_Page.stats = null;
+	$quake_wad.$cmP_NONE = 0;
+	$quake_wad.$cmP_LZSS = 1;
+	$quake_wad.$tyP_NONE = 0;
+	$quake_wad.$tyP_LABEL = 1;
+	$quake_wad.$tyP_LUMPY = 64;
+	$quake_wad.$tyP_PALETTE = 64;
+	$quake_wad.$tyP_QTEX = 65;
+	$quake_wad.$tyP_QPIC = 66;
+	$quake_wad.$tyP_SOUND = 67;
+	$quake_wad.$tyP_MIPTEX = 68;
+	$quake_wad.$sizeof_wadinfo_t = 12;
+	$quake_wad.$wad_numlumps = 0;
+	$quake_wad.$wad_lumps = null;
+	$quake_wad.$wad_base = null;
 	$quake_menu.$m_state = 0;
 	$quake_menu.$m_entersound = false;
 	$quake_menu.$m_recursiveDraw = false;
@@ -26890,35 +27425,179 @@
 	$quake_menu.$gameoptions_cursor = 0;
 	$quake_cvar_t.$cvar_vars = null;
 	$quake_cvar_t.$cvar_null_string = '';
-	$quake_vid.viD_CBITS = 6;
-	$quake_vid.viD_GRADES = 64;
-	$quake_vid.$surface = null;
-	$quake_vid.$vid_modenum = 0;
-	$quake_vid.$vid_testingmode = 0;
-	$quake_vid.$vid_realmode = 0;
-	$quake_vid.$vid_mode = new $quake_cvar_t.$ctor1('vid_mode', '0', false);
-	$quake_vid.$vid_wait = new $quake_cvar_t('vid_wait', '0');
-	$quake_vid.$vid_nopageflip = new $quake_cvar_t.$ctor1('vid_nopageflip', '0', true);
-	$quake_vid.$_vid_wait_override = new $quake_cvar_t.$ctor1('_vid_wait_override', '0', true);
-	$quake_vid.$_vid_default_mode = new $quake_cvar_t.$ctor1('_vid_default_mode', '0', true);
-	$quake_vid.$_vid_default_mode_win = new $quake_cvar_t.$ctor1('_vid_default_mode_win', '1', true);
-	$quake_vid.$vid_config_x = new $quake_cvar_t.$ctor1('vid_config_x', '800', true);
-	$quake_vid.$vid_config_y = new $quake_cvar_t.$ctor1('vid_config_y', '600', true);
-	$quake_vid.$vid_stretch_by_2 = new $quake_cvar_t.$ctor1('vid_stretch_by_2', '1', true);
-	$quake_vid.$_windowed_mouse = new $quake_cvar_t.$ctor1('_windowed_mouse', '0', true);
-	$quake_vid.$vid_fullscreen_mode = new $quake_cvar_t.$ctor1('vid_fullscreen_mode', '3', true);
-	$quake_vid.$vid_windowed_mode = new $quake_cvar_t.$ctor1('vid_windowed_mode', '0', true);
-	$quake_vid.$block_switch = new $quake_cvar_t.$ctor1('block_switch', '0', true);
-	$quake_vid.$vid_window_x = new $quake_cvar_t.$ctor1('vid_window_x', '0', true);
-	$quake_vid.$vid_window_y = new $quake_cvar_t.$ctor1('vid_window_y', '0', true);
-	$quake_vid.$numvidmodes = 1;
-	$quake_vid.$firstupdate = 1;
-	$quake_vid.$vid_current_palette = new Uint8Array(768);
-	$quake_vid.$nomodecheck = false;
-	$quake_vid.$vid_line = 0;
-	$quake_vid.$vid_wmodes = 0;
-	$quake_vid.$vid_column_size = 0;
-	$quake_vid.$maX_COLUMN_SIZE = 11;
+	$quake_server.nuM_PING_TIMES = 16;
+	$quake_server.nuM_SPAWN_PARMS = 16;
+	$quake_server.movetypE_NONE = 0;
+	$quake_server.movetypE_ANGLENOCLIP = 1;
+	$quake_server.movetypE_ANGLECLIP = 2;
+	$quake_server.movetypE_WALK = 3;
+	$quake_server.movetypE_STEP = 4;
+	$quake_server.movetypE_FLY = 5;
+	$quake_server.movetypE_TOSS = 6;
+	$quake_server.movetypE_PUSH = 7;
+	$quake_server.movetypE_NOCLIP = 8;
+	$quake_server.movetypE_FLYMISSILE = 9;
+	$quake_server.movetypE_BOUNCE = 10;
+	$quake_server.soliD_NOT = 0;
+	$quake_server.soliD_TRIGGER = 1;
+	$quake_server.soliD_BBOX = 2;
+	$quake_server.soliD_SLIDEBOX = 3;
+	$quake_server.soliD_BSP = 4;
+	$quake_server.deaD_NO = 0;
+	$quake_server.deaD_DYING = 1;
+	$quake_server.deaD_DEAD = 2;
+	$quake_server.damagE_NO = 0;
+	$quake_server.damagE_YES = 1;
+	$quake_server.damagE_AIM = 2;
+	$quake_server.fL_FLY = 1;
+	$quake_server.fL_SWIM = 2;
+	$quake_server.fL_CONVEYOR = 4;
+	$quake_server.fL_CLIENT = 8;
+	$quake_server.fL_INWATER = 16;
+	$quake_server.fL_MONSTER = 32;
+	$quake_server.fL_GODMODE = 64;
+	$quake_server.fL_NOTARGET = 128;
+	$quake_server.fL_ITEM = 256;
+	$quake_server.fL_ONGROUND = 512;
+	$quake_server.fL_PARTIALGROUND = 1024;
+	$quake_server.fL_WATERJUMP = 2048;
+	$quake_server.fL_JUMPRELEASED = 4096;
+	$quake_server.eF_BRIGHTFIELD = 1;
+	$quake_server.eF_MUZZLEFLASH = 2;
+	$quake_server.eF_BRIGHTLIGHT = 4;
+	$quake_server.eF_DIMLIGHT = 8;
+	$quake_server.spawnflaG_NOT_EASY = 256;
+	$quake_server.spawnflaG_NOT_MEDIUM = 512;
+	$quake_server.spawnflaG_NOT_HARD = 1024;
+	$quake_server.spawnflaG_NOT_DEATHMATCH = 2048;
+	$quake_server.sv = new $quake_server$server_t();
+	$quake_server.svs = new $quake_server$server_static_t();
+	$quake_server.$localmodels = new Array($quake_quakedef.maX_MODELS);
+	$quake_server.$fatbytes = 0;
+	$quake_server.$fatpvs = new Uint8Array(1024);
+	$quake_server.STEPSIZE = 18;
+	$quake_server.$c_yes = 0;
+	$quake_server.$c_no = 0;
+	$quake_server.$sV_Movestep_count = -1;
+	$quake_server.$dI_NODIR = -1;
+	$quake_server.$sv_friction = new $quake_cvar_t.$ctor2('sv_friction', '4', false, true);
+	$quake_server.$sv_stopspeed = new $quake_cvar_t('sv_stopspeed', '100');
+	$quake_server.sv_gravity = new $quake_cvar_t.$ctor2('sv_gravity', '800', false, true);
+	$quake_server.$sv_maxvelocity = new $quake_cvar_t('sv_maxvelocity', '2000');
+	$quake_server.$sv_nostep = new $quake_cvar_t('sv_nostep', '0');
+	$quake_server.movE_EPSILON = 0.01;
+	$quake_server.$stoP_EPSILON = 0.1;
+	$quake_server.$maX_CLIP_PLANES = 5;
+	$quake_server.$phys_num = 0;
+	$quake_server.sv_player = null;
+	$quake_server.$sv_edgefriction = new $quake_cvar_t('edgefriction', '2');
+	$quake_server.$forward = new Array(3);
+	$quake_server.$right = new Array(3);
+	$quake_server.$up = new Array(3);
+	$quake_server.$wishdir = new Array(3);
+	$quake_server.$wishspeed = 0;
+	$quake_server.$angles = null;
+	$quake_server.$origin = null;
+	$quake_server.$velocity = null;
+	$quake_server.$onground = false;
+	$quake_server.$cmd = new $quake_client$usercmd_t();
+	$quake_server.$sv_idealpitchscale = new $quake_cvar_t('sv_idealpitchscale', '0.8');
+	$quake_server.$maX_FORWARD = 6;
+	$quake_server.$sv_maxspeed = new $quake_cvar_t.$ctor2('sv_maxspeed', '320', false, true);
+	$quake_server.$sv_accelerate = new $quake_cvar_t('sv_accelerate', '10');
+	$quake_prog.sizeof_globalvars_t = 368;
+	$quake_prog.sizeof_entvars_t = 420;
+	$quake_prog.progheadeR_CRC = 5927;
+	$quake_prog.maX_ENT_LEAFS = 16;
+	$quake_prog.sizeof_edict_t = 516;
+	$quake_prog.$out = $System_StringExtensions.stringOfLength(256);
+	$quake_prog.$checkpvs = new Uint8Array(1024);
+	$quake_prog.$c_invis = 0;
+	$quake_prog.$c_notvis = 0;
+	$quake_prog.$pr_string_temp = null;
+	$quake_prog.sv_aim = new $quake_cvar_t('sv_aim', '0.93');
+	$quake_prog.$msG_BROADCAST = 0;
+	$quake_prog.$msG_ONE = 1;
+	$quake_prog.$msG_ALL = 2;
+	$quake_prog.$msG_INIT = 3;
+	$quake_prog.$pr_builtin = [$quake_prog.$pF_Fixme, $quake_prog.$pF_makevectors, $quake_prog.$pF_setorigin, $quake_prog.$pF_setmodel, $quake_prog.$pF_setsize, $quake_prog.$pF_Fixme, $quake_prog.$pF_break, $quake_prog.$pF_random, $quake_prog.$pF_sound, $quake_prog.$pF_normalize, $quake_prog.$pF_error, $quake_prog.$pF_objerror, $quake_prog.$pF_vlen, $quake_prog.$pF_vectoyaw, $quake_prog.$pF_Spawn, $quake_prog.$pF_Remove, $quake_prog.$pF_traceline, $quake_prog.$pF_checkclient, $quake_prog.$pF_Find, $quake_prog.$pF_precache_sound, $quake_prog.$pF_precache_model, $quake_prog.$pF_stuffcmd, $quake_prog.$pF_findradius, $quake_prog.$pF_bprint, $quake_prog.$pF_sprint, $quake_prog.$pF_dprint, $quake_prog.$pF_ftos, $quake_prog.$pF_vtos, $quake_prog.$pF_coredump, $quake_prog.$pF_traceon, $quake_prog.$pF_traceoff, $quake_prog.$pF_eprint, $quake_prog.$pF_walkmove, $quake_prog.$pF_Fixme, $quake_prog.$pF_droptofloor, $quake_prog.$pF_lightstyle, $quake_prog.$pF_rint, $quake_prog.$pF_floor, $quake_prog.$pF_ceil, $quake_prog.$pF_Fixme, $quake_prog.$pF_checkbottom, $quake_prog.$pF_pointcontents, $quake_prog.$pF_Fixme, $quake_prog.$pF_fabs, $quake_prog.$pF_aim, $quake_prog.$pF_cvar, $quake_prog.$pF_localcmd, $quake_prog.$pF_nextent, $quake_prog.$pF_particle, $quake_prog.pF_changeyaw, $quake_prog.$pF_Fixme, $quake_prog.$pF_vectoangles, $quake_prog.$pF_WriteByte, $quake_prog.$pF_WriteChar, $quake_prog.$pF_WriteShort, $quake_prog.$pF_WriteLong, $quake_prog.$pF_WriteCoord, $quake_prog.$pF_WriteAngle, $quake_prog.$pF_WriteString, $quake_prog.$pF_WriteEntity, $quake_prog.$pF_Fixme, $quake_prog.$pF_Fixme, $quake_prog.$pF_Fixme, $quake_prog.$pF_Fixme, $quake_prog.$pF_Fixme, $quake_prog.$pF_Fixme, $quake_prog.$pF_Fixme, $quake_server.sV_MoveToGoal, $quake_prog.$pF_precache_file, $quake_prog.$pF_makestatic, $quake_prog.$pF_changelevel, $quake_prog.$pF_Fixme, $quake_prog.$pF_cvar_set, $quake_prog.$pF_centerprint, $quake_prog.$pF_ambientsound, $quake_prog.$pF_precache_model, $quake_prog.$pF_precache_sound, $quake_prog.$pF_precache_file, $quake_prog.$pF_setspawnparms];
+	$quake_prog.$pr_builtins = $quake_prog.$pr_builtin;
+	$quake_prog.$pr_numbuiltins = $quake_prog.$pr_builtin.length;
+	$quake_prog.ofS_NULL = 0;
+	$quake_prog.ofS_RETURN = 1;
+	$quake_prog.ofS_PARM0 = 4;
+	$quake_prog.ofS_PARM1 = 7;
+	$quake_prog.ofS_PARM2 = 10;
+	$quake_prog.ofS_PARM3 = 13;
+	$quake_prog.ofS_PARM4 = 16;
+	$quake_prog.ofS_PARM5 = 19;
+	$quake_prog.ofS_PARM6 = 22;
+	$quake_prog.ofS_PARM7 = 25;
+	$quake_prog.reserveD_OFS = 28;
+	$quake_prog.sizeof_dstatement_t = 8;
+	$quake_prog.sizeof_ddef_t = 8;
+	$quake_prog.deF_SAVEGLOBAL = 32768;
+	$quake_prog.maX_PARMS = 8;
+	$quake_prog.sizeof_dfunction_t = 36;
+	$quake_prog.proG_VERSION = 6;
+	$quake_prog.$progs = null;
+	$quake_prog.pr_functions = null;
+	$quake_prog.$pr_strings = null;
+	$quake_prog.$pr_fielddefs = null;
+	$quake_prog.$pr_globaldefs = null;
+	$quake_prog.$pr_statements = null;
+	$quake_prog.pr_global_struct = null;
+	$quake_prog.pr_edict_size = 0;
+	$quake_prog.pr_crc = 0;
+	$quake_prog.$nomonsters = new $quake_cvar_t('nomonsters', '0');
+	$quake_prog.$gamecfg = new $quake_cvar_t('gamecfg', '0');
+	$quake_prog.$scratch1 = new $quake_cvar_t('scratch1', '0');
+	$quake_prog.$scratch2 = new $quake_cvar_t('scratch2', '0');
+	$quake_prog.$scratch3 = new $quake_cvar_t('scratch3', '0');
+	$quake_prog.$scratch4 = new $quake_cvar_t('scratch4', '0');
+	$quake_prog.$savedgamecfg = new $quake_cvar_t.$ctor1('savedgamecfg', '0', true);
+	$quake_prog.$saved1 = new $quake_cvar_t.$ctor1('saved1', '0', true);
+	$quake_prog.$saved2 = new $quake_cvar_t.$ctor1('saved2', '0', true);
+	$quake_prog.$saved3 = new $quake_cvar_t.$ctor1('saved3', '0', true);
+	$quake_prog.$saved4 = new $quake_cvar_t.$ctor1('saved4', '0', true);
+	$quake_prog.$stringDictionary = new (ss.makeGenericType(ss.Dictionary$2, [String, ss.Int32]))();
+	$quake_prog.$stringPool = new Array(1000);
+	$quake_prog.$strings = 0;
+	$quake_prog.$line = $System_StringExtensions.stringOfLength(256);
+	$quake_prog.stringPoolOffset = 15000;
+	$quake_prog.maX_STACK_DEPTH = 32;
+	$quake_prog.$pr_stack = $ArrayHelpers.initArray($quake_prog$prstack_t).call(null, $quake_prog.maX_STACK_DEPTH);
+	$quake_prog.$pr_depth = 0;
+	$quake_prog.localstacK_SIZE = 2048;
+	$quake_prog.$localstack = new Array($quake_prog.localstacK_SIZE);
+	$quake_prog.$localstack_used = 0;
+	$quake_prog.$pr_trace = false;
+	$quake_prog.$pr_xfunction = null;
+	$quake_prog.$pr_xstatement = 0;
+	$quake_prog.$pr_argc = 0;
+	$quake_prog.$pr_opnames = ['DONE', 'MUL_F', 'MUL_V', 'MUL_FV', 'MUL_VF', 'DIV', 'ADD_F', 'ADD_V', 'SUB_F', 'SUB_V', 'EQ_F', 'EQ_V', 'EQ_S', 'EQ_E', 'EQ_FNC', 'NE_F', 'NE_V', 'NE_S', 'NE_E', 'NE_FNC', 'LE', 'GE', 'LT', 'GT', 'INDIRECT', 'INDIRECT', 'INDIRECT', 'INDIRECT', 'INDIRECT', 'INDIRECT', 'ADDRESS', 'STORE_F', 'STORE_V', 'STORE_S', 'STORE_ENT', 'STORE_FLD', 'STORE_FNC', 'STOREP_F', 'STOREP_V', 'STOREP_S', 'STOREP_ENT', 'STOREP_FLD', 'STOREP_FNC', 'RETURN', 'NOT_F', 'NOT_V', 'NOT_S', 'NOT_ENT', 'NOT_FNC', 'IF', 'IFNOT', 'CALL0', 'CALL1', 'CALL2', 'CALL3', 'CALL4', 'CALL5', 'CALL6', 'CALL7', 'CALL8', 'STATE', 'GOTO', 'AND', 'OR', 'BITAND', 'BITOR'];
+	$quake_prog.prNum = 0;
+	$quake_world.movE_NORMAL = 0;
+	$quake_world.movE_NOMONSTERS = 1;
+	$quake_world.movE_MISSILE = 2;
+	$quake_world.$box_hull = new $quake_model$hull_t();
+	$quake_world.$box_clipnodes = $quake_world.$init_box_clip_nodes(6);
+	$quake_world.$box_planes = $quake_world.$init_box_planes(6);
+	$quake_world.$areA_DEPTH = 4;
+	$quake_world.$areA_NODES = 32;
+	$quake_world.$sv_areanodes = $quake_world.$init_areanode_t($quake_world.$areA_NODES);
+	$quake_world.$sv_numareanodes = 0;
+	$quake_world.$tchlinks = 0;
+	$quake_world.$tchlinksFunc = 0;
+	$quake_world.$sV_LinkEdict_count = 0;
+	$quake_world.$disT_EPSILON = 0.03125;
+	$quake_world.$num_hullcheck = 0;
+	$quake_world.$clipToLinks_for_num = 0;
+	$quake_chase.$chase_back = new $quake_cvar_t('chase_back', '100');
+	$quake_chase.$chase_up = new $quake_cvar_t('chase_up', '16');
+	$quake_chase.$chase_right = new $quake_cvar_t('chase_right', '0');
+	$quake_chase.chase_active = new $quake_cvar_t('chase_active', '0');
+	$quake_chase.$chase_dest = new Array(3);
 	$quake_view.lcd_x = new $quake_cvar_t('lcd_x', '0');
 	$quake_view.$lcd_yaw = new $quake_cvar_t('lcd_yaw', '0');
 	$quake_view.$scr_ofsx = new $quake_cvar_t.$ctor1('scr_ofsx', '0', false);
@@ -26995,87 +27674,94 @@
 	$quake_sound.defaulT_SOUND_PACKET_ATTENUATION = 1;
 	$quake_sound.maX_CHANNELS = 128;
 	$quake_sound.maX_DYNAMIC_CHANNELS = 8;
-	$quake_sbar.$sbaR_HEIGHT = 24;
-	$quake_sbar.$sb_updates = 0;
-	$quake_sbar.$staT_MINUS = 10;
-	$quake_sbar.$sb_nums = ss.multidimArray(null, 2, 11);
-	$quake_sbar.$sb_colon = null;
-	$quake_sbar.$sb_slash = null;
-	$quake_sbar.$sb_ibar = null;
-	$quake_sbar.$sb_sbar = null;
-	$quake_sbar.$sb_scorebar = null;
-	$quake_sbar.$sb_weapons = ss.multidimArray(null, 7, 8);
-	$quake_sbar.$sb_ammo = new Array(4);
-	$quake_sbar.$sb_sigil = new Array(4);
-	$quake_sbar.$sb_armor = new Array(3);
-	$quake_sbar.$sb_items = new Array(32);
-	$quake_sbar.$sb_faces = ss.multidimArray(null, 7, 2);
-	$quake_sbar.$sb_face_invis = null;
-	$quake_sbar.$sb_face_quad = null;
-	$quake_sbar.$sb_face_invuln = null;
-	$quake_sbar.$sb_face_invis_invuln = null;
-	$quake_sbar.$sb_showscores = false;
-	$quake_sbar.sb_lines = 0;
-	$quake_sbar.$rsb_invbar = new Array(2);
-	$quake_sbar.$rsb_weapons = new Array(5);
-	$quake_sbar.$rsb_items = new Array(2);
-	$quake_sbar.$rsb_ammo = new Array(3);
-	$quake_sbar.$rsb_teambord = null;
-	$quake_sbar.$hsb_weapons = ss.multidimArray(null, 7, 5);
-	$quake_sbar.$hsb_items = new Array(2);
-	$quake_screen.scr_copytop = false;
-	$quake_screen.scr_copyeverything = false;
-	$quake_screen.scr_con_current = 0;
-	$quake_screen.$scr_conlines = 0;
-	$quake_screen.$oldscreensize = 0;
-	$quake_screen.$oldfov = 0;
-	$quake_screen.scr_viewsize = new $quake_cvar_t.$ctor1('viewsize', '100', true);
-	$quake_screen.scr_fov = new $quake_cvar_t('fov', '90');
-	$quake_screen.$scr_conspeed = new $quake_cvar_t('scr_conspeed', '300');
-	$quake_screen.$scr_centertime = new $quake_cvar_t('scr_centertime', '2');
-	$quake_screen.$scr_showram = new $quake_cvar_t('showram', '1');
-	$quake_screen.$scr_showturtle = new $quake_cvar_t('showturtle', '0');
-	$quake_screen.$scr_showpause = new $quake_cvar_t('showpause', '1');
-	$quake_screen.$scr_printspeed = new $quake_cvar_t('scr_printspeed', '8');
-	$quake_screen.$scr_initialized = false;
-	$quake_screen.$scr_ram = null;
-	$quake_screen.$scr_net = null;
-	$quake_screen.$scr_turtle = null;
-	$quake_screen.scr_fullupdate = 0;
-	$quake_screen.$clearconsole = 0;
-	$quake_screen.clearnotify = 0;
-	$quake_screen.vid = new $quake_vid$viddef_t();
-	$quake_screen.scr_vrect = new $quake_vid$vrect_t();
-	$quake_screen.scr_disabled_for_loading = false;
-	$quake_screen.$scr_drawloading = false;
-	$quake_screen.$scr_disabled_time = 0;
-	$quake_screen.$scr_skipupdate = false;
-	$quake_screen.$block_drawing = false;
-	$quake_screen.$scr_centerstring = null;
-	$quake_screen.$scr_centertime_start = 0;
-	$quake_screen.scr_centertime_off = 0;
-	$quake_screen.$scr_center_lines = 0;
-	$quake_screen.$scr_erase_lines = 0;
-	$quake_screen.$scr_erase_center = 0;
-	$quake_screen.$count = 0;
-	$quake_screen.$scr_notifystring = null;
-	$quake_screen.$scr_drawdialog = false;
-	$quake_screen.$oldscr_viewsize = 0;
-	$quake_screen.$oldlcd_x = 0;
-	$quake_wad.$cmP_NONE = 0;
-	$quake_wad.$cmP_LZSS = 1;
-	$quake_wad.$tyP_NONE = 0;
-	$quake_wad.$tyP_LABEL = 1;
-	$quake_wad.$tyP_LUMPY = 64;
-	$quake_wad.$tyP_PALETTE = 64;
-	$quake_wad.$tyP_QTEX = 65;
-	$quake_wad.$tyP_QPIC = 66;
-	$quake_wad.$tyP_SOUND = 67;
-	$quake_wad.$tyP_MIPTEX = 68;
-	$quake_wad.$sizeof_wadinfo_t = 12;
-	$quake_wad.$wad_numlumps = 0;
-	$quake_wad.$wad_lumps = null;
-	$quake_wad.$wad_base = null;
+	$quake_vid.viD_CBITS = 6;
+	$quake_vid.viD_GRADES = 64;
+	$quake_vid.$surface = null;
+	$quake_vid.$vid_modenum = 0;
+	$quake_vid.$vid_testingmode = 0;
+	$quake_vid.$vid_realmode = 0;
+	$quake_vid.$vid_mode = new $quake_cvar_t.$ctor1('vid_mode', '0', false);
+	$quake_vid.$vid_wait = new $quake_cvar_t('vid_wait', '0');
+	$quake_vid.$vid_nopageflip = new $quake_cvar_t.$ctor1('vid_nopageflip', '0', true);
+	$quake_vid.$_vid_wait_override = new $quake_cvar_t.$ctor1('_vid_wait_override', '0', true);
+	$quake_vid.$_vid_default_mode = new $quake_cvar_t.$ctor1('_vid_default_mode', '0', true);
+	$quake_vid.$_vid_default_mode_win = new $quake_cvar_t.$ctor1('_vid_default_mode_win', '1', true);
+	$quake_vid.$vid_config_x = new $quake_cvar_t.$ctor1('vid_config_x', '800', true);
+	$quake_vid.$vid_config_y = new $quake_cvar_t.$ctor1('vid_config_y', '600', true);
+	$quake_vid.$vid_stretch_by_2 = new $quake_cvar_t.$ctor1('vid_stretch_by_2', '1', true);
+	$quake_vid.$_windowed_mouse = new $quake_cvar_t.$ctor1('_windowed_mouse', '0', true);
+	$quake_vid.$vid_fullscreen_mode = new $quake_cvar_t.$ctor1('vid_fullscreen_mode', '3', true);
+	$quake_vid.$vid_windowed_mode = new $quake_cvar_t.$ctor1('vid_windowed_mode', '0', true);
+	$quake_vid.$block_switch = new $quake_cvar_t.$ctor1('block_switch', '0', true);
+	$quake_vid.$vid_window_x = new $quake_cvar_t.$ctor1('vid_window_x', '0', true);
+	$quake_vid.$vid_window_y = new $quake_cvar_t.$ctor1('vid_window_y', '0', true);
+	$quake_vid.$numvidmodes = 1;
+	$quake_vid.$firstupdate = 1;
+	$quake_vid.$vid_current_palette = new Uint8Array(768);
+	$quake_vid.$nomodecheck = false;
+	$quake_vid.$vid_line = 0;
+	$quake_vid.$vid_wmodes = 0;
+	$quake_vid.$vid_column_size = 0;
+	$quake_vid.$maX_COLUMN_SIZE = 11;
+	$quake_model.$colors = [16, 224, 240, 16, 176, 128, 16, 48];
+	$quake_model.$icolor = 0;
+	$quake_model.sidE_FRONT = 0;
+	$quake_model.sidE_BACK = 1;
+	$quake_model.sidE_ON = 2;
+	$quake_model.sizeof_texture_t = 60;
+	$quake_model.surF_PLANEBACK = 2;
+	$quake_model.surF_DRAWSKY = 4;
+	$quake_model.surF_DRAWSPRITE = 8;
+	$quake_model.surF_DRAWTURB = 16;
+	$quake_model.surF_DRAWTILED = 32;
+	$quake_model.surF_DRAWBACKGROUND = 64;
+	$quake_model.eF_ROCKET = 1;
+	$quake_model.eF_GRENADE = 2;
+	$quake_model.eF_GIB = 4;
+	$quake_model.eF_ROTATE = 8;
+	$quake_model.eF_TRACER = 16;
+	$quake_model.eF_ZOMGIB = 32;
+	$quake_model.eF_TRACER2 = 64;
+	$quake_model.eF_TRACER3 = 128;
+	$quake_model.$loadmodel = null;
+	$quake_model.$loadname = null;
+	$quake_model.$mod_novis = new Uint8Array(1024);
+	$quake_model.maX_MOD_KNOWN = 256;
+	$quake_model.$mod_known = new Array($quake_model.maX_MOD_KNOWN);
+	$quake_model.$mod_numknown = 0;
+	$quake_model.nL_PRESENT = 0;
+	$quake_model.nL_NEEDS_LOADED = 1;
+	$quake_model.nL_UNREFERENCED = 2;
+	$quake_model.$decompressed = new Uint8Array(1024);
+	$quake_model.$mod_base = null;
+	$quake_model.$aniM_CYCLE = 2;
+	$quake_model.aliaS_VERSION = 6;
+	$quake_model.aliaS_ONSEAM = 32;
+	$quake_model.sizeof_mdl_t = 84;
+	$quake_model.sizeof_stvert_t = 12;
+	$quake_model.sizeof_dtriangle_t = 16;
+	$quake_model.dT_FACES_FRONT = 16;
+	$quake_model.sizeof_trivertx_t = 4;
+	$quake_model.sizeof_daliasframe_t = 24;
+	$quake_model.sizeof_daliasgroup_t = 12;
+	$quake_model.sizeof_daliasskingroup_t = 4;
+	$quake_model.sizeof_daliasframetype_t = 4;
+	$quake_model.sizeof_daliasskintype_t = 4;
+	$quake_model.IDPOLYHEADER = 1330660425;
+	$quake_model.spritE_VERSION = 1;
+	$quake_model.sizeof_dsprite_t = 36;
+	$quake_model.spR_VP_PARALLEL_UPRIGHT = 0;
+	$quake_model.spR_FACING_UPRIGHT = 1;
+	$quake_model.spR_VP_PARALLEL = 2;
+	$quake_model.spR_ORIENTED = 3;
+	$quake_model.spR_VP_PARALLEL_ORIENTED = 4;
+	$quake_model.sizeof_dspriteframe_t = 16;
+	$quake_model.sizeof_dspritegroup_t = 4;
+	$quake_model.sizeof_dspriteframetype_t = 4;
+	$quake_model.IDSPRITEHEADER = 1347634249;
+	for (var kk = 0; kk < $quake_model.maX_MOD_KNOWN; kk++) {
+		$quake_model.$mod_known[kk] = new $quake_model$model_t();
+	}
 	$quake_render.MAXCLIPPLANES = 11;
 	$quake_render.toP_RANGE = 16;
 	$quake_render.bottoM_RANGE = 96;
@@ -27394,384 +28080,175 @@
 		$quake_render.$av[kk] = new $quake_render$auxvert_t();
 	}
 	$quake_render.$r_alias_init();
-	$quake_draw.$r_rectdesc = new $quake_$draw$rectdesc_t();
-	$quake_draw.$draw_chars = null;
-	$quake_draw.draw_disc = null;
-	$quake_draw.$draw_backtile = null;
-	$quake_draw.maX_CACHED_PICS = 128;
-	$quake_draw.$menu_cachepics = new Array($quake_draw.maX_CACHED_PICS);
-	$quake_draw.$menu_numcachepics = 0;
-	$quake_draw.$miplevel = 0;
-	$quake_draw.$scale_for_mip = 0;
-	$quake_draw.$screenwidth = 0;
-	$quake_draw.$ubasestep = 0;
-	$quake_draw.$errorterm = 0;
-	$quake_draw.$erroradjustup = 0;
-	$quake_draw.$erroradjustdown = 0;
-	$quake_draw.$transformed_modelorg = new Array(3);
-	$quake_draw.warP_WIDTH = 320;
-	$quake_draw.warP_HEIGHT = 200;
-	$quake_draw.maX_LBM_HEIGHT = 480;
-	$quake_draw.particlE_Z_CLIP = 8;
-	$quake_draw.dR_SOLID = 0;
-	$quake_draw.dR_TRANSPARENT = 1;
-	$quake_draw.transparenT_COLOR = 255;
-	$quake_draw.turB_TEX_SIZE = 64;
-	$quake_draw.CYCLE = 128;
-	$quake_draw.tilE_SIZE = 128;
-	$quake_draw.SKYSHIFT = 7;
-	$quake_draw.SKYSIZE = 128;
-	$quake_draw.SKYMASK = 127;
-	$quake_draw.nuM_MIPS = 4;
-	$quake_draw.$d_subdiv16 = new $quake_cvar_t('d_subdiv16', '1');
-	$quake_draw.$d_mipcap = new $quake_cvar_t('d_mipcap', '0');
-	$quake_draw.$d_mipscale = new $quake_cvar_t('d_mipscale', '1');
-	$quake_draw.$d_roverwrapped = false;
-	$quake_draw.$d_minmip = 0;
-	$quake_draw.$d_scalemip = new Array(3);
-	$quake_draw.$basemip = [1, 0.4, 0.2];
-	$quake_draw.$d_pdrawspans = null;
-	$quake_draw.SCANBUFFERPAD = 4096;
-	$quake_draw.r_SKY_SMASK = 8323072;
-	$quake_draw.r_SKY_TMASK = 8323072;
-	$quake_draw.dS_SPAN_LIST_END = -128;
-	$quake_draw.surfcachE_SIZE_AT_320X200 = 614400;
-	$quake_draw.$d_vrectx = 0;
-	$quake_draw.$d_vrecty = 0;
-	$quake_draw.$d_vrectright_particle = 0;
-	$quake_draw.$d_vrectbottom_particle = 0;
-	$quake_draw.$d_y_aspect_shift = 0;
-	$quake_draw.$d_pix_min = 0;
-	$quake_draw.$d_pix_max = 0;
-	$quake_draw.$d_pix_shift = 0;
-	$quake_draw.$d_scantable = new Array($quake_render.MAXHEIGHT);
-	$quake_draw.$zspantable = new Array($quake_render.MAXHEIGHT);
-	$quake_draw.dpS_MAXSPANS = 1025;
-	$quake_draw.$r_p0 = new Array(6);
-	$quake_draw.$r_p1 = new Array(6);
-	$quake_draw.$r_p2 = new Array(6);
-	$quake_draw.$d_pcolormap = 0;
-	$quake_draw.$d_aflatcolor = 0;
-	$quake_draw.$d_xdenom = 0;
-	$quake_draw.$pedgetable = null;
-	$quake_draw.$edgetables = [new $quake_draw$edgetable(0, 1, $quake_draw.$r_p0, $quake_draw.$r_p2, null, 2, $quake_draw.$r_p0, $quake_draw.$r_p1, $quake_draw.$r_p2), new $quake_draw$edgetable(0, 2, $quake_draw.$r_p1, $quake_draw.$r_p0, $quake_draw.$r_p2, 1, $quake_draw.$r_p1, $quake_draw.$r_p2, null), new $quake_draw$edgetable(1, 1, $quake_draw.$r_p0, $quake_draw.$r_p2, null, 1, $quake_draw.$r_p1, $quake_draw.$r_p2, null), new $quake_draw$edgetable(0, 1, $quake_draw.$r_p1, $quake_draw.$r_p0, null, 2, $quake_draw.$r_p1, $quake_draw.$r_p2, $quake_draw.$r_p0), new $quake_draw$edgetable(0, 2, $quake_draw.$r_p0, $quake_draw.$r_p2, $quake_draw.$r_p1, 1, $quake_draw.$r_p0, $quake_draw.$r_p1, null), new $quake_draw$edgetable(0, 1, $quake_draw.$r_p2, $quake_draw.$r_p1, null, 1, $quake_draw.$r_p2, $quake_draw.$r_p0, null), new $quake_draw$edgetable(0, 1, $quake_draw.$r_p2, $quake_draw.$r_p1, null, 2, $quake_draw.$r_p2, $quake_draw.$r_p0, $quake_draw.$r_p1), new $quake_draw$edgetable(0, 2, $quake_draw.$r_p2, $quake_draw.$r_p1, $quake_draw.$r_p0, 1, $quake_draw.$r_p2, $quake_draw.$r_p0, null), new $quake_draw$edgetable(0, 1, $quake_draw.$r_p1, $quake_draw.$r_p0, null, 1, $quake_draw.$r_p1, $quake_draw.$r_p2, null), new $quake_draw$edgetable(1, 1, $quake_draw.$r_p2, $quake_draw.$r_p1, null, 1, $quake_draw.$r_p0, $quake_draw.$r_p1, null), new $quake_draw$edgetable(1, 1, $quake_draw.$r_p1, $quake_draw.$r_p0, null, 1, $quake_draw.$r_p2, $quake_draw.$r_p0, null), new $quake_draw$edgetable(0, 1, $quake_draw.$r_p0, $quake_draw.$r_p2, null, 1, $quake_draw.$r_p0, $quake_draw.$r_p1, null)];
-	$quake_draw.$a_sstepxfrac = 0;
-	$quake_draw.$a_tstepxfrac = 0;
-	$quake_draw.$r_lstepx = 0;
-	$quake_draw.$a_ststepxwhole = 0;
-	$quake_draw.$r_sstepx = 0;
-	$quake_draw.$r_tstepx = 0;
-	$quake_draw.$r_lstepy = 0;
-	$quake_draw.$r_sstepy = 0;
-	$quake_draw.$r_tstepy = 0;
-	$quake_draw.$r_zistepx = 0;
-	$quake_draw.$r_zistepy = 0;
-	$quake_draw.$d_aspancount = 0;
-	$quake_draw.$d_countextrastep = 0;
-	$quake_draw.$a_spans = null;
-	$quake_draw.$d_edgespanpackage = null;
-	$quake_draw.$d_pedgespanpackage = 0;
-	$quake_draw.$ystart = 0;
-	$quake_draw.$d_pdest = 0;
-	$quake_draw.$d_ptex = 0;
-	$quake_draw.$d_pz = 0;
-	$quake_draw.$d_sfrac = 0;
-	$quake_draw.$d_tfrac = 0;
-	$quake_draw.$d_light = 0;
-	$quake_draw.$d_zi = 0;
-	$quake_draw.$d_ptexextrastep = 0;
-	$quake_draw.$d_sfracextrastep = 0;
-	$quake_draw.$d_tfracextrastep = 0;
-	$quake_draw.$d_lightextrastep = 0;
-	$quake_draw.$d_pdestextrastep = 0;
-	$quake_draw.$d_lightbasestep = 0;
-	$quake_draw.$d_pdestbasestep = 0;
-	$quake_draw.$d_ptexbasestep = 0;
-	$quake_draw.$d_sfracbasestep = 0;
-	$quake_draw.$d_tfracbasestep = 0;
-	$quake_draw.$d_ziextrastep = 0;
-	$quake_draw.$d_zibasestep = 0;
-	$quake_draw.$d_pzextrastep = 0;
-	$quake_draw.$d_pzbasestep = 0;
-	$quake_draw.$adivtab = [new $quake_draw$adivtab_t(1, 0), new $quake_draw$adivtab_t(1, -1), new $quake_draw$adivtab_t(1, -2), new $quake_draw$adivtab_t(1, -3), new $quake_draw$adivtab_t(1, -4), new $quake_draw$adivtab_t(1, -5), new $quake_draw$adivtab_t(1, -6), new $quake_draw$adivtab_t(1, -7), new $quake_draw$adivtab_t(2, -1), new $quake_draw$adivtab_t(2, -3), new $quake_draw$adivtab_t(3, 0), new $quake_draw$adivtab_t(3, -3), new $quake_draw$adivtab_t(5, 0), new $quake_draw$adivtab_t(7, -1), new $quake_draw$adivtab_t(15, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(-15, 0), new $quake_draw$adivtab_t(-8, 1), new $quake_draw$adivtab_t(-5, 0), new $quake_draw$adivtab_t(-4, 1), new $quake_draw$adivtab_t(-3, 0), new $quake_draw$adivtab_t(-3, 3), new $quake_draw$adivtab_t(-3, 6), new $quake_draw$adivtab_t(-2, 1), new $quake_draw$adivtab_t(-2, 3), new $quake_draw$adivtab_t(-2, 5), new $quake_draw$adivtab_t(-2, 7), new $quake_draw$adivtab_t(-2, 9), new $quake_draw$adivtab_t(-2, 11), new $quake_draw$adivtab_t(-2, 13), new $quake_draw$adivtab_t(-1, 0), new $quake_draw$adivtab_t(-1, 1), new $quake_draw$adivtab_t(0, -14), new $quake_draw$adivtab_t(1, 0), new $quake_draw$adivtab_t(1, -1), new $quake_draw$adivtab_t(1, -2), new $quake_draw$adivtab_t(1, -3), new $quake_draw$adivtab_t(1, -4), new $quake_draw$adivtab_t(1, -5), new $quake_draw$adivtab_t(1, -6), new $quake_draw$adivtab_t(2, 0), new $quake_draw$adivtab_t(2, -2), new $quake_draw$adivtab_t(2, -4), new $quake_draw$adivtab_t(3, -2), new $quake_draw$adivtab_t(4, -2), new $quake_draw$adivtab_t(7, 0), new $quake_draw$adivtab_t(14, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(-14, 0), new $quake_draw$adivtab_t(-7, 0), new $quake_draw$adivtab_t(-5, 1), new $quake_draw$adivtab_t(-4, 2), new $quake_draw$adivtab_t(-3, 1), new $quake_draw$adivtab_t(-3, 4), new $quake_draw$adivtab_t(-2, 0), new $quake_draw$adivtab_t(-2, 2), new $quake_draw$adivtab_t(-2, 4), new $quake_draw$adivtab_t(-2, 6), new $quake_draw$adivtab_t(-2, 8), new $quake_draw$adivtab_t(-2, 10), new $quake_draw$adivtab_t(-2, 12), new $quake_draw$adivtab_t(-1, 0), new $quake_draw$adivtab_t(-1, 1), new $quake_draw$adivtab_t(-1, 2), new $quake_draw$adivtab_t(0, -13), new $quake_draw$adivtab_t(0, -13), new $quake_draw$adivtab_t(1, 0), new $quake_draw$adivtab_t(1, -1), new $quake_draw$adivtab_t(1, -2), new $quake_draw$adivtab_t(1, -3), new $quake_draw$adivtab_t(1, -4), new $quake_draw$adivtab_t(1, -5), new $quake_draw$adivtab_t(1, -6), new $quake_draw$adivtab_t(2, -1), new $quake_draw$adivtab_t(2, -3), new $quake_draw$adivtab_t(3, -1), new $quake_draw$adivtab_t(4, -1), new $quake_draw$adivtab_t(6, -1), new $quake_draw$adivtab_t(13, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(-13, 0), new $quake_draw$adivtab_t(-7, 1), new $quake_draw$adivtab_t(-5, 2), new $quake_draw$adivtab_t(-4, 3), new $quake_draw$adivtab_t(-3, 2), new $quake_draw$adivtab_t(-3, 5), new $quake_draw$adivtab_t(-2, 1), new $quake_draw$adivtab_t(-2, 3), new $quake_draw$adivtab_t(-2, 5), new $quake_draw$adivtab_t(-2, 7), new $quake_draw$adivtab_t(-2, 9), new $quake_draw$adivtab_t(-2, 11), new $quake_draw$adivtab_t(-1, 0), new $quake_draw$adivtab_t(-1, 1), new $quake_draw$adivtab_t(-1, 2), new $quake_draw$adivtab_t(-1, 3), new $quake_draw$adivtab_t(0, -12), new $quake_draw$adivtab_t(0, -12), new $quake_draw$adivtab_t(0, -12), new $quake_draw$adivtab_t(1, 0), new $quake_draw$adivtab_t(1, -1), new $quake_draw$adivtab_t(1, -2), new $quake_draw$adivtab_t(1, -3), new $quake_draw$adivtab_t(1, -4), new $quake_draw$adivtab_t(1, -5), new $quake_draw$adivtab_t(2, 0), new $quake_draw$adivtab_t(2, -2), new $quake_draw$adivtab_t(3, 0), new $quake_draw$adivtab_t(4, 0), new $quake_draw$adivtab_t(6, 0), new $quake_draw$adivtab_t(12, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(-12, 0), new $quake_draw$adivtab_t(-6, 0), new $quake_draw$adivtab_t(-4, 0), new $quake_draw$adivtab_t(-3, 0), new $quake_draw$adivtab_t(-3, 3), new $quake_draw$adivtab_t(-2, 0), new $quake_draw$adivtab_t(-2, 2), new $quake_draw$adivtab_t(-2, 4), new $quake_draw$adivtab_t(-2, 6), new $quake_draw$adivtab_t(-2, 8), new $quake_draw$adivtab_t(-2, 10), new $quake_draw$adivtab_t(-1, 0), new $quake_draw$adivtab_t(-1, 1), new $quake_draw$adivtab_t(-1, 2), new $quake_draw$adivtab_t(-1, 3), new $quake_draw$adivtab_t(-1, 4), new $quake_draw$adivtab_t(0, -11), new $quake_draw$adivtab_t(0, -11), new $quake_draw$adivtab_t(0, -11), new $quake_draw$adivtab_t(0, -11), new $quake_draw$adivtab_t(1, 0), new $quake_draw$adivtab_t(1, -1), new $quake_draw$adivtab_t(1, -2), new $quake_draw$adivtab_t(1, -3), new $quake_draw$adivtab_t(1, -4), new $quake_draw$adivtab_t(1, -5), new $quake_draw$adivtab_t(2, -1), new $quake_draw$adivtab_t(2, -3), new $quake_draw$adivtab_t(3, -2), new $quake_draw$adivtab_t(5, -1), new $quake_draw$adivtab_t(11, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(-11, 0), new $quake_draw$adivtab_t(-6, 1), new $quake_draw$adivtab_t(-4, 1), new $quake_draw$adivtab_t(-3, 1), new $quake_draw$adivtab_t(-3, 4), new $quake_draw$adivtab_t(-2, 1), new $quake_draw$adivtab_t(-2, 3), new $quake_draw$adivtab_t(-2, 5), new $quake_draw$adivtab_t(-2, 7), new $quake_draw$adivtab_t(-2, 9), new $quake_draw$adivtab_t(-1, 0), new $quake_draw$adivtab_t(-1, 1), new $quake_draw$adivtab_t(-1, 2), new $quake_draw$adivtab_t(-1, 3), new $quake_draw$adivtab_t(-1, 4), new $quake_draw$adivtab_t(-1, 5), new $quake_draw$adivtab_t(0, -10), new $quake_draw$adivtab_t(0, -10), new $quake_draw$adivtab_t(0, -10), new $quake_draw$adivtab_t(0, -10), new $quake_draw$adivtab_t(0, -10), new $quake_draw$adivtab_t(1, 0), new $quake_draw$adivtab_t(1, -1), new $quake_draw$adivtab_t(1, -2), new $quake_draw$adivtab_t(1, -3), new $quake_draw$adivtab_t(1, -4), new $quake_draw$adivtab_t(2, 0), new $quake_draw$adivtab_t(2, -2), new $quake_draw$adivtab_t(3, -1), new $quake_draw$adivtab_t(5, 0), new $quake_draw$adivtab_t(10, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(-10, 0), new $quake_draw$adivtab_t(-5, 0), new $quake_draw$adivtab_t(-4, 2), new $quake_draw$adivtab_t(-3, 2), new $quake_draw$adivtab_t(-2, 0), new $quake_draw$adivtab_t(-2, 2), new $quake_draw$adivtab_t(-2, 4), new $quake_draw$adivtab_t(-2, 6), new $quake_draw$adivtab_t(-2, 8), new $quake_draw$adivtab_t(-1, 0), new $quake_draw$adivtab_t(-1, 1), new $quake_draw$adivtab_t(-1, 2), new $quake_draw$adivtab_t(-1, 3), new $quake_draw$adivtab_t(-1, 4), new $quake_draw$adivtab_t(-1, 5), new $quake_draw$adivtab_t(-1, 6), new $quake_draw$adivtab_t(0, -9), new $quake_draw$adivtab_t(0, -9), new $quake_draw$adivtab_t(0, -9), new $quake_draw$adivtab_t(0, -9), new $quake_draw$adivtab_t(0, -9), new $quake_draw$adivtab_t(0, -9), new $quake_draw$adivtab_t(1, 0), new $quake_draw$adivtab_t(1, -1), new $quake_draw$adivtab_t(1, -2), new $quake_draw$adivtab_t(1, -3), new $quake_draw$adivtab_t(1, -4), new $quake_draw$adivtab_t(2, -1), new $quake_draw$adivtab_t(3, 0), new $quake_draw$adivtab_t(4, -1), new $quake_draw$adivtab_t(9, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(-9, 0), new $quake_draw$adivtab_t(-5, 1), new $quake_draw$adivtab_t(-3, 0), new $quake_draw$adivtab_t(-3, 3), new $quake_draw$adivtab_t(-2, 1), new $quake_draw$adivtab_t(-2, 3), new $quake_draw$adivtab_t(-2, 5), new $quake_draw$adivtab_t(-2, 7), new $quake_draw$adivtab_t(-1, 0), new $quake_draw$adivtab_t(-1, 1), new $quake_draw$adivtab_t(-1, 2), new $quake_draw$adivtab_t(-1, 3), new $quake_draw$adivtab_t(-1, 4), new $quake_draw$adivtab_t(-1, 5), new $quake_draw$adivtab_t(-1, 6), new $quake_draw$adivtab_t(-1, 7), new $quake_draw$adivtab_t(0, -8), new $quake_draw$adivtab_t(0, -8), new $quake_draw$adivtab_t(0, -8), new $quake_draw$adivtab_t(0, -8), new $quake_draw$adivtab_t(0, -8), new $quake_draw$adivtab_t(0, -8), new $quake_draw$adivtab_t(0, -8), new $quake_draw$adivtab_t(1, 0), new $quake_draw$adivtab_t(1, -1), new $quake_draw$adivtab_t(1, -2), new $quake_draw$adivtab_t(1, -3), new $quake_draw$adivtab_t(2, 0), new $quake_draw$adivtab_t(2, -2), new $quake_draw$adivtab_t(4, 0), new $quake_draw$adivtab_t(8, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(-8, 0), new $quake_draw$adivtab_t(-4, 0), new $quake_draw$adivtab_t(-3, 1), new $quake_draw$adivtab_t(-2, 0), new $quake_draw$adivtab_t(-2, 2), new $quake_draw$adivtab_t(-2, 4), new $quake_draw$adivtab_t(-2, 6), new $quake_draw$adivtab_t(-1, 0), new $quake_draw$adivtab_t(-1, 1), new $quake_draw$adivtab_t(-1, 2), new $quake_draw$adivtab_t(-1, 3), new $quake_draw$adivtab_t(-1, 4), new $quake_draw$adivtab_t(-1, 5), new $quake_draw$adivtab_t(-1, 6), new $quake_draw$adivtab_t(-1, 7), new $quake_draw$adivtab_t(-1, 8), new $quake_draw$adivtab_t(0, -7), new $quake_draw$adivtab_t(0, -7), new $quake_draw$adivtab_t(0, -7), new $quake_draw$adivtab_t(0, -7), new $quake_draw$adivtab_t(0, -7), new $quake_draw$adivtab_t(0, -7), new $quake_draw$adivtab_t(0, -7), new $quake_draw$adivtab_t(0, -7), new $quake_draw$adivtab_t(1, 0), new $quake_draw$adivtab_t(1, -1), new $quake_draw$adivtab_t(1, -2), new $quake_draw$adivtab_t(1, -3), new $quake_draw$adivtab_t(2, -1), new $quake_draw$adivtab_t(3, -1), new $quake_draw$adivtab_t(7, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(-7, 0), new $quake_draw$adivtab_t(-4, 1), new $quake_draw$adivtab_t(-3, 2), new $quake_draw$adivtab_t(-2, 1), new $quake_draw$adivtab_t(-2, 3), new $quake_draw$adivtab_t(-2, 5), new $quake_draw$adivtab_t(-1, 0), new $quake_draw$adivtab_t(-1, 1), new $quake_draw$adivtab_t(-1, 2), new $quake_draw$adivtab_t(-1, 3), new $quake_draw$adivtab_t(-1, 4), new $quake_draw$adivtab_t(-1, 5), new $quake_draw$adivtab_t(-1, 6), new $quake_draw$adivtab_t(-1, 7), new $quake_draw$adivtab_t(-1, 8), new $quake_draw$adivtab_t(-1, 9), new $quake_draw$adivtab_t(0, -6), new $quake_draw$adivtab_t(0, -6), new $quake_draw$adivtab_t(0, -6), new $quake_draw$adivtab_t(0, -6), new $quake_draw$adivtab_t(0, -6), new $quake_draw$adivtab_t(0, -6), new $quake_draw$adivtab_t(0, -6), new $quake_draw$adivtab_t(0, -6), new $quake_draw$adivtab_t(0, -6), new $quake_draw$adivtab_t(1, 0), new $quake_draw$adivtab_t(1, -1), new $quake_draw$adivtab_t(1, -2), new $quake_draw$adivtab_t(2, 0), new $quake_draw$adivtab_t(3, 0), new $quake_draw$adivtab_t(6, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(-6, 0), new $quake_draw$adivtab_t(-3, 0), new $quake_draw$adivtab_t(-2, 0), new $quake_draw$adivtab_t(-2, 2), new $quake_draw$adivtab_t(-2, 4), new $quake_draw$adivtab_t(-1, 0), new $quake_draw$adivtab_t(-1, 1), new $quake_draw$adivtab_t(-1, 2), new $quake_draw$adivtab_t(-1, 3), new $quake_draw$adivtab_t(-1, 4), new $quake_draw$adivtab_t(-1, 5), new $quake_draw$adivtab_t(-1, 6), new $quake_draw$adivtab_t(-1, 7), new $quake_draw$adivtab_t(-1, 8), new $quake_draw$adivtab_t(-1, 9), new $quake_draw$adivtab_t(-1, 10), new $quake_draw$adivtab_t(0, -5), new $quake_draw$adivtab_t(0, -5), new $quake_draw$adivtab_t(0, -5), new $quake_draw$adivtab_t(0, -5), new $quake_draw$adivtab_t(0, -5), new $quake_draw$adivtab_t(0, -5), new $quake_draw$adivtab_t(0, -5), new $quake_draw$adivtab_t(0, -5), new $quake_draw$adivtab_t(0, -5), new $quake_draw$adivtab_t(0, -5), new $quake_draw$adivtab_t(1, 0), new $quake_draw$adivtab_t(1, -1), new $quake_draw$adivtab_t(1, -2), new $quake_draw$adivtab_t(2, -1), new $quake_draw$adivtab_t(5, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(-5, 0), new $quake_draw$adivtab_t(-3, 1), new $quake_draw$adivtab_t(-2, 1), new $quake_draw$adivtab_t(-2, 3), new $quake_draw$adivtab_t(-1, 0), new $quake_draw$adivtab_t(-1, 1), new $quake_draw$adivtab_t(-1, 2), new $quake_draw$adivtab_t(-1, 3), new $quake_draw$adivtab_t(-1, 4), new $quake_draw$adivtab_t(-1, 5), new $quake_draw$adivtab_t(-1, 6), new $quake_draw$adivtab_t(-1, 7), new $quake_draw$adivtab_t(-1, 8), new $quake_draw$adivtab_t(-1, 9), new $quake_draw$adivtab_t(-1, 10), new $quake_draw$adivtab_t(-1, 11), new $quake_draw$adivtab_t(0, -4), new $quake_draw$adivtab_t(0, -4), new $quake_draw$adivtab_t(0, -4), new $quake_draw$adivtab_t(0, -4), new $quake_draw$adivtab_t(0, -4), new $quake_draw$adivtab_t(0, -4), new $quake_draw$adivtab_t(0, -4), new $quake_draw$adivtab_t(0, -4), new $quake_draw$adivtab_t(0, -4), new $quake_draw$adivtab_t(0, -4), new $quake_draw$adivtab_t(0, -4), new $quake_draw$adivtab_t(1, 0), new $quake_draw$adivtab_t(1, -1), new $quake_draw$adivtab_t(2, 0), new $quake_draw$adivtab_t(4, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(-4, 0), new $quake_draw$adivtab_t(-2, 0), new $quake_draw$adivtab_t(-2, 2), new $quake_draw$adivtab_t(-1, 0), new $quake_draw$adivtab_t(-1, 1), new $quake_draw$adivtab_t(-1, 2), new $quake_draw$adivtab_t(-1, 3), new $quake_draw$adivtab_t(-1, 4), new $quake_draw$adivtab_t(-1, 5), new $quake_draw$adivtab_t(-1, 6), new $quake_draw$adivtab_t(-1, 7), new $quake_draw$adivtab_t(-1, 8), new $quake_draw$adivtab_t(-1, 9), new $quake_draw$adivtab_t(-1, 10), new $quake_draw$adivtab_t(-1, 11), new $quake_draw$adivtab_t(-1, 12), new $quake_draw$adivtab_t(0, -3), new $quake_draw$adivtab_t(0, -3), new $quake_draw$adivtab_t(0, -3), new $quake_draw$adivtab_t(0, -3), new $quake_draw$adivtab_t(0, -3), new $quake_draw$adivtab_t(0, -3), new $quake_draw$adivtab_t(0, -3), new $quake_draw$adivtab_t(0, -3), new $quake_draw$adivtab_t(0, -3), new $quake_draw$adivtab_t(0, -3), new $quake_draw$adivtab_t(0, -3), new $quake_draw$adivtab_t(0, -3), new $quake_draw$adivtab_t(1, 0), new $quake_draw$adivtab_t(1, -1), new $quake_draw$adivtab_t(3, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(-3, 0), new $quake_draw$adivtab_t(-2, 1), new $quake_draw$adivtab_t(-1, 0), new $quake_draw$adivtab_t(-1, 1), new $quake_draw$adivtab_t(-1, 2), new $quake_draw$adivtab_t(-1, 3), new $quake_draw$adivtab_t(-1, 4), new $quake_draw$adivtab_t(-1, 5), new $quake_draw$adivtab_t(-1, 6), new $quake_draw$adivtab_t(-1, 7), new $quake_draw$adivtab_t(-1, 8), new $quake_draw$adivtab_t(-1, 9), new $quake_draw$adivtab_t(-1, 10), new $quake_draw$adivtab_t(-1, 11), new $quake_draw$adivtab_t(-1, 12), new $quake_draw$adivtab_t(-1, 13), new $quake_draw$adivtab_t(0, -2), new $quake_draw$adivtab_t(0, -2), new $quake_draw$adivtab_t(0, -2), new $quake_draw$adivtab_t(0, -2), new $quake_draw$adivtab_t(0, -2), new $quake_draw$adivtab_t(0, -2), new $quake_draw$adivtab_t(0, -2), new $quake_draw$adivtab_t(0, -2), new $quake_draw$adivtab_t(0, -2), new $quake_draw$adivtab_t(0, -2), new $quake_draw$adivtab_t(0, -2), new $quake_draw$adivtab_t(0, -2), new $quake_draw$adivtab_t(0, -2), new $quake_draw$adivtab_t(1, 0), new $quake_draw$adivtab_t(2, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(-2, 0), new $quake_draw$adivtab_t(-1, 0), new $quake_draw$adivtab_t(-1, 1), new $quake_draw$adivtab_t(-1, 2), new $quake_draw$adivtab_t(-1, 3), new $quake_draw$adivtab_t(-1, 4), new $quake_draw$adivtab_t(-1, 5), new $quake_draw$adivtab_t(-1, 6), new $quake_draw$adivtab_t(-1, 7), new $quake_draw$adivtab_t(-1, 8), new $quake_draw$adivtab_t(-1, 9), new $quake_draw$adivtab_t(-1, 10), new $quake_draw$adivtab_t(-1, 11), new $quake_draw$adivtab_t(-1, 12), new $quake_draw$adivtab_t(-1, 13), new $quake_draw$adivtab_t(-1, 14), new $quake_draw$adivtab_t(0, -1), new $quake_draw$adivtab_t(0, -1), new $quake_draw$adivtab_t(0, -1), new $quake_draw$adivtab_t(0, -1), new $quake_draw$adivtab_t(0, -1), new $quake_draw$adivtab_t(0, -1), new $quake_draw$adivtab_t(0, -1), new $quake_draw$adivtab_t(0, -1), new $quake_draw$adivtab_t(0, -1), new $quake_draw$adivtab_t(0, -1), new $quake_draw$adivtab_t(0, -1), new $quake_draw$adivtab_t(0, -1), new $quake_draw$adivtab_t(0, -1), new $quake_draw$adivtab_t(0, -1), new $quake_draw$adivtab_t(1, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(-1, 0), new $quake_draw$adivtab_t(-1, 1), new $quake_draw$adivtab_t(-1, 2), new $quake_draw$adivtab_t(-1, 3), new $quake_draw$adivtab_t(-1, 4), new $quake_draw$adivtab_t(-1, 5), new $quake_draw$adivtab_t(-1, 6), new $quake_draw$adivtab_t(-1, 7), new $quake_draw$adivtab_t(-1, 8), new $quake_draw$adivtab_t(-1, 9), new $quake_draw$adivtab_t(-1, 10), new $quake_draw$adivtab_t(-1, 11), new $quake_draw$adivtab_t(-1, 12), new $quake_draw$adivtab_t(-1, 13), new $quake_draw$adivtab_t(-1, 14), new $quake_draw$adivtab_t(-1, 15), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(-1, -14), new $quake_draw$adivtab_t(-1, -13), new $quake_draw$adivtab_t(-1, -12), new $quake_draw$adivtab_t(-1, -11), new $quake_draw$adivtab_t(-1, -10), new $quake_draw$adivtab_t(-1, -9), new $quake_draw$adivtab_t(-1, -8), new $quake_draw$adivtab_t(-1, -7), new $quake_draw$adivtab_t(-1, -6), new $quake_draw$adivtab_t(-1, -5), new $quake_draw$adivtab_t(-1, -4), new $quake_draw$adivtab_t(-1, -3), new $quake_draw$adivtab_t(-1, -2), new $quake_draw$adivtab_t(-1, -1), new $quake_draw$adivtab_t(-1, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(1, 0), new $quake_draw$adivtab_t(0, 1), new $quake_draw$adivtab_t(0, 1), new $quake_draw$adivtab_t(0, 1), new $quake_draw$adivtab_t(0, 1), new $quake_draw$adivtab_t(0, 1), new $quake_draw$adivtab_t(0, 1), new $quake_draw$adivtab_t(0, 1), new $quake_draw$adivtab_t(0, 1), new $quake_draw$adivtab_t(0, 1), new $quake_draw$adivtab_t(0, 1), new $quake_draw$adivtab_t(0, 1), new $quake_draw$adivtab_t(0, 1), new $quake_draw$adivtab_t(0, 1), new $quake_draw$adivtab_t(0, 1), new $quake_draw$adivtab_t(0, 1), new $quake_draw$adivtab_t(-1, -13), new $quake_draw$adivtab_t(-1, -12), new $quake_draw$adivtab_t(-1, -11), new $quake_draw$adivtab_t(-1, -10), new $quake_draw$adivtab_t(-1, -9), new $quake_draw$adivtab_t(-1, -8), new $quake_draw$adivtab_t(-1, -7), new $quake_draw$adivtab_t(-1, -6), new $quake_draw$adivtab_t(-1, -5), new $quake_draw$adivtab_t(-1, -4), new $quake_draw$adivtab_t(-1, -3), new $quake_draw$adivtab_t(-1, -2), new $quake_draw$adivtab_t(-1, -1), new $quake_draw$adivtab_t(-1, 0), new $quake_draw$adivtab_t(-2, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(2, 0), new $quake_draw$adivtab_t(1, 0), new $quake_draw$adivtab_t(0, 2), new $quake_draw$adivtab_t(0, 2), new $quake_draw$adivtab_t(0, 2), new $quake_draw$adivtab_t(0, 2), new $quake_draw$adivtab_t(0, 2), new $quake_draw$adivtab_t(0, 2), new $quake_draw$adivtab_t(0, 2), new $quake_draw$adivtab_t(0, 2), new $quake_draw$adivtab_t(0, 2), new $quake_draw$adivtab_t(0, 2), new $quake_draw$adivtab_t(0, 2), new $quake_draw$adivtab_t(0, 2), new $quake_draw$adivtab_t(0, 2), new $quake_draw$adivtab_t(0, 2), new $quake_draw$adivtab_t(-1, -12), new $quake_draw$adivtab_t(-1, -11), new $quake_draw$adivtab_t(-1, -10), new $quake_draw$adivtab_t(-1, -9), new $quake_draw$adivtab_t(-1, -8), new $quake_draw$adivtab_t(-1, -7), new $quake_draw$adivtab_t(-1, -6), new $quake_draw$adivtab_t(-1, -5), new $quake_draw$adivtab_t(-1, -4), new $quake_draw$adivtab_t(-1, -3), new $quake_draw$adivtab_t(-1, -2), new $quake_draw$adivtab_t(-1, -1), new $quake_draw$adivtab_t(-1, 0), new $quake_draw$adivtab_t(-2, -1), new $quake_draw$adivtab_t(-3, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(3, 0), new $quake_draw$adivtab_t(1, 1), new $quake_draw$adivtab_t(1, 0), new $quake_draw$adivtab_t(0, 3), new $quake_draw$adivtab_t(0, 3), new $quake_draw$adivtab_t(0, 3), new $quake_draw$adivtab_t(0, 3), new $quake_draw$adivtab_t(0, 3), new $quake_draw$adivtab_t(0, 3), new $quake_draw$adivtab_t(0, 3), new $quake_draw$adivtab_t(0, 3), new $quake_draw$adivtab_t(0, 3), new $quake_draw$adivtab_t(0, 3), new $quake_draw$adivtab_t(0, 3), new $quake_draw$adivtab_t(0, 3), new $quake_draw$adivtab_t(0, 3), new $quake_draw$adivtab_t(-1, -11), new $quake_draw$adivtab_t(-1, -10), new $quake_draw$adivtab_t(-1, -9), new $quake_draw$adivtab_t(-1, -8), new $quake_draw$adivtab_t(-1, -7), new $quake_draw$adivtab_t(-1, -6), new $quake_draw$adivtab_t(-1, -5), new $quake_draw$adivtab_t(-1, -4), new $quake_draw$adivtab_t(-1, -3), new $quake_draw$adivtab_t(-1, -2), new $quake_draw$adivtab_t(-1, -1), new $quake_draw$adivtab_t(-1, 0), new $quake_draw$adivtab_t(-2, -2), new $quake_draw$adivtab_t(-2, 0), new $quake_draw$adivtab_t(-4, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(4, 0), new $quake_draw$adivtab_t(2, 0), new $quake_draw$adivtab_t(1, 1), new $quake_draw$adivtab_t(1, 0), new $quake_draw$adivtab_t(0, 4), new $quake_draw$adivtab_t(0, 4), new $quake_draw$adivtab_t(0, 4), new $quake_draw$adivtab_t(0, 4), new $quake_draw$adivtab_t(0, 4), new $quake_draw$adivtab_t(0, 4), new $quake_draw$adivtab_t(0, 4), new $quake_draw$adivtab_t(0, 4), new $quake_draw$adivtab_t(0, 4), new $quake_draw$adivtab_t(0, 4), new $quake_draw$adivtab_t(0, 4), new $quake_draw$adivtab_t(0, 4), new $quake_draw$adivtab_t(-1, -10), new $quake_draw$adivtab_t(-1, -9), new $quake_draw$adivtab_t(-1, -8), new $quake_draw$adivtab_t(-1, -7), new $quake_draw$adivtab_t(-1, -6), new $quake_draw$adivtab_t(-1, -5), new $quake_draw$adivtab_t(-1, -4), new $quake_draw$adivtab_t(-1, -3), new $quake_draw$adivtab_t(-1, -2), new $quake_draw$adivtab_t(-1, -1), new $quake_draw$adivtab_t(-1, 0), new $quake_draw$adivtab_t(-2, -3), new $quake_draw$adivtab_t(-2, -1), new $quake_draw$adivtab_t(-3, -1), new $quake_draw$adivtab_t(-5, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(5, 0), new $quake_draw$adivtab_t(2, 1), new $quake_draw$adivtab_t(1, 2), new $quake_draw$adivtab_t(1, 1), new $quake_draw$adivtab_t(1, 0), new $quake_draw$adivtab_t(0, 5), new $quake_draw$adivtab_t(0, 5), new $quake_draw$adivtab_t(0, 5), new $quake_draw$adivtab_t(0, 5), new $quake_draw$adivtab_t(0, 5), new $quake_draw$adivtab_t(0, 5), new $quake_draw$adivtab_t(0, 5), new $quake_draw$adivtab_t(0, 5), new $quake_draw$adivtab_t(0, 5), new $quake_draw$adivtab_t(0, 5), new $quake_draw$adivtab_t(0, 5), new $quake_draw$adivtab_t(-1, -9), new $quake_draw$adivtab_t(-1, -8), new $quake_draw$adivtab_t(-1, -7), new $quake_draw$adivtab_t(-1, -6), new $quake_draw$adivtab_t(-1, -5), new $quake_draw$adivtab_t(-1, -4), new $quake_draw$adivtab_t(-1, -3), new $quake_draw$adivtab_t(-1, -2), new $quake_draw$adivtab_t(-1, -1), new $quake_draw$adivtab_t(-1, 0), new $quake_draw$adivtab_t(-2, -4), new $quake_draw$adivtab_t(-2, -2), new $quake_draw$adivtab_t(-2, 0), new $quake_draw$adivtab_t(-3, 0), new $quake_draw$adivtab_t(-6, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(6, 0), new $quake_draw$adivtab_t(3, 0), new $quake_draw$adivtab_t(2, 0), new $quake_draw$adivtab_t(1, 2), new $quake_draw$adivtab_t(1, 1), new $quake_draw$adivtab_t(1, 0), new $quake_draw$adivtab_t(0, 6), new $quake_draw$adivtab_t(0, 6), new $quake_draw$adivtab_t(0, 6), new $quake_draw$adivtab_t(0, 6), new $quake_draw$adivtab_t(0, 6), new $quake_draw$adivtab_t(0, 6), new $quake_draw$adivtab_t(0, 6), new $quake_draw$adivtab_t(0, 6), new $quake_draw$adivtab_t(0, 6), new $quake_draw$adivtab_t(0, 6), new $quake_draw$adivtab_t(-1, -8), new $quake_draw$adivtab_t(-1, -7), new $quake_draw$adivtab_t(-1, -6), new $quake_draw$adivtab_t(-1, -5), new $quake_draw$adivtab_t(-1, -4), new $quake_draw$adivtab_t(-1, -3), new $quake_draw$adivtab_t(-1, -2), new $quake_draw$adivtab_t(-1, -1), new $quake_draw$adivtab_t(-1, 0), new $quake_draw$adivtab_t(-2, -5), new $quake_draw$adivtab_t(-2, -3), new $quake_draw$adivtab_t(-2, -1), new $quake_draw$adivtab_t(-3, -2), new $quake_draw$adivtab_t(-4, -1), new $quake_draw$adivtab_t(-7, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(7, 0), new $quake_draw$adivtab_t(3, 1), new $quake_draw$adivtab_t(2, 1), new $quake_draw$adivtab_t(1, 3), new $quake_draw$adivtab_t(1, 2), new $quake_draw$adivtab_t(1, 1), new $quake_draw$adivtab_t(1, 0), new $quake_draw$adivtab_t(0, 7), new $quake_draw$adivtab_t(0, 7), new $quake_draw$adivtab_t(0, 7), new $quake_draw$adivtab_t(0, 7), new $quake_draw$adivtab_t(0, 7), new $quake_draw$adivtab_t(0, 7), new $quake_draw$adivtab_t(0, 7), new $quake_draw$adivtab_t(0, 7), new $quake_draw$adivtab_t(0, 7), new $quake_draw$adivtab_t(-1, -7), new $quake_draw$adivtab_t(-1, -6), new $quake_draw$adivtab_t(-1, -5), new $quake_draw$adivtab_t(-1, -4), new $quake_draw$adivtab_t(-1, -3), new $quake_draw$adivtab_t(-1, -2), new $quake_draw$adivtab_t(-1, -1), new $quake_draw$adivtab_t(-1, 0), new $quake_draw$adivtab_t(-2, -6), new $quake_draw$adivtab_t(-2, -4), new $quake_draw$adivtab_t(-2, -2), new $quake_draw$adivtab_t(-2, 0), new $quake_draw$adivtab_t(-3, -1), new $quake_draw$adivtab_t(-4, 0), new $quake_draw$adivtab_t(-8, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(8, 0), new $quake_draw$adivtab_t(4, 0), new $quake_draw$adivtab_t(2, 2), new $quake_draw$adivtab_t(2, 0), new $quake_draw$adivtab_t(1, 3), new $quake_draw$adivtab_t(1, 2), new $quake_draw$adivtab_t(1, 1), new $quake_draw$adivtab_t(1, 0), new $quake_draw$adivtab_t(0, 8), new $quake_draw$adivtab_t(0, 8), new $quake_draw$adivtab_t(0, 8), new $quake_draw$adivtab_t(0, 8), new $quake_draw$adivtab_t(0, 8), new $quake_draw$adivtab_t(0, 8), new $quake_draw$adivtab_t(0, 8), new $quake_draw$adivtab_t(0, 8), new $quake_draw$adivtab_t(-1, -6), new $quake_draw$adivtab_t(-1, -5), new $quake_draw$adivtab_t(-1, -4), new $quake_draw$adivtab_t(-1, -3), new $quake_draw$adivtab_t(-1, -2), new $quake_draw$adivtab_t(-1, -1), new $quake_draw$adivtab_t(-1, 0), new $quake_draw$adivtab_t(-2, -7), new $quake_draw$adivtab_t(-2, -5), new $quake_draw$adivtab_t(-2, -3), new $quake_draw$adivtab_t(-2, -1), new $quake_draw$adivtab_t(-3, -3), new $quake_draw$adivtab_t(-3, 0), new $quake_draw$adivtab_t(-5, -1), new $quake_draw$adivtab_t(-9, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(9, 0), new $quake_draw$adivtab_t(4, 1), new $quake_draw$adivtab_t(3, 0), new $quake_draw$adivtab_t(2, 1), new $quake_draw$adivtab_t(1, 4), new $quake_draw$adivtab_t(1, 3), new $quake_draw$adivtab_t(1, 2), new $quake_draw$adivtab_t(1, 1), new $quake_draw$adivtab_t(1, 0), new $quake_draw$adivtab_t(0, 9), new $quake_draw$adivtab_t(0, 9), new $quake_draw$adivtab_t(0, 9), new $quake_draw$adivtab_t(0, 9), new $quake_draw$adivtab_t(0, 9), new $quake_draw$adivtab_t(0, 9), new $quake_draw$adivtab_t(0, 9), new $quake_draw$adivtab_t(-1, -5), new $quake_draw$adivtab_t(-1, -4), new $quake_draw$adivtab_t(-1, -3), new $quake_draw$adivtab_t(-1, -2), new $quake_draw$adivtab_t(-1, -1), new $quake_draw$adivtab_t(-1, 0), new $quake_draw$adivtab_t(-2, -8), new $quake_draw$adivtab_t(-2, -6), new $quake_draw$adivtab_t(-2, -4), new $quake_draw$adivtab_t(-2, -2), new $quake_draw$adivtab_t(-2, 0), new $quake_draw$adivtab_t(-3, -2), new $quake_draw$adivtab_t(-4, -2), new $quake_draw$adivtab_t(-5, 0), new $quake_draw$adivtab_t(-10, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(10, 0), new $quake_draw$adivtab_t(5, 0), new $quake_draw$adivtab_t(3, 1), new $quake_draw$adivtab_t(2, 2), new $quake_draw$adivtab_t(2, 0), new $quake_draw$adivtab_t(1, 4), new $quake_draw$adivtab_t(1, 3), new $quake_draw$adivtab_t(1, 2), new $quake_draw$adivtab_t(1, 1), new $quake_draw$adivtab_t(1, 0), new $quake_draw$adivtab_t(0, 10), new $quake_draw$adivtab_t(0, 10), new $quake_draw$adivtab_t(0, 10), new $quake_draw$adivtab_t(0, 10), new $quake_draw$adivtab_t(0, 10), new $quake_draw$adivtab_t(0, 10), new $quake_draw$adivtab_t(-1, -4), new $quake_draw$adivtab_t(-1, -3), new $quake_draw$adivtab_t(-1, -2), new $quake_draw$adivtab_t(-1, -1), new $quake_draw$adivtab_t(-1, 0), new $quake_draw$adivtab_t(-2, -9), new $quake_draw$adivtab_t(-2, -7), new $quake_draw$adivtab_t(-2, -5), new $quake_draw$adivtab_t(-2, -3), new $quake_draw$adivtab_t(-2, -1), new $quake_draw$adivtab_t(-3, -4), new $quake_draw$adivtab_t(-3, -1), new $quake_draw$adivtab_t(-4, -1), new $quake_draw$adivtab_t(-6, -1), new $quake_draw$adivtab_t(-11, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(11, 0), new $quake_draw$adivtab_t(5, 1), new $quake_draw$adivtab_t(3, 2), new $quake_draw$adivtab_t(2, 3), new $quake_draw$adivtab_t(2, 1), new $quake_draw$adivtab_t(1, 5), new $quake_draw$adivtab_t(1, 4), new $quake_draw$adivtab_t(1, 3), new $quake_draw$adivtab_t(1, 2), new $quake_draw$adivtab_t(1, 1), new $quake_draw$adivtab_t(1, 0), new $quake_draw$adivtab_t(0, 11), new $quake_draw$adivtab_t(0, 11), new $quake_draw$adivtab_t(0, 11), new $quake_draw$adivtab_t(0, 11), new $quake_draw$adivtab_t(0, 11), new $quake_draw$adivtab_t(-1, -3), new $quake_draw$adivtab_t(-1, -2), new $quake_draw$adivtab_t(-1, -1), new $quake_draw$adivtab_t(-1, 0), new $quake_draw$adivtab_t(-2, -10), new $quake_draw$adivtab_t(-2, -8), new $quake_draw$adivtab_t(-2, -6), new $quake_draw$adivtab_t(-2, -4), new $quake_draw$adivtab_t(-2, -2), new $quake_draw$adivtab_t(-2, 0), new $quake_draw$adivtab_t(-3, -3), new $quake_draw$adivtab_t(-3, 0), new $quake_draw$adivtab_t(-4, 0), new $quake_draw$adivtab_t(-6, 0), new $quake_draw$adivtab_t(-12, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(12, 0), new $quake_draw$adivtab_t(6, 0), new $quake_draw$adivtab_t(4, 0), new $quake_draw$adivtab_t(3, 0), new $quake_draw$adivtab_t(2, 2), new $quake_draw$adivtab_t(2, 0), new $quake_draw$adivtab_t(1, 5), new $quake_draw$adivtab_t(1, 4), new $quake_draw$adivtab_t(1, 3), new $quake_draw$adivtab_t(1, 2), new $quake_draw$adivtab_t(1, 1), new $quake_draw$adivtab_t(1, 0), new $quake_draw$adivtab_t(0, 12), new $quake_draw$adivtab_t(0, 12), new $quake_draw$adivtab_t(0, 12), new $quake_draw$adivtab_t(0, 12), new $quake_draw$adivtab_t(-1, -2), new $quake_draw$adivtab_t(-1, -1), new $quake_draw$adivtab_t(-1, 0), new $quake_draw$adivtab_t(-2, -11), new $quake_draw$adivtab_t(-2, -9), new $quake_draw$adivtab_t(-2, -7), new $quake_draw$adivtab_t(-2, -5), new $quake_draw$adivtab_t(-2, -3), new $quake_draw$adivtab_t(-2, -1), new $quake_draw$adivtab_t(-3, -5), new $quake_draw$adivtab_t(-3, -2), new $quake_draw$adivtab_t(-4, -3), new $quake_draw$adivtab_t(-5, -2), new $quake_draw$adivtab_t(-7, -1), new $quake_draw$adivtab_t(-13, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(13, 0), new $quake_draw$adivtab_t(6, 1), new $quake_draw$adivtab_t(4, 1), new $quake_draw$adivtab_t(3, 1), new $quake_draw$adivtab_t(2, 3), new $quake_draw$adivtab_t(2, 1), new $quake_draw$adivtab_t(1, 6), new $quake_draw$adivtab_t(1, 5), new $quake_draw$adivtab_t(1, 4), new $quake_draw$adivtab_t(1, 3), new $quake_draw$adivtab_t(1, 2), new $quake_draw$adivtab_t(1, 1), new $quake_draw$adivtab_t(1, 0), new $quake_draw$adivtab_t(0, 13), new $quake_draw$adivtab_t(0, 13), new $quake_draw$adivtab_t(0, 13), new $quake_draw$adivtab_t(-1, -1), new $quake_draw$adivtab_t(-1, 0), new $quake_draw$adivtab_t(-2, -12), new $quake_draw$adivtab_t(-2, -10), new $quake_draw$adivtab_t(-2, -8), new $quake_draw$adivtab_t(-2, -6), new $quake_draw$adivtab_t(-2, -4), new $quake_draw$adivtab_t(-2, -2), new $quake_draw$adivtab_t(-2, 0), new $quake_draw$adivtab_t(-3, -4), new $quake_draw$adivtab_t(-3, -1), new $quake_draw$adivtab_t(-4, -2), new $quake_draw$adivtab_t(-5, -1), new $quake_draw$adivtab_t(-7, 0), new $quake_draw$adivtab_t(-14, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(14, 0), new $quake_draw$adivtab_t(7, 0), new $quake_draw$adivtab_t(4, 2), new $quake_draw$adivtab_t(3, 2), new $quake_draw$adivtab_t(2, 4), new $quake_draw$adivtab_t(2, 2), new $quake_draw$adivtab_t(2, 0), new $quake_draw$adivtab_t(1, 6), new $quake_draw$adivtab_t(1, 5), new $quake_draw$adivtab_t(1, 4), new $quake_draw$adivtab_t(1, 3), new $quake_draw$adivtab_t(1, 2), new $quake_draw$adivtab_t(1, 1), new $quake_draw$adivtab_t(1, 0), new $quake_draw$adivtab_t(0, 14), new $quake_draw$adivtab_t(0, 14), new $quake_draw$adivtab_t(-1, 0), new $quake_draw$adivtab_t(-2, -13), new $quake_draw$adivtab_t(-2, -11), new $quake_draw$adivtab_t(-2, -9), new $quake_draw$adivtab_t(-2, -7), new $quake_draw$adivtab_t(-2, -5), new $quake_draw$adivtab_t(-2, -3), new $quake_draw$adivtab_t(-2, -1), new $quake_draw$adivtab_t(-3, -6), new $quake_draw$adivtab_t(-3, -3), new $quake_draw$adivtab_t(-3, 0), new $quake_draw$adivtab_t(-4, -1), new $quake_draw$adivtab_t(-5, 0), new $quake_draw$adivtab_t(-8, -1), new $quake_draw$adivtab_t(-15, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(15, 0), new $quake_draw$adivtab_t(7, 1), new $quake_draw$adivtab_t(5, 0), new $quake_draw$adivtab_t(3, 3), new $quake_draw$adivtab_t(3, 0), new $quake_draw$adivtab_t(2, 3), new $quake_draw$adivtab_t(2, 1), new $quake_draw$adivtab_t(1, 7), new $quake_draw$adivtab_t(1, 6), new $quake_draw$adivtab_t(1, 5), new $quake_draw$adivtab_t(1, 4), new $quake_draw$adivtab_t(1, 3), new $quake_draw$adivtab_t(1, 2), new $quake_draw$adivtab_t(1, 1), new $quake_draw$adivtab_t(1, 0), new $quake_draw$adivtab_t(0, 15), new $quake_draw$adivtab_t(-2, -14), new $quake_draw$adivtab_t(-2, -12), new $quake_draw$adivtab_t(-2, -10), new $quake_draw$adivtab_t(-2, -8), new $quake_draw$adivtab_t(-2, -6), new $quake_draw$adivtab_t(-2, -4), new $quake_draw$adivtab_t(-2, -2), new $quake_draw$adivtab_t(-2, 0), new $quake_draw$adivtab_t(-3, -5), new $quake_draw$adivtab_t(-3, -2), new $quake_draw$adivtab_t(-4, -4), new $quake_draw$adivtab_t(-4, 0), new $quake_draw$adivtab_t(-6, -2), new $quake_draw$adivtab_t(-8, 0), new $quake_draw$adivtab_t(-16, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(16, 0), new $quake_draw$adivtab_t(8, 0), new $quake_draw$adivtab_t(5, 1), new $quake_draw$adivtab_t(4, 0), new $quake_draw$adivtab_t(3, 1), new $quake_draw$adivtab_t(2, 4), new $quake_draw$adivtab_t(2, 2), new $quake_draw$adivtab_t(2, 0), new $quake_draw$adivtab_t(1, 7), new $quake_draw$adivtab_t(1, 6), new $quake_draw$adivtab_t(1, 5), new $quake_draw$adivtab_t(1, 4), new $quake_draw$adivtab_t(1, 3), new $quake_draw$adivtab_t(1, 2), new $quake_draw$adivtab_t(1, 1), new $quake_draw$adivtab_t(1, 0)];
-	$quake_draw.$skintable = new Array($quake_draw.maX_LBM_HEIGHT);
-	$quake_draw.$skinwidth = 0;
-	$quake_draw.$skinstart = null;
-	$quake_draw.$spans = null;
-	$quake_draw.$r_turb_pbase = 0;
-	$quake_draw.$r_turb_pdest = 0;
-	$quake_draw.$r_turb_s = 0;
-	$quake_draw.$r_turb_t = 0;
-	$quake_draw.$r_turb_sstep = 0;
-	$quake_draw.$r_turb_tstep = 0;
-	$quake_draw.$r_turb_turb = 0;
-	$quake_draw.$r_turb_spancount = 0;
-	$quake_draw.skY_SPAN_SHIFT = 5;
-	$quake_draw.skY_SPAN_MAX = 32;
-	$quake_draw.$sprite_height = 0;
-	$quake_draw.$minindex = 0;
-	$quake_draw.$maxindex = 0;
-	$quake_draw.$sprite_spans = null;
-	$quake_draw.$surfscale = 0;
-	$quake_draw.$r_cache_thrash = false;
-	$quake_draw.$sc_size = 0;
-	$quake_draw.GUARDSIZE = 4;
-	$quake_draw.$d_sdivzstepu = 0;
-	$quake_draw.$d_tdivzstepu = 0;
-	$quake_draw.$d_zistepu = 0;
-	$quake_draw.$d_sdivzstepv = 0;
-	$quake_draw.$d_tdivzstepv = 0;
-	$quake_draw.$d_zistepv = 0;
-	$quake_draw.$d_sdivzorigin = 0;
-	$quake_draw.$d_tdivzorigin = 0;
-	$quake_draw.$d_ziorigin = 0;
-	$quake_draw.$sadjust = 0;
-	$quake_draw.$tadjust = 0;
-	$quake_draw.$bbextents = 0;
-	$quake_draw.$bbextentt = 0;
-	$quake_draw.$cacheblock = null;
-	$quake_draw.$cacheofs = 0;
-	$quake_draw.$cachewidth = 0;
-	$quake_draw.d_viewbuffer = null;
-	$quake_draw.d_pzbuffer = null;
-	$quake_draw.$d_zrowbytes = 0;
-	$quake_draw.$d_zwidth = 0;
-	for (var kk = 0; kk < $quake_draw.maX_CACHED_PICS; kk++) {
-		$quake_draw.$menu_cachepics[kk] = new $quake_draw$cachepic_t();
-	}
-	$quake_draw.$d_polyse_init();
-	$quake_model.$colors = [16, 224, 240, 16, 176, 128, 16, 48];
-	$quake_model.$icolor = 0;
-	$quake_model.sidE_FRONT = 0;
-	$quake_model.sidE_BACK = 1;
-	$quake_model.sidE_ON = 2;
-	$quake_model.sizeof_texture_t = 60;
-	$quake_model.surF_PLANEBACK = 2;
-	$quake_model.surF_DRAWSKY = 4;
-	$quake_model.surF_DRAWSPRITE = 8;
-	$quake_model.surF_DRAWTURB = 16;
-	$quake_model.surF_DRAWTILED = 32;
-	$quake_model.surF_DRAWBACKGROUND = 64;
-	$quake_model.eF_ROCKET = 1;
-	$quake_model.eF_GRENADE = 2;
-	$quake_model.eF_GIB = 4;
-	$quake_model.eF_ROTATE = 8;
-	$quake_model.eF_TRACER = 16;
-	$quake_model.eF_ZOMGIB = 32;
-	$quake_model.eF_TRACER2 = 64;
-	$quake_model.eF_TRACER3 = 128;
-	$quake_model.$loadmodel = null;
-	$quake_model.$loadname = null;
-	$quake_model.$mod_novis = new Uint8Array(1024);
-	$quake_model.maX_MOD_KNOWN = 256;
-	$quake_model.$mod_known = new Array($quake_model.maX_MOD_KNOWN);
-	$quake_model.$mod_numknown = 0;
-	$quake_model.nL_PRESENT = 0;
-	$quake_model.nL_NEEDS_LOADED = 1;
-	$quake_model.nL_UNREFERENCED = 2;
-	$quake_model.$decompressed = new Uint8Array(1024);
-	$quake_model.$mod_base = null;
-	$quake_model.$aniM_CYCLE = 2;
-	$quake_model.aliaS_VERSION = 6;
-	$quake_model.aliaS_ONSEAM = 32;
-	$quake_model.sizeof_mdl_t = 84;
-	$quake_model.sizeof_stvert_t = 12;
-	$quake_model.sizeof_dtriangle_t = 16;
-	$quake_model.dT_FACES_FRONT = 16;
-	$quake_model.sizeof_trivertx_t = 4;
-	$quake_model.sizeof_daliasframe_t = 24;
-	$quake_model.sizeof_daliasgroup_t = 12;
-	$quake_model.sizeof_daliasskingroup_t = 4;
-	$quake_model.sizeof_daliasframetype_t = 4;
-	$quake_model.sizeof_daliasskintype_t = 4;
-	$quake_model.IDPOLYHEADER = 1330660425;
-	$quake_model.spritE_VERSION = 1;
-	$quake_model.sizeof_dsprite_t = 36;
-	$quake_model.spR_VP_PARALLEL_UPRIGHT = 0;
-	$quake_model.spR_FACING_UPRIGHT = 1;
-	$quake_model.spR_VP_PARALLEL = 2;
-	$quake_model.spR_ORIENTED = 3;
-	$quake_model.spR_VP_PARALLEL_ORIENTED = 4;
-	$quake_model.sizeof_dspriteframe_t = 16;
-	$quake_model.sizeof_dspritegroup_t = 4;
-	$quake_model.sizeof_dspriteframetype_t = 4;
-	$quake_model.IDSPRITEHEADER = 1347634249;
-	for (var kk = 0; kk < $quake_model.maX_MOD_KNOWN; kk++) {
-		$quake_model.$mod_known[kk] = new $quake_model$model_t();
-	}
-	$quake_world.movE_NORMAL = 0;
-	$quake_world.movE_NOMONSTERS = 1;
-	$quake_world.movE_MISSILE = 2;
-	$quake_world.$box_hull = new $quake_model$hull_t();
-	$quake_world.$box_clipnodes = $quake_world.$init_box_clip_nodes(6);
-	$quake_world.$box_planes = $quake_world.$init_box_planes(6);
-	$quake_world.$areA_DEPTH = 4;
-	$quake_world.$areA_NODES = 32;
-	$quake_world.$sv_areanodes = $quake_world.$init_areanode_t($quake_world.$areA_NODES);
-	$quake_world.$sv_numareanodes = 0;
-	$quake_world.$tchlinks = 0;
-	$quake_world.$tchlinksFunc = 0;
-	$quake_world.$sV_LinkEdict_count = 0;
-	$quake_world.$disT_EPSILON = 0.03125;
-	$quake_world.$num_hullcheck = 0;
-	$quake_world.$clipToLinks_for_num = 0;
+	$quake_mathlib.m_PI = 3.14159265358979;
+	$quake_mathlib.vec3_origin = [0, 0, 0];
+	$quake_screen.scr_copytop = false;
+	$quake_screen.scr_copyeverything = false;
+	$quake_screen.scr_con_current = 0;
+	$quake_screen.$scr_conlines = 0;
+	$quake_screen.$oldscreensize = 0;
+	$quake_screen.$oldfov = 0;
+	$quake_screen.scr_viewsize = new $quake_cvar_t.$ctor1('viewsize', '100', true);
+	$quake_screen.scr_fov = new $quake_cvar_t('fov', '90');
+	$quake_screen.$scr_conspeed = new $quake_cvar_t('scr_conspeed', '300');
+	$quake_screen.$scr_centertime = new $quake_cvar_t('scr_centertime', '2');
+	$quake_screen.$scr_showram = new $quake_cvar_t('showram', '1');
+	$quake_screen.$scr_showturtle = new $quake_cvar_t('showturtle', '0');
+	$quake_screen.$scr_showpause = new $quake_cvar_t('showpause', '1');
+	$quake_screen.$scr_printspeed = new $quake_cvar_t('scr_printspeed', '8');
+	$quake_screen.$scr_initialized = false;
+	$quake_screen.$scr_ram = null;
+	$quake_screen.$scr_net = null;
+	$quake_screen.$scr_turtle = null;
+	$quake_screen.scr_fullupdate = 0;
+	$quake_screen.$clearconsole = 0;
+	$quake_screen.clearnotify = 0;
+	$quake_screen.vid = new $quake_vid$viddef_t();
+	$quake_screen.scr_vrect = new $quake_vid$vrect_t();
+	$quake_screen.scr_disabled_for_loading = false;
+	$quake_screen.$scr_drawloading = false;
+	$quake_screen.$scr_disabled_time = 0;
+	$quake_screen.$scr_skipupdate = false;
+	$quake_screen.$block_drawing = false;
+	$quake_screen.$scr_centerstring = null;
+	$quake_screen.$scr_centertime_start = 0;
+	$quake_screen.scr_centertime_off = 0;
+	$quake_screen.$scr_center_lines = 0;
+	$quake_screen.$scr_erase_lines = 0;
+	$quake_screen.$scr_erase_center = 0;
+	$quake_screen.$count = 0;
+	$quake_screen.$scr_notifystring = null;
+	$quake_screen.$scr_drawdialog = false;
+	$quake_screen.$oldscr_viewsize = 0;
+	$quake_screen.$oldlcd_x = 0;
 	$quake_sys_linux.$nostdout = 0;
 	$quake_sys_linux.$basedir = '.';
 	$quake_sys_linux.$sys_linerefresh = new $quake_cvar_t('sys_linerefresh', '0');
 	$quake_sys_linux.$printbuffer = '';
 	$quake_sys_linux.$maX_HANDLES = 10;
 	$quake_sys_linux.sys_handles = new Array($quake_sys_linux.$maX_HANDLES);
-	$quake_mathlib.m_PI = 3.14159265358979;
-	$quake_mathlib.vec3_origin = [0, 0, 0];
-	$quake_server.nuM_PING_TIMES = 16;
-	$quake_server.nuM_SPAWN_PARMS = 16;
-	$quake_server.movetypE_NONE = 0;
-	$quake_server.movetypE_ANGLENOCLIP = 1;
-	$quake_server.movetypE_ANGLECLIP = 2;
-	$quake_server.movetypE_WALK = 3;
-	$quake_server.movetypE_STEP = 4;
-	$quake_server.movetypE_FLY = 5;
-	$quake_server.movetypE_TOSS = 6;
-	$quake_server.movetypE_PUSH = 7;
-	$quake_server.movetypE_NOCLIP = 8;
-	$quake_server.movetypE_FLYMISSILE = 9;
-	$quake_server.movetypE_BOUNCE = 10;
-	$quake_server.soliD_NOT = 0;
-	$quake_server.soliD_TRIGGER = 1;
-	$quake_server.soliD_BBOX = 2;
-	$quake_server.soliD_SLIDEBOX = 3;
-	$quake_server.soliD_BSP = 4;
-	$quake_server.deaD_NO = 0;
-	$quake_server.deaD_DYING = 1;
-	$quake_server.deaD_DEAD = 2;
-	$quake_server.damagE_NO = 0;
-	$quake_server.damagE_YES = 1;
-	$quake_server.damagE_AIM = 2;
-	$quake_server.fL_FLY = 1;
-	$quake_server.fL_SWIM = 2;
-	$quake_server.fL_CONVEYOR = 4;
-	$quake_server.fL_CLIENT = 8;
-	$quake_server.fL_INWATER = 16;
-	$quake_server.fL_MONSTER = 32;
-	$quake_server.fL_GODMODE = 64;
-	$quake_server.fL_NOTARGET = 128;
-	$quake_server.fL_ITEM = 256;
-	$quake_server.fL_ONGROUND = 512;
-	$quake_server.fL_PARTIALGROUND = 1024;
-	$quake_server.fL_WATERJUMP = 2048;
-	$quake_server.fL_JUMPRELEASED = 4096;
-	$quake_server.eF_BRIGHTFIELD = 1;
-	$quake_server.eF_MUZZLEFLASH = 2;
-	$quake_server.eF_BRIGHTLIGHT = 4;
-	$quake_server.eF_DIMLIGHT = 8;
-	$quake_server.spawnflaG_NOT_EASY = 256;
-	$quake_server.spawnflaG_NOT_MEDIUM = 512;
-	$quake_server.spawnflaG_NOT_HARD = 1024;
-	$quake_server.spawnflaG_NOT_DEATHMATCH = 2048;
-	$quake_server.sv = new $quake_server$server_t();
-	$quake_server.svs = new $quake_server$server_static_t();
-	$quake_server.$localmodels = new Array($quake_quakedef.maX_MODELS);
-	$quake_server.STEPSIZE = 18;
-	$quake_server.$c_yes = 0;
-	$quake_server.$c_no = 0;
-	$quake_server.$sV_Movestep_count = -1;
-	$quake_server.$dI_NODIR = -1;
-	$quake_server.$sv_friction = new $quake_cvar_t.$ctor2('sv_friction', '4', false, true);
-	$quake_server.$sv_stopspeed = new $quake_cvar_t('sv_stopspeed', '100');
-	$quake_server.sv_gravity = new $quake_cvar_t.$ctor2('sv_gravity', '800', false, true);
-	$quake_server.$sv_maxvelocity = new $quake_cvar_t('sv_maxvelocity', '2000');
-	$quake_server.$sv_nostep = new $quake_cvar_t('sv_nostep', '0');
-	$quake_server.movE_EPSILON = 0.01;
-	$quake_server.$stoP_EPSILON = 0.1;
-	$quake_server.$maX_CLIP_PLANES = 5;
-	$quake_server.$phys_num = 0;
-	$quake_server.sv_player = null;
-	$quake_server.$sv_edgefriction = new $quake_cvar_t('edgefriction', '2');
-	$quake_server.$forward = new Array(3);
-	$quake_server.$right = new Array(3);
-	$quake_server.$up = new Array(3);
-	$quake_server.$wishdir = new Array(3);
-	$quake_server.$wishspeed = 0;
-	$quake_server.$angles = null;
-	$quake_server.$origin = null;
-	$quake_server.$velocity = null;
-	$quake_server.$onground = false;
-	$quake_server.$cmd = new $quake_client$usercmd_t();
-	$quake_server.$sv_idealpitchscale = new $quake_cvar_t('sv_idealpitchscale', '0.8');
-	$quake_server.$maX_FORWARD = 6;
-	$quake_server.$sv_maxspeed = new $quake_cvar_t.$ctor2('sv_maxspeed', '320', false, true);
-	$quake_server.$sv_accelerate = new $quake_cvar_t('sv_accelerate', '10');
-	$quake_prog.sizeof_globalvars_t = 368;
-	$quake_prog.sizeof_entvars_t = 420;
-	$quake_prog.progheadeR_CRC = 5927;
-	$quake_prog.maX_ENT_LEAFS = 16;
-	$quake_prog.sizeof_edict_t = 516;
-	$quake_prog.$out = $System_StringExtensions.stringOfLength(256);
-	$quake_prog.$checkpvs = new Uint8Array(1024);
-	$quake_prog.$c_invis = 0;
-	$quake_prog.$c_notvis = 0;
-	$quake_prog.$pr_string_temp = null;
-	$quake_prog.sv_aim = new $quake_cvar_t('sv_aim', '0.93');
-	$quake_prog.$msG_BROADCAST = 0;
-	$quake_prog.$msG_ONE = 1;
-	$quake_prog.$msG_ALL = 2;
-	$quake_prog.$msG_INIT = 3;
-	$quake_prog.$pr_builtin = [$quake_prog.$pF_Fixme, $quake_prog.$pF_makevectors, $quake_prog.$pF_setorigin, $quake_prog.$pF_setmodel, $quake_prog.$pF_setsize, $quake_prog.$pF_Fixme, $quake_prog.$pF_break, $quake_prog.$pF_random, $quake_prog.$pF_sound, $quake_prog.$pF_normalize, $quake_prog.$pF_error, $quake_prog.$pF_objerror, $quake_prog.$pF_vlen, $quake_prog.$pF_vectoyaw, $quake_prog.$pF_Spawn, $quake_prog.$pF_Remove, $quake_prog.$pF_traceline, $quake_prog.$pF_checkclient, $quake_prog.$pF_Find, $quake_prog.$pF_precache_sound, $quake_prog.$pF_precache_model, $quake_prog.$pF_stuffcmd, $quake_prog.$pF_findradius, $quake_prog.$pF_bprint, $quake_prog.$pF_sprint, $quake_prog.$pF_dprint, $quake_prog.$pF_ftos, $quake_prog.$pF_vtos, $quake_prog.$pF_coredump, $quake_prog.$pF_traceon, $quake_prog.$pF_traceoff, $quake_prog.$pF_eprint, $quake_prog.$pF_walkmove, $quake_prog.$pF_Fixme, $quake_prog.$pF_droptofloor, $quake_prog.$pF_lightstyle, $quake_prog.$pF_rint, $quake_prog.$pF_floor, $quake_prog.$pF_ceil, $quake_prog.$pF_Fixme, $quake_prog.$pF_checkbottom, $quake_prog.$pF_pointcontents, $quake_prog.$pF_Fixme, $quake_prog.$pF_fabs, $quake_prog.$pF_aim, $quake_prog.$pF_cvar, $quake_prog.$pF_localcmd, $quake_prog.$pF_nextent, $quake_prog.$pF_particle, $quake_prog.pF_changeyaw, $quake_prog.$pF_Fixme, $quake_prog.$pF_vectoangles, $quake_prog.$pF_WriteByte, $quake_prog.$pF_WriteChar, $quake_prog.$pF_WriteShort, $quake_prog.$pF_WriteLong, $quake_prog.$pF_WriteCoord, $quake_prog.$pF_WriteAngle, $quake_prog.$pF_WriteString, $quake_prog.$pF_WriteEntity, $quake_prog.$pF_Fixme, $quake_prog.$pF_Fixme, $quake_prog.$pF_Fixme, $quake_prog.$pF_Fixme, $quake_prog.$pF_Fixme, $quake_prog.$pF_Fixme, $quake_prog.$pF_Fixme, $quake_server.sV_MoveToGoal, $quake_prog.$pF_precache_file, $quake_prog.$pF_makestatic, $quake_prog.$pF_changelevel, $quake_prog.$pF_Fixme, $quake_prog.$pF_cvar_set, $quake_prog.$pF_centerprint, $quake_prog.$pF_ambientsound, $quake_prog.$pF_precache_model, $quake_prog.$pF_precache_sound, $quake_prog.$pF_precache_file, $quake_prog.$pF_setspawnparms];
-	$quake_prog.$pr_builtins = $quake_prog.$pr_builtin;
-	$quake_prog.$pr_numbuiltins = $quake_prog.$pr_builtin.length;
-	$quake_prog.ofS_NULL = 0;
-	$quake_prog.ofS_RETURN = 1;
-	$quake_prog.ofS_PARM0 = 4;
-	$quake_prog.ofS_PARM1 = 7;
-	$quake_prog.ofS_PARM2 = 10;
-	$quake_prog.ofS_PARM3 = 13;
-	$quake_prog.ofS_PARM4 = 16;
-	$quake_prog.ofS_PARM5 = 19;
-	$quake_prog.ofS_PARM6 = 22;
-	$quake_prog.ofS_PARM7 = 25;
-	$quake_prog.reserveD_OFS = 28;
-	$quake_prog.sizeof_dstatement_t = 8;
-	$quake_prog.sizeof_ddef_t = 8;
-	$quake_prog.deF_SAVEGLOBAL = 32768;
-	$quake_prog.maX_PARMS = 8;
-	$quake_prog.sizeof_dfunction_t = 36;
-	$quake_prog.proG_VERSION = 6;
-	$quake_prog.$progs = null;
-	$quake_prog.pr_functions = null;
-	$quake_prog.$pr_strings = null;
-	$quake_prog.$pr_fielddefs = null;
-	$quake_prog.$pr_globaldefs = null;
-	$quake_prog.$pr_statements = null;
-	$quake_prog.pr_global_struct = null;
-	$quake_prog.pr_edict_size = 0;
-	$quake_prog.pr_crc = 0;
-	$quake_prog.$nomonsters = new $quake_cvar_t('nomonsters', '0');
-	$quake_prog.$gamecfg = new $quake_cvar_t('gamecfg', '0');
-	$quake_prog.$scratch1 = new $quake_cvar_t('scratch1', '0');
-	$quake_prog.$scratch2 = new $quake_cvar_t('scratch2', '0');
-	$quake_prog.$scratch3 = new $quake_cvar_t('scratch3', '0');
-	$quake_prog.$scratch4 = new $quake_cvar_t('scratch4', '0');
-	$quake_prog.$savedgamecfg = new $quake_cvar_t.$ctor1('savedgamecfg', '0', true);
-	$quake_prog.$saved1 = new $quake_cvar_t.$ctor1('saved1', '0', true);
-	$quake_prog.$saved2 = new $quake_cvar_t.$ctor1('saved2', '0', true);
-	$quake_prog.$saved3 = new $quake_cvar_t.$ctor1('saved3', '0', true);
-	$quake_prog.$saved4 = new $quake_cvar_t.$ctor1('saved4', '0', true);
-	$quake_prog.$stringDictionary = new (ss.makeGenericType(ss.Dictionary$2, [String, ss.Int32]))();
-	$quake_prog.$stringPool = new Array(1000);
-	$quake_prog.$strings = 0;
-	$quake_prog.$line = $System_StringExtensions.stringOfLength(256);
-	$quake_prog.maX_STACK_DEPTH = 32;
-	$quake_prog.$pr_stack = $ArrayHelpers.initArray($quake_prog$prstack_t).call(null, $quake_prog.maX_STACK_DEPTH);
-	$quake_prog.$pr_depth = 0;
-	$quake_prog.localstacK_SIZE = 2048;
-	$quake_prog.$localstack = new Array($quake_prog.localstacK_SIZE);
-	$quake_prog.$localstack_used = 0;
-	$quake_prog.$pr_trace = false;
-	$quake_prog.$pr_xfunction = null;
-	$quake_prog.$pr_xstatement = 0;
-	$quake_prog.$pr_argc = 0;
-	$quake_prog.$pr_opnames = ['DONE', 'MUL_F', 'MUL_V', 'MUL_FV', 'MUL_VF', 'DIV', 'ADD_F', 'ADD_V', 'SUB_F', 'SUB_V', 'EQ_F', 'EQ_V', 'EQ_S', 'EQ_E', 'EQ_FNC', 'NE_F', 'NE_V', 'NE_S', 'NE_E', 'NE_FNC', 'LE', 'GE', 'LT', 'GT', 'INDIRECT', 'INDIRECT', 'INDIRECT', 'INDIRECT', 'INDIRECT', 'INDIRECT', 'ADDRESS', 'STORE_F', 'STORE_V', 'STORE_S', 'STORE_ENT', 'STORE_FLD', 'STORE_FNC', 'STOREP_F', 'STOREP_V', 'STOREP_S', 'STOREP_ENT', 'STOREP_FLD', 'STOREP_FNC', 'RETURN', 'NOT_F', 'NOT_V', 'NOT_S', 'NOT_ENT', 'NOT_FNC', 'IF', 'IFNOT', 'CALL0', 'CALL1', 'CALL2', 'CALL3', 'CALL4', 'CALL5', 'CALL6', 'CALL7', 'CALL8', 'STATE', 'GOTO', 'AND', 'OR', 'BITAND', 'BITOR'];
-	$quake_prog.prNum = 0;
+	$quake_cmd.$maX_ALIAS_NAME = 32;
+	$quake_cmd.$cmd_alias = new $quake_$cmd$cmdalias_t();
+	$quake_cmd.$cmd_wait = false;
+	$quake_cmd.$cmd_text = new $quake_common$sizebuf_t();
+	$quake_cmd.$maX_ARGS = 80;
+	$quake_cmd.$cmd_argc = 0;
+	$quake_cmd.$cmd_argv = new Array($quake_cmd.$maX_ARGS);
+	$quake_cmd.$cmd_null_string = '';
+	$quake_cmd.$cmd_args = null;
+	$quake_cmd.cmd_source = 0;
+	$quake_cmd.$cmd_functions = null;
+	$quake_keys.k_TAB = 9;
+	$quake_keys.k_ENTER = 13;
+	$quake_keys.k_ESCAPE = 27;
+	$quake_keys.k_SPACE = 32;
+	$quake_keys.k_BACKSPACE = 127;
+	$quake_keys.k_UPARROW = 128;
+	$quake_keys.k_DOWNARROW = 129;
+	$quake_keys.k_LEFTARROW = 130;
+	$quake_keys.k_RIGHTARROW = 131;
+	$quake_keys.k_ALT = 132;
+	$quake_keys.k_CTRL = 133;
+	$quake_keys.k_SHIFT = 134;
+	$quake_keys.k_F1 = 135;
+	$quake_keys.k_F2 = 136;
+	$quake_keys.k_F3 = 137;
+	$quake_keys.k_F4 = 138;
+	$quake_keys.k_F5 = 139;
+	$quake_keys.k_F6 = 140;
+	$quake_keys.k_F7 = 141;
+	$quake_keys.k_F8 = 142;
+	$quake_keys.k_F9 = 143;
+	$quake_keys.k_F10 = 144;
+	$quake_keys.k_F11 = 145;
+	$quake_keys.k_F12 = 146;
+	$quake_keys.k_INS = 147;
+	$quake_keys.k_DEL = 148;
+	$quake_keys.k_PGDN = 149;
+	$quake_keys.k_PGUP = 150;
+	$quake_keys.k_HOME = 151;
+	$quake_keys.k_END = 152;
+	$quake_keys.k_PAUSE = 255;
+	$quake_keys.k_MOUSE1 = 200;
+	$quake_keys.k_MOUSE2 = 201;
+	$quake_keys.k_MOUSE3 = 202;
+	$quake_keys.k_JOY1 = 203;
+	$quake_keys.k_JOY2 = 204;
+	$quake_keys.k_JOY3 = 205;
+	$quake_keys.k_JOY4 = 206;
+	$quake_keys.k_AUX1 = 207;
+	$quake_keys.k_AUX2 = 208;
+	$quake_keys.k_AUX3 = 209;
+	$quake_keys.k_AUX4 = 210;
+	$quake_keys.k_AUX5 = 211;
+	$quake_keys.k_AUX6 = 212;
+	$quake_keys.k_AUX7 = 213;
+	$quake_keys.k_AUX8 = 214;
+	$quake_keys.k_AUX9 = 215;
+	$quake_keys.k_AUX10 = 216;
+	$quake_keys.k_AUX11 = 217;
+	$quake_keys.k_AUX12 = 218;
+	$quake_keys.k_AUX13 = 219;
+	$quake_keys.k_AUX14 = 220;
+	$quake_keys.k_AUX15 = 221;
+	$quake_keys.k_AUX16 = 222;
+	$quake_keys.k_AUX17 = 223;
+	$quake_keys.k_AUX18 = 224;
+	$quake_keys.k_AUX19 = 225;
+	$quake_keys.k_AUX20 = 226;
+	$quake_keys.k_AUX21 = 227;
+	$quake_keys.k_AUX22 = 228;
+	$quake_keys.k_AUX23 = 229;
+	$quake_keys.k_AUX24 = 230;
+	$quake_keys.k_AUX25 = 231;
+	$quake_keys.k_AUX26 = 232;
+	$quake_keys.k_AUX27 = 233;
+	$quake_keys.k_AUX28 = 234;
+	$quake_keys.k_AUX29 = 235;
+	$quake_keys.k_AUX30 = 236;
+	$quake_keys.k_AUX31 = 237;
+	$quake_keys.k_AUX32 = 238;
+	$quake_keys.k_MWHEELUP = 239;
+	$quake_keys.k_MWHEELDOWN = 240;
+	$quake_keys.MAXCMDLINE = 256;
+	$quake_keys.key_lines = new Array(32);
+	$quake_keys.key_linepos = 0;
+	$quake_keys.shift_down = false;
+	$quake_keys.key_lastpress = 0;
+	$quake_keys.edit_line = 0;
+	$quake_keys.$history_line = 0;
+	$quake_keys.key_dest = 0;
+	$quake_keys.$key_count = 0;
+	$quake_keys.$keybindings = new Array(256);
+	$quake_keys.$consolekeys = new Array(256);
+	$quake_keys.$menubound = new Array(256);
+	$quake_keys.$keyshift = new Array(256);
+	$quake_keys.$key_repeats = new Array(256);
+	$quake_keys.$keydown = new Array(256);
+	$quake_keys.$keynames = [new $quake_$keys$keyname_t('TAB', $quake_keys.k_TAB), new $quake_$keys$keyname_t('ENTER', $quake_keys.k_ENTER), new $quake_$keys$keyname_t('ESCAPE', $quake_keys.k_ESCAPE), new $quake_$keys$keyname_t('SPACE', $quake_keys.k_SPACE), new $quake_$keys$keyname_t('BACKSPACE', $quake_keys.k_BACKSPACE), new $quake_$keys$keyname_t('UPARROW', $quake_keys.k_UPARROW), new $quake_$keys$keyname_t('DOWNARROW', $quake_keys.k_DOWNARROW), new $quake_$keys$keyname_t('LEFTARROW', $quake_keys.k_LEFTARROW), new $quake_$keys$keyname_t('RIGHTARROW', $quake_keys.k_RIGHTARROW), new $quake_$keys$keyname_t('ALT', $quake_keys.k_ALT), new $quake_$keys$keyname_t('CTRL', $quake_keys.k_CTRL), new $quake_$keys$keyname_t('SHIFT', $quake_keys.k_SHIFT), new $quake_$keys$keyname_t('F1', $quake_keys.k_F1), new $quake_$keys$keyname_t('F2', $quake_keys.k_F2), new $quake_$keys$keyname_t('F3', $quake_keys.k_F3), new $quake_$keys$keyname_t('F4', $quake_keys.k_F4), new $quake_$keys$keyname_t('F5', $quake_keys.k_F5), new $quake_$keys$keyname_t('F6', $quake_keys.k_F6), new $quake_$keys$keyname_t('F7', $quake_keys.k_F7), new $quake_$keys$keyname_t('F8', $quake_keys.k_F8), new $quake_$keys$keyname_t('F9', $quake_keys.k_F9), new $quake_$keys$keyname_t('F10', $quake_keys.k_F10), new $quake_$keys$keyname_t('F11', $quake_keys.k_F11), new $quake_$keys$keyname_t('F12', $quake_keys.k_F12), new $quake_$keys$keyname_t('INS', $quake_keys.k_INS), new $quake_$keys$keyname_t('DEL', $quake_keys.k_DEL), new $quake_$keys$keyname_t('PGDN', $quake_keys.k_PGDN), new $quake_$keys$keyname_t('PGUP', $quake_keys.k_PGUP), new $quake_$keys$keyname_t('HOME', $quake_keys.k_HOME), new $quake_$keys$keyname_t('END', $quake_keys.k_END), new $quake_$keys$keyname_t('MOUSE1', $quake_keys.k_MOUSE1), new $quake_$keys$keyname_t('MOUSE2', $quake_keys.k_MOUSE2), new $quake_$keys$keyname_t('MOUSE3', $quake_keys.k_MOUSE3), new $quake_$keys$keyname_t('JOY1', $quake_keys.k_JOY1), new $quake_$keys$keyname_t('JOY2', $quake_keys.k_JOY2), new $quake_$keys$keyname_t('JOY3', $quake_keys.k_JOY3), new $quake_$keys$keyname_t('JOY4', $quake_keys.k_JOY4), new $quake_$keys$keyname_t('AUX1', $quake_keys.k_AUX1), new $quake_$keys$keyname_t('AUX2', $quake_keys.k_AUX2), new $quake_$keys$keyname_t('AUX3', $quake_keys.k_AUX3), new $quake_$keys$keyname_t('AUX4', $quake_keys.k_AUX4), new $quake_$keys$keyname_t('AUX5', $quake_keys.k_AUX5), new $quake_$keys$keyname_t('AUX6', $quake_keys.k_AUX6), new $quake_$keys$keyname_t('AUX7', $quake_keys.k_AUX7), new $quake_$keys$keyname_t('AUX8', $quake_keys.k_AUX8), new $quake_$keys$keyname_t('AUX9', $quake_keys.k_AUX9), new $quake_$keys$keyname_t('AUX10', $quake_keys.k_AUX10), new $quake_$keys$keyname_t('AUX11', $quake_keys.k_AUX11), new $quake_$keys$keyname_t('AUX12', $quake_keys.k_AUX12), new $quake_$keys$keyname_t('AUX13', $quake_keys.k_AUX13), new $quake_$keys$keyname_t('AUX14', $quake_keys.k_AUX14), new $quake_$keys$keyname_t('AUX15', $quake_keys.k_AUX15), new $quake_$keys$keyname_t('AUX16', $quake_keys.k_AUX16), new $quake_$keys$keyname_t('AUX17', $quake_keys.k_AUX17), new $quake_$keys$keyname_t('AUX18', $quake_keys.k_AUX18), new $quake_$keys$keyname_t('AUX19', $quake_keys.k_AUX19), new $quake_$keys$keyname_t('AUX20', $quake_keys.k_AUX20), new $quake_$keys$keyname_t('AUX21', $quake_keys.k_AUX21), new $quake_$keys$keyname_t('AUX22', $quake_keys.k_AUX22), new $quake_$keys$keyname_t('AUX23', $quake_keys.k_AUX23), new $quake_$keys$keyname_t('AUX24', $quake_keys.k_AUX24), new $quake_$keys$keyname_t('AUX25', $quake_keys.k_AUX25), new $quake_$keys$keyname_t('AUX26', $quake_keys.k_AUX26), new $quake_$keys$keyname_t('AUX27', $quake_keys.k_AUX27), new $quake_$keys$keyname_t('AUX28', $quake_keys.k_AUX28), new $quake_$keys$keyname_t('AUX29', $quake_keys.k_AUX29), new $quake_$keys$keyname_t('AUX30', $quake_keys.k_AUX30), new $quake_$keys$keyname_t('AUX31', $quake_keys.k_AUX31), new $quake_$keys$keyname_t('AUX32', $quake_keys.k_AUX32), new $quake_$keys$keyname_t('PAUSE', $quake_keys.k_PAUSE), new $quake_$keys$keyname_t('MWHEELUP', $quake_keys.k_MWHEELUP), new $quake_$keys$keyname_t('MWHEELDOWN', $quake_keys.k_MWHEELDOWN), new $quake_$keys$keyname_t('SEMICOLON', 59), new $quake_$keys$keyname_t(null, 0)];
+	$quake_keys.chat_buffer = new Array(32);
+	$quake_keys.$team_message = false;
+	$quake_keys.$chat_bufferlen = 0;
+	$quake_console.$con_linewidth = 0;
+	$quake_console.$con_cursorspeed = 4;
+	$quake_console.$coN_TEXTSIZE = 16384;
+	$quake_console.con_forcedup = false;
+	$quake_console.con_totallines = 0;
+	$quake_console.con_backscroll = 0;
+	$quake_console.$con_current = 0;
+	$quake_console.$con_x = 0;
+	$quake_console.$con_text = null;
+	$quake_console.$con_notifytime = new $quake_cvar_t('con_notifytime', '3');
+	$quake_console.$nuM_CON_TIMES = 4;
+	$quake_console.$con_times = new Array($quake_console.$nuM_CON_TIMES);
+	$quake_console.$con_vislines = 0;
+	$quake_console.$con_debuglog = false;
+	$quake_console.$MAXCMDLINE = 256;
+	$quake_console.con_initialized = false;
+	$quake_console.con_notifylines = 0;
+	$quake_console.$cr = false;
+	$quake_console.$MAXPRINTMSG = 4096;
+	$quake_console.$inupdate = false;
 	$quake_host.host_initialized = false;
 	$quake_host.host_frametime = 0;
 	$quake_host.host_time = 0;
@@ -28054,124 +28531,180 @@
 	$quake_common.$com_cachedir = null;
 	$quake_common.com_gamedir = null;
 	$quake_common.$com_searchpaths = null;
-	$quake_cmd.$maX_ALIAS_NAME = 32;
-	$quake_cmd.$cmd_alias = new $quake_$cmd$cmdalias_t();
-	$quake_cmd.$cmd_wait = false;
-	$quake_cmd.$cmd_text = new $quake_common$sizebuf_t();
-	$quake_cmd.$maX_ARGS = 80;
-	$quake_cmd.$cmd_argc = 0;
-	$quake_cmd.$cmd_argv = new Array($quake_cmd.$maX_ARGS);
-	$quake_cmd.$cmd_null_string = '';
-	$quake_cmd.$cmd_args = null;
-	$quake_cmd.cmd_source = 0;
-	$quake_cmd.$cmd_functions = null;
-	$quake_keys.k_TAB = 9;
-	$quake_keys.k_ENTER = 13;
-	$quake_keys.k_ESCAPE = 27;
-	$quake_keys.k_SPACE = 32;
-	$quake_keys.k_BACKSPACE = 127;
-	$quake_keys.k_UPARROW = 128;
-	$quake_keys.k_DOWNARROW = 129;
-	$quake_keys.k_LEFTARROW = 130;
-	$quake_keys.k_RIGHTARROW = 131;
-	$quake_keys.k_ALT = 132;
-	$quake_keys.k_CTRL = 133;
-	$quake_keys.k_SHIFT = 134;
-	$quake_keys.k_F1 = 135;
-	$quake_keys.k_F2 = 136;
-	$quake_keys.k_F3 = 137;
-	$quake_keys.k_F4 = 138;
-	$quake_keys.k_F5 = 139;
-	$quake_keys.k_F6 = 140;
-	$quake_keys.k_F7 = 141;
-	$quake_keys.k_F8 = 142;
-	$quake_keys.k_F9 = 143;
-	$quake_keys.k_F10 = 144;
-	$quake_keys.k_F11 = 145;
-	$quake_keys.k_F12 = 146;
-	$quake_keys.k_INS = 147;
-	$quake_keys.k_DEL = 148;
-	$quake_keys.k_PGDN = 149;
-	$quake_keys.k_PGUP = 150;
-	$quake_keys.k_HOME = 151;
-	$quake_keys.k_END = 152;
-	$quake_keys.k_PAUSE = 255;
-	$quake_keys.k_MOUSE1 = 200;
-	$quake_keys.k_MOUSE2 = 201;
-	$quake_keys.k_MOUSE3 = 202;
-	$quake_keys.k_JOY1 = 203;
-	$quake_keys.k_JOY2 = 204;
-	$quake_keys.k_JOY3 = 205;
-	$quake_keys.k_JOY4 = 206;
-	$quake_keys.k_AUX1 = 207;
-	$quake_keys.k_AUX2 = 208;
-	$quake_keys.k_AUX3 = 209;
-	$quake_keys.k_AUX4 = 210;
-	$quake_keys.k_AUX5 = 211;
-	$quake_keys.k_AUX6 = 212;
-	$quake_keys.k_AUX7 = 213;
-	$quake_keys.k_AUX8 = 214;
-	$quake_keys.k_AUX9 = 215;
-	$quake_keys.k_AUX10 = 216;
-	$quake_keys.k_AUX11 = 217;
-	$quake_keys.k_AUX12 = 218;
-	$quake_keys.k_AUX13 = 219;
-	$quake_keys.k_AUX14 = 220;
-	$quake_keys.k_AUX15 = 221;
-	$quake_keys.k_AUX16 = 222;
-	$quake_keys.k_AUX17 = 223;
-	$quake_keys.k_AUX18 = 224;
-	$quake_keys.k_AUX19 = 225;
-	$quake_keys.k_AUX20 = 226;
-	$quake_keys.k_AUX21 = 227;
-	$quake_keys.k_AUX22 = 228;
-	$quake_keys.k_AUX23 = 229;
-	$quake_keys.k_AUX24 = 230;
-	$quake_keys.k_AUX25 = 231;
-	$quake_keys.k_AUX26 = 232;
-	$quake_keys.k_AUX27 = 233;
-	$quake_keys.k_AUX28 = 234;
-	$quake_keys.k_AUX29 = 235;
-	$quake_keys.k_AUX30 = 236;
-	$quake_keys.k_AUX31 = 237;
-	$quake_keys.k_AUX32 = 238;
-	$quake_keys.k_MWHEELUP = 239;
-	$quake_keys.k_MWHEELDOWN = 240;
-	$quake_keys.MAXCMDLINE = 256;
-	$quake_keys.key_lines = new Array(32);
-	$quake_keys.key_linepos = 0;
-	$quake_keys.edit_line = 0;
-	$quake_keys.$history_line = 0;
-	$quake_keys.key_dest = 0;
-	$quake_keys.$key_count = 0;
-	$quake_keys.$keybindings = new Array(256);
-	$quake_keys.$consolekeys = new Array(256);
-	$quake_keys.$keynames = [new $quake_$keys$keyname_t('TAB', $quake_keys.k_TAB), new $quake_$keys$keyname_t('ENTER', $quake_keys.k_ENTER), new $quake_$keys$keyname_t('ESCAPE', $quake_keys.k_ESCAPE), new $quake_$keys$keyname_t('SPACE', $quake_keys.k_SPACE), new $quake_$keys$keyname_t('BACKSPACE', $quake_keys.k_BACKSPACE), new $quake_$keys$keyname_t('UPARROW', $quake_keys.k_UPARROW), new $quake_$keys$keyname_t('DOWNARROW', $quake_keys.k_DOWNARROW), new $quake_$keys$keyname_t('LEFTARROW', $quake_keys.k_LEFTARROW), new $quake_$keys$keyname_t('RIGHTARROW', $quake_keys.k_RIGHTARROW), new $quake_$keys$keyname_t('ALT', $quake_keys.k_ALT), new $quake_$keys$keyname_t('CTRL', $quake_keys.k_CTRL), new $quake_$keys$keyname_t('SHIFT', $quake_keys.k_SHIFT), new $quake_$keys$keyname_t('F1', $quake_keys.k_F1), new $quake_$keys$keyname_t('F2', $quake_keys.k_F2), new $quake_$keys$keyname_t('F3', $quake_keys.k_F3), new $quake_$keys$keyname_t('F4', $quake_keys.k_F4), new $quake_$keys$keyname_t('F5', $quake_keys.k_F5), new $quake_$keys$keyname_t('F6', $quake_keys.k_F6), new $quake_$keys$keyname_t('F7', $quake_keys.k_F7), new $quake_$keys$keyname_t('F8', $quake_keys.k_F8), new $quake_$keys$keyname_t('F9', $quake_keys.k_F9), new $quake_$keys$keyname_t('F10', $quake_keys.k_F10), new $quake_$keys$keyname_t('F11', $quake_keys.k_F11), new $quake_$keys$keyname_t('F12', $quake_keys.k_F12), new $quake_$keys$keyname_t('INS', $quake_keys.k_INS), new $quake_$keys$keyname_t('DEL', $quake_keys.k_DEL), new $quake_$keys$keyname_t('PGDN', $quake_keys.k_PGDN), new $quake_$keys$keyname_t('PGUP', $quake_keys.k_PGUP), new $quake_$keys$keyname_t('HOME', $quake_keys.k_HOME), new $quake_$keys$keyname_t('END', $quake_keys.k_END), new $quake_$keys$keyname_t('MOUSE1', $quake_keys.k_MOUSE1), new $quake_$keys$keyname_t('MOUSE2', $quake_keys.k_MOUSE2), new $quake_$keys$keyname_t('MOUSE3', $quake_keys.k_MOUSE3), new $quake_$keys$keyname_t('JOY1', $quake_keys.k_JOY1), new $quake_$keys$keyname_t('JOY2', $quake_keys.k_JOY2), new $quake_$keys$keyname_t('JOY3', $quake_keys.k_JOY3), new $quake_$keys$keyname_t('JOY4', $quake_keys.k_JOY4), new $quake_$keys$keyname_t('AUX1', $quake_keys.k_AUX1), new $quake_$keys$keyname_t('AUX2', $quake_keys.k_AUX2), new $quake_$keys$keyname_t('AUX3', $quake_keys.k_AUX3), new $quake_$keys$keyname_t('AUX4', $quake_keys.k_AUX4), new $quake_$keys$keyname_t('AUX5', $quake_keys.k_AUX5), new $quake_$keys$keyname_t('AUX6', $quake_keys.k_AUX6), new $quake_$keys$keyname_t('AUX7', $quake_keys.k_AUX7), new $quake_$keys$keyname_t('AUX8', $quake_keys.k_AUX8), new $quake_$keys$keyname_t('AUX9', $quake_keys.k_AUX9), new $quake_$keys$keyname_t('AUX10', $quake_keys.k_AUX10), new $quake_$keys$keyname_t('AUX11', $quake_keys.k_AUX11), new $quake_$keys$keyname_t('AUX12', $quake_keys.k_AUX12), new $quake_$keys$keyname_t('AUX13', $quake_keys.k_AUX13), new $quake_$keys$keyname_t('AUX14', $quake_keys.k_AUX14), new $quake_$keys$keyname_t('AUX15', $quake_keys.k_AUX15), new $quake_$keys$keyname_t('AUX16', $quake_keys.k_AUX16), new $quake_$keys$keyname_t('AUX17', $quake_keys.k_AUX17), new $quake_$keys$keyname_t('AUX18', $quake_keys.k_AUX18), new $quake_$keys$keyname_t('AUX19', $quake_keys.k_AUX19), new $quake_$keys$keyname_t('AUX20', $quake_keys.k_AUX20), new $quake_$keys$keyname_t('AUX21', $quake_keys.k_AUX21), new $quake_$keys$keyname_t('AUX22', $quake_keys.k_AUX22), new $quake_$keys$keyname_t('AUX23', $quake_keys.k_AUX23), new $quake_$keys$keyname_t('AUX24', $quake_keys.k_AUX24), new $quake_$keys$keyname_t('AUX25', $quake_keys.k_AUX25), new $quake_$keys$keyname_t('AUX26', $quake_keys.k_AUX26), new $quake_$keys$keyname_t('AUX27', $quake_keys.k_AUX27), new $quake_$keys$keyname_t('AUX28', $quake_keys.k_AUX28), new $quake_$keys$keyname_t('AUX29', $quake_keys.k_AUX29), new $quake_$keys$keyname_t('AUX30', $quake_keys.k_AUX30), new $quake_$keys$keyname_t('AUX31', $quake_keys.k_AUX31), new $quake_$keys$keyname_t('AUX32', $quake_keys.k_AUX32), new $quake_$keys$keyname_t('PAUSE', $quake_keys.k_PAUSE), new $quake_$keys$keyname_t('MWHEELUP', $quake_keys.k_MWHEELUP), new $quake_$keys$keyname_t('MWHEELDOWN', $quake_keys.k_MWHEELDOWN), new $quake_$keys$keyname_t('SEMICOLON', 59), new $quake_$keys$keyname_t(null, 0)];
-	$quake_console.$con_linewidth = 0;
-	$quake_console.$con_cursorspeed = 4;
-	$quake_console.$coN_TEXTSIZE = 16384;
-	$quake_console.con_forcedup = false;
-	$quake_console.con_totallines = 0;
-	$quake_console.con_backscroll = 0;
-	$quake_console.$con_current = 0;
-	$quake_console.$con_x = 0;
-	$quake_console.$con_text = null;
-	$quake_console.$con_notifytime = new $quake_cvar_t('con_notifytime', '3');
-	$quake_console.$nuM_CON_TIMES = 4;
-	$quake_console.$con_times = new Array($quake_console.$nuM_CON_TIMES);
-	$quake_console.$con_vislines = 0;
-	$quake_console.$con_debuglog = false;
-	$quake_console.$MAXCMDLINE = 256;
-	$quake_console.con_initialized = false;
-	$quake_console.con_notifylines = 0;
-	$quake_console.$cr = false;
-	$quake_console.$MAXPRINTMSG = 4096;
-	$quake_console.$inupdate = false;
-	$quake_chase.$chase_back = new $quake_cvar_t('chase_back', '100');
-	$quake_chase.$chase_up = new $quake_cvar_t('chase_up', '16');
-	$quake_chase.$chase_right = new $quake_cvar_t('chase_right', '0');
-	$quake_chase.chase_active = new $quake_cvar_t('chase_active', '0');
-	$quake_chase.$chase_dest = new Array(3);
+	$quake_draw.$r_rectdesc = new $quake_$draw$rectdesc_t();
+	$quake_draw.$draw_chars = null;
+	$quake_draw.draw_disc = null;
+	$quake_draw.$draw_backtile = null;
+	$quake_draw.maX_CACHED_PICS = 128;
+	$quake_draw.$menu_cachepics = new Array($quake_draw.maX_CACHED_PICS);
+	$quake_draw.$menu_numcachepics = 0;
+	$quake_draw.$miplevel = 0;
+	$quake_draw.$scale_for_mip = 0;
+	$quake_draw.$screenwidth = 0;
+	$quake_draw.$ubasestep = 0;
+	$quake_draw.$errorterm = 0;
+	$quake_draw.$erroradjustup = 0;
+	$quake_draw.$erroradjustdown = 0;
+	$quake_draw.$transformed_modelorg = new Array(3);
+	$quake_draw.warP_WIDTH = 320;
+	$quake_draw.warP_HEIGHT = 200;
+	$quake_draw.maX_LBM_HEIGHT = 480;
+	$quake_draw.particlE_Z_CLIP = 8;
+	$quake_draw.dR_SOLID = 0;
+	$quake_draw.dR_TRANSPARENT = 1;
+	$quake_draw.transparenT_COLOR = 255;
+	$quake_draw.turB_TEX_SIZE = 64;
+	$quake_draw.CYCLE = 128;
+	$quake_draw.tilE_SIZE = 128;
+	$quake_draw.SKYSHIFT = 7;
+	$quake_draw.SKYSIZE = 128;
+	$quake_draw.SKYMASK = 127;
+	$quake_draw.nuM_MIPS = 4;
+	$quake_draw.$d_subdiv16 = new $quake_cvar_t('d_subdiv16', '1');
+	$quake_draw.$d_mipcap = new $quake_cvar_t('d_mipcap', '0');
+	$quake_draw.$d_mipscale = new $quake_cvar_t('d_mipscale', '1');
+	$quake_draw.$d_roverwrapped = false;
+	$quake_draw.$d_minmip = 0;
+	$quake_draw.$d_scalemip = new Array(3);
+	$quake_draw.$basemip = [1, 0.4, 0.2];
+	$quake_draw.$d_pdrawspans = null;
+	$quake_draw.SCANBUFFERPAD = 4096;
+	$quake_draw.r_SKY_SMASK = 8323072;
+	$quake_draw.r_SKY_TMASK = 8323072;
+	$quake_draw.dS_SPAN_LIST_END = -128;
+	$quake_draw.surfcachE_SIZE_AT_320X200 = 614400;
+	$quake_draw.$d_vrectx = 0;
+	$quake_draw.$d_vrecty = 0;
+	$quake_draw.$d_vrectright_particle = 0;
+	$quake_draw.$d_vrectbottom_particle = 0;
+	$quake_draw.$d_y_aspect_shift = 0;
+	$quake_draw.$d_pix_min = 0;
+	$quake_draw.$d_pix_max = 0;
+	$quake_draw.$d_pix_shift = 0;
+	$quake_draw.$d_scantable = new Array($quake_render.MAXHEIGHT);
+	$quake_draw.$zspantable = new Array($quake_render.MAXHEIGHT);
+	$quake_draw.dpS_MAXSPANS = 1025;
+	$quake_draw.$r_p0 = new Array(6);
+	$quake_draw.$r_p1 = new Array(6);
+	$quake_draw.$r_p2 = new Array(6);
+	$quake_draw.$d_pcolormap = 0;
+	$quake_draw.$d_aflatcolor = 0;
+	$quake_draw.$d_xdenom = 0;
+	$quake_draw.$pedgetable = null;
+	$quake_draw.$edgetables = [new $quake_draw$edgetable(0, 1, $quake_draw.$r_p0, $quake_draw.$r_p2, null, 2, $quake_draw.$r_p0, $quake_draw.$r_p1, $quake_draw.$r_p2), new $quake_draw$edgetable(0, 2, $quake_draw.$r_p1, $quake_draw.$r_p0, $quake_draw.$r_p2, 1, $quake_draw.$r_p1, $quake_draw.$r_p2, null), new $quake_draw$edgetable(1, 1, $quake_draw.$r_p0, $quake_draw.$r_p2, null, 1, $quake_draw.$r_p1, $quake_draw.$r_p2, null), new $quake_draw$edgetable(0, 1, $quake_draw.$r_p1, $quake_draw.$r_p0, null, 2, $quake_draw.$r_p1, $quake_draw.$r_p2, $quake_draw.$r_p0), new $quake_draw$edgetable(0, 2, $quake_draw.$r_p0, $quake_draw.$r_p2, $quake_draw.$r_p1, 1, $quake_draw.$r_p0, $quake_draw.$r_p1, null), new $quake_draw$edgetable(0, 1, $quake_draw.$r_p2, $quake_draw.$r_p1, null, 1, $quake_draw.$r_p2, $quake_draw.$r_p0, null), new $quake_draw$edgetable(0, 1, $quake_draw.$r_p2, $quake_draw.$r_p1, null, 2, $quake_draw.$r_p2, $quake_draw.$r_p0, $quake_draw.$r_p1), new $quake_draw$edgetable(0, 2, $quake_draw.$r_p2, $quake_draw.$r_p1, $quake_draw.$r_p0, 1, $quake_draw.$r_p2, $quake_draw.$r_p0, null), new $quake_draw$edgetable(0, 1, $quake_draw.$r_p1, $quake_draw.$r_p0, null, 1, $quake_draw.$r_p1, $quake_draw.$r_p2, null), new $quake_draw$edgetable(1, 1, $quake_draw.$r_p2, $quake_draw.$r_p1, null, 1, $quake_draw.$r_p0, $quake_draw.$r_p1, null), new $quake_draw$edgetable(1, 1, $quake_draw.$r_p1, $quake_draw.$r_p0, null, 1, $quake_draw.$r_p2, $quake_draw.$r_p0, null), new $quake_draw$edgetable(0, 1, $quake_draw.$r_p0, $quake_draw.$r_p2, null, 1, $quake_draw.$r_p0, $quake_draw.$r_p1, null)];
+	$quake_draw.$a_sstepxfrac = 0;
+	$quake_draw.$a_tstepxfrac = 0;
+	$quake_draw.$r_lstepx = 0;
+	$quake_draw.$a_ststepxwhole = 0;
+	$quake_draw.$r_sstepx = 0;
+	$quake_draw.$r_tstepx = 0;
+	$quake_draw.$r_lstepy = 0;
+	$quake_draw.$r_sstepy = 0;
+	$quake_draw.$r_tstepy = 0;
+	$quake_draw.$r_zistepx = 0;
+	$quake_draw.$r_zistepy = 0;
+	$quake_draw.$d_aspancount = 0;
+	$quake_draw.$d_countextrastep = 0;
+	$quake_draw.$a_spans = null;
+	$quake_draw.$d_edgespanpackage = null;
+	$quake_draw.$d_pedgespanpackage = 0;
+	$quake_draw.$ystart = 0;
+	$quake_draw.$d_pdest = 0;
+	$quake_draw.$d_ptex = 0;
+	$quake_draw.$d_pz = 0;
+	$quake_draw.$d_sfrac = 0;
+	$quake_draw.$d_tfrac = 0;
+	$quake_draw.$d_light = 0;
+	$quake_draw.$d_zi = 0;
+	$quake_draw.$d_ptexextrastep = 0;
+	$quake_draw.$d_sfracextrastep = 0;
+	$quake_draw.$d_tfracextrastep = 0;
+	$quake_draw.$d_lightextrastep = 0;
+	$quake_draw.$d_pdestextrastep = 0;
+	$quake_draw.$d_lightbasestep = 0;
+	$quake_draw.$d_pdestbasestep = 0;
+	$quake_draw.$d_ptexbasestep = 0;
+	$quake_draw.$d_sfracbasestep = 0;
+	$quake_draw.$d_tfracbasestep = 0;
+	$quake_draw.$d_ziextrastep = 0;
+	$quake_draw.$d_zibasestep = 0;
+	$quake_draw.$d_pzextrastep = 0;
+	$quake_draw.$d_pzbasestep = 0;
+	$quake_draw.$adivtab = [new $quake_draw$adivtab_t(1, 0), new $quake_draw$adivtab_t(1, -1), new $quake_draw$adivtab_t(1, -2), new $quake_draw$adivtab_t(1, -3), new $quake_draw$adivtab_t(1, -4), new $quake_draw$adivtab_t(1, -5), new $quake_draw$adivtab_t(1, -6), new $quake_draw$adivtab_t(1, -7), new $quake_draw$adivtab_t(2, -1), new $quake_draw$adivtab_t(2, -3), new $quake_draw$adivtab_t(3, 0), new $quake_draw$adivtab_t(3, -3), new $quake_draw$adivtab_t(5, 0), new $quake_draw$adivtab_t(7, -1), new $quake_draw$adivtab_t(15, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(-15, 0), new $quake_draw$adivtab_t(-8, 1), new $quake_draw$adivtab_t(-5, 0), new $quake_draw$adivtab_t(-4, 1), new $quake_draw$adivtab_t(-3, 0), new $quake_draw$adivtab_t(-3, 3), new $quake_draw$adivtab_t(-3, 6), new $quake_draw$adivtab_t(-2, 1), new $quake_draw$adivtab_t(-2, 3), new $quake_draw$adivtab_t(-2, 5), new $quake_draw$adivtab_t(-2, 7), new $quake_draw$adivtab_t(-2, 9), new $quake_draw$adivtab_t(-2, 11), new $quake_draw$adivtab_t(-2, 13), new $quake_draw$adivtab_t(-1, 0), new $quake_draw$adivtab_t(-1, 1), new $quake_draw$adivtab_t(0, -14), new $quake_draw$adivtab_t(1, 0), new $quake_draw$adivtab_t(1, -1), new $quake_draw$adivtab_t(1, -2), new $quake_draw$adivtab_t(1, -3), new $quake_draw$adivtab_t(1, -4), new $quake_draw$adivtab_t(1, -5), new $quake_draw$adivtab_t(1, -6), new $quake_draw$adivtab_t(2, 0), new $quake_draw$adivtab_t(2, -2), new $quake_draw$adivtab_t(2, -4), new $quake_draw$adivtab_t(3, -2), new $quake_draw$adivtab_t(4, -2), new $quake_draw$adivtab_t(7, 0), new $quake_draw$adivtab_t(14, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(-14, 0), new $quake_draw$adivtab_t(-7, 0), new $quake_draw$adivtab_t(-5, 1), new $quake_draw$adivtab_t(-4, 2), new $quake_draw$adivtab_t(-3, 1), new $quake_draw$adivtab_t(-3, 4), new $quake_draw$adivtab_t(-2, 0), new $quake_draw$adivtab_t(-2, 2), new $quake_draw$adivtab_t(-2, 4), new $quake_draw$adivtab_t(-2, 6), new $quake_draw$adivtab_t(-2, 8), new $quake_draw$adivtab_t(-2, 10), new $quake_draw$adivtab_t(-2, 12), new $quake_draw$adivtab_t(-1, 0), new $quake_draw$adivtab_t(-1, 1), new $quake_draw$adivtab_t(-1, 2), new $quake_draw$adivtab_t(0, -13), new $quake_draw$adivtab_t(0, -13), new $quake_draw$adivtab_t(1, 0), new $quake_draw$adivtab_t(1, -1), new $quake_draw$adivtab_t(1, -2), new $quake_draw$adivtab_t(1, -3), new $quake_draw$adivtab_t(1, -4), new $quake_draw$adivtab_t(1, -5), new $quake_draw$adivtab_t(1, -6), new $quake_draw$adivtab_t(2, -1), new $quake_draw$adivtab_t(2, -3), new $quake_draw$adivtab_t(3, -1), new $quake_draw$adivtab_t(4, -1), new $quake_draw$adivtab_t(6, -1), new $quake_draw$adivtab_t(13, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(-13, 0), new $quake_draw$adivtab_t(-7, 1), new $quake_draw$adivtab_t(-5, 2), new $quake_draw$adivtab_t(-4, 3), new $quake_draw$adivtab_t(-3, 2), new $quake_draw$adivtab_t(-3, 5), new $quake_draw$adivtab_t(-2, 1), new $quake_draw$adivtab_t(-2, 3), new $quake_draw$adivtab_t(-2, 5), new $quake_draw$adivtab_t(-2, 7), new $quake_draw$adivtab_t(-2, 9), new $quake_draw$adivtab_t(-2, 11), new $quake_draw$adivtab_t(-1, 0), new $quake_draw$adivtab_t(-1, 1), new $quake_draw$adivtab_t(-1, 2), new $quake_draw$adivtab_t(-1, 3), new $quake_draw$adivtab_t(0, -12), new $quake_draw$adivtab_t(0, -12), new $quake_draw$adivtab_t(0, -12), new $quake_draw$adivtab_t(1, 0), new $quake_draw$adivtab_t(1, -1), new $quake_draw$adivtab_t(1, -2), new $quake_draw$adivtab_t(1, -3), new $quake_draw$adivtab_t(1, -4), new $quake_draw$adivtab_t(1, -5), new $quake_draw$adivtab_t(2, 0), new $quake_draw$adivtab_t(2, -2), new $quake_draw$adivtab_t(3, 0), new $quake_draw$adivtab_t(4, 0), new $quake_draw$adivtab_t(6, 0), new $quake_draw$adivtab_t(12, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(-12, 0), new $quake_draw$adivtab_t(-6, 0), new $quake_draw$adivtab_t(-4, 0), new $quake_draw$adivtab_t(-3, 0), new $quake_draw$adivtab_t(-3, 3), new $quake_draw$adivtab_t(-2, 0), new $quake_draw$adivtab_t(-2, 2), new $quake_draw$adivtab_t(-2, 4), new $quake_draw$adivtab_t(-2, 6), new $quake_draw$adivtab_t(-2, 8), new $quake_draw$adivtab_t(-2, 10), new $quake_draw$adivtab_t(-1, 0), new $quake_draw$adivtab_t(-1, 1), new $quake_draw$adivtab_t(-1, 2), new $quake_draw$adivtab_t(-1, 3), new $quake_draw$adivtab_t(-1, 4), new $quake_draw$adivtab_t(0, -11), new $quake_draw$adivtab_t(0, -11), new $quake_draw$adivtab_t(0, -11), new $quake_draw$adivtab_t(0, -11), new $quake_draw$adivtab_t(1, 0), new $quake_draw$adivtab_t(1, -1), new $quake_draw$adivtab_t(1, -2), new $quake_draw$adivtab_t(1, -3), new $quake_draw$adivtab_t(1, -4), new $quake_draw$adivtab_t(1, -5), new $quake_draw$adivtab_t(2, -1), new $quake_draw$adivtab_t(2, -3), new $quake_draw$adivtab_t(3, -2), new $quake_draw$adivtab_t(5, -1), new $quake_draw$adivtab_t(11, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(-11, 0), new $quake_draw$adivtab_t(-6, 1), new $quake_draw$adivtab_t(-4, 1), new $quake_draw$adivtab_t(-3, 1), new $quake_draw$adivtab_t(-3, 4), new $quake_draw$adivtab_t(-2, 1), new $quake_draw$adivtab_t(-2, 3), new $quake_draw$adivtab_t(-2, 5), new $quake_draw$adivtab_t(-2, 7), new $quake_draw$adivtab_t(-2, 9), new $quake_draw$adivtab_t(-1, 0), new $quake_draw$adivtab_t(-1, 1), new $quake_draw$adivtab_t(-1, 2), new $quake_draw$adivtab_t(-1, 3), new $quake_draw$adivtab_t(-1, 4), new $quake_draw$adivtab_t(-1, 5), new $quake_draw$adivtab_t(0, -10), new $quake_draw$adivtab_t(0, -10), new $quake_draw$adivtab_t(0, -10), new $quake_draw$adivtab_t(0, -10), new $quake_draw$adivtab_t(0, -10), new $quake_draw$adivtab_t(1, 0), new $quake_draw$adivtab_t(1, -1), new $quake_draw$adivtab_t(1, -2), new $quake_draw$adivtab_t(1, -3), new $quake_draw$adivtab_t(1, -4), new $quake_draw$adivtab_t(2, 0), new $quake_draw$adivtab_t(2, -2), new $quake_draw$adivtab_t(3, -1), new $quake_draw$adivtab_t(5, 0), new $quake_draw$adivtab_t(10, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(-10, 0), new $quake_draw$adivtab_t(-5, 0), new $quake_draw$adivtab_t(-4, 2), new $quake_draw$adivtab_t(-3, 2), new $quake_draw$adivtab_t(-2, 0), new $quake_draw$adivtab_t(-2, 2), new $quake_draw$adivtab_t(-2, 4), new $quake_draw$adivtab_t(-2, 6), new $quake_draw$adivtab_t(-2, 8), new $quake_draw$adivtab_t(-1, 0), new $quake_draw$adivtab_t(-1, 1), new $quake_draw$adivtab_t(-1, 2), new $quake_draw$adivtab_t(-1, 3), new $quake_draw$adivtab_t(-1, 4), new $quake_draw$adivtab_t(-1, 5), new $quake_draw$adivtab_t(-1, 6), new $quake_draw$adivtab_t(0, -9), new $quake_draw$adivtab_t(0, -9), new $quake_draw$adivtab_t(0, -9), new $quake_draw$adivtab_t(0, -9), new $quake_draw$adivtab_t(0, -9), new $quake_draw$adivtab_t(0, -9), new $quake_draw$adivtab_t(1, 0), new $quake_draw$adivtab_t(1, -1), new $quake_draw$adivtab_t(1, -2), new $quake_draw$adivtab_t(1, -3), new $quake_draw$adivtab_t(1, -4), new $quake_draw$adivtab_t(2, -1), new $quake_draw$adivtab_t(3, 0), new $quake_draw$adivtab_t(4, -1), new $quake_draw$adivtab_t(9, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(-9, 0), new $quake_draw$adivtab_t(-5, 1), new $quake_draw$adivtab_t(-3, 0), new $quake_draw$adivtab_t(-3, 3), new $quake_draw$adivtab_t(-2, 1), new $quake_draw$adivtab_t(-2, 3), new $quake_draw$adivtab_t(-2, 5), new $quake_draw$adivtab_t(-2, 7), new $quake_draw$adivtab_t(-1, 0), new $quake_draw$adivtab_t(-1, 1), new $quake_draw$adivtab_t(-1, 2), new $quake_draw$adivtab_t(-1, 3), new $quake_draw$adivtab_t(-1, 4), new $quake_draw$adivtab_t(-1, 5), new $quake_draw$adivtab_t(-1, 6), new $quake_draw$adivtab_t(-1, 7), new $quake_draw$adivtab_t(0, -8), new $quake_draw$adivtab_t(0, -8), new $quake_draw$adivtab_t(0, -8), new $quake_draw$adivtab_t(0, -8), new $quake_draw$adivtab_t(0, -8), new $quake_draw$adivtab_t(0, -8), new $quake_draw$adivtab_t(0, -8), new $quake_draw$adivtab_t(1, 0), new $quake_draw$adivtab_t(1, -1), new $quake_draw$adivtab_t(1, -2), new $quake_draw$adivtab_t(1, -3), new $quake_draw$adivtab_t(2, 0), new $quake_draw$adivtab_t(2, -2), new $quake_draw$adivtab_t(4, 0), new $quake_draw$adivtab_t(8, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(-8, 0), new $quake_draw$adivtab_t(-4, 0), new $quake_draw$adivtab_t(-3, 1), new $quake_draw$adivtab_t(-2, 0), new $quake_draw$adivtab_t(-2, 2), new $quake_draw$adivtab_t(-2, 4), new $quake_draw$adivtab_t(-2, 6), new $quake_draw$adivtab_t(-1, 0), new $quake_draw$adivtab_t(-1, 1), new $quake_draw$adivtab_t(-1, 2), new $quake_draw$adivtab_t(-1, 3), new $quake_draw$adivtab_t(-1, 4), new $quake_draw$adivtab_t(-1, 5), new $quake_draw$adivtab_t(-1, 6), new $quake_draw$adivtab_t(-1, 7), new $quake_draw$adivtab_t(-1, 8), new $quake_draw$adivtab_t(0, -7), new $quake_draw$adivtab_t(0, -7), new $quake_draw$adivtab_t(0, -7), new $quake_draw$adivtab_t(0, -7), new $quake_draw$adivtab_t(0, -7), new $quake_draw$adivtab_t(0, -7), new $quake_draw$adivtab_t(0, -7), new $quake_draw$adivtab_t(0, -7), new $quake_draw$adivtab_t(1, 0), new $quake_draw$adivtab_t(1, -1), new $quake_draw$adivtab_t(1, -2), new $quake_draw$adivtab_t(1, -3), new $quake_draw$adivtab_t(2, -1), new $quake_draw$adivtab_t(3, -1), new $quake_draw$adivtab_t(7, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(-7, 0), new $quake_draw$adivtab_t(-4, 1), new $quake_draw$adivtab_t(-3, 2), new $quake_draw$adivtab_t(-2, 1), new $quake_draw$adivtab_t(-2, 3), new $quake_draw$adivtab_t(-2, 5), new $quake_draw$adivtab_t(-1, 0), new $quake_draw$adivtab_t(-1, 1), new $quake_draw$adivtab_t(-1, 2), new $quake_draw$adivtab_t(-1, 3), new $quake_draw$adivtab_t(-1, 4), new $quake_draw$adivtab_t(-1, 5), new $quake_draw$adivtab_t(-1, 6), new $quake_draw$adivtab_t(-1, 7), new $quake_draw$adivtab_t(-1, 8), new $quake_draw$adivtab_t(-1, 9), new $quake_draw$adivtab_t(0, -6), new $quake_draw$adivtab_t(0, -6), new $quake_draw$adivtab_t(0, -6), new $quake_draw$adivtab_t(0, -6), new $quake_draw$adivtab_t(0, -6), new $quake_draw$adivtab_t(0, -6), new $quake_draw$adivtab_t(0, -6), new $quake_draw$adivtab_t(0, -6), new $quake_draw$adivtab_t(0, -6), new $quake_draw$adivtab_t(1, 0), new $quake_draw$adivtab_t(1, -1), new $quake_draw$adivtab_t(1, -2), new $quake_draw$adivtab_t(2, 0), new $quake_draw$adivtab_t(3, 0), new $quake_draw$adivtab_t(6, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(-6, 0), new $quake_draw$adivtab_t(-3, 0), new $quake_draw$adivtab_t(-2, 0), new $quake_draw$adivtab_t(-2, 2), new $quake_draw$adivtab_t(-2, 4), new $quake_draw$adivtab_t(-1, 0), new $quake_draw$adivtab_t(-1, 1), new $quake_draw$adivtab_t(-1, 2), new $quake_draw$adivtab_t(-1, 3), new $quake_draw$adivtab_t(-1, 4), new $quake_draw$adivtab_t(-1, 5), new $quake_draw$adivtab_t(-1, 6), new $quake_draw$adivtab_t(-1, 7), new $quake_draw$adivtab_t(-1, 8), new $quake_draw$adivtab_t(-1, 9), new $quake_draw$adivtab_t(-1, 10), new $quake_draw$adivtab_t(0, -5), new $quake_draw$adivtab_t(0, -5), new $quake_draw$adivtab_t(0, -5), new $quake_draw$adivtab_t(0, -5), new $quake_draw$adivtab_t(0, -5), new $quake_draw$adivtab_t(0, -5), new $quake_draw$adivtab_t(0, -5), new $quake_draw$adivtab_t(0, -5), new $quake_draw$adivtab_t(0, -5), new $quake_draw$adivtab_t(0, -5), new $quake_draw$adivtab_t(1, 0), new $quake_draw$adivtab_t(1, -1), new $quake_draw$adivtab_t(1, -2), new $quake_draw$adivtab_t(2, -1), new $quake_draw$adivtab_t(5, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(-5, 0), new $quake_draw$adivtab_t(-3, 1), new $quake_draw$adivtab_t(-2, 1), new $quake_draw$adivtab_t(-2, 3), new $quake_draw$adivtab_t(-1, 0), new $quake_draw$adivtab_t(-1, 1), new $quake_draw$adivtab_t(-1, 2), new $quake_draw$adivtab_t(-1, 3), new $quake_draw$adivtab_t(-1, 4), new $quake_draw$adivtab_t(-1, 5), new $quake_draw$adivtab_t(-1, 6), new $quake_draw$adivtab_t(-1, 7), new $quake_draw$adivtab_t(-1, 8), new $quake_draw$adivtab_t(-1, 9), new $quake_draw$adivtab_t(-1, 10), new $quake_draw$adivtab_t(-1, 11), new $quake_draw$adivtab_t(0, -4), new $quake_draw$adivtab_t(0, -4), new $quake_draw$adivtab_t(0, -4), new $quake_draw$adivtab_t(0, -4), new $quake_draw$adivtab_t(0, -4), new $quake_draw$adivtab_t(0, -4), new $quake_draw$adivtab_t(0, -4), new $quake_draw$adivtab_t(0, -4), new $quake_draw$adivtab_t(0, -4), new $quake_draw$adivtab_t(0, -4), new $quake_draw$adivtab_t(0, -4), new $quake_draw$adivtab_t(1, 0), new $quake_draw$adivtab_t(1, -1), new $quake_draw$adivtab_t(2, 0), new $quake_draw$adivtab_t(4, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(-4, 0), new $quake_draw$adivtab_t(-2, 0), new $quake_draw$adivtab_t(-2, 2), new $quake_draw$adivtab_t(-1, 0), new $quake_draw$adivtab_t(-1, 1), new $quake_draw$adivtab_t(-1, 2), new $quake_draw$adivtab_t(-1, 3), new $quake_draw$adivtab_t(-1, 4), new $quake_draw$adivtab_t(-1, 5), new $quake_draw$adivtab_t(-1, 6), new $quake_draw$adivtab_t(-1, 7), new $quake_draw$adivtab_t(-1, 8), new $quake_draw$adivtab_t(-1, 9), new $quake_draw$adivtab_t(-1, 10), new $quake_draw$adivtab_t(-1, 11), new $quake_draw$adivtab_t(-1, 12), new $quake_draw$adivtab_t(0, -3), new $quake_draw$adivtab_t(0, -3), new $quake_draw$adivtab_t(0, -3), new $quake_draw$adivtab_t(0, -3), new $quake_draw$adivtab_t(0, -3), new $quake_draw$adivtab_t(0, -3), new $quake_draw$adivtab_t(0, -3), new $quake_draw$adivtab_t(0, -3), new $quake_draw$adivtab_t(0, -3), new $quake_draw$adivtab_t(0, -3), new $quake_draw$adivtab_t(0, -3), new $quake_draw$adivtab_t(0, -3), new $quake_draw$adivtab_t(1, 0), new $quake_draw$adivtab_t(1, -1), new $quake_draw$adivtab_t(3, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(-3, 0), new $quake_draw$adivtab_t(-2, 1), new $quake_draw$adivtab_t(-1, 0), new $quake_draw$adivtab_t(-1, 1), new $quake_draw$adivtab_t(-1, 2), new $quake_draw$adivtab_t(-1, 3), new $quake_draw$adivtab_t(-1, 4), new $quake_draw$adivtab_t(-1, 5), new $quake_draw$adivtab_t(-1, 6), new $quake_draw$adivtab_t(-1, 7), new $quake_draw$adivtab_t(-1, 8), new $quake_draw$adivtab_t(-1, 9), new $quake_draw$adivtab_t(-1, 10), new $quake_draw$adivtab_t(-1, 11), new $quake_draw$adivtab_t(-1, 12), new $quake_draw$adivtab_t(-1, 13), new $quake_draw$adivtab_t(0, -2), new $quake_draw$adivtab_t(0, -2), new $quake_draw$adivtab_t(0, -2), new $quake_draw$adivtab_t(0, -2), new $quake_draw$adivtab_t(0, -2), new $quake_draw$adivtab_t(0, -2), new $quake_draw$adivtab_t(0, -2), new $quake_draw$adivtab_t(0, -2), new $quake_draw$adivtab_t(0, -2), new $quake_draw$adivtab_t(0, -2), new $quake_draw$adivtab_t(0, -2), new $quake_draw$adivtab_t(0, -2), new $quake_draw$adivtab_t(0, -2), new $quake_draw$adivtab_t(1, 0), new $quake_draw$adivtab_t(2, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(-2, 0), new $quake_draw$adivtab_t(-1, 0), new $quake_draw$adivtab_t(-1, 1), new $quake_draw$adivtab_t(-1, 2), new $quake_draw$adivtab_t(-1, 3), new $quake_draw$adivtab_t(-1, 4), new $quake_draw$adivtab_t(-1, 5), new $quake_draw$adivtab_t(-1, 6), new $quake_draw$adivtab_t(-1, 7), new $quake_draw$adivtab_t(-1, 8), new $quake_draw$adivtab_t(-1, 9), new $quake_draw$adivtab_t(-1, 10), new $quake_draw$adivtab_t(-1, 11), new $quake_draw$adivtab_t(-1, 12), new $quake_draw$adivtab_t(-1, 13), new $quake_draw$adivtab_t(-1, 14), new $quake_draw$adivtab_t(0, -1), new $quake_draw$adivtab_t(0, -1), new $quake_draw$adivtab_t(0, -1), new $quake_draw$adivtab_t(0, -1), new $quake_draw$adivtab_t(0, -1), new $quake_draw$adivtab_t(0, -1), new $quake_draw$adivtab_t(0, -1), new $quake_draw$adivtab_t(0, -1), new $quake_draw$adivtab_t(0, -1), new $quake_draw$adivtab_t(0, -1), new $quake_draw$adivtab_t(0, -1), new $quake_draw$adivtab_t(0, -1), new $quake_draw$adivtab_t(0, -1), new $quake_draw$adivtab_t(0, -1), new $quake_draw$adivtab_t(1, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(-1, 0), new $quake_draw$adivtab_t(-1, 1), new $quake_draw$adivtab_t(-1, 2), new $quake_draw$adivtab_t(-1, 3), new $quake_draw$adivtab_t(-1, 4), new $quake_draw$adivtab_t(-1, 5), new $quake_draw$adivtab_t(-1, 6), new $quake_draw$adivtab_t(-1, 7), new $quake_draw$adivtab_t(-1, 8), new $quake_draw$adivtab_t(-1, 9), new $quake_draw$adivtab_t(-1, 10), new $quake_draw$adivtab_t(-1, 11), new $quake_draw$adivtab_t(-1, 12), new $quake_draw$adivtab_t(-1, 13), new $quake_draw$adivtab_t(-1, 14), new $quake_draw$adivtab_t(-1, 15), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(-1, -14), new $quake_draw$adivtab_t(-1, -13), new $quake_draw$adivtab_t(-1, -12), new $quake_draw$adivtab_t(-1, -11), new $quake_draw$adivtab_t(-1, -10), new $quake_draw$adivtab_t(-1, -9), new $quake_draw$adivtab_t(-1, -8), new $quake_draw$adivtab_t(-1, -7), new $quake_draw$adivtab_t(-1, -6), new $quake_draw$adivtab_t(-1, -5), new $quake_draw$adivtab_t(-1, -4), new $quake_draw$adivtab_t(-1, -3), new $quake_draw$adivtab_t(-1, -2), new $quake_draw$adivtab_t(-1, -1), new $quake_draw$adivtab_t(-1, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(1, 0), new $quake_draw$adivtab_t(0, 1), new $quake_draw$adivtab_t(0, 1), new $quake_draw$adivtab_t(0, 1), new $quake_draw$adivtab_t(0, 1), new $quake_draw$adivtab_t(0, 1), new $quake_draw$adivtab_t(0, 1), new $quake_draw$adivtab_t(0, 1), new $quake_draw$adivtab_t(0, 1), new $quake_draw$adivtab_t(0, 1), new $quake_draw$adivtab_t(0, 1), new $quake_draw$adivtab_t(0, 1), new $quake_draw$adivtab_t(0, 1), new $quake_draw$adivtab_t(0, 1), new $quake_draw$adivtab_t(0, 1), new $quake_draw$adivtab_t(0, 1), new $quake_draw$adivtab_t(-1, -13), new $quake_draw$adivtab_t(-1, -12), new $quake_draw$adivtab_t(-1, -11), new $quake_draw$adivtab_t(-1, -10), new $quake_draw$adivtab_t(-1, -9), new $quake_draw$adivtab_t(-1, -8), new $quake_draw$adivtab_t(-1, -7), new $quake_draw$adivtab_t(-1, -6), new $quake_draw$adivtab_t(-1, -5), new $quake_draw$adivtab_t(-1, -4), new $quake_draw$adivtab_t(-1, -3), new $quake_draw$adivtab_t(-1, -2), new $quake_draw$adivtab_t(-1, -1), new $quake_draw$adivtab_t(-1, 0), new $quake_draw$adivtab_t(-2, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(2, 0), new $quake_draw$adivtab_t(1, 0), new $quake_draw$adivtab_t(0, 2), new $quake_draw$adivtab_t(0, 2), new $quake_draw$adivtab_t(0, 2), new $quake_draw$adivtab_t(0, 2), new $quake_draw$adivtab_t(0, 2), new $quake_draw$adivtab_t(0, 2), new $quake_draw$adivtab_t(0, 2), new $quake_draw$adivtab_t(0, 2), new $quake_draw$adivtab_t(0, 2), new $quake_draw$adivtab_t(0, 2), new $quake_draw$adivtab_t(0, 2), new $quake_draw$adivtab_t(0, 2), new $quake_draw$adivtab_t(0, 2), new $quake_draw$adivtab_t(0, 2), new $quake_draw$adivtab_t(-1, -12), new $quake_draw$adivtab_t(-1, -11), new $quake_draw$adivtab_t(-1, -10), new $quake_draw$adivtab_t(-1, -9), new $quake_draw$adivtab_t(-1, -8), new $quake_draw$adivtab_t(-1, -7), new $quake_draw$adivtab_t(-1, -6), new $quake_draw$adivtab_t(-1, -5), new $quake_draw$adivtab_t(-1, -4), new $quake_draw$adivtab_t(-1, -3), new $quake_draw$adivtab_t(-1, -2), new $quake_draw$adivtab_t(-1, -1), new $quake_draw$adivtab_t(-1, 0), new $quake_draw$adivtab_t(-2, -1), new $quake_draw$adivtab_t(-3, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(3, 0), new $quake_draw$adivtab_t(1, 1), new $quake_draw$adivtab_t(1, 0), new $quake_draw$adivtab_t(0, 3), new $quake_draw$adivtab_t(0, 3), new $quake_draw$adivtab_t(0, 3), new $quake_draw$adivtab_t(0, 3), new $quake_draw$adivtab_t(0, 3), new $quake_draw$adivtab_t(0, 3), new $quake_draw$adivtab_t(0, 3), new $quake_draw$adivtab_t(0, 3), new $quake_draw$adivtab_t(0, 3), new $quake_draw$adivtab_t(0, 3), new $quake_draw$adivtab_t(0, 3), new $quake_draw$adivtab_t(0, 3), new $quake_draw$adivtab_t(0, 3), new $quake_draw$adivtab_t(-1, -11), new $quake_draw$adivtab_t(-1, -10), new $quake_draw$adivtab_t(-1, -9), new $quake_draw$adivtab_t(-1, -8), new $quake_draw$adivtab_t(-1, -7), new $quake_draw$adivtab_t(-1, -6), new $quake_draw$adivtab_t(-1, -5), new $quake_draw$adivtab_t(-1, -4), new $quake_draw$adivtab_t(-1, -3), new $quake_draw$adivtab_t(-1, -2), new $quake_draw$adivtab_t(-1, -1), new $quake_draw$adivtab_t(-1, 0), new $quake_draw$adivtab_t(-2, -2), new $quake_draw$adivtab_t(-2, 0), new $quake_draw$adivtab_t(-4, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(4, 0), new $quake_draw$adivtab_t(2, 0), new $quake_draw$adivtab_t(1, 1), new $quake_draw$adivtab_t(1, 0), new $quake_draw$adivtab_t(0, 4), new $quake_draw$adivtab_t(0, 4), new $quake_draw$adivtab_t(0, 4), new $quake_draw$adivtab_t(0, 4), new $quake_draw$adivtab_t(0, 4), new $quake_draw$adivtab_t(0, 4), new $quake_draw$adivtab_t(0, 4), new $quake_draw$adivtab_t(0, 4), new $quake_draw$adivtab_t(0, 4), new $quake_draw$adivtab_t(0, 4), new $quake_draw$adivtab_t(0, 4), new $quake_draw$adivtab_t(0, 4), new $quake_draw$adivtab_t(-1, -10), new $quake_draw$adivtab_t(-1, -9), new $quake_draw$adivtab_t(-1, -8), new $quake_draw$adivtab_t(-1, -7), new $quake_draw$adivtab_t(-1, -6), new $quake_draw$adivtab_t(-1, -5), new $quake_draw$adivtab_t(-1, -4), new $quake_draw$adivtab_t(-1, -3), new $quake_draw$adivtab_t(-1, -2), new $quake_draw$adivtab_t(-1, -1), new $quake_draw$adivtab_t(-1, 0), new $quake_draw$adivtab_t(-2, -3), new $quake_draw$adivtab_t(-2, -1), new $quake_draw$adivtab_t(-3, -1), new $quake_draw$adivtab_t(-5, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(5, 0), new $quake_draw$adivtab_t(2, 1), new $quake_draw$adivtab_t(1, 2), new $quake_draw$adivtab_t(1, 1), new $quake_draw$adivtab_t(1, 0), new $quake_draw$adivtab_t(0, 5), new $quake_draw$adivtab_t(0, 5), new $quake_draw$adivtab_t(0, 5), new $quake_draw$adivtab_t(0, 5), new $quake_draw$adivtab_t(0, 5), new $quake_draw$adivtab_t(0, 5), new $quake_draw$adivtab_t(0, 5), new $quake_draw$adivtab_t(0, 5), new $quake_draw$adivtab_t(0, 5), new $quake_draw$adivtab_t(0, 5), new $quake_draw$adivtab_t(0, 5), new $quake_draw$adivtab_t(-1, -9), new $quake_draw$adivtab_t(-1, -8), new $quake_draw$adivtab_t(-1, -7), new $quake_draw$adivtab_t(-1, -6), new $quake_draw$adivtab_t(-1, -5), new $quake_draw$adivtab_t(-1, -4), new $quake_draw$adivtab_t(-1, -3), new $quake_draw$adivtab_t(-1, -2), new $quake_draw$adivtab_t(-1, -1), new $quake_draw$adivtab_t(-1, 0), new $quake_draw$adivtab_t(-2, -4), new $quake_draw$adivtab_t(-2, -2), new $quake_draw$adivtab_t(-2, 0), new $quake_draw$adivtab_t(-3, 0), new $quake_draw$adivtab_t(-6, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(6, 0), new $quake_draw$adivtab_t(3, 0), new $quake_draw$adivtab_t(2, 0), new $quake_draw$adivtab_t(1, 2), new $quake_draw$adivtab_t(1, 1), new $quake_draw$adivtab_t(1, 0), new $quake_draw$adivtab_t(0, 6), new $quake_draw$adivtab_t(0, 6), new $quake_draw$adivtab_t(0, 6), new $quake_draw$adivtab_t(0, 6), new $quake_draw$adivtab_t(0, 6), new $quake_draw$adivtab_t(0, 6), new $quake_draw$adivtab_t(0, 6), new $quake_draw$adivtab_t(0, 6), new $quake_draw$adivtab_t(0, 6), new $quake_draw$adivtab_t(0, 6), new $quake_draw$adivtab_t(-1, -8), new $quake_draw$adivtab_t(-1, -7), new $quake_draw$adivtab_t(-1, -6), new $quake_draw$adivtab_t(-1, -5), new $quake_draw$adivtab_t(-1, -4), new $quake_draw$adivtab_t(-1, -3), new $quake_draw$adivtab_t(-1, -2), new $quake_draw$adivtab_t(-1, -1), new $quake_draw$adivtab_t(-1, 0), new $quake_draw$adivtab_t(-2, -5), new $quake_draw$adivtab_t(-2, -3), new $quake_draw$adivtab_t(-2, -1), new $quake_draw$adivtab_t(-3, -2), new $quake_draw$adivtab_t(-4, -1), new $quake_draw$adivtab_t(-7, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(7, 0), new $quake_draw$adivtab_t(3, 1), new $quake_draw$adivtab_t(2, 1), new $quake_draw$adivtab_t(1, 3), new $quake_draw$adivtab_t(1, 2), new $quake_draw$adivtab_t(1, 1), new $quake_draw$adivtab_t(1, 0), new $quake_draw$adivtab_t(0, 7), new $quake_draw$adivtab_t(0, 7), new $quake_draw$adivtab_t(0, 7), new $quake_draw$adivtab_t(0, 7), new $quake_draw$adivtab_t(0, 7), new $quake_draw$adivtab_t(0, 7), new $quake_draw$adivtab_t(0, 7), new $quake_draw$adivtab_t(0, 7), new $quake_draw$adivtab_t(0, 7), new $quake_draw$adivtab_t(-1, -7), new $quake_draw$adivtab_t(-1, -6), new $quake_draw$adivtab_t(-1, -5), new $quake_draw$adivtab_t(-1, -4), new $quake_draw$adivtab_t(-1, -3), new $quake_draw$adivtab_t(-1, -2), new $quake_draw$adivtab_t(-1, -1), new $quake_draw$adivtab_t(-1, 0), new $quake_draw$adivtab_t(-2, -6), new $quake_draw$adivtab_t(-2, -4), new $quake_draw$adivtab_t(-2, -2), new $quake_draw$adivtab_t(-2, 0), new $quake_draw$adivtab_t(-3, -1), new $quake_draw$adivtab_t(-4, 0), new $quake_draw$adivtab_t(-8, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(8, 0), new $quake_draw$adivtab_t(4, 0), new $quake_draw$adivtab_t(2, 2), new $quake_draw$adivtab_t(2, 0), new $quake_draw$adivtab_t(1, 3), new $quake_draw$adivtab_t(1, 2), new $quake_draw$adivtab_t(1, 1), new $quake_draw$adivtab_t(1, 0), new $quake_draw$adivtab_t(0, 8), new $quake_draw$adivtab_t(0, 8), new $quake_draw$adivtab_t(0, 8), new $quake_draw$adivtab_t(0, 8), new $quake_draw$adivtab_t(0, 8), new $quake_draw$adivtab_t(0, 8), new $quake_draw$adivtab_t(0, 8), new $quake_draw$adivtab_t(0, 8), new $quake_draw$adivtab_t(-1, -6), new $quake_draw$adivtab_t(-1, -5), new $quake_draw$adivtab_t(-1, -4), new $quake_draw$adivtab_t(-1, -3), new $quake_draw$adivtab_t(-1, -2), new $quake_draw$adivtab_t(-1, -1), new $quake_draw$adivtab_t(-1, 0), new $quake_draw$adivtab_t(-2, -7), new $quake_draw$adivtab_t(-2, -5), new $quake_draw$adivtab_t(-2, -3), new $quake_draw$adivtab_t(-2, -1), new $quake_draw$adivtab_t(-3, -3), new $quake_draw$adivtab_t(-3, 0), new $quake_draw$adivtab_t(-5, -1), new $quake_draw$adivtab_t(-9, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(9, 0), new $quake_draw$adivtab_t(4, 1), new $quake_draw$adivtab_t(3, 0), new $quake_draw$adivtab_t(2, 1), new $quake_draw$adivtab_t(1, 4), new $quake_draw$adivtab_t(1, 3), new $quake_draw$adivtab_t(1, 2), new $quake_draw$adivtab_t(1, 1), new $quake_draw$adivtab_t(1, 0), new $quake_draw$adivtab_t(0, 9), new $quake_draw$adivtab_t(0, 9), new $quake_draw$adivtab_t(0, 9), new $quake_draw$adivtab_t(0, 9), new $quake_draw$adivtab_t(0, 9), new $quake_draw$adivtab_t(0, 9), new $quake_draw$adivtab_t(0, 9), new $quake_draw$adivtab_t(-1, -5), new $quake_draw$adivtab_t(-1, -4), new $quake_draw$adivtab_t(-1, -3), new $quake_draw$adivtab_t(-1, -2), new $quake_draw$adivtab_t(-1, -1), new $quake_draw$adivtab_t(-1, 0), new $quake_draw$adivtab_t(-2, -8), new $quake_draw$adivtab_t(-2, -6), new $quake_draw$adivtab_t(-2, -4), new $quake_draw$adivtab_t(-2, -2), new $quake_draw$adivtab_t(-2, 0), new $quake_draw$adivtab_t(-3, -2), new $quake_draw$adivtab_t(-4, -2), new $quake_draw$adivtab_t(-5, 0), new $quake_draw$adivtab_t(-10, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(10, 0), new $quake_draw$adivtab_t(5, 0), new $quake_draw$adivtab_t(3, 1), new $quake_draw$adivtab_t(2, 2), new $quake_draw$adivtab_t(2, 0), new $quake_draw$adivtab_t(1, 4), new $quake_draw$adivtab_t(1, 3), new $quake_draw$adivtab_t(1, 2), new $quake_draw$adivtab_t(1, 1), new $quake_draw$adivtab_t(1, 0), new $quake_draw$adivtab_t(0, 10), new $quake_draw$adivtab_t(0, 10), new $quake_draw$adivtab_t(0, 10), new $quake_draw$adivtab_t(0, 10), new $quake_draw$adivtab_t(0, 10), new $quake_draw$adivtab_t(0, 10), new $quake_draw$adivtab_t(-1, -4), new $quake_draw$adivtab_t(-1, -3), new $quake_draw$adivtab_t(-1, -2), new $quake_draw$adivtab_t(-1, -1), new $quake_draw$adivtab_t(-1, 0), new $quake_draw$adivtab_t(-2, -9), new $quake_draw$adivtab_t(-2, -7), new $quake_draw$adivtab_t(-2, -5), new $quake_draw$adivtab_t(-2, -3), new $quake_draw$adivtab_t(-2, -1), new $quake_draw$adivtab_t(-3, -4), new $quake_draw$adivtab_t(-3, -1), new $quake_draw$adivtab_t(-4, -1), new $quake_draw$adivtab_t(-6, -1), new $quake_draw$adivtab_t(-11, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(11, 0), new $quake_draw$adivtab_t(5, 1), new $quake_draw$adivtab_t(3, 2), new $quake_draw$adivtab_t(2, 3), new $quake_draw$adivtab_t(2, 1), new $quake_draw$adivtab_t(1, 5), new $quake_draw$adivtab_t(1, 4), new $quake_draw$adivtab_t(1, 3), new $quake_draw$adivtab_t(1, 2), new $quake_draw$adivtab_t(1, 1), new $quake_draw$adivtab_t(1, 0), new $quake_draw$adivtab_t(0, 11), new $quake_draw$adivtab_t(0, 11), new $quake_draw$adivtab_t(0, 11), new $quake_draw$adivtab_t(0, 11), new $quake_draw$adivtab_t(0, 11), new $quake_draw$adivtab_t(-1, -3), new $quake_draw$adivtab_t(-1, -2), new $quake_draw$adivtab_t(-1, -1), new $quake_draw$adivtab_t(-1, 0), new $quake_draw$adivtab_t(-2, -10), new $quake_draw$adivtab_t(-2, -8), new $quake_draw$adivtab_t(-2, -6), new $quake_draw$adivtab_t(-2, -4), new $quake_draw$adivtab_t(-2, -2), new $quake_draw$adivtab_t(-2, 0), new $quake_draw$adivtab_t(-3, -3), new $quake_draw$adivtab_t(-3, 0), new $quake_draw$adivtab_t(-4, 0), new $quake_draw$adivtab_t(-6, 0), new $quake_draw$adivtab_t(-12, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(12, 0), new $quake_draw$adivtab_t(6, 0), new $quake_draw$adivtab_t(4, 0), new $quake_draw$adivtab_t(3, 0), new $quake_draw$adivtab_t(2, 2), new $quake_draw$adivtab_t(2, 0), new $quake_draw$adivtab_t(1, 5), new $quake_draw$adivtab_t(1, 4), new $quake_draw$adivtab_t(1, 3), new $quake_draw$adivtab_t(1, 2), new $quake_draw$adivtab_t(1, 1), new $quake_draw$adivtab_t(1, 0), new $quake_draw$adivtab_t(0, 12), new $quake_draw$adivtab_t(0, 12), new $quake_draw$adivtab_t(0, 12), new $quake_draw$adivtab_t(0, 12), new $quake_draw$adivtab_t(-1, -2), new $quake_draw$adivtab_t(-1, -1), new $quake_draw$adivtab_t(-1, 0), new $quake_draw$adivtab_t(-2, -11), new $quake_draw$adivtab_t(-2, -9), new $quake_draw$adivtab_t(-2, -7), new $quake_draw$adivtab_t(-2, -5), new $quake_draw$adivtab_t(-2, -3), new $quake_draw$adivtab_t(-2, -1), new $quake_draw$adivtab_t(-3, -5), new $quake_draw$adivtab_t(-3, -2), new $quake_draw$adivtab_t(-4, -3), new $quake_draw$adivtab_t(-5, -2), new $quake_draw$adivtab_t(-7, -1), new $quake_draw$adivtab_t(-13, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(13, 0), new $quake_draw$adivtab_t(6, 1), new $quake_draw$adivtab_t(4, 1), new $quake_draw$adivtab_t(3, 1), new $quake_draw$adivtab_t(2, 3), new $quake_draw$adivtab_t(2, 1), new $quake_draw$adivtab_t(1, 6), new $quake_draw$adivtab_t(1, 5), new $quake_draw$adivtab_t(1, 4), new $quake_draw$adivtab_t(1, 3), new $quake_draw$adivtab_t(1, 2), new $quake_draw$adivtab_t(1, 1), new $quake_draw$adivtab_t(1, 0), new $quake_draw$adivtab_t(0, 13), new $quake_draw$adivtab_t(0, 13), new $quake_draw$adivtab_t(0, 13), new $quake_draw$adivtab_t(-1, -1), new $quake_draw$adivtab_t(-1, 0), new $quake_draw$adivtab_t(-2, -12), new $quake_draw$adivtab_t(-2, -10), new $quake_draw$adivtab_t(-2, -8), new $quake_draw$adivtab_t(-2, -6), new $quake_draw$adivtab_t(-2, -4), new $quake_draw$adivtab_t(-2, -2), new $quake_draw$adivtab_t(-2, 0), new $quake_draw$adivtab_t(-3, -4), new $quake_draw$adivtab_t(-3, -1), new $quake_draw$adivtab_t(-4, -2), new $quake_draw$adivtab_t(-5, -1), new $quake_draw$adivtab_t(-7, 0), new $quake_draw$adivtab_t(-14, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(14, 0), new $quake_draw$adivtab_t(7, 0), new $quake_draw$adivtab_t(4, 2), new $quake_draw$adivtab_t(3, 2), new $quake_draw$adivtab_t(2, 4), new $quake_draw$adivtab_t(2, 2), new $quake_draw$adivtab_t(2, 0), new $quake_draw$adivtab_t(1, 6), new $quake_draw$adivtab_t(1, 5), new $quake_draw$adivtab_t(1, 4), new $quake_draw$adivtab_t(1, 3), new $quake_draw$adivtab_t(1, 2), new $quake_draw$adivtab_t(1, 1), new $quake_draw$adivtab_t(1, 0), new $quake_draw$adivtab_t(0, 14), new $quake_draw$adivtab_t(0, 14), new $quake_draw$adivtab_t(-1, 0), new $quake_draw$adivtab_t(-2, -13), new $quake_draw$adivtab_t(-2, -11), new $quake_draw$adivtab_t(-2, -9), new $quake_draw$adivtab_t(-2, -7), new $quake_draw$adivtab_t(-2, -5), new $quake_draw$adivtab_t(-2, -3), new $quake_draw$adivtab_t(-2, -1), new $quake_draw$adivtab_t(-3, -6), new $quake_draw$adivtab_t(-3, -3), new $quake_draw$adivtab_t(-3, 0), new $quake_draw$adivtab_t(-4, -1), new $quake_draw$adivtab_t(-5, 0), new $quake_draw$adivtab_t(-8, -1), new $quake_draw$adivtab_t(-15, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(15, 0), new $quake_draw$adivtab_t(7, 1), new $quake_draw$adivtab_t(5, 0), new $quake_draw$adivtab_t(3, 3), new $quake_draw$adivtab_t(3, 0), new $quake_draw$adivtab_t(2, 3), new $quake_draw$adivtab_t(2, 1), new $quake_draw$adivtab_t(1, 7), new $quake_draw$adivtab_t(1, 6), new $quake_draw$adivtab_t(1, 5), new $quake_draw$adivtab_t(1, 4), new $quake_draw$adivtab_t(1, 3), new $quake_draw$adivtab_t(1, 2), new $quake_draw$adivtab_t(1, 1), new $quake_draw$adivtab_t(1, 0), new $quake_draw$adivtab_t(0, 15), new $quake_draw$adivtab_t(-2, -14), new $quake_draw$adivtab_t(-2, -12), new $quake_draw$adivtab_t(-2, -10), new $quake_draw$adivtab_t(-2, -8), new $quake_draw$adivtab_t(-2, -6), new $quake_draw$adivtab_t(-2, -4), new $quake_draw$adivtab_t(-2, -2), new $quake_draw$adivtab_t(-2, 0), new $quake_draw$adivtab_t(-3, -5), new $quake_draw$adivtab_t(-3, -2), new $quake_draw$adivtab_t(-4, -4), new $quake_draw$adivtab_t(-4, 0), new $quake_draw$adivtab_t(-6, -2), new $quake_draw$adivtab_t(-8, 0), new $quake_draw$adivtab_t(-16, 0), new $quake_draw$adivtab_t(0, 0), new $quake_draw$adivtab_t(16, 0), new $quake_draw$adivtab_t(8, 0), new $quake_draw$adivtab_t(5, 1), new $quake_draw$adivtab_t(4, 0), new $quake_draw$adivtab_t(3, 1), new $quake_draw$adivtab_t(2, 4), new $quake_draw$adivtab_t(2, 2), new $quake_draw$adivtab_t(2, 0), new $quake_draw$adivtab_t(1, 7), new $quake_draw$adivtab_t(1, 6), new $quake_draw$adivtab_t(1, 5), new $quake_draw$adivtab_t(1, 4), new $quake_draw$adivtab_t(1, 3), new $quake_draw$adivtab_t(1, 2), new $quake_draw$adivtab_t(1, 1), new $quake_draw$adivtab_t(1, 0)];
+	$quake_draw.$skintable = new Array($quake_draw.maX_LBM_HEIGHT);
+	$quake_draw.$skinwidth = 0;
+	$quake_draw.$skinstart = null;
+	$quake_draw.$spans = null;
+	$quake_draw.$r_turb_pbase = 0;
+	$quake_draw.$r_turb_pdest = 0;
+	$quake_draw.$r_turb_s = 0;
+	$quake_draw.$r_turb_t = 0;
+	$quake_draw.$r_turb_sstep = 0;
+	$quake_draw.$r_turb_tstep = 0;
+	$quake_draw.$r_turb_turb = 0;
+	$quake_draw.$r_turb_spancount = 0;
+	$quake_draw.skY_SPAN_SHIFT = 5;
+	$quake_draw.skY_SPAN_MAX = 32;
+	$quake_draw.$sprite_height = 0;
+	$quake_draw.$minindex = 0;
+	$quake_draw.$maxindex = 0;
+	$quake_draw.$sprite_spans = null;
+	$quake_draw.$surfscale = 0;
+	$quake_draw.$r_cache_thrash = false;
+	$quake_draw.$sc_size = 0;
+	$quake_draw.GUARDSIZE = 4;
+	$quake_draw.$d_sdivzstepu = 0;
+	$quake_draw.$d_tdivzstepu = 0;
+	$quake_draw.$d_zistepu = 0;
+	$quake_draw.$d_sdivzstepv = 0;
+	$quake_draw.$d_tdivzstepv = 0;
+	$quake_draw.$d_zistepv = 0;
+	$quake_draw.$d_sdivzorigin = 0;
+	$quake_draw.$d_tdivzorigin = 0;
+	$quake_draw.$d_ziorigin = 0;
+	$quake_draw.$sadjust = 0;
+	$quake_draw.$tadjust = 0;
+	$quake_draw.$bbextents = 0;
+	$quake_draw.$bbextentt = 0;
+	$quake_draw.$cacheblock = null;
+	$quake_draw.$cacheofs = 0;
+	$quake_draw.$cachewidth = 0;
+	$quake_draw.d_viewbuffer = null;
+	$quake_draw.d_pzbuffer = null;
+	$quake_draw.$d_zrowbytes = 0;
+	$quake_draw.$d_zwidth = 0;
+	for (var kk = 0; kk < $quake_draw.maX_CACHED_PICS; kk++) {
+		$quake_draw.$menu_cachepics[kk] = new $quake_draw$cachepic_t();
+	}
+	$quake_draw.$d_polyse_init();
+	$quake_sbar.$sbaR_HEIGHT = 24;
+	$quake_sbar.$sb_updates = 0;
+	$quake_sbar.$staT_MINUS = 10;
+	$quake_sbar.$sb_nums = ss.multidimArray(null, 2, 11);
+	$quake_sbar.$sb_colon = null;
+	$quake_sbar.$sb_slash = null;
+	$quake_sbar.$sb_ibar = null;
+	$quake_sbar.$sb_sbar = null;
+	$quake_sbar.$sb_scorebar = null;
+	$quake_sbar.$sb_weapons = ss.multidimArray(null, 7, 8);
+	$quake_sbar.$sb_ammo = new Array(4);
+	$quake_sbar.$sb_sigil = new Array(4);
+	$quake_sbar.$sb_armor = new Array(3);
+	$quake_sbar.$sb_items = new Array(32);
+	$quake_sbar.$sb_faces = ss.multidimArray(null, 7, 2);
+	$quake_sbar.$sb_face_invis = null;
+	$quake_sbar.$sb_face_quad = null;
+	$quake_sbar.$sb_face_invuln = null;
+	$quake_sbar.$sb_face_invis_invuln = null;
+	$quake_sbar.$sb_showscores = false;
+	$quake_sbar.sb_lines = 0;
+	$quake_sbar.$rsb_invbar = new Array(2);
+	$quake_sbar.$rsb_weapons = new Array(5);
+	$quake_sbar.$rsb_items = new Array(2);
+	$quake_sbar.$rsb_ammo = new Array(3);
+	$quake_sbar.$rsb_teambord = null;
+	$quake_sbar.$hsb_weapons = ss.multidimArray(null, 7, 5);
+	$quake_sbar.$hsb_items = new Array(2);
 	$quake_$vrect_s.$x = 0;
 	$quake_$vrect_s.$y = 4;
 	$quake_$vrect_s.$width = 8;
