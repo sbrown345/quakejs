@@ -704,7 +704,7 @@ namespace quake
                     //PR_StackTraceStr();
                 }
 
-                Debug.WriteLine(string.Format("prNum: {0}", prNum));
+                //Debug.WriteLine(string.Format("prNum: {0}", prNum));
                 //Debug.WriteLine(string.Format("a: {0}", a, b, c));
                 //Debug.WriteLine(string.Format("b: {1}", a, b, c));
                 //Debug.WriteLine(string.Format("c: {2}", a, b, c));

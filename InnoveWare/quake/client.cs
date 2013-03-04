@@ -251,7 +251,7 @@ namespace quake
         //
         class kbutton_t
         {
-	        public int[]	down = new int[2];		// key nums holding it down
+	        public int[]	down = new int[2] {0,0};		// key nums holding it down
 	        public int		state;			// low bit is down state
         };
    }

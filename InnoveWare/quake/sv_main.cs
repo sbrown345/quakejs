@@ -656,7 +656,7 @@ namespace quake
 
 	        common.MSG_WriteByte (msg, net.svc_clientdata);
             common.MSG_WriteShort(msg, bits);
-            Debug.WriteLine("bits " + bits);
+            //Debug.WriteLine("bits " + bits);
 	        if ((bits & net.SU_VIEWHEIGHT) != 0)
                 common.MSG_WriteChar(msg, (int)ent.v.view_ofs[2]);
 

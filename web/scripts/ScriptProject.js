@@ -26,8 +26,8 @@
 		var page = new $InnoveWare_Page();
 		page.page_Loaded();
 	};
-	global.keyPress = function(quake_key) {
-		$quake_keys.key_Event(quake_key, true);
+	global.keyPress = function(quake_key, down) {
+		$quake_keys.key_Event(quake_key, down);
 	};
 	global.executeCommands = function(text) {
 		$quake_cmd.cbuf_AddText(text);
@@ -266,7 +266,7 @@
 	////////////////////////////////////////////////////////////////////////////////
 	// quake.client.kbutton_t
 	var $quake_$client$kbutton_t = function() {
-		this.$down = new Array(2);
+		this.$down = [0, 0];
 		this.$state = 0;
 	};
 	////////////////////////////////////////////////////////////////////////////////
@@ -15302,7 +15302,7 @@
 				//Debug.WriteLine(string.Format("c {0}: {1} {2} {3}", st.c, pr_globals_read(st.c), pr_globals_read(st.c + 1), pr_globals_read(st.c + 2)));
 				//PR_StackTraceStr();
 			}
-			ss.Debug.writeln(ss.formatString('prNum: {0}', $quake_prog.prNum));
+			//Debug.WriteLine(string.Format("prNum: {0}", prNum));
 			//Debug.WriteLine(string.Format("a: {0}", a, b, c));
 			//Debug.WriteLine(string.Format("b: {1}", a, b, c));
 			//Debug.WriteLine(string.Format("c: {2}", a, b, c));
@@ -22308,7 +22308,7 @@
 		// send the data
 		$quake_common.msG_WriteByte(msg, $quake_net.svc_clientdata);
 		$quake_common.msG_WriteShort(msg, bits);
-		ss.Debug.writeln('bits ' + bits);
+		//Debug.WriteLine("bits " + bits);
 		if ((bits & $quake_net.sU_VIEWHEIGHT) !== 0) {
 			$quake_common.msG_WriteChar(msg, ss.Int32.trunc(ent.v.view_ofs[2]));
 		}

@@ -1,5 +1,6 @@
 ﻿function initControls() {
     $(window).keydown(onKeyDown);
+    $(window).keyup(onKeyUp);
 }
 
 function onKeyDown(e) {
@@ -14,7 +15,22 @@ function onKeyDown(e) {
         quakeCode = quakeCode + 32;
     }
 
-    global.keyPress(quakeCode);
+    global.keyPress(quakeCode, true);
+}
+
+function onKeyUp(e) {
+    e.preventDefault();
+    
+    var quakeCode = e.keyCode;
+    if (keyMap[quakeCode]) {
+        // some keys are the same codes, these aren't
+        quakeCode = keyMap[quakeCode];
+    } 
+    else if (quakeCode >= 64 && quakeCode <= 64 + 26) {
+        quakeCode = quakeCode + 32;
+    }
+
+    global.keyPress(quakeCode, false);
 }
 
 var keyMap = {

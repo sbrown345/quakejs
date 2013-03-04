@@ -19,11 +19,11 @@
             page.Page_Loaded();
         }
 
-        public static void KeyPress(int quake_key)
+        public static void KeyPress(int quake_key, bool down)
         {
-            keys.Key_Event(quake_key, true);
+            keys.Key_Event(quake_key, down);
         }
-
+        
         public static void ExecuteCommands(string text)
         {
             cmd.Cbuf_AddText(text);
