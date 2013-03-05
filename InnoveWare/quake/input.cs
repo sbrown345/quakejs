@@ -160,420 +160,420 @@ namespace quake
 //void IN_JoyMove (usercmd_t *cmd);
 
 
-///*
-//===========
-//Force_CenterView_f
-//===========
-//*/
-//void Force_CenterView_f (void)
-//{
-//    cl.viewangles[PITCH] = 0;
-//}
-
-
-///*
-//===========
-//IN_UpdateClipCursor
-//===========
-//*/
-//void IN_UpdateClipCursor (void)
-//{
-
-//    if (mouseinitialized && mouseactive && !dinput)
-//    {
-//        ClipCursor (&window_rect);
-//    }
-//}
-
-
-///*
-//===========
-//IN_ShowMouse
-//===========
-//*/
-//void IN_ShowMouse (void)
-//{
-
-//    if (!mouseshowtoggle)
-//    {
-//        ShowCursor (TRUE);
-//        mouseshowtoggle = 1;
-//    }
-//}
-
-
-///*
-//===========
-//IN_HideMouse
-//===========
-//*/
-//void IN_HideMouse (void)
-//{
-
-//    if (mouseshowtoggle)
-//    {
-//        ShowCursor (FALSE);
-//        mouseshowtoggle = 0;
-//    }
-//}
-
-
-///*
-//===========
-//IN_ActivateMouse
-//===========
-//*/
-//void IN_ActivateMouse (void)
-//{
-
-//    mouseactivatetoggle = true;
-
-//    if (mouseinitialized)
-//    {
-//        if (dinput)
-//        {
-//            if (g_pMouse)
-//            {
-//                if (!dinput_acquired)
-//                {
-//                    IDirectInputDevice_Acquire(g_pMouse);
-//                    dinput_acquired = true;
-//                }
-//            }
-//            else
-//            {
-//                return;
-//            }
-//        }
-//        else
-//        {
-//            if (mouseparmsvalid)
-//                restore_spi = SystemParametersInfo (SPI_SETMOUSE, 0, newmouseparms, 0);
-
-//            SetCursorPos (window_center_x, window_center_y);
-//            SetCapture (mainwindow);
-//            ClipCursor (&window_rect);
-//        }
-
-//        mouseactive = true;
-//    }
-//}
-
-
-///*
-//===========
-//IN_SetQuakeMouseState
-//===========
-//*/
-//void IN_SetQuakeMouseState (void)
-//{
-//    if (mouseactivatetoggle)
-//        IN_ActivateMouse ();
-//}
-
-
-///*
-//===========
-//IN_DeactivateMouse
-//===========
-//*/
-//void IN_DeactivateMouse (void)
-//{
-
-//    mouseactivatetoggle = false;
-
-//    if (mouseinitialized)
-//    {
-//        if (dinput)
-//        {
-//            if (g_pMouse)
-//            {
-//                if (dinput_acquired)
-//                {
-//                    IDirectInputDevice_Unacquire(g_pMouse);
-//                    dinput_acquired = false;
-//                }
-//            }
-//        }
-//        else
-//        {
-//            if (restore_spi)
-//                SystemParametersInfo (SPI_SETMOUSE, 0, originalmouseparms, 0);
-
-//            ClipCursor (NULL);
-//            ReleaseCapture ();
-//        }
-
-//        mouseactive = false;
-//    }
-//}
-
-
-///*
-//===========
-//IN_RestoreOriginalMouseState
-//===========
-//*/
-//void IN_RestoreOriginalMouseState (void)
-//{
-//    if (mouseactivatetoggle)
-//    {
-//        IN_DeactivateMouse ();
-//        mouseactivatetoggle = true;
-//    }
-
-//// try to redraw the cursor so it gets reinitialized, because sometimes it
-//// has garbage after the mode switch
-//    ShowCursor (TRUE);
-//    ShowCursor (FALSE);
-//}
-
-
-///*
-//===========
-//IN_InitDInput
-//===========
-//*/
-//qboolean IN_InitDInput (void)
-//{
-//    HRESULT		hr;
-//    DIPROPDWORD	dipdw = {
-//        {
-//            sizeof(DIPROPDWORD),        // diph.dwSize
-//            sizeof(DIPROPHEADER),       // diph.dwHeaderSize
-//            0,                          // diph.dwObj
-//            DIPH_DEVICE,                // diph.dwHow
-//        },
-//        DINPUT_BUFFERSIZE,              // dwData
-//    };
-
-//    if (!hInstDI)
-//    {
-//        hInstDI = LoadLibrary("dinput.dll");
-		
-//        if (hInstDI == NULL)
-//        {
-//            Con_SafePrintf ("Couldn't load dinput.dll\n");
-//            return false;
-//        }
-//    }
-
-//    if (!pDirectInputCreate)
-//    {
-//        pDirectInputCreate = (void *)GetProcAddress(hInstDI,"DirectInputCreateA");
-
-//        if (!pDirectInputCreate)
-//        {
-//            Con_SafePrintf ("Couldn't get DI proc addr\n");
-//            return false;
-//        }
-//    }
-
-//// register with DirectInput and get an IDirectInput to play with.
-//    hr = iDirectInputCreate(global_hInstance, DIRECTINPUT_VERSION, &g_pdi, NULL);
-
-//    if (FAILED(hr))
-//    {
-//        return false;
-//    }
-
-//// obtain an interface to the system mouse device.
-//    hr = IDirectInput_CreateDevice(g_pdi, &GUID_SysMouse, &g_pMouse, NULL);
-
-//    if (FAILED(hr))
-//    {
-//        Con_SafePrintf ("Couldn't open DI mouse device\n");
-//        return false;
-//    }
-
-//// set the data format to "mouse format".
-//    hr = IDirectInputDevice_SetDataFormat(g_pMouse, &df);
-
-//    if (FAILED(hr))
-//    {
-//        Con_SafePrintf ("Couldn't set DI mouse format\n");
-//        return false;
-//    }
-
-//// set the cooperativity level.
-//    hr = IDirectInputDevice_SetCooperativeLevel(g_pMouse, mainwindow,
-//            DISCL_EXCLUSIVE | DISCL_FOREGROUND);
-
-//    if (FAILED(hr))
-//    {
-//        Con_SafePrintf ("Couldn't set DI coop level\n");
-//        return false;
-//    }
-
-
-//// set the buffer size to DINPUT_BUFFERSIZE elements.
-//// the buffer size is a DWORD property associated with the device
-//    hr = IDirectInputDevice_SetProperty(g_pMouse, DIPROP_BUFFERSIZE, &dipdw.diph);
-
-//    if (FAILED(hr))
-//    {
-//        Con_SafePrintf ("Couldn't set DI buffersize\n");
-//        return false;
-//    }
-
-//    return true;
-//}
-
-
-///*
-//===========
-//IN_StartupMouse
-//===========
-//*/
-//void IN_StartupMouse (void)
-//{
-//    if ( COM_CheckParm ("-nomouse") ) 
-//        return; 
-
-//    mouseinitialized = true;
-
-//    if (COM_CheckParm ("-dinput"))
-//    {
-//        dinput = IN_InitDInput ();
-
-//        if (dinput)
-//        {
-//            Con_SafePrintf ("DirectInput initialized\n");
-//        }
-//        else
-//        {
-//            Con_SafePrintf ("DirectInput not initialized\n");
-//        }
-//    }
-
-//    if (!dinput)
-//    {
-//        mouseparmsvalid = SystemParametersInfo (SPI_GETMOUSE, 0, originalmouseparms, 0);
-
-//        if (mouseparmsvalid)
-//        {
-//            if ( COM_CheckParm ("-noforcemspd") ) 
-//                newmouseparms[2] = originalmouseparms[2];
-
-//            if ( COM_CheckParm ("-noforcemaccel") ) 
-//            {
-//                newmouseparms[0] = originalmouseparms[0];
-//                newmouseparms[1] = originalmouseparms[1];
-//            }
-
-//            if ( COM_CheckParm ("-noforcemparms") ) 
-//            {
-//                newmouseparms[0] = originalmouseparms[0];
-//                newmouseparms[1] = originalmouseparms[1];
-//                newmouseparms[2] = originalmouseparms[2];
-//            }
-//        }
-//    }
-
-//    mouse_buttons = 3;
-
-//// if a fullscreen video mode was set before the mouse was initialized,
-//// set the mouse state appropriately
-//    if (mouseactivatetoggle)
-//        IN_ActivateMouse ();
-//}
-
-
-///*
-//===========
-//IN_Init
-//===========
-//*/
-//void IN_Init (void)
-//{
-//    // mouse variables
-//    Cvar_RegisterVariable (&m_filter);
-
-//    // joystick variables
-//    Cvar_RegisterVariable (&in_joystick);
-//    Cvar_RegisterVariable (&joy_name);
-//    Cvar_RegisterVariable (&joy_advanced);
-//    Cvar_RegisterVariable (&joy_advaxisx);
-//    Cvar_RegisterVariable (&joy_advaxisy);
-//    Cvar_RegisterVariable (&joy_advaxisz);
-//    Cvar_RegisterVariable (&joy_advaxisr);
-//    Cvar_RegisterVariable (&joy_advaxisu);
-//    Cvar_RegisterVariable (&joy_advaxisv);
-//    Cvar_RegisterVariable (&joy_forwardthreshold);
-//    Cvar_RegisterVariable (&joy_sidethreshold);
-//    Cvar_RegisterVariable (&joy_pitchthreshold);
-//    Cvar_RegisterVariable (&joy_yawthreshold);
-//    Cvar_RegisterVariable (&joy_forwardsensitivity);
-//    Cvar_RegisterVariable (&joy_sidesensitivity);
-//    Cvar_RegisterVariable (&joy_pitchsensitivity);
-//    Cvar_RegisterVariable (&joy_yawsensitivity);
-//    Cvar_RegisterVariable (&joy_wwhack1);
-//    Cvar_RegisterVariable (&joy_wwhack2);
-
-//    Cmd_AddCommand ("force_centerview", Force_CenterView_f);
-//    Cmd_AddCommand ("joyadvancedupdate", Joy_AdvancedUpdate_f);
-
-//    uiWheelMessage = RegisterWindowMessage ( "MSWHEEL_ROLLMSG" );
-
-//    IN_StartupMouse ();
-//    IN_StartupJoystick ();
-//}
-
-///*
-//===========
-//IN_Shutdown
-//===========
-//*/
-//void IN_Shutdown (void)
-//{
-
-//    IN_DeactivateMouse ();
-//    IN_ShowMouse ();
-
-//    if (g_pMouse)
-//    {
-//        IDirectInputDevice_Release(g_pMouse);
-//        g_pMouse = NULL;
-//    }
-
-//    if (g_pdi)
-//    {
-//        IDirectInput_Release(g_pdi);
-//        g_pdi = NULL;
-//    }
-//}
-
-
-///*
-//===========
-//IN_MouseEvent
-//===========
-//*/
-//void IN_MouseEvent (int mstate)
-//{
-//    int	i;
-
-//    if (mouseactive && !dinput)
-//    {
-//    // perform button actions
-//        for (i=0 ; i<mouse_buttons ; i++)
-//        {
-//            if ( (mstate & (1<<i)) &&
-//                !(mouse_oldbuttonstate & (1<<i)) )
-//            {
-//                Key_Event (K_MOUSE1 + i, true);
-//            }
-
-//            if ( !(mstate & (1<<i)) &&
-//                (mouse_oldbuttonstate & (1<<i)) )
-//            {
-//                Key_Event (K_MOUSE1 + i, false);
-//            }
-//        }	
-			
-//        mouse_oldbuttonstate = mstate;
-//    }
-//}
+        ///*
+        //===========
+        //Force_CenterView_f
+        //===========
+        //*/
+        //void Force_CenterView_f (void)
+        //{
+        //    cl.viewangles[PITCH] = 0;
+        //}
+
+
+        ///*
+        //===========
+        //IN_UpdateClipCursor
+        //===========
+        //*/
+        //void IN_UpdateClipCursor (void)
+        //{
+
+        //    if (mouseinitialized && mouseactive && !dinput)
+        //    {
+        //        ClipCursor (&window_rect);
+        //    }
+        //}
+
+
+        ///*
+        //===========
+        //IN_ShowMouse
+        //===========
+        //*/
+        //void IN_ShowMouse (void)
+        //{
+
+        //    if (!mouseshowtoggle)
+        //    {
+        //        ShowCursor (TRUE);
+        //        mouseshowtoggle = 1;
+        //    }
+        //}
+
+
+        ///*
+        //===========
+        //IN_HideMouse
+        //===========
+        //*/
+        //void IN_HideMouse (void)
+        //{
+
+        //    if (mouseshowtoggle)
+        //    {
+        //        ShowCursor (FALSE);
+        //        mouseshowtoggle = 0;
+        //    }
+        //}
+
+
+        ///*
+        //===========
+        //IN_ActivateMouse
+        //===========
+        //*/
+        //void IN_ActivateMouse (void)
+        //{
+
+        //    mouseactivatetoggle = true;
+
+        //    if (mouseinitialized)
+        //    {
+        //        if (dinput)
+        //        {
+        //            if (g_pMouse)
+        //            {
+        //                if (!dinput_acquired)
+        //                {
+        //                    IDirectInputDevice_Acquire(g_pMouse);
+        //                    dinput_acquired = true;
+        //                }
+        //            }
+        //            else
+        //            {
+        //                return;
+        //            }
+        //        }
+        //        else
+        //        {
+        //            if (mouseparmsvalid)
+        //                restore_spi = SystemParametersInfo (SPI_SETMOUSE, 0, newmouseparms, 0);
+
+        //            SetCursorPos (window_center_x, window_center_y);
+        //            SetCapture (mainwindow);
+        //            ClipCursor (&window_rect);
+        //        }
+
+        //        mouseactive = true;
+        //    }
+        //}
+
+
+        ///*
+        //===========
+        //IN_SetQuakeMouseState
+        //===========
+        //*/
+        //void IN_SetQuakeMouseState (void)
+        //{
+        //    if (mouseactivatetoggle)
+        //        IN_ActivateMouse ();
+        //}
+
+
+        ///*
+        //===========
+        //IN_DeactivateMouse
+        //===========
+        //*/
+        //void IN_DeactivateMouse (void)
+        //{
+
+        //    mouseactivatetoggle = false;
+
+        //    if (mouseinitialized)
+        //    {
+        //        if (dinput)
+        //        {
+        //            if (g_pMouse)
+        //            {
+        //                if (dinput_acquired)
+        //                {
+        //                    IDirectInputDevice_Unacquire(g_pMouse);
+        //                    dinput_acquired = false;
+        //                }
+        //            }
+        //        }
+        //        else
+        //        {
+        //            if (restore_spi)
+        //                SystemParametersInfo (SPI_SETMOUSE, 0, originalmouseparms, 0);
+
+        //            ClipCursor (NULL);
+        //            ReleaseCapture ();
+        //        }
+
+        //        mouseactive = false;
+        //    }
+        //}
+
+
+        ///*
+        //===========
+        //IN_RestoreOriginalMouseState
+        //===========
+        //*/
+        //void IN_RestoreOriginalMouseState (void)
+        //{
+        //    if (mouseactivatetoggle)
+        //    {
+        //        IN_DeactivateMouse ();
+        //        mouseactivatetoggle = true;
+        //    }
+
+        //// try to redraw the cursor so it gets reinitialized, because sometimes it
+        //// has garbage after the mode switch
+        //    ShowCursor (TRUE);
+        //    ShowCursor (FALSE);
+        //}
+
+
+        ///*
+        //===========
+        //IN_InitDInput
+        //===========
+        //*/
+        //qboolean IN_InitDInput (void)
+        //{
+        //    HRESULT		hr;
+        //    DIPROPDWORD	dipdw = {
+        //        {
+        //            sizeof(DIPROPDWORD),        // diph.dwSize
+        //            sizeof(DIPROPHEADER),       // diph.dwHeaderSize
+        //            0,                          // diph.dwObj
+        //            DIPH_DEVICE,                // diph.dwHow
+        //        },
+        //        DINPUT_BUFFERSIZE,              // dwData
+        //    };
+
+        //    if (!hInstDI)
+        //    {
+        //        hInstDI = LoadLibrary("dinput.dll");
+
+        //        if (hInstDI == NULL)
+        //        {
+        //            Con_SafePrintf ("Couldn't load dinput.dll\n");
+        //            return false;
+        //        }
+        //    }
+
+        //    if (!pDirectInputCreate)
+        //    {
+        //        pDirectInputCreate = (void *)GetProcAddress(hInstDI,"DirectInputCreateA");
+
+        //        if (!pDirectInputCreate)
+        //        {
+        //            Con_SafePrintf ("Couldn't get DI proc addr\n");
+        //            return false;
+        //        }
+        //    }
+
+        //// register with DirectInput and get an IDirectInput to play with.
+        //    hr = iDirectInputCreate(global_hInstance, DIRECTINPUT_VERSION, &g_pdi, NULL);
+
+        //    if (FAILED(hr))
+        //    {
+        //        return false;
+        //    }
+
+        //// obtain an interface to the system mouse device.
+        //    hr = IDirectInput_CreateDevice(g_pdi, &GUID_SysMouse, &g_pMouse, NULL);
+
+        //    if (FAILED(hr))
+        //    {
+        //        Con_SafePrintf ("Couldn't open DI mouse device\n");
+        //        return false;
+        //    }
+
+        //// set the data format to "mouse format".
+        //    hr = IDirectInputDevice_SetDataFormat(g_pMouse, &df);
+
+        //    if (FAILED(hr))
+        //    {
+        //        Con_SafePrintf ("Couldn't set DI mouse format\n");
+        //        return false;
+        //    }
+
+        //// set the cooperativity level.
+        //    hr = IDirectInputDevice_SetCooperativeLevel(g_pMouse, mainwindow,
+        //            DISCL_EXCLUSIVE | DISCL_FOREGROUND);
+
+        //    if (FAILED(hr))
+        //    {
+        //        Con_SafePrintf ("Couldn't set DI coop level\n");
+        //        return false;
+        //    }
+
+
+        //// set the buffer size to DINPUT_BUFFERSIZE elements.
+        //// the buffer size is a DWORD property associated with the device
+        //    hr = IDirectInputDevice_SetProperty(g_pMouse, DIPROP_BUFFERSIZE, &dipdw.diph);
+
+        //    if (FAILED(hr))
+        //    {
+        //        Con_SafePrintf ("Couldn't set DI buffersize\n");
+        //        return false;
+        //    }
+
+        //    return true;
+        //}
+
+
+        ///*
+        //===========
+        //IN_StartupMouse
+        //===========
+        //*/
+        //void IN_StartupMouse (void)
+        //{
+        //    if ( COM_CheckParm ("-nomouse") ) 
+        //        return; 
+
+        //    mouseinitialized = true;
+
+        //    if (COM_CheckParm ("-dinput"))
+        //    {
+        //        dinput = IN_InitDInput ();
+
+        //        if (dinput)
+        //        {
+        //            Con_SafePrintf ("DirectInput initialized\n");
+        //        }
+        //        else
+        //        {
+        //            Con_SafePrintf ("DirectInput not initialized\n");
+        //        }
+        //    }
+
+        //    if (!dinput)
+        //    {
+        //        mouseparmsvalid = SystemParametersInfo (SPI_GETMOUSE, 0, originalmouseparms, 0);
+
+        //        if (mouseparmsvalid)
+        //        {
+        //            if ( COM_CheckParm ("-noforcemspd") ) 
+        //                newmouseparms[2] = originalmouseparms[2];
+
+        //            if ( COM_CheckParm ("-noforcemaccel") ) 
+        //            {
+        //                newmouseparms[0] = originalmouseparms[0];
+        //                newmouseparms[1] = originalmouseparms[1];
+        //            }
+
+        //            if ( COM_CheckParm ("-noforcemparms") ) 
+        //            {
+        //                newmouseparms[0] = originalmouseparms[0];
+        //                newmouseparms[1] = originalmouseparms[1];
+        //                newmouseparms[2] = originalmouseparms[2];
+        //            }
+        //        }
+        //    }
+
+        //    mouse_buttons = 3;
+
+        //// if a fullscreen video mode was set before the mouse was initialized,
+        //// set the mouse state appropriately
+        //    if (mouseactivatetoggle)
+        //        IN_ActivateMouse ();
+        //}
+
+
+        ///*
+        //===========
+        //IN_Init
+        //===========
+        //*/
+        //void IN_Init (void)
+        //{
+        //    // mouse variables
+        //    Cvar_RegisterVariable (&m_filter);
+
+        //    // joystick variables
+        //    Cvar_RegisterVariable (&in_joystick);
+        //    Cvar_RegisterVariable (&joy_name);
+        //    Cvar_RegisterVariable (&joy_advanced);
+        //    Cvar_RegisterVariable (&joy_advaxisx);
+        //    Cvar_RegisterVariable (&joy_advaxisy);
+        //    Cvar_RegisterVariable (&joy_advaxisz);
+        //    Cvar_RegisterVariable (&joy_advaxisr);
+        //    Cvar_RegisterVariable (&joy_advaxisu);
+        //    Cvar_RegisterVariable (&joy_advaxisv);
+        //    Cvar_RegisterVariable (&joy_forwardthreshold);
+        //    Cvar_RegisterVariable (&joy_sidethreshold);
+        //    Cvar_RegisterVariable (&joy_pitchthreshold);
+        //    Cvar_RegisterVariable (&joy_yawthreshold);
+        //    Cvar_RegisterVariable (&joy_forwardsensitivity);
+        //    Cvar_RegisterVariable (&joy_sidesensitivity);
+        //    Cvar_RegisterVariable (&joy_pitchsensitivity);
+        //    Cvar_RegisterVariable (&joy_yawsensitivity);
+        //    Cvar_RegisterVariable (&joy_wwhack1);
+        //    Cvar_RegisterVariable (&joy_wwhack2);
+
+        //    Cmd_AddCommand ("force_centerview", Force_CenterView_f);
+        //    Cmd_AddCommand ("joyadvancedupdate", Joy_AdvancedUpdate_f);
+
+        //    uiWheelMessage = RegisterWindowMessage ( "MSWHEEL_ROLLMSG" );
+
+        //    IN_StartupMouse ();
+        //    IN_StartupJoystick ();
+        //}
+
+        ///*
+        //===========
+        //IN_Shutdown
+        //===========
+        //*/
+        //void IN_Shutdown (void)
+        //{
+
+        //    IN_DeactivateMouse ();
+        //    IN_ShowMouse ();
+
+        //    if (g_pMouse)
+        //    {
+        //        IDirectInputDevice_Release(g_pMouse);
+        //        g_pMouse = NULL;
+        //    }
+
+        //    if (g_pdi)
+        //    {
+        //        IDirectInput_Release(g_pdi);
+        //        g_pdi = NULL;
+        //    }
+        //}
+
+
+        ///*
+        //===========
+        //IN_MouseEvent
+        //===========
+        //*/
+        //void IN_MouseEvent (int mstate)
+        //{
+        //    int	i;
+
+        //    if (mouseactive && !dinput)
+        //    {
+        //    // perform button actions
+        //        for (i=0 ; i<mouse_buttons ; i++)
+        //        {
+        //            if ( (mstate & (1<<i)) &&
+        //                !(mouse_oldbuttonstate & (1<<i)) )
+        //            {
+        //                Key_Event (K_MOUSE1 + i, true);
+        //            }
+
+        //            if ( !(mstate & (1<<i)) &&
+        //                (mouse_oldbuttonstate & (1<<i)) )
+        //            {
+        //                Key_Event (K_MOUSE1 + i, false);
+        //            }
+        //        }	
+
+        //        mouse_oldbuttonstate = mstate;
+        //    }
+        //}
 
 
         /*
@@ -581,7 +581,10 @@ namespace quake
         IN_MouseMove
         ===========
         */
-        static void IN_MouseMove(client.usercmd_t cmd)
+
+        public static int mouseX = 0;
+        public static int mouseY = 0;
+        private static void IN_MouseMove(client.usercmd_t cmd)
         {
             int mx, my;
             int i;
@@ -594,81 +597,79 @@ namespace quake
 
             //if (dinput)
             //{
-                mx = 0;
-                my = 0;
+            mx = 0;
+            my = 0;
 
-                //for (; ; )
-                //{
-                //    dwElements = 1;
+            //for (; ; )
+            //{
+            //    dwElements = 1;
 
-                //    hr = IDirectInputDevice_GetDeviceData(g_pMouse,
-                //            sizeof(DIDEVICEOBJECTDATA), od, dwElements, 0);
+            //    hr = IDirectInputDevice_GetDeviceData(g_pMouse,
+            //            sizeof(DIDEVICEOBJECTDATA), od, dwElements, 0);
 
-                //    if ((hr == DIERR_INPUTLOST) || (hr == DIERR_NOTACQUIRED))
-                //    {
-                //        dinput_acquired = true;
-                //        IDirectInputDevice_Acquire(g_pMouse);
-                //        break;
-                //    }
+            //    if ((hr == DIERR_INPUTLOST) || (hr == DIERR_NOTACQUIRED))
+            //    {
+            //        dinput_acquired = true;
+            //        IDirectInputDevice_Acquire(g_pMouse);
+            //        break;
+            //    }
 
-                //    /* Unable to read data or no data available */
-                //    if (FAILED(hr) || dwElements == 0)
-                //    {
-                //        break;
-                //    }
+            //    /* Unable to read data or no data available */
+            //    if (FAILED(hr) || dwElements == 0)
+            //    {
+            //        break;
+            //    }
 
-                //    /* Look at the element to see what happened */
+            //    /* Look at the element to see what happened */
 
-                //    switch (od.dwOfs)
-                //    {
-                //        case DIMOFS_X:
-                //            mx += od.dwData;
-                //            break;
+            //    switch (od.dwOfs)
+            //    {
+            //        case DIMOFS_X:
+            //            mx += od.dwData;
+            //            break;
 
-                //        case DIMOFS_Y:
-                //            my += od.dwData;
-                //            break;
+            //        case DIMOFS_Y:
+            //            my += od.dwData;
+            //            break;
 
-                //        case DIMOFS_BUTTON0:
-                //            if (od.dwData & 0x80)
-                //                mstate_di |= 1;
-                //            else
-                //                mstate_di &= ~1;
-                //            break;
+            //        case DIMOFS_BUTTON0:
+            //            if (od.dwData & 0x80)
+            //                mstate_di |= 1;
+            //            else
+            //                mstate_di &= ~1;
+            //            break;
 
-                //        case DIMOFS_BUTTON1:
-                //            if (od.dwData & 0x80)
-                //                mstate_di |= (1 << 1);
-                //            else
-                //                mstate_di &= ~(1 << 1);
-                //            break;
+            //        case DIMOFS_BUTTON1:
+            //            if (od.dwData & 0x80)
+            //                mstate_di |= (1 << 1);
+            //            else
+            //                mstate_di &= ~(1 << 1);
+            //            break;
 
-                //        case DIMOFS_BUTTON2:
-                //            if (od.dwData & 0x80)
-                //                mstate_di |= (1 << 2);
-                //            else
-                //                mstate_di &= ~(1 << 2);
-                //            break;
-                //    }
-                //}
+            //        case DIMOFS_BUTTON2:
+            //            if (od.dwData & 0x80)
+            //                mstate_di |= (1 << 2);
+            //            else
+            //                mstate_di &= ~(1 << 2);
+            //            break;
+            //    }
+            //}
 
-                // perform button actions
-                for (i = 0; i < mouse_buttons; i++)
+            // perform button actions
+            for (i = 0; i < mouse_buttons; i++)
+            {
+                if ((mstate_di & (1 << i)) != 0 && (mouse_oldbuttonstate & (1 << i)) == 0)
                 {
-                    if ((mstate_di & (1 << i)) != 0 &&
-                        (mouse_oldbuttonstate & (1 << i)) == 0)
-                    {
-                        keys.Key_Event(keys.K_MOUSE1 + i, true);
-                    }
-
-                    if ((mstate_di & (1 << i)) == 0 &&
-                       (mouse_oldbuttonstate & (1 << i)) != 0)
-                    {
-                        keys.Key_Event(keys.K_MOUSE1 + i, false);
-                    }
+                    keys.Key_Event(keys.K_MOUSE1 + i, true);
                 }
 
-                mouse_oldbuttonstate = mstate_di;
+                if ((mstate_di & (1 << i)) == 0 && (mouse_oldbuttonstate & (1 << i)) != 0)
+                {
+                    keys.Key_Event(keys.K_MOUSE1 + i, false);
+                }
+            }
+
+            mouse_oldbuttonstate = mstate_di;
             //}
             //else
             //{
@@ -678,6 +679,32 @@ namespace quake
             //    mx_accum = 0;
             //    my_accum = 0;
             //}
+
+
+
+
+
+           //test:
+            quake.cmd.Cbuf_AddText("+speed;");
+            quake.cmd.Cbuf_AddText("+mlook;");
+            quake.cmd.Cbuf_AddText("sensitivity 30;");
+            quake.cmd.Cbuf_AddText("m_pitch -0.022;");
+            quake.cmd.Cbuf_AddText("bind w +forward;");
+            quake.cmd.Cbuf_AddText("bind s +back;");
+            quake.cmd.Cbuf_AddText("bind a +moveleft;");
+            quake.cmd.Cbuf_AddText("bind d +moveright;");
+            quake.cmd.Cbuf_AddText("bind AUX17 +toggleconsole;");
+            mx = mouseX;
+            my = mouseY;
+
+
+
+
+
+
+
+
+
 
             //if (mx ||  my)
             //	Con_DPrintf("mx=%d, my=%d\n", mx, my);
@@ -700,28 +727,22 @@ namespace quake
             mouse_y *= (int)client.sensitivity.value;
 
             // add mouse X/Y movement to cmd
-            if ((client.in_strafe.state & 1) != 0 || (client.lookstrafe.value != 0 && ((client.in_mlook.state & 1) != 0)))
-                cmd.sidemove += client.m_side.value * mouse_x;
-            else
-                client.cl.viewangles[quakedef.YAW] -= client.m_yaw.value * mouse_x;
+            if ((client.in_strafe.state & 1) != 0
+                || (client.lookstrafe.value != 0 && ((client.in_mlook.state & 1) != 0))) cmd.sidemove += client.m_side.value * mouse_x;
+            else client.cl.viewangles[quakedef.YAW] -= client.m_yaw.value * mouse_x;
 
-            if ((client.in_mlook.state & 1) != 0)
-                view.V_StopPitchDrift();
+            if ((client.in_mlook.state & 1) != 0) view.V_StopPitchDrift();
 
             if ((client.in_mlook.state & 1) != 0 && (client.in_strafe.state & 1) == 0)
             {
                 client.cl.viewangles[quakedef.PITCH] += client.m_pitch.value * mouse_y;
-                if (client.cl.viewangles[quakedef.PITCH] > 80)
-                    client.cl.viewangles[quakedef.PITCH] = 80;
-                if (client.cl.viewangles[quakedef.PITCH] < -70)
-                    client.cl.viewangles[quakedef.PITCH] = -70;
+                if (client.cl.viewangles[quakedef.PITCH] > 80) client.cl.viewangles[quakedef.PITCH] = 80;
+                if (client.cl.viewangles[quakedef.PITCH] < -70) client.cl.viewangles[quakedef.PITCH] = -70;
             }
             else
             {
-                if ((client.in_strafe.state & 1) !=0 && host.noclip_anglehack)
-                    cmd.upmove -= client.m_forward.value * mouse_y;
-                else
-                    cmd.forwardmove -= client.m_forward.value * mouse_y;
+                if ((client.in_strafe.state & 1) != 0 && host.noclip_anglehack) cmd.upmove -= client.m_forward.value * mouse_y;
+                else cmd.forwardmove -= client.m_forward.value * mouse_y;
             }
 
             //// if the mouse has moved, force it to the center, so there's room to move
@@ -732,7 +753,7 @@ namespace quake
         }
 
 
-/*
+        /*
 ===========
 IN_Move
 ===========
