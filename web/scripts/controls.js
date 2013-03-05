@@ -1,6 +1,18 @@
 ﻿function initControls() {
     $(window).keydown(onKeyDown);
     $(window).keyup(onKeyUp);
+    $(window).mousedown(mousedown);
+    $(window).mouseup(mouseup);
+}
+
+function mousedown(e) {
+    e.preventDefault();
+    global.keyPress(200, true);
+}
+
+function mouseup(e) {
+    e.preventDefault();
+    global.keyPress(200, false);
 }
 
 function onKeyDown(e) {

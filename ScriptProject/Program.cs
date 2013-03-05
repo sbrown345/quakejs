@@ -26,7 +26,7 @@
         
         public static void ExecuteCommands(string text)
         {
-            cmd.Cbuf_AddText(text);
+            cmd.Cbuf_AddText(text + ";\n");
         }
 
         public static double GetVariableValue(string name)
@@ -40,6 +40,12 @@
             Page.thePage.gameCanvas.Width = width;
             Page.thePage.gameCanvas.Height = height;
             vid.VID_Init(host.host_basepal);
+        }
+
+        public static void UpdateMouse(int mx, int my)
+        {
+            input.mouseX = mx;
+            input.mouseY = my;
         }
     }
 }
