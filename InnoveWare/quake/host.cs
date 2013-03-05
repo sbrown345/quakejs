@@ -24,6 +24,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 namespace quake
 {
+    using Helper;
+
     public class host_abortserver : Exception
     {
         public host_abortserver() { }
@@ -218,10 +220,26 @@ namespace quake
         Writes key bindings and archived cvars to config.cfg
         ===============
         */
-        void Host_WriteConfiguration ()
+        public static void Host_WriteConfiguration ()
         {
-            //todo
-            throw new NotImplementedException();
+            helper.FILE f;
+
+            // dedicated servers initialize the host but don't parse and set the
+            // config.cfg cvars
+            if (host_initialized /*& !isDedicated*/)
+            {
+                //f = fopen(va("%s/config.cfg", com_gamedir), "w"); //todo: fake disk with storage
+                //if (f == null)
+                //{
+                //    console.Con_Printf("Couldn't write config.cfg.\n");
+                //    return;
+                //}
+                string config = "";
+                keys.Key_WriteBindings(ref config);
+                cvar_t.Cvar_WriteVariables(ref config);
+                Debug.WriteLine(config);
+                //fclose(f);
+            }
         }
 
 

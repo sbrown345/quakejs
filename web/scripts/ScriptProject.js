@@ -45,6 +45,9 @@
 		$quake_input.mouseMovedX = mx;
 		$quake_input.mouseMovedY = my;
 	};
+	global.testConfig = function() {
+		$quake_host.host_WriteConfiguration();
+	};
 	////////////////////////////////////////////////////////////////////////////////
 	// ArrayHelpers
 	var $ArrayHelpers = function() {
@@ -100,6 +103,8 @@
 		file.stream = null;
 		file = null;
 	};
+	$Helper_helper.fprintf = function(file, str) {
+	};
 	$Helper_helper.rand = function() {
 		return 1000000000;
 	};
@@ -146,8 +151,9 @@
 	};
 	////////////////////////////////////////////////////////////////////////////////
 	// Helper.helper.FILE
-	var $Helper_helper$FILE = function() {
+	var $Helper_helper$FILE = function(stream) {
 		this.stream = null;
+		this.stream = stream;
 	};
 	////////////////////////////////////////////////////////////////////////////////
 	// Helper.helper.ObjectBuffer
@@ -3762,8 +3768,7 @@
 							}
 							var si = getResourceStream(new $System_Uri('InnoveWare;component/' + pf, 2));
 							if (ss.isValue(si)) {
-								file.$ = new $Helper_helper$FILE();
-								file.$.stream = si.get_stream();
+								file.$ = new $Helper_helper$FILE(si.get_stream());
 							}
 							//*file = fopen(pak->filename, "rb");
 							if (ss.isValue(file.$)) {
@@ -4485,6 +4490,15 @@
 		}
 		$quake_cvar_t.cvar_Set(v.$name, $quake_cmd.cmd_Argv(1));
 		return true;
+	};
+	$quake_cvar_t.cvar_WriteVariables = function(config) {
+		var var1;
+		for (var1 = $quake_cvar_t.$cvar_vars; ss.isValue(var1); var1 = var1.$next) {
+			if (var1.$archive) {
+				//helper.fprintf(f, string.Format("{0} \"{0}\"\n", var.name, var._string));
+				config.$ += ss.formatString('{0} "{1}"\n', var1.$name, var1._string);
+			}
+		}
 	};
 	////////////////////////////////////////////////////////////////////////////////
 	// quake.draw
@@ -6896,10 +6910,6 @@
 		this.$host_hunklevel = 0;
 	};
 	$quake_host.prototype = {
-		$host_WriteConfiguration: function() {
-			//todo
-			throw new $System_NotImplementedException();
-		},
 		$host_GetConsoleCommands: function() {
 			//char	*cmd;
 			//while (1)
@@ -7013,6 +7023,24 @@
 		$quake_host.$host_FindMaxClients();
 		$quake_host.host_time = 1;
 		// so a think at time 0 won't get called
+	};
+	$quake_host.host_WriteConfiguration = function() {
+		var f;
+		// dedicated servers initialize the host but don't parse and set the
+		// config.cfg cvars
+		if ($quake_host.host_initialized) {
+			//f = fopen(va("%s/config.cfg", com_gamedir), "w");
+			//if (f == null)
+			//{
+			//    console.Con_Printf("Couldn't write config.cfg.\n");
+			//    return;
+			//}
+			var config = { $: '' };
+			$quake_keys.key_WriteBindings(config);
+			$quake_cvar_t.cvar_WriteVariables(config);
+			ss.Debug.writeln(config.$);
+			//fclose(f);
+		}
 	};
 	$quake_host.$sV_ClientPrintf = function(fmt) {
 		//va_list		argptr;
@@ -8114,6 +8142,17 @@
 			cmd += $quake_cmd.cmd_Argv(i);
 		}
 		$quake_keys.$key_SetBinding(b, cmd);
+	};
+	$quake_keys.key_WriteBindings = function(config) {
+		var i;
+		for (i = 0; i < 256; i++) {
+			if (!ss.isNullOrEmptyString($quake_keys.$keybindings[i])) {
+				if (!ss.isNullOrEmptyString($quake_keys.$keybindings[i])) {
+					//helper.fprintf(f, string.Format("bind \"{0}\" \"{1}\"\n", Key_KeynumToString(i), keybindings[i]));
+					config.$ += ss.formatString('bind "{0}" "{1}"\n', $quake_keys.$key_KeynumToString(i), $quake_keys.$keybindings[i]);
+				}
+			}
+		}
 	};
 	$quake_keys.key_Init = function() {
 		var i;

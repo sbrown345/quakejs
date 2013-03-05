@@ -56,6 +56,8 @@ interface from being ambiguous.
 
 namespace quake
 {
+    using Helper;
+
     public class cvar_t
     {
         string name;
@@ -267,5 +269,28 @@ namespace quake
 	        Cvar_Set (v.name, cmd.Cmd_Argv(1));
 	        return true;
         }
-   }
+
+        /*
+        ============
+        Cvar_WriteVariables
+
+        Writes lines containing "set variable value" for all variables
+        with the archive flag set to true.
+        ============
+        */
+
+        public static void Cvar_WriteVariables( /*helper.FILE f*/ref string config)
+        {
+            cvar_t var;
+
+            for (var = cvar_vars; var != null; var = var.next)
+            {
+                if (var.archive)
+                {
+                    //helper.fprintf(f, string.Format("{0} \"{0}\"\n", var.name, var._string));
+                    config += string.Format("{0} \"{1}\"\n", var.name, var._string);
+                }
+            }
+        }
+    }
 }

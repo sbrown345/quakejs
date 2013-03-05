@@ -150,6 +150,11 @@ namespace Helper
         public class FILE
         {
             public Stream stream;
+
+            public FILE(Stream stream)
+            {
+                this.stream = stream;
+            }
         }
         
         public static char getc(FILE file)
@@ -189,6 +194,10 @@ namespace Helper
             file.stream.Close();
             file.stream = null;
             file = null;
+        }
+
+        public static void fprintf(helper.FILE file, string str)
+        {
         }
 
         public static int rand()

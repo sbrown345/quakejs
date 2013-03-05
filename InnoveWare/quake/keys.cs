@@ -23,6 +23,8 @@ namespace quake
     using System;
     using System.Diagnostics;
 
+    using Helper;
+
     public sealed class keys
     {
         //
@@ -594,22 +596,30 @@ namespace quake
 	        Key_SetBinding (b, cmd);
         }
 
-        ///*todo
-        //============
-        //Key_WriteBindings          
+        /*
+        ============
+        Key_WriteBindings          
 
-        //Writes lines containing "bind key value"
-        //============
-        //*/
-        //void Key_WriteBindings(FILE* f)
-        //{
-        //    int i;
+        Writes lines containing "bind key value"
+        ============
+        */
 
-        //    for (i = 0; i < 256; i++)
-        //        if (keybindings[i])
-        //            if (*keybindings[i])
-        //                fprintf(f, "bind \"%s\" \"%s\"\n", Key_KeynumToString(i), keybindings[i]);
-        //}
+        public static void Key_WriteBindings( /*helper.FILE f*/ ref string config)
+        {
+            int i;
+
+            for (i = 0; i < 256; i++)
+            {
+                if (!string.IsNullOrEmpty(keybindings[i]))
+                {
+                    if (!string.IsNullOrEmpty(keybindings[i]))
+                    {
+                        //helper.fprintf(f, string.Format("bind \"{0}\" \"{1}\"\n", Key_KeynumToString(i), keybindings[i]));
+                        config += string.Format("bind \"{0}\" \"{1}\"\n", Key_KeynumToString(i), keybindings[i]);
+                    }
+                }
+            }
+        }
 
         /*
         ===================
