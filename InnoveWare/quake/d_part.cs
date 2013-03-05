@@ -30,7 +30,7 @@ namespace quake
         */
         public static void D_DrawParticle (particle_t pparticle)
         {
-            double[]    local = new double[3], transformed = new double[3];
+            double[]    local = new double[3] {0, 0, 0}, transformed = new double[3] {0, 0, 0};
 	        double	    zi;
 	        int	        pdest;
 	        int	        pz;

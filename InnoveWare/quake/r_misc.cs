@@ -239,7 +239,7 @@ namespace quake
         public static void R_TransformFrustum ()
         {
 	        int		    i;
-	        double[]	v = new double[3], v2 = new double[3];
+	        double[]	v = new double[3] {0, 0, 0}, v2 = new double[3] {0, 0, 0};
         	
 	        for (i=0 ; i<4 ; i++)
 	        {

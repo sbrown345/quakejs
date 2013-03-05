@@ -269,7 +269,7 @@ namespace quake
         
        static bool SV_StepDirection (prog.edict_t ent, double yaw, double dist)
         {
-            double[]		move = new double[3], oldorigin = new double[3];
+            double[]		move = new double[3] {0, 0, 0}, oldorigin = new double[3] {0, 0, 0};
             double		delta;
 
             ent.v.ideal_yaw = yaw;
@@ -322,7 +322,7 @@ namespace quake
         public static void SV_NewChaseDir (prog.edict_t actor, prog.edict_t enemy, double dist)
         {
             double		deltax,deltay;
-            double[]	d = new double[3];
+            double[]	d = new double[3] {0, 0, 0};
             double		tdir, olddir, turnaround;
 
             olddir = mathlib. anglemod( (int)(actor.v.ideal_yaw/45)*45 );

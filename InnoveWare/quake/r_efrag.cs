@@ -37,7 +37,7 @@ namespace quake
 
         static efrag_t  lastlink;
         
-        static double[] r_emins = new double[3], r_emaxs = new double[3];
+        static double[] r_emins = new double[3] {0, 0, 0}, r_emaxs = new double[3] {0, 0, 0};
 
         static entity_t r_addent;
 

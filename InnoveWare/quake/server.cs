@@ -94,7 +94,7 @@ namespace quake
             public net.qsocket_t    netconnection;	// communications handle
 
             public client.usercmd_t cmd = new client.usercmd_t();				// movement
-            double[] wishdir = new double[3];			// intended motion calced from cmd
+            double[] wishdir = new double[3] {0, 0, 0};			// intended motion calced from cmd
 
 	        public common.sizebuf_t	message = new common.sizebuf_t();			// can be added to at any time,
 										// copied and clear once per frame

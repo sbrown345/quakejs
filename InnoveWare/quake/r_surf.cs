@@ -63,7 +63,7 @@ namespace quake
 	        int			        lnum;
 	        int			        sd, td;
 	        double		        dist, rad, minlight;
-	        double[]		    impact = new double[3], local = new double[3];
+	        double[]		    impact = new double[3] {0, 0, 0}, local = new double[3] {0, 0, 0};
 	        int			        s, t;
 	        int			        i;
 	        int			        smax, tmax;

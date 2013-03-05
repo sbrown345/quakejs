@@ -134,15 +134,15 @@ namespace quake
         static void SetMinMaxSize (edict_t e, double[] min, double[] max, bool rotate)
         {
 	        double[]	angles;
-	        double[]	rmin = new double[3], rmax = new double[3];
+	        double[]	rmin = new double[3] {0, 0, 0}, rmax = new double[3] {0, 0, 0};
 	        double[][]  bounds = new double[2][];
 	        double[]	xvector = new double[2], yvector = new double[2];
 	        double	    a;
-	        double[]	@base = new double[3], transformed = new double[3];
+	        double[]	@base = new double[3] {0, 0, 0}, transformed = new double[3] {0, 0, 0};
 	        int		    i, j, k, l;
 
             for (int kk = 0; kk < 2; kk++)
-                bounds[kk] = new double[3];
+                bounds[kk] = new double[3] {0, 0, 0};
 
 	        for (i=0 ; i<3 ; i++)
 		        if (min[i] > max[i])
@@ -356,7 +356,7 @@ namespace quake
         {
 
             double[] value1;
-	        double[]	newvalue= new double[3];
+	        double[]	newvalue= new double[3] {0, 0, 0};
 	        double	@new;
 	
 	        value1 = G_VECTOR(OFS_PARM0);
@@ -374,7 +374,7 @@ namespace quake
                 newvalue[2] = value1[2] * @new;
 	        }
 
-            var tempVector = new double[3];
+            var tempVector = new double[3] {0, 0, 0};
             mathlib.VectorCopy (newvalue, tempVector);
             G_VECTOR_WRITE(OFS_RETURN, tempVector);
         }
@@ -1091,7 +1091,7 @@ namespace quake
         {
             edict_t ent;
             double yaw, dist;
-            double[] move = new double[3];
+            double[] move = new double[3] {0, 0, 0};
             dfunction_t oldf;
             int oldself;
 
@@ -1133,7 +1133,7 @@ namespace quake
         private static void PF_droptofloor()
         {
             edict_t ent;
-            double[] end = new double[3];
+            double[] end = new double[3] {0, 0, 0};
             world.trace_t trace;
 
             ent = PROG_TO_EDICT(pr_global_struct[0].self);
@@ -1263,8 +1263,8 @@ namespace quake
         static void PF_aim()
         {
             edict_t	ent, check, bestent;
-            double[]	start = new double[3], dir = new double[3], end = new double[3], bestdir = new double[3];
-            var tempVector = new double[3];
+            double[]	start = new double[3] {0, 0, 0}, dir = new double[3] {0, 0, 0}, end = new double[3] {0, 0, 0}, bestdir = new double[3] {0, 0, 0};
+            var tempVector = new double[3] {0, 0, 0};
             int i, j;
             world.trace_t	tr;
             double	dist, bestdist;

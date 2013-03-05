@@ -39,7 +39,7 @@ namespace quake
         static draw.particle_t[]    particles;
         static int			        r_numparticles;
 
-        public static double[]          r_pright = new double[3], r_pup = new double[3], r_ppn = new double[3];
+        public static double[]          r_pright = new double[3] {0, 0, 0}, r_pup = new double[3] {0, 0, 0}, r_ppn = new double[3] {0, 0, 0};
 
         /*
         ===============
@@ -86,7 +86,7 @@ namespace quake
 	        draw.particle_t	    p;
 	        double		        angle;
 	        double		        sr, sp, sy, cr, cp, cy;
-	        double[]	        forward = new double[3];
+	        double[]	        forward = new double[3] {0, 0, 0};
 	        double		        dist;
         	
 	        dist = 64;
@@ -162,7 +162,7 @@ namespace quake
         */
         public static void R_ParseParticleEffect ()
         {
-            double[]    org = new double[3], dir = new double[3];
+            double[]    org = new double[3] {0, 0, 0}, dir = new double[3] {0, 0, 0};
 	        int			i, count, msgcount, color;
         	
 	        for (i=0 ; i<3 ; i++)
@@ -372,7 +372,7 @@ namespace quake
 	        int			    i, j, k;
 	        draw.particle_t	p;
 	        double		    vel;
-            double[]         dir = new double[3];
+            double[]         dir = new double[3] {0, 0, 0};
 
 	        for (i=-16 ; i<16 ; i++)
 		        for (j=-16 ; j<16 ; j++)
@@ -414,7 +414,7 @@ namespace quake
 	        int			    i, j, k;
             draw.particle_t p;
 	        double		    vel;
-	        double[]	    dir = new double[3];
+	        double[]	    dir = new double[3] {0, 0, 0};
 
 	        for (i=-16 ; i<16 ; i+=4)
 		        for (j=-16 ; j<16 ; j+=4)
@@ -448,7 +448,7 @@ namespace quake
         static int tracercount;
         public static void R_RocketTrail(double[] start, double[] end, int type)
         {
-	        double[]	    vec = new double[3];
+	        double[]	    vec = new double[3] {0, 0, 0};
 	        double		    len;
 	        int			    j;
 	        draw.particle_t	p;

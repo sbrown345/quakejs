@@ -28,9 +28,9 @@ namespace quake
     {
         public class /*struct */ moveclip_t
         {
-          public double[] boxmins = new double[3], boxmaxs = new double[3];// enclose the test object along entire move
-          public double[] mins = new double[3], maxs = new double[3];	// size of the moving object
-          public double[] mins2 = new double[3], maxs2 = new double[3];	// size when clipping against mosnters
+          public double[] boxmins = new double[3] {0, 0, 0}, boxmaxs = new double[3] {0, 0, 0};// enclose the test object along entire move
+          public double[] mins = new double[3] {0, 0, 0}, maxs = new double[3] {0, 0, 0};	// size of the moving object
+          public double[] mins2 = new double[3] {0, 0, 0}, maxs2 = new double[3] {0, 0, 0};	// size when clipping against mosnters
           public double[] start, end;
           public trace_t trace;
           public int type;
@@ -39,7 +39,7 @@ namespace quake
 
         public class plane_t
         {
-            public   double[]	normal = new double[3];
+            public   double[]	normal = new double[3] {0, 0, 0};
             public double	    dist;
         };
 
@@ -49,7 +49,7 @@ namespace quake
 	      public bool	    startsolid;	// if true, the initial point was in a solid area
 	      public bool	    inopen, inwater;
 	      public double	    fraction;		// time completed, 1.0 = didn't hit anything
-	      public double[]	endpos = new double[3];			// final position
+	      public double[]	endpos = new double[3] {0, 0, 0};			// final position
 	      public plane_t	    plane = new plane_t();			// surface normal at impact
           public prog.edict_t ent;			// entity the surface is on
         };
@@ -171,8 +171,8 @@ namespace quake
        static  model.hull_t SV_HullForEntity(prog.edict_t ent, double[] mins, double[] maxs, double[] offset)
         {
             model.model_t model;
-            double[] size = new double[3];
-            double[] hullmins= new double[3], hullmaxs= new double[3];
+            double[] size = new double[3] {0, 0, 0};
+            double[] hullmins= new double[3] {0, 0, 0}, hullmaxs= new double[3] {0, 0, 0};
             model.hull_t hull;
 
             // decide which clipping hull to use, based on the size
@@ -254,8 +254,8 @@ namespace quake
         static areanode_t SV_CreateAreaNode(int depth, double[] mins, double[] maxs)
         {
             areanode_t anode= new areanode_t();
-            double[] size = new double[3];
-            double[] mins1 = new double[3], maxs1 = new double[3], mins2 = new double[3], maxs2 = new double[3];
+            double[] size = new double[3] {0, 0, 0};
+            double[] mins1 = new double[3] {0, 0, 0}, maxs1 = new double[3] {0, 0, 0}, mins2 = new double[3] {0, 0, 0}, maxs2 = new double[3] {0, 0, 0};
 
             anode = sv_areanodes[sv_numareanodes];
             sv_numareanodes++;
@@ -651,7 +651,7 @@ namespace quake
             double t1, t2;
             double frac;
             int i;
-            double[] mid = new double[3];
+            double[] mid = new double[3] {0, 0, 0};
             int side;
             double midf;
 
@@ -781,8 +781,8 @@ namespace quake
         public static trace_t SV_ClipMoveToEntity(prog.edict_t ent, double[] start, double[] mins, double[] maxs, double[] end)
         {
             trace_t trace;
-            double[] offset = new double[3];
-            double[] start_l = new double[3], end_l = new double[3];
+            double[] offset = new double[3] {0, 0, 0};
+            double[] start_l = new double[3] {0, 0, 0}, end_l = new double[3] {0, 0, 0};
             model.hull_t hull;
 
             // fill in a default trace

@@ -52,7 +52,7 @@ namespace quake
         // !!! if this is changed, it must be changed in asm_draw.h too !!!
         public class mvertex_t
         {
-	        public double[]		position = new double[3];
+	        public double[]		position = new double[3] {0, 0, 0};
         };
 
         static int[] colors =
@@ -69,7 +69,7 @@ namespace quake
         // !!! if this is changed, it must be changed in asm_i386.h too !!!
         public class mplane_t
         {
-	        public double[]	normal = new double[3];
+	        public double[]	normal = new double[3] {0, 0, 0};
 	        public double	dist;
 	        public int/*byte*/	    type;			// for texture axis selection and fast side tests
             public int/*byte*/     signbits;		// signx + signy<<1 + signz<<1
@@ -193,8 +193,8 @@ namespace quake
            // }
 
             public  int      lastclipnode;
-	       public  double[]	clip_mins = new double[3];
-	       public  double[]	clip_maxs = new double[3];
+	       public  double[]	clip_mins = new double[3] {0, 0, 0};
+	       public  double[]	clip_maxs = new double[3] {0, 0, 0};
         }
 
         /*
@@ -330,7 +330,7 @@ namespace quake
         //
         // volume occupied by the model
         //		
-	        public double[]	            mins = new double[3], maxs = new double[3];
+	        public double[]	            mins = new double[3] {0, 0, 0}, maxs = new double[3] {0, 0, 0};
 	        public double		        radius;
 
         //
@@ -1652,7 +1652,7 @@ namespace quake
         static double RadiusFromBounds(double[] mins, double[] maxs)
         {
             int         i;
-            double[]    corner = new double[3];
+            double[]    corner = new double[3] {0, 0, 0};
 
             for (i = 0; i < 3; i++)
             {

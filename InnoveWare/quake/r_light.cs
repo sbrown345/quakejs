@@ -142,7 +142,7 @@ namespace quake
 	        double		        front, back, frac;
 	        bool		        side;
 	        model.mplane_t	    plane;
-	        double[]		    mid = new double[3];
+	        double[]		    mid = new double[3] {0, 0, 0};
 	        model.msurface_t	surf;
 	        int			        s, t, ds, dt;
 	        int			        i;
@@ -236,7 +236,7 @@ namespace quake
 
         static int R_LightPoint (double[] p)
         {
-	        double[]	end = new double[3];
+	        double[]	end = new double[3] {0, 0, 0};
 	        int			r;
         	
 	        if (client.cl.worldmodel.lightdata == null)

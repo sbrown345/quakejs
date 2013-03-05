@@ -51,7 +51,7 @@ namespace quake
             public int          looping;		// where to loop, -1 = no looping
             public int          entnum;			// to allow overriding a specific sound
             public int          entchannel;		//
-            public double[]     origin = new double[3];			// origin of sound effect
+            public double[]     origin = new double[3] {0, 0, 0};			// origin of sound effect
             public double       dist_mult;		// distance multiplier (attenuation/clipK)
             public int          master_vol;		// 0-255 master volume
             public int          skip;

@@ -236,7 +236,7 @@ If steptrace is not NULL, the trace of any vertical wall hit will be stored
         private static int SV_FlyMove(prog.edict_t ent, double time /*was float*/, ref world.trace_t steptrace)
         {
             int bumpcount, numbumps;
-            double[] dir = new double[3];
+            double[] dir = new double[3] {0, 0, 0};
             double d;
             int numplanes;
             double[][] planes =
@@ -245,10 +245,10 @@ If steptrace is not NULL, the trace of any vertical wall hit will be stored
                     ArrayHelpers.ExplcitDoubleArray(3), ArrayHelpers.ExplcitDoubleArray(3),
                     ArrayHelpers.ExplcitDoubleArray(3)
                 };
-            double[] primal_velocity = new double[3], original_velocity = new double[3], new_velocity = new double[3];
+            double[] primal_velocity = new double[3] {0, 0, 0}, original_velocity = new double[3] {0, 0, 0}, new_velocity = new double[3] {0, 0, 0};
             int i, j;
             world.trace_t trace;
-            double[] end = new double[3];
+            double[] end = new double[3] {0, 0, 0};
             double time_left;
             int blocked;
 
@@ -429,7 +429,7 @@ Does not change the entities velocity at all
 static world.trace_t SV_PushEntity (prog.edict_t ent, double[] push)
 {
     world.trace_t trace;
-    double[] end = new double[3];
+    double[] end = new double[3] {0, 0, 0};
 
     mathlib.VectorAdd(ent.v.origin, push, end);
 
@@ -461,8 +461,8 @@ static void SV_PushMove (prog.edict_t pusher, Double movetime)
 {
     int			i, e;
     prog.edict_t		check, block;
-    double[]		mins = new double[3], maxs = new double[3], move = new double[3];
-    double[]		entorig = new double[3], pushorig = new double[3];
+    double[]		mins = new double[3] {0, 0, 0}, maxs = new double[3] {0, 0, 0}, move = new double[3] {0, 0, 0};
+    double[]		entorig = new double[3] {0, 0, 0}, pushorig = new double[3] {0, 0, 0};
     int			num_moved;
     prog.edict_t[] moved_edict = new prog.edict_t[quakedef.MAX_EDICTS];
     double[][]		moved_from = new double[quakedef.MAX_EDICTS][];
@@ -528,7 +528,7 @@ static void SV_PushMove (prog.edict_t pusher, Double movetime)
 
         for (int j = 0; j < moved_from.Length; j++)
         {
-            moved_from[j] = new double[3];
+            moved_from[j] = new double[3] {0, 0, 0};
         }
 
         mathlib.VectorCopy (check.v.origin, entorig);
@@ -646,7 +646,7 @@ static void SV_PushMove (prog.edict_t pusher, Double movetime)
             //Debug.WriteLine("SV_CheckStuck");
             int i, j;
             int z;
-            double[] org = new double[3];
+            double[] org = new double[3] {0, 0, 0};
 
             if (world.SV_TestEntityPosition(ent) == null)
             {
@@ -691,7 +691,7 @@ static void SV_PushMove (prog.edict_t pusher, Double movetime)
         static bool SV_CheckWater (prog.edict_t ent)
         {
             //Debug.WriteLine("SV_CheckWater");
-            double[] point = new double[3];
+            double[] point = new double[3] {0, 0, 0};
             int cont;
 
             point[0] = ent.v.origin[0];
@@ -728,9 +728,9 @@ static void SV_PushMove (prog.edict_t pusher, Double movetime)
         */
         static void SV_WallFriction (prog.edict_t ent, world.trace_t trace)
         {
-            double[] forward = new double[3], right = new double[3], up = new double[3];
+            double[] forward = new double[3] {0, 0, 0}, right = new double[3] {0, 0, 0}, up = new double[3] {0, 0, 0};
             double d, i;
-            double[] into = new double[3], side = new double[3];
+            double[] into = new double[3] {0, 0, 0}, side = new double[3] {0, 0, 0};
 
             mathlib.AngleVectors(ent.v.v_angle, forward, right, up);
             d = mathlib.DotProduct(trace.plane.normal, forward);
@@ -763,8 +763,8 @@ static void SV_PushMove (prog.edict_t pusher, Double movetime)
         static int SV_TryUnstick (prog.edict_t ent, double[] oldvel)
         {
 	        int		i;
-	        double[]	oldorg = new double[3];
-	        double[]	dir = new double[3];
+	        double[]	oldorg = new double[3] {0, 0, 0};
+	        double[]	dir = new double[3] {0, 0, 0};
 	        int		clip;
 	        world.trace_t	steptrace = new world.trace_t();
 	
@@ -821,9 +821,9 @@ static void SV_PushMove (prog.edict_t pusher, Double movetime)
 
         public static void SV_WalkMove(prog.edict_t ent)
         {
-            double[] upmove = new double[3], downmove = new double[3];
-            double[] oldorg = new double[3], oldvel = new double[3];
-            double[] nosteporg = new double[3], nostepvel = new double[3];
+            double[] upmove = new double[3] {0, 0, 0}, downmove = new double[3] {0, 0, 0};
+            double[] oldorg = new double[3] {0, 0, 0}, oldvel = new double[3] {0, 0, 0};
+            double[] nosteporg = new double[3] {0, 0, 0}, nostepvel = new double[3] {0, 0, 0};
             int clip;
             int oldonground;
             world.trace_t steptrace = new world.trace_t(), downtrace = new world.trace_t();
@@ -1079,7 +1079,7 @@ static void SV_PushMove (prog.edict_t pusher, Double movetime)
         static void SV_Physics_Toss (prog.edict_t ent)
         {
 	        world.trace_t	trace= new world.trace_t();
-	        double[]	move = new double[3];
+	        double[]	move = new double[3] {0, 0, 0};
 	        double      backoff;
 
             // regular thinking

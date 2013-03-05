@@ -48,10 +48,10 @@ namespace quake
 	        public quakedef.entity_state_t	baseline = new quakedef.entity_state_t();		// to fill in defaults in updates
 
 	        public double				    msgtime;		// time of last update
-	        public double[][]			    msg_origins = { new double[3], new double[3] };	// last two updates (0 is newest)	
-	        public double[]				    origin = new double[3];
-            public double[][]               msg_angles = { new double[3], new double[3] };	// last two updates (0 is newest)
-            public double[]                 angles = new double[3];	
+	        public double[][]			    msg_origins = { new double[3] {0, 0, 0}, new double[3] {0, 0, 0} };	// last two updates (0 is newest)	
+	        public double[]				    origin = new double[3] {0, 0, 0};
+            public double[][]               msg_angles = { new double[3] {0, 0, 0}, new double[3] {0, 0, 0} };	// last two updates (0 is newest)
+            public double[]                 angles = new double[3] {0, 0, 0};	
 	        public model.model_t		    model;			// NULL = no model
 	        public efrag_t			        efrag;			// linked list of efrags
 	        public int						frame;
@@ -95,8 +95,8 @@ namespace quake
 	        public double	    xOrigin;			// should probably allways be 0.5
             public double       yOrigin;			// between be around 0.3 to 0.5
 
-	        public double[]	    vieworg = new double[3];
-	        public double[]	    viewangles = new double[3];
+	        public double[]	    vieworg = new double[3] {0, 0, 0};
+	        public double[]	    viewangles = new double[3] {0, 0, 0};
         	
 	        public double		fov_x, fov_y;
 

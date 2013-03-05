@@ -25,7 +25,7 @@ namespace quake
 {
     public partial class render
     {
-        static double[]	    viewlightvec = new double[3];
+        static double[]	    viewlightvec = new double[3] {0, 0, 0};
         static alight_t     r_viewlighting = new alight_t { ambientlight=128, shadelight=192, plightvec=viewlightvec };
         static double r_time1;
         static int			r_numallocatededges;
@@ -56,10 +56,10 @@ namespace quake
         //
         // view origin
         //
-        public static double[] vup = new double[3], base_vup = new double[3];
-        public static double[] vpn = new double[3], base_vpn = new double[3];
-        public static double[] vright = new double[3], base_vright = new double[3];
-        public static double[] r_origin = new double[3];
+        public static double[] vup = new double[3] {0, 0, 0}, base_vup = new double[3] {0, 0, 0};
+        public static double[] vpn = new double[3] {0, 0, 0}, base_vpn = new double[3] {0, 0, 0};
+        public static double[] vright = new double[3] {0, 0, 0}, base_vright = new double[3] {0, 0, 0};
+        public static double[] r_origin = new double[3] {0, 0, 0};
 
         //
         // screen size info
@@ -500,7 +500,7 @@ namespace quake
 	        alight_t	lighting = new alight_t();
         // FIXME: remove and do real lighting
 	        double[]	lightvec = {-1, 0, 0};
-	        double[]	dist = new double[3];
+	        double[]	dist = new double[3] {0, 0, 0};
 	        double		add;
 
 	        if (r_drawentities.value == 0)
@@ -587,7 +587,7 @@ namespace quake
 	        double[]	    lightvec = {-1, 0, 0};
 	        int			    j;
 	        int			    lnum;
-	        double[]	    dist = new double[3];
+	        double[]	    dist = new double[3] {0, 0, 0};
 	        double		    add;
 	        client.dlight_t	dl;
 
@@ -654,7 +654,7 @@ namespace quake
         static int R_BmodelCheckBBox(model.model_t clmodel, double[] minmaxs)
         {
 	        int			i, pindex, clipflags;
-            double[]    acceptpt = new double[3], rejectpt = new double[3];
+            double[]    acceptpt = new double[3] {0, 0, 0}, rejectpt = new double[3] {0, 0, 0};
 	        double		d;
 
 	        clipflags = 0;
@@ -717,7 +717,7 @@ namespace quake
         static void R_DrawBEntitiesOnList ()
         {
 	        int			    i, j, k, clipflags;
-	        double[]	    oldorigin = new double[3];
+	        double[]	    oldorigin = new double[3] {0, 0, 0};
 	        model.model_t	clmodel;
 	        double[]    	minmaxs = new double[6];
 

@@ -38,7 +38,7 @@ namespace quake
         */
         static void R_RotateSprite (double beamlength)
         {
-            double[] vec = new double[3];
+            double[] vec = new double[3] {0, 0, 0};
 
             if (beamlength == 0.0)
                 return;
@@ -143,7 +143,7 @@ namespace quake
 	        double		        dot, scale;
             double[]            pv;
         	double[][]	        pverts;
-            double[]            left = new double[3], up = new double[3], right = new double[3], down = new double[3], transformed = new double[3], local = new double[3];
+            double[]            left = new double[3] {0, 0, 0}, up = new double[3] {0, 0, 0}, right = new double[3] {0, 0, 0}, down = new double[3] {0, 0, 0}, transformed = new double[3] {0, 0, 0}, local = new double[3] {0, 0, 0};
 	        draw.emitpoint_t[]	outverts = new draw.emitpoint_t[MAXWORKINGVERTS+1];
 
             for (int kk = 0; kk < MAXWORKINGVERTS + 1; kk++) outverts[kk] = new draw.emitpoint_t();
@@ -272,7 +272,7 @@ namespace quake
         {
             int             i;
             model.msprite_t psprite;
-            double[]        tvec = new double[3];
+            double[]        tvec = new double[3] {0, 0, 0};
             double          dot, angle, sr, cr;
 
             psprite = (model.msprite_t)currententity.model.cache;

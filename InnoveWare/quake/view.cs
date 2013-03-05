@@ -75,7 +75,7 @@ namespace quake
         Used by view and sv_user
         ===============
         */
-        static double[]    forward = new double[3], right = new double[3], up = new double[3];
+        static double[]    forward = new double[3] {0, 0, 0}, right = new double[3] {0, 0, 0}, up = new double[3] {0, 0, 0};
 
         public static double V_CalcRoll (double[] angles, double[] velocity)
         {
@@ -296,9 +296,9 @@ namespace quake
         public static void V_ParseDamage ()
         {
 	        int		        armor, blood;
-	        double[]	    from = new double[3];
+	        double[]	    from = new double[3] {0, 0, 0};
 	        int		        i;
-            double[]        forward = new double[3], right = new double[3], up = new double[3];
+            double[]        forward = new double[3] {0, 0, 0}, right = new double[3] {0, 0, 0}, up = new double[3] {0, 0, 0};
 	        render.entity_t	ent;
 	        double	        side;
 	        double	        count;
@@ -708,8 +708,8 @@ namespace quake
         {
 	        render.entity_t	ent, view;
 	        int			    i;
-            double[]        forward = new double[3], right = new double[3], up = new double[3];
-            double[]        angles = new double[3];
+            double[]        forward = new double[3] {0, 0, 0}, right = new double[3] {0, 0, 0}, up = new double[3] {0, 0, 0};
+            double[]        angles = new double[3] {0, 0, 0};
             double          bob;
 
             V_DriftPitch();

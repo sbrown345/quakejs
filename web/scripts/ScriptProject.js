@@ -564,9 +564,9 @@
 	////////////////////////////////////////////////////////////////////////////////
 	// quake.bspfile.dmodel_t
 	var $quake_bspfile$dmodel_t = function() {
-		this.mins = new Array(3);
-		this.maxs = new Array(3);
-		this.$origin = new Array(3);
+		this.mins = [0, 0, 0];
+		this.maxs = [0, 0, 0];
+		this.$origin = [0, 0, 0];
 		this.headnode = new Array($quake_bspfile.maX_MAP_HULLS);
 		this.visleafs = 0;
 		this.firstface = 0;
@@ -632,7 +632,7 @@
 	////////////////////////////////////////////////////////////////////////////////
 	// quake.bspfile.dplane_t
 	var $quake_bspfile$dplane_t = function() {
-		this.normal = new Array(3);
+		this.normal = [0, 0, 0];
 		this.dist = 0;
 		this.type = 0;
 	};
@@ -652,7 +652,7 @@
 	////////////////////////////////////////////////////////////////////////////////
 	// quake.bspfile.dvertex_t
 	var $quake_bspfile$dvertex_t = function() {
-		this.point = new Array(3);
+		this.point = [0, 0, 0];
 	};
 	$quake_bspfile$dvertex_t.op_Implicit = function(buf) {
 		var i;
@@ -719,9 +719,9 @@
 	////////////////////////////////////////////////////////////////////////////////
 	// quake.chase
 	var $quake_chase = function() {
-		this.$chase_pos = new Array(3);
-		this.$chase_angles = new Array(3);
-		this.$chase_dest_angles = new Array(3);
+		this.$chase_pos = [0, 0, 0];
+		this.$chase_angles = [0, 0, 0];
+		this.$chase_dest_angles = [0, 0, 0];
 	};
 	$quake_chase.chase_Init = function() {
 		$quake_cvar_t.cvar_RegisterVariable($quake_chase.$chase_back);
@@ -742,8 +742,8 @@
 	$quake_chase.chase_Update = function() {
 		var i;
 		var dist;
-		var forward = new Array(3), up = new Array(3), right = new Array(3);
-		var dest = new Array(3), stop = new Array(3);
+		var forward = [0, 0, 0], up = [0, 0, 0], right = [0, 0, 0];
+		var dest = [0, 0, 0], stop = [0, 0, 0];
 		// if can't see player, reset
 		$quake_mathlib.angleVectors($quake_client.cl.viewangles, forward, right, up);
 		// calc exact destination
@@ -1522,9 +1522,9 @@
 		var ent;
 		var i, j;
 		var frac, f, d;
-		var delta = new Array(3);
+		var delta = [0, 0, 0];
 		var bobjrotate;
-		var oldorg = new Array(3);
+		var oldorg = [0, 0, 0];
 		var dl;
 		// determine partial update time	
 		frac = $quake_client.$cL_LerpPoint();
@@ -1727,6 +1727,14 @@
 		//
 		$quake_cvar_t.cvar_RegisterVariable($quake_client.cl_name);
 		$quake_cvar_t.cvar_RegisterVariable($quake_client.cl_color);
+		$quake_cvar_t.cvar_RegisterVariable($quake_client.$cl_upspeed);
+		$quake_cvar_t.cvar_RegisterVariable($quake_client.cl_forwardspeed);
+		$quake_cvar_t.cvar_RegisterVariable($quake_client.$cl_backspeed);
+		$quake_cvar_t.cvar_RegisterVariable($quake_client.$cl_sidespeed);
+		$quake_cvar_t.cvar_RegisterVariable($quake_client.$cl_movespeedkey);
+		$quake_cvar_t.cvar_RegisterVariable($quake_client.$cl_yawspeed);
+		$quake_cvar_t.cvar_RegisterVariable($quake_client.$cl_pitchspeed);
+		$quake_cvar_t.cvar_RegisterVariable($quake_client.$cl_anglespeedkey);
 		$quake_cvar_t.cvar_RegisterVariable($quake_client.$cl_shownet);
 		$quake_cvar_t.cvar_RegisterVariable($quake_client.$cl_nolerp);
 		$quake_cvar_t.cvar_RegisterVariable($quake_client.$lookspring);
@@ -1757,7 +1765,7 @@
 		return $quake_client.cl_entities[num];
 	};
 	$quake_client.$cL_ParseStartSoundPacket = function() {
-		var pos = new Array(3);
+		var pos = [0, 0, 0];
 		var channel, ent;
 		var sound_num;
 		var volume;
@@ -2236,7 +2244,7 @@
 		$quake_render.r_AddEfrags(ent);
 	};
 	$quake_client.$cL_ParseStaticSound = function() {
-		var org = new Array(3);
+		var org = [0, 0, 0];
 		var sound_num, vol, atten;
 		var i;
 		for (i = 0; i < 3; i++) {
@@ -2485,7 +2493,7 @@
 	};
 	$quake_client.$cL_ParseBeam = function(m) {
 		var ent;
-		var start = new Array(3), end = new Array(3);
+		var start = [0, 0, 0], end = [0, 0, 0];
 		var b;
 		var i;
 		ent = $quake_common.msG_ReadShort();
@@ -2523,7 +2531,7 @@
 	};
 	$quake_client.$cL_ParseTEnt = function() {
 		var type;
-		var pos = new Array(3);
+		var pos = [0, 0, 0];
 		var dl;
 		var rnd;
 		var colorStart, colorLength;
@@ -2699,7 +2707,7 @@
 	$quake_client.$cL_UpdateTEnts = function() {
 		var i;
 		var b;
-		var dist = new Array(3), org = new Array(3);
+		var dist = [0, 0, 0], org = [0, 0, 0];
 		var d;
 		var ent;
 		var yaw, pitch;
@@ -2763,8 +2771,8 @@
 		this.entity = 0;
 		this.model = null;
 		this.endtime = 0;
-		this.start = new Array(3);
-		this.end = new Array(3);
+		this.start = [0, 0, 0];
+		this.end = [0, 0, 0];
 	};
 	////////////////////////////////////////////////////////////////////////////////
 	// quake.client.cactive_t
@@ -2782,11 +2790,11 @@
 		this.faceanimtime = 0;
 		this.cshifts = new Array($quake_client.nuM_CSHIFTS);
 		this.prev_cshifts = new Array($quake_client.nuM_CSHIFTS);
-		this.mviewangles = [new Array(3), new Array(3)];
-		this.viewangles = new Array(3);
-		this.mvelocity = [new Array(3), new Array(3)];
-		this.velocity = new Array(3);
-		this.punchangle = new Array(3);
+		this.mviewangles = [[0, 0, 0], [0, 0, 0]];
+		this.viewangles = [0, 0, 0];
+		this.mvelocity = [[0, 0, 0], [0, 0, 0]];
+		this.velocity = [0, 0, 0];
+		this.punchangle = [0, 0, 0];
 		this.idealpitch = 0;
 		this.pitchvel = 0;
 		this.nodrift = false;
@@ -2858,7 +2866,7 @@
 	////////////////////////////////////////////////////////////////////////////////
 	// quake.client.dlight_t
 	var $quake_client$dlight_t = function() {
-		this.origin = new Array(3);
+		this.origin = [0, 0, 0];
 		this.radius = 0;
 		this.die = 0;
 		this.decay = 0;
@@ -2883,7 +2891,7 @@
 	////////////////////////////////////////////////////////////////////////////////
 	// quake.client.usercmd_t
 	var $quake_client$usercmd_t = function() {
-		this.viewangles = new Array(3);
+		this.viewangles = [0, 0, 0];
 		this.forwardmove = 0;
 		this.sidemove = 0;
 		this.upmove = 0;
@@ -4922,8 +4930,8 @@
 	$quake_draw.$d_CalcGradients = function(pface) {
 		var pplane;
 		var mipscale;
-		var p_temp1 = new Array(3);
-		var p_saxis = new Array(3), p_taxis = new Array(3);
+		var p_temp1 = [0, 0, 0];
+		var p_saxis = [0, 0, 0], p_taxis = [0, 0, 0];
 		var t;
 		pplane = pface.plane;
 		mipscale = 1 / (1 << $quake_draw.$miplevel);
@@ -4951,8 +4959,8 @@
 		var s;
 		var pface;
 		var pcurrentcache;
-		var world_transformed_modelorg = new Array(3);
-		var local_modelorg = new Array(3);
+		var world_transformed_modelorg = [0, 0, 0];
+		var local_modelorg = [0, 0, 0];
 		$quake_render.currententity = $quake_client.cl_entities[0];
 		$quake_render.transformVector($quake_render.modelorg, $quake_draw.$transformed_modelorg);
 		$quake_mathlib.vectorCopy($quake_draw.$transformed_modelorg, world_transformed_modelorg);
@@ -5157,7 +5165,7 @@
 		}
 	};
 	$quake_draw.d_DrawParticle = function(pparticle) {
-		var local = new Array(3), transformed = new Array(3);
+		var local = [0, 0, 0], transformed = [0, 0, 0];
 		var zi;
 		var pdest;
 		var pz;
@@ -6201,7 +6209,7 @@
 	};
 	$quake_draw.$d_Sky_uv_To_st = function(u, v, s, t) {
 		var wu, wv, temp;
-		var end = new Array(3);
+		var end = [0, 0, 0];
 		if ($quake_render.r_refdef.vrect.width >= $quake_render.r_refdef.vrect.height) {
 			temp = $quake_render.r_refdef.vrect.width;
 		}
@@ -6551,7 +6559,7 @@
 		// mark the end of the span list 
 	};
 	$quake_draw.$d_SpriteCalculateGradients = function() {
-		var p_normal = new Array(3), p_saxis = new Array(3), p_taxis = new Array(3), p_temp1 = new Array(3);
+		var p_normal = [0, 0, 0], p_saxis = [0, 0, 0], p_taxis = [0, 0, 0], p_temp1 = [0, 0, 0];
 		var distinv;
 		$quake_render.transformVector($quake_render.r_spritedesc.vpn, p_normal);
 		$quake_render.transformVector($quake_render.r_spritedesc.vright, p_saxis);
@@ -6788,10 +6796,10 @@
 	////////////////////////////////////////////////////////////////////////////////
 	// quake.draw.particle_t
 	var $quake_draw$particle_t = function() {
-		this.org = new Array(3);
+		this.org = [0, 0, 0];
 		this.color = 0;
 		this.next = null;
-		this.vel = new Array(3);
+		this.vel = [0, 0, 0];
 		this.ramp = 0;
 		this.die = 0;
 		this.type = 0;
@@ -6843,9 +6851,9 @@
 		this.nump = 0;
 		this.pverts = null;
 		this.pspriteframe = null;
-		this.vup = new Array(3);
-		this.vright = new Array(3);
-		this.vpn = new Array(3);
+		this.vup = [0, 0, 0];
+		this.vright = [0, 0, 0];
+		this.vpn = [0, 0, 0];
 		this.nearzi = 0;
 	};
 	////////////////////////////////////////////////////////////////////////////////
@@ -10350,7 +10358,7 @@
 	};
 	$quake_model.$radiusFromBounds = function(mins, maxs) {
 		var i;
-		var corner = new Array(3);
+		var corner = [0, 0, 0];
 		for (i = 0; i < 3; i++) {
 			corner[i] = ((Math.abs(mins[i]) > Math.abs(maxs[i])) ? Math.abs(mins[i]) : Math.abs(maxs[i]));
 		}
@@ -11008,8 +11016,8 @@
 		this.planes = null;
 		this.firstclipnode = 0;
 		this.lastclipnode = 0;
-		this.clip_mins = new Array(3);
-		this.clip_maxs = new Array(3);
+		this.clip_mins = [0, 0, 0];
+		this.clip_maxs = [0, 0, 0];
 	};
 	////////////////////////////////////////////////////////////////////////////////
 	// quake.model.maliasframedesc_t
@@ -11053,10 +11061,10 @@
 	var $quake_model$mdl_t = function() {
 		this.ident = 0;
 		this.version = 0;
-		this.scale = new Array(3);
-		this.scale_origin = new Array(3);
+		this.scale = [0, 0, 0];
+		this.scale_origin = [0, 0, 0];
 		this.boundingradius = 0;
-		this.eyeposition = new Array(3);
+		this.eyeposition = [0, 0, 0];
 		this.numskins = 0;
 		this.skinwidth = 0;
 		this.skinheight = 0;
@@ -11131,8 +11139,8 @@
 		this.numframes = 0;
 		this.synctype = 0;
 		this.flags = 0;
-		this.mins = new Array(3);
-		this.maxs = new Array(3);
+		this.mins = [0, 0, 0];
+		this.maxs = [0, 0, 0];
 		this.radius = 0;
 		this.firstmodelsurface = 0;
 		this.nummodelsurfaces = 0;
@@ -11232,7 +11240,7 @@
 	////////////////////////////////////////////////////////////////////////////////
 	// quake.model.mplane_t
 	var $quake_model$mplane_t = function() {
-		this.normal = new Array(3);
+		this.normal = [0, 0, 0];
 		this.dist = 0;
 		this.type = 0;
 		this.signbits = 0;
@@ -11307,7 +11315,7 @@
 	////////////////////////////////////////////////////////////////////////////////
 	// quake.model.mvertex_t
 	var $quake_model$mvertex_t = function() {
-		this.position = new Array(3);
+		this.position = [0, 0, 0];
 	};
 	////////////////////////////////////////////////////////////////////////////////
 	// quake.model.node_or_leaf_t
@@ -12064,7 +12072,7 @@
 		return $quake_prog.nuM_FOR_EDICT($quake_prog.$g_EDICT(o));
 	};
 	$quake_prog.$g_VECTOR = function(o) {
-		var res = new Array(3);
+		var res = [0, 0, 0];
 		res[0] = $quake_prog.cast_float($quake_prog.pr_globals_read(o));
 		res[1] = $quake_prog.cast_float($quake_prog.pr_globals_read(o + 1));
 		res[2] = $quake_prog.cast_float($quake_prog.pr_globals_read(o + 2));
@@ -12125,14 +12133,14 @@
 	};
 	$quake_prog.$setMinMaxSize = function(e, min, max, rotate) {
 		var angles;
-		var rmin = new Array(3), rmax = new Array(3);
+		var rmin = [0, 0, 0], rmax = [0, 0, 0];
 		var bounds = new Array(2);
 		var xvector = new Array(2), yvector = new Array(2);
 		var a;
-		var base = new Array(3), transformed = new Array(3);
+		var base = [0, 0, 0], transformed = [0, 0, 0];
 		var i, j, k, l;
 		for (var kk = 0; kk < 2; kk++) {
-			bounds[kk] = new Array(3);
+			bounds[kk] = [0, 0, 0];
 		}
 		for (i = 0; i < 3; i++) {
 			if (min[i] > max[i]) {
@@ -12257,7 +12265,7 @@
 	};
 	$quake_prog.$pF_normalize = function() {
 		var value1;
-		var newvalue = new Array(3);
+		var newvalue = [0, 0, 0];
 		var new1;
 		value1 = $quake_prog.$g_VECTOR($quake_prog.ofS_PARM0);
 		new1 = value1[0] * value1[0] + value1[1] * value1[1] + value1[2] * value1[2];
@@ -12271,7 +12279,7 @@
 			newvalue[1] = value1[1] * new1;
 			newvalue[2] = value1[2] * new1;
 		}
-		var tempVector = new Array(3);
+		var tempVector = [0, 0, 0];
 		$quake_mathlib.vectorCopy(newvalue, tempVector);
 		$quake_prog.$g_VECTOR_WRITE($quake_prog.ofS_RETURN, tempVector);
 	};
@@ -12706,7 +12714,7 @@
 	$quake_prog.$pF_walkmove = function() {
 		var ent;
 		var yaw, dist;
-		var move = new Array(3);
+		var move = [0, 0, 0];
 		var oldf;
 		var oldself;
 		ent = $quake_prog.proG_TO_EDICT($quake_prog.pr_global_struct[0].self);
@@ -12730,7 +12738,7 @@
 	};
 	$quake_prog.$pF_droptofloor = function() {
 		var ent;
-		var end = new Array(3);
+		var end = [0, 0, 0];
 		var trace;
 		ent = $quake_prog.proG_TO_EDICT($quake_prog.pr_global_struct[0].self);
 		$quake_mathlib.vectorCopy(ent.v.origin, end);
@@ -12802,8 +12810,8 @@
 	};
 	$quake_prog.$pF_aim = function() {
 		var ent, check, bestent;
-		var start = new Array(3), dir = new Array(3), end = new Array(3), bestdir = new Array(3);
-		var tempVector = new Array(3);
+		var start = [0, 0, 0], dir = [0, 0, 0], end = [0, 0, 0], bestdir = [0, 0, 0];
+		var tempVector = [0, 0, 0];
 		var i, j;
 		var tr;
 		var dist, bestdist;
@@ -13430,7 +13438,7 @@
 		var d;
 		//dfunction_t	*func;
 		var variables = null;
-		var values = new Array(3);
+		var values = [0, 0, 0];
 		//d = (void *)((int *)base + key->ofs);
 		d = ss.getMembers($quake_prog$entvars_t, 4, 20 | 256, keyname);
 		if (ss.isNullOrUndefined(d)) {
@@ -16290,8 +16298,8 @@
 	////////////////////////////////////////////////////////////////////////////////
 	// quake.quakedef.entity_state_t
 	var $quake_quakedef$entity_state_t = function() {
-		this.origin = new Array(3);
-		this.angles = new Array(3);
+		this.origin = [0, 0, 0];
+		this.angles = [0, 0, 0];
 		this.modelindex = 0;
 		this.frame = 0;
 		this.colormap = 0;
@@ -16624,7 +16632,7 @@
 			viewaux[kk] = new $quake_render$auxvert_t();
 		}
 		for (kk = 0; kk < 8; kk++) {
-			basepts[kk] = new Array(3);
+			basepts[kk] = [0, 0, 0];
 		}
 		// expand, rotate, and translate points into worldspace
 		$quake_render.currententity.trivial_accept = 0;
@@ -16799,7 +16807,7 @@
 		var i;
 		var rotationmatrix = [$ArrayHelpers.explcitDoubleArray(4), $ArrayHelpers.explcitDoubleArray(4), $ArrayHelpers.explcitDoubleArray(4)];
 		var t2matrix = [$ArrayHelpers.explcitDoubleArray(4), $ArrayHelpers.explcitDoubleArray(4), $ArrayHelpers.explcitDoubleArray(4)];
-		var angles = new Array(3);
+		var angles = [0, 0, 0];
 		var kk;
 		// TODO: should really be stored with the entity instead of being reconstructed
 		// TODO: should use a look-up table
@@ -17070,7 +17078,7 @@
 		}
 	};
 	$quake_render.$r_EntityRotate = function(vec) {
-		var tvec = new Array(3);
+		var tvec = [0, 0, 0];
 		$quake_mathlib.vectorCopy(vec, tvec);
 		vec[0] = $quake_mathlib.dotProduct$1($quake_render.$entity_rotation[0], tvec);
 		vec[1] = $quake_mathlib.dotProduct$1($quake_render.$entity_rotation[1], tvec);
@@ -17078,9 +17086,9 @@
 	};
 	$quake_render.r_RotateBmodel = function() {
 		var angle, s, c;
-		var temp1 = [new Array(3), new Array(3), new Array(3)];
-		var temp2 = [new Array(3), new Array(3), new Array(3)];
-		var temp3 = [new Array(3), new Array(3), new Array(3)];
+		var temp1 = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
+		var temp2 = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
+		var temp3 = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
 		// TODO: should use a look-up table
 		// TODO: should really be stored with the entity instead of being reconstructed
 		// TODO: could cache lazily, stored in the entity
@@ -17348,7 +17356,7 @@
 	};
 	$quake_render.$r_RecursiveWorldNode = function(node, clipflags) {
 		var i, c, side, pindex;
-		var acceptpt = new Array(3), rejectpt = new Array(3);
+		var acceptpt = [0, 0, 0], rejectpt = [0, 0, 0];
 		var plane;
 		var surf, mark;
 		var pleaf;
@@ -17528,7 +17536,7 @@
 		var edge, pcheck;
 		var u_check;
 		var u, u_step;
-		var local = new Array(3), transformed = new Array(3);
+		var local = [0, 0, 0], transformed = [0, 0, 0];
 		var world;
 		var v, v2, ceilv0;
 		var scale, lzi0, u0, v0;
@@ -17754,7 +17762,7 @@
 		var mask;
 		var pplane;
 		var distinv;
-		var p_normal = new Array(3);
+		var p_normal = [0, 0, 0];
 		var pedges;
 		var tedge = new $quake_model$medge_t();
 		var pclip;
@@ -17894,7 +17902,7 @@
 		var mask;
 		var pplane;
 		var distinv;
-		var p_normal = new Array(3);
+		var p_normal = [0, 0, 0];
 		var tedge = new $quake_model$medge_t();
 		var pclip;
 		// skip out if no more surfs
@@ -18658,7 +18666,7 @@
 		var front, back, frac;
 		var side;
 		var plane;
-		var mid = new Array(3);
+		var mid = [0, 0, 0];
 		var surf;
 		var s, t, ds, dt;
 		var i;
@@ -18734,7 +18742,7 @@
 		return $quake_render.$recursiveLightPoint(node.children[(!side ? 1 : 0)], mid, end);
 	};
 	$quake_render.$r_LightPoint = function(p) {
-		var end = new Array(3);
+		var end = [0, 0, 0];
 		var r;
 		if (ss.isNullOrUndefined($quake_client.cl.worldmodel.lightdata)) {
 			return 255;
@@ -19000,7 +19008,7 @@
 		var lighting = new $quake_render$alight_t();
 		// FIXME: remove and do real lighting
 		var lightvec = [-1, 0, 0];
-		var dist = new Array(3);
+		var dist = [0, 0, 0];
 		var add;
 		if ($quake_render.$r_drawentities.value === 0) {
 			return;
@@ -19066,7 +19074,7 @@
 		var lightvec = [-1, 0, 0];
 		var j;
 		var lnum;
-		var dist = new Array(3);
+		var dist = [0, 0, 0];
 		var add;
 		var dl;
 		if ($quake_render.$r_drawviewmodel.value === 0 || $quake_render.$r_fov_greater_than_90) {
@@ -19123,7 +19131,7 @@
 	};
 	$quake_render.$r_BmodelCheckBBox = function(clmodel, minmaxs) {
 		var i, pindex, clipflags;
-		var acceptpt = new Array(3), rejectpt = new Array(3);
+		var acceptpt = [0, 0, 0], rejectpt = [0, 0, 0];
 		var d;
 		clipflags = 0;
 		if ($quake_render.currententity.angles[0] !== 0 || $quake_render.currententity.angles[1] !== 0 || $quake_render.currententity.angles[2] !== 0) {
@@ -19166,7 +19174,7 @@
 	};
 	$quake_render.$r_DrawBEntitiesOnList = function() {
 		var i, j, k, clipflags;
-		var oldorigin = new Array(3);
+		var oldorigin = [0, 0, 0];
 		var clmodel;
 		var minmaxs = new Array(6);
 		if ($quake_render.$r_drawentities.value === 0) {
@@ -19404,7 +19412,7 @@
 	};
 	$quake_render.r_TransformFrustum = function() {
 		var i;
-		var v = new Array(3), v2 = new Array(3);
+		var v = [0, 0, 0], v2 = [0, 0, 0];
 		for (i = 0; i < 4; i++) {
 			v[0] = $quake_render.$screenedge[i].normal[2];
 			v[1] = -$quake_render.$screenedge[i].normal[0];
@@ -19555,7 +19563,7 @@
 		var p;
 		var angle;
 		var sr, sp, sy, cr, cp, cy;
-		var forward = new Array(3);
+		var forward = [0, 0, 0];
 		var dist;
 		dist = 64;
 		count = 50;
@@ -19604,7 +19612,7 @@
 	$quake_render.$r_ReadPointFile_f = function() {
 	};
 	$quake_render.r_ParseParticleEffect = function() {
-		var org = new Array(3), dir = new Array(3);
+		var org = [0, 0, 0], dir = [0, 0, 0];
 		var i, count, msgcount, color;
 		for (i = 0; i < 3; i++) {
 			org[i] = $quake_common.msG_ReadCoord();
@@ -19751,7 +19759,7 @@
 		var i, j, k;
 		var p;
 		var vel;
-		var dir = new Array(3);
+		var dir = [0, 0, 0];
 		for (i = -16; i < 16; i++) {
 			for (j = -16; j < 16; j++) {
 				for (k = 0; k < 1; k++) {
@@ -19782,7 +19790,7 @@
 		var i, j, k;
 		var p;
 		var vel;
-		var dir = new Array(3);
+		var dir = [0, 0, 0];
 		for (i = -16; i < 16; i += 4) {
 			for (j = -16; j < 16; j += 4) {
 				for (k = -24; k < 32; k += 4) {
@@ -19810,7 +19818,7 @@
 		}
 	};
 	$quake_render.r_RocketTrail = function(start, end, type) {
-		var vec = new Array(3);
+		var vec = [0, 0, 0];
 		var len;
 		var j;
 		var p;
@@ -20080,7 +20088,7 @@
 		$quake_render.r_skymade = 0;
 	};
 	$quake_render.$r_RotateSprite = function(beamlength) {
-		var vec = new Array(3);
+		var vec = [0, 0, 0];
 		if (beamlength === 0) {
 			return;
 		}
@@ -20155,7 +20163,7 @@
 		var dot, scale;
 		var pv;
 		var pverts;
-		var left = new Array(3), up = new Array(3), right = new Array(3), down = new Array(3), transformed = new Array(3), local = new Array(3);
+		var left = [0, 0, 0], up = [0, 0, 0], right = [0, 0, 0], down = [0, 0, 0], transformed = [0, 0, 0], local = [0, 0, 0];
 		var outverts = new Array(21);
 		for (var kk = 0; kk < 21; kk++) {
 			outverts[kk] = new $quake_draw$emitpoint_t();
@@ -20249,7 +20257,7 @@
 	$quake_render.$r_DrawSprite = function() {
 		var i;
 		var psprite;
-		var tvec = new Array(3);
+		var tvec = [0, 0, 0];
 		var dot, angle, sr, cr;
 		psprite = ss.cast($quake_render.currententity.model.cache, $quake_model$msprite_t);
 		$quake_render.r_spritedesc.pspriteframe = $quake_render.$r_GetSpriteframe(psprite);
@@ -20357,7 +20365,7 @@
 		var lnum;
 		var sd, td;
 		var dist, rad, minlight;
-		var impact = new Array(3), local = new Array(3);
+		var impact = [0, 0, 0], local = [0, 0, 0];
 		var s, t;
 		var i;
 		var smax, tmax;
@@ -20691,7 +20699,7 @@
 	////////////////////////////////////////////////////////////////////////////////
 	// quake.render.auxvert_t
 	var $quake_render$auxvert_t = function() {
-		this.fv = new Array(3);
+		this.fv = [0, 0, 0];
 	};
 	////////////////////////////////////////////////////////////////////////////////
 	// quake.render.bedge_t
@@ -20708,7 +20716,7 @@
 	////////////////////////////////////////////////////////////////////////////////
 	// quake.render.clipplane_t
 	var $quake_render$clipplane_t = function() {
-		this.normal = new Array(3);
+		this.normal = [0, 0, 0];
 		this.dist = 0;
 		this.next = null;
 		this.leftedge = false;
@@ -20742,10 +20750,10 @@
 		this.$update_type = 0;
 		this.baseline = new $quake_quakedef$entity_state_t();
 		this.msgtime = 0;
-		this.msg_origins = [new Array(3), new Array(3)];
-		this.origin = new Array(3);
-		this.msg_angles = [new Array(3), new Array(3)];
-		this.angles = new Array(3);
+		this.msg_origins = [[0, 0, 0], [0, 0, 0]];
+		this.origin = [0, 0, 0];
+		this.msg_angles = [[0, 0, 0], [0, 0, 0]];
+		this.angles = [0, 0, 0];
 		this.model = null;
 		this.efrag = null;
 		this.frame = 0;
@@ -20790,8 +20798,8 @@
 		this.horizontalFieldOfView = 0;
 		this.xOrigin = 0;
 		this.yOrigin = 0;
-		this.vieworg = new Array(3);
-		this.viewangles = new Array(3);
+		this.vieworg = [0, 0, 0];
+		this.viewangles = [0, 0, 0];
 		this.fov_x = 0;
 		this.fov_y = 0;
 		this.ambientlight = 0;
@@ -22109,7 +22117,7 @@
 		var e, i;
 		var bits;
 		var pvs;
-		var org = new Array(3);
+		var org = [0, 0, 0];
 		var miss;
 		var ent;
 		// find the client's PVS
@@ -22873,7 +22881,7 @@
 		return true;
 	};
 	$quake_server.$sV_StepDirection = function(ent, yaw, dist) {
-		var move = new Array(3), oldorigin = new Array(3);
+		var move = [0, 0, 0], oldorigin = [0, 0, 0];
 		var delta;
 		ent.v.ideal_yaw = yaw;
 		$quake_prog.pF_changeyaw();
@@ -22900,7 +22908,7 @@
 	};
 	$quake_server.sV_NewChaseDir = function(actor, enemy, dist) {
 		var deltax, deltay;
-		var d = new Array(3);
+		var d = [0, 0, 0];
 		var tdir, olddir, turnaround;
 		olddir = $quake_mathlib.anglemod(ss.Int32.trunc(actor.v.ideal_yaw / 45) * 45);
 		turnaround = $quake_mathlib.anglemod(olddir - 180);
@@ -23114,14 +23122,14 @@
 	};
 	$quake_server.$sV_FlyMove = function(ent, time, steptrace) {
 		var bumpcount, numbumps;
-		var dir = new Array(3);
+		var dir = [0, 0, 0];
 		var d;
 		var numplanes;
 		var planes = [$ArrayHelpers.explcitDoubleArray(3), $ArrayHelpers.explcitDoubleArray(3), $ArrayHelpers.explcitDoubleArray(3), $ArrayHelpers.explcitDoubleArray(3), $ArrayHelpers.explcitDoubleArray(3)];
-		var primal_velocity = new Array(3), original_velocity = new Array(3), new_velocity = new Array(3);
+		var primal_velocity = [0, 0, 0], original_velocity = [0, 0, 0], new_velocity = [0, 0, 0];
 		var i, j;
 		var trace;
-		var end = new Array(3);
+		var end = [0, 0, 0];
 		var time_left;
 		var blocked;
 		numbumps = 4;
@@ -23255,7 +23263,7 @@
 	};
 	$quake_server.$sV_PushEntity = function(ent, push) {
 		var trace;
-		var end = new Array(3);
+		var end = [0, 0, 0];
 		$quake_mathlib.vectorAdd(ent.v.origin, push, end);
 		if (ent.v.movetype === 9) {
 			trace = $quake_world.sV_Move(ent.v.origin, ent.v.mins, ent.v.maxs, end, $quake_world.movE_MISSILE, ent);
@@ -23276,8 +23284,8 @@
 	$quake_server.$sV_PushMove = function(pusher, movetime) {
 		var i, e;
 		var check, block;
-		var mins = new Array(3), maxs = new Array(3), move = new Array(3);
-		var entorig = new Array(3), pushorig = new Array(3);
+		var mins = [0, 0, 0], maxs = [0, 0, 0], move = [0, 0, 0];
+		var entorig = [0, 0, 0], pushorig = [0, 0, 0];
 		var num_moved;
 		var moved_edict = new Array($quake_quakedef.maX_EDICTS);
 		var moved_from = new Array($quake_quakedef.maX_EDICTS);
@@ -23321,7 +23329,7 @@
 				check.v.flags = ss.Int32.trunc(check.v.flags) & -513;
 			}
 			for (var j = 0; j < moved_from.length; j++) {
-				moved_from[j] = new Array(3);
+				moved_from[j] = [0, 0, 0];
 			}
 			$quake_mathlib.vectorCopy(check.v.origin, entorig);
 			$quake_mathlib.vectorCopy(check.v.origin, moved_from[num_moved]);
@@ -23399,7 +23407,7 @@
 		//Debug.WriteLine("SV_CheckStuck");
 		var i, j;
 		var z;
-		var org = new Array(3);
+		var org = [0, 0, 0];
 		if (ss.isNullOrUndefined($quake_world.sV_TestEntityPosition(ent))) {
 			$quake_mathlib.vectorCopy(ent.v.origin, ent.v.oldorigin);
 			return;
@@ -23430,7 +23438,7 @@
 	};
 	$quake_server.$sV_CheckWater = function(ent) {
 		//Debug.WriteLine("SV_CheckWater");
-		var point = new Array(3);
+		var point = [0, 0, 0];
 		var cont;
 		point[0] = ent.v.origin[0];
 		point[1] = ent.v.origin[1];
@@ -23455,9 +23463,9 @@
 		return ent.v.waterlevel > 1;
 	};
 	$quake_server.$sV_WallFriction = function(ent, trace) {
-		var forward = new Array(3), right = new Array(3), up = new Array(3);
+		var forward = [0, 0, 0], right = [0, 0, 0], up = [0, 0, 0];
 		var d, i;
-		var into = new Array(3), side = new Array(3);
+		var into = [0, 0, 0], side = [0, 0, 0];
 		$quake_mathlib.angleVectors(ent.v.v_angle, forward, right, up);
 		d = $quake_mathlib.dotProduct$1(trace.plane.normal, forward);
 		d += 0.5;
@@ -23473,8 +23481,8 @@
 	};
 	$quake_server.$sV_TryUnstick = function(ent, oldvel) {
 		var i;
-		var oldorg = new Array(3);
-		var dir = new Array(3);
+		var oldorg = [0, 0, 0];
+		var dir = [0, 0, 0];
 		var clip;
 		var steptrace = { $: new $quake_world$trace_t() };
 		$quake_mathlib.vectorCopy(ent.v.origin, oldorg);
@@ -23541,9 +23549,9 @@
 		// still not moving
 	};
 	$quake_server.sV_WalkMove = function(ent) {
-		var upmove = new Array(3), downmove = new Array(3);
-		var oldorg = new Array(3), oldvel = new Array(3);
-		var nosteporg = new Array(3), nostepvel = new Array(3);
+		var upmove = [0, 0, 0], downmove = [0, 0, 0];
+		var oldorg = [0, 0, 0], oldvel = [0, 0, 0];
+		var nosteporg = [0, 0, 0], nostepvel = [0, 0, 0];
 		var clip;
 		var oldonground;
 		var steptrace = { $: new $quake_world$trace_t() }, downtrace = new $quake_world$trace_t();
@@ -23733,7 +23741,7 @@
 	};
 	$quake_server.$sV_Physics_Toss = function(ent) {
 		var trace = new $quake_world$trace_t();
-		var move = new Array(3);
+		var move = [0, 0, 0];
 		var backoff;
 		// regular thinking
 		if (!$quake_server.$sV_RunThink(ent)) {
@@ -23859,7 +23867,7 @@
 	$quake_server.$sV_SetIdealPitch = function() {
 		var angleval, sinval, cosval;
 		var tr;
-		var top = new Array(3), bottom = new Array(3);
+		var top = [0, 0, 0], bottom = [0, 0, 0];
 		var z = new Array($quake_server.$maX_FORWARD);
 		var i, j;
 		var step, dir, steps;
@@ -23913,7 +23921,7 @@
 	$quake_server.$sV_UserFriction = function() {
 		var vel;
 		var speed, newspeed, control;
-		var start = new Array(3), stop = new Array(3);
+		var start = [0, 0, 0], stop = [0, 0, 0];
 		var friction;
 		//trace_t	trace;
 		vel = $quake_server.$velocity;
@@ -23990,7 +23998,7 @@
 	};
 	$quake_server.$sV_WaterMove = function() {
 		var i;
-		var wishvel = new Array(3);
+		var wishvel = [0, 0, 0];
 		var speed, newspeed, wishspeed, addspeed, accelspeed;
 		//
 		// user intentions
@@ -24054,7 +24062,7 @@
 	};
 	$quake_server.$sV_AirMove = function() {
 		var i;
-		var wishvel = new Array(3);
+		var wishvel = [0, 0, 0];
 		var fmove, smove;
 		$quake_mathlib.angleVectors($quake_server.sv_player.v.angles, $quake_server.$forward, $quake_server.$right, $quake_server.$up);
 		fmove = $quake_server.$cmd.forwardmove;
@@ -24092,7 +24100,7 @@
 		}
 	};
 	$quake_server.$sV_ClientThink = function() {
-		var v_angle = new Array(3);
+		var v_angle = [0, 0, 0];
 		if ($quake_server.sv_player.v.movetype === 0) {
 			return;
 		}
@@ -24132,7 +24140,7 @@
 	};
 	$quake_server.$sV_ReadClientMove = function(move) {
 		var i;
-		var angle = new Array(3);
+		var angle = [0, 0, 0];
 		var bits;
 		// read ping time
 		$quake_host.host_client.ping_times[$quake_host.host_client.num_pings % $quake_server.nuM_PING_TIMES] = $quake_server.sv.time - $quake_common.msG_ReadFloat();
@@ -24334,7 +24342,7 @@
 		this.last_message = 0;
 		this.netconnection = null;
 		this.cmd = new $quake_client$usercmd_t();
-		this.$wishdir = new Array(3);
+		this.$wishdir = [0, 0, 0];
 		this.message = new $quake_common$sizebuf_t();
 		this.msgbuf = new Uint8Array($quake_quakedef.maX_MSGLEN);
 		this.edict = null;
@@ -24561,7 +24569,7 @@
 		var dot;
 		var ldist, rdist, dist;
 		var lscale, rscale, scale;
-		var source_vec = new Array(3);
+		var source_vec = [0, 0, 0];
 		var snd;
 		// anything coming from the view entity will allways be full volume
 		if (ch.entnum === $quake_client.cl.viewentity) {
@@ -25011,7 +25019,7 @@
 		this.looping = 0;
 		this.entnum = 0;
 		this.entchannel = 0;
-		this.origin = new Array(3);
+		this.origin = [0, 0, 0];
 		this.dist_mult = 0;
 		this.master_vol = 0;
 		this.skip = 0;
@@ -25439,9 +25447,9 @@
 	};
 	$quake_view.v_ParseDamage = function() {
 		var armor, blood;
-		var from = new Array(3);
+		var from = [0, 0, 0];
 		var i;
-		var forward = new Array(3), right = new Array(3), up = new Array(3);
+		var forward = [0, 0, 0], right = [0, 0, 0], up = [0, 0, 0];
 		var ent;
 		var side;
 		var count;
@@ -25720,8 +25728,8 @@
 	$quake_view.$v_CalcRefdef = function() {
 		var ent, view;
 		var i;
-		var forward = new Array(3), right = new Array(3), up = new Array(3);
-		var angles = new Array(3);
+		var forward = [0, 0, 0], right = [0, 0, 0], up = [0, 0, 0];
+		var angles = [0, 0, 0];
 		var bob;
 		$quake_view.$v_DriftPitch();
 		// ent is the player model (visible when out of body)
@@ -26021,8 +26029,8 @@
 	};
 	$quake_world.$sV_HullForEntity = function(ent, mins, maxs, offset) {
 		var model;
-		var size = new Array(3);
-		var hullmins = new Array(3), hullmaxs = new Array(3);
+		var size = [0, 0, 0];
+		var hullmins = [0, 0, 0], hullmaxs = [0, 0, 0];
 		var hull;
 		// decide which clipping hull to use, based on the size
 		if (ent.v.solid === 4) {
@@ -26066,8 +26074,8 @@
 	};
 	$quake_world.$sV_CreateAreaNode = function(depth, mins, maxs) {
 		var anode = new $quake_$world$areanode_t();
-		var size = new Array(3);
-		var mins1 = new Array(3), maxs1 = new Array(3), mins2 = new Array(3), maxs2 = new Array(3);
+		var size = [0, 0, 0];
+		var mins1 = [0, 0, 0], maxs1 = [0, 0, 0], mins2 = [0, 0, 0], maxs2 = [0, 0, 0];
 		anode = $quake_world.$sv_areanodes[$quake_world.$sv_numareanodes];
 		$quake_world.$sv_numareanodes++;
 		//Debug.WriteLine("SV_CreateAreaNode");
@@ -26322,7 +26330,7 @@
 		var t1, t2;
 		var frac;
 		var i;
-		var mid = new Array(3);
+		var mid = [0, 0, 0];
 		var side;
 		var midf;
 		//Debug.WriteLine(string.Format("SV_RecursiveHullCheck hull.firstclipnode:{0} num:{1} {2:F6} {3:F6} p1[0] {4:F6} p1[1] {5:F6}  p1[2] {6:F6} -  p2[0] {7:F6} p2[1] {8:F6} p2[2] {9:F6} num_hullcheck: {10}", hull.firstclipnode, num, (float)p1f, (float)p2f, (float)p1[0], (float)p1[1], (float)p1[2], (float)p2[0], (float)p2[1], (float)p2[2], num_hullcheck));
@@ -26428,8 +26436,8 @@
 	};
 	$quake_world.sV_ClipMoveToEntity = function(ent, start, mins, maxs, end) {
 		var trace;
-		var offset = new Array(3);
-		var start_l = new Array(3), end_l = new Array(3);
+		var offset = [0, 0, 0];
+		var start_l = [0, 0, 0], end_l = [0, 0, 0];
 		var hull;
 		// fill in a default trace
 		trace = new $quake_world$trace_t();
@@ -26580,12 +26588,12 @@
 	////////////////////////////////////////////////////////////////////////////////
 	// quake.world.moveclip_t
 	var $quake_world$moveclip_t = function() {
-		this.boxmins = new Array(3);
-		this.boxmaxs = new Array(3);
-		this.mins = new Array(3);
-		this.maxs = new Array(3);
-		this.mins2 = new Array(3);
-		this.maxs2 = new Array(3);
+		this.boxmins = [0, 0, 0];
+		this.boxmaxs = [0, 0, 0];
+		this.mins = [0, 0, 0];
+		this.maxs = [0, 0, 0];
+		this.mins2 = [0, 0, 0];
+		this.maxs2 = [0, 0, 0];
 		this.start = null;
 		this.end = null;
 		this.trace = null;
@@ -26595,7 +26603,7 @@
 	////////////////////////////////////////////////////////////////////////////////
 	// quake.world.plane_t
 	var $quake_world$plane_t = function() {
-		this.normal = new Array(3);
+		this.normal = [0, 0, 0];
 		this.dist = 0;
 	};
 	////////////////////////////////////////////////////////////////////////////////
@@ -26606,7 +26614,7 @@
 		this.inopen = false;
 		this.inwater = false;
 		this.fraction = 0;
-		this.endpos = new Array(3);
+		this.endpos = [0, 0, 0];
 		this.plane = new $quake_world$plane_t();
 		this.ent = null;
 	};
@@ -27495,10 +27503,10 @@
 	$quake_server.$phys_num = 0;
 	$quake_server.sv_player = null;
 	$quake_server.$sv_edgefriction = new $quake_cvar_t('edgefriction', '2');
-	$quake_server.$forward = new Array(3);
-	$quake_server.$right = new Array(3);
-	$quake_server.$up = new Array(3);
-	$quake_server.$wishdir = new Array(3);
+	$quake_server.$forward = [0, 0, 0];
+	$quake_server.$right = [0, 0, 0];
+	$quake_server.$up = [0, 0, 0];
+	$quake_server.$wishdir = [0, 0, 0];
 	$quake_server.$wishspeed = 0;
 	$quake_server.$angles = null;
 	$quake_server.$origin = null;
@@ -27601,7 +27609,7 @@
 	$quake_chase.$chase_up = new $quake_cvar_t('chase_up', '16');
 	$quake_chase.$chase_right = new $quake_cvar_t('chase_right', '0');
 	$quake_chase.chase_active = new $quake_cvar_t('chase_active', '0');
-	$quake_chase.$chase_dest = new Array(3);
+	$quake_chase.$chase_dest = [0, 0, 0];
 	$quake_view.lcd_x = new $quake_cvar_t('lcd_x', '0');
 	$quake_view.$lcd_yaw = new $quake_cvar_t('lcd_yaw', '0');
 	$quake_view.$scr_ofsx = new $quake_cvar_t.$ctor1('scr_ofsx', '0', false);
@@ -27629,9 +27637,9 @@
 	$quake_view.$v_dmg_time = 0;
 	$quake_view.$v_dmg_roll = 0;
 	$quake_view.$v_dmg_pitch = 0;
-	$quake_view.$forward = new Array(3);
-	$quake_view.$right = new Array(3);
-	$quake_view.$up = new Array(3);
+	$quake_view.$forward = [0, 0, 0];
+	$quake_view.$right = [0, 0, 0];
+	$quake_view.$up = [0, 0, 0];
 	$quake_view.$v_centermove = new $quake_cvar_t.$ctor1('v_centermove', '0.15', false);
 	$quake_view.$v_centerspeed = new $quake_cvar_t('v_centerspeed', '500');
 	$quake_view.$cshift_empty = new $quake_client$cshift_t.$ctor1([130, 80, 50], 0);
@@ -27649,10 +27657,10 @@
 	$quake_sound.$snd_blocked = 0;
 	$quake_sound.$snd_ambient = true;
 	$quake_sound.$snd_initialized = false;
-	$quake_sound.$listener_origin = new Array(3);
-	$quake_sound.$listener_forward = new Array(3);
-	$quake_sound.$listener_right = new Array(3);
-	$quake_sound.$listener_up = new Array(3);
+	$quake_sound.$listener_origin = [0, 0, 0];
+	$quake_sound.$listener_forward = [0, 0, 0];
+	$quake_sound.$listener_right = [0, 0, 0];
+	$quake_sound.$listener_up = [0, 0, 0];
 	$quake_sound.$sound_nominal_clip_dist = 1000;
 	$quake_sound.$soundtime = 0;
 	$quake_sound.$paintedtime = 0;
@@ -27778,7 +27786,7 @@
 	$quake_render.acolormap = null;
 	$quake_render.$r_apverts = null;
 	$quake_render.$pmdl = null;
-	$quake_render.$r_plightvec = new Array(3);
+	$quake_render.$r_plightvec = [0, 0, 0];
 	$quake_render.$r_ambientlight = 0;
 	$quake_render.$r_shadelight = 0;
 	$quake_render.$paliashdr = null;
@@ -27786,9 +27794,9 @@
 	$quake_render.$pauxverts = null;
 	$quake_render.$ziscale = 0;
 	$quake_render.$pmodel = null;
-	$quake_render.$alias_forward = new Array(3);
-	$quake_render.$alias_right = new Array(3);
-	$quake_render.$alias_up = new Array(3);
+	$quake_render.$alias_forward = [0, 0, 0];
+	$quake_render.$alias_right = [0, 0, 0];
+	$quake_render.$alias_up = [0, 0, 0];
 	$quake_render.$pskindesc = null;
 	$quake_render.$r_amodels_drawn = 0;
 	$quake_render.$a_skinwidth = 0;
@@ -27803,11 +27811,11 @@
 	$quake_render.$viewmatrix = [$ArrayHelpers.explcitDoubleArray(4), $ArrayHelpers.explcitDoubleArray(4), $ArrayHelpers.explcitDoubleArray(4)];
 	$quake_render.$insubmodel = false;
 	$quake_render.currententity = null;
-	$quake_render.modelorg = new Array(3);
-	$quake_render.base_modelorg = new Array(3);
-	$quake_render.$r_entorigin = new Array(3);
-	$quake_render.$entity_rotation = [new Array(3), new Array(3), new Array(3)];
-	$quake_render.$r_worldmodelorg = new Array(3);
+	$quake_render.modelorg = [0, 0, 0];
+	$quake_render.base_modelorg = [0, 0, 0];
+	$quake_render.$r_entorigin = [0, 0, 0];
+	$quake_render.$entity_rotation = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
+	$quake_render.$r_worldmodelorg = [0, 0, 0];
 	$quake_render.$r_currentbkey = 0;
 	$quake_render.maX_BMODEL_VERTS = 500;
 	$quake_render.maX_BMODEL_EDGES = 1000;
@@ -27869,8 +27877,8 @@
 	$quake_render.$fv = 0;
 	$quake_render.$r_pefragtopnode = null;
 	$quake_render.$lastlink = null;
-	$quake_render.$r_emins = new Array(3);
-	$quake_render.$r_emaxs = new Array(3);
+	$quake_render.$r_emins = [0, 0, 0];
+	$quake_render.$r_emaxs = [0, 0, 0];
 	$quake_render.$r_addent = null;
 	$quake_render.$r_dlightframecount = 0;
 	$quake_render.aliaS_BASE_SIZE_RATIO = 0.0909090909090909;
@@ -27888,7 +27896,7 @@
 	$quake_render.AMP = 524288;
 	$quake_render.amP2 = 3;
 	$quake_render.SPEED = 20;
-	$quake_render.$viewlightvec = new Array(3);
+	$quake_render.$viewlightvec = [0, 0, 0];
 	var $t1 = new $quake_render$alight_t();
 	$t1.ambientlight = 128;
 	$t1.shadelight = 192;
@@ -27918,13 +27926,13 @@
 	$quake_render.$r_clipflags = 0;
 	$quake_render.r_warpbuffer = null;
 	$quake_render.$r_fov_greater_than_90 = false;
-	$quake_render.vup = new Array(3);
-	$quake_render.base_vup = new Array(3);
-	$quake_render.vpn = new Array(3);
-	$quake_render.base_vpn = new Array(3);
-	$quake_render.vright = new Array(3);
-	$quake_render.base_vright = new Array(3);
-	$quake_render.r_origin = new Array(3);
+	$quake_render.vup = [0, 0, 0];
+	$quake_render.base_vup = [0, 0, 0];
+	$quake_render.vpn = [0, 0, 0];
+	$quake_render.base_vpn = [0, 0, 0];
+	$quake_render.vright = [0, 0, 0];
+	$quake_render.base_vright = [0, 0, 0];
+	$quake_render.r_origin = [0, 0, 0];
 	$quake_render.r_refdef = new $quake_render$refdef_t();
 	$quake_render.xcenter = 0;
 	$quake_render.ycenter = 0;
@@ -27992,9 +28000,9 @@
 	$quake_render.$free_particles = null;
 	$quake_render.$particles = null;
 	$quake_render.$r_numparticles = 0;
-	$quake_render.r_pright = new Array(3);
-	$quake_render.r_pup = new Array(3);
-	$quake_render.r_ppn = new Array(3);
+	$quake_render.r_pright = [0, 0, 0];
+	$quake_render.r_pup = [0, 0, 0];
+	$quake_render.r_ppn = [0, 0, 0];
 	$quake_render.$avelocities = ss.multidimArray(0, $quake_render.NUMVERTEXNORMALS, 3);
 	$quake_render.$beamlength = 16;
 	$quake_render.$tracercount = 0;
@@ -28549,7 +28557,7 @@
 	$quake_draw.$errorterm = 0;
 	$quake_draw.$erroradjustup = 0;
 	$quake_draw.$erroradjustdown = 0;
-	$quake_draw.$transformed_modelorg = new Array(3);
+	$quake_draw.$transformed_modelorg = [0, 0, 0];
 	$quake_draw.warP_WIDTH = 320;
 	$quake_draw.warP_HEIGHT = 200;
 	$quake_draw.maX_LBM_HEIGHT = 480;

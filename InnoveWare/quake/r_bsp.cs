@@ -31,15 +31,15 @@ namespace quake
         //
         static bool		            insubmodel;
         public static entity_t		currententity;
-        public static double[]		modelorg = new double[3], base_modelorg = new double[3];
+        public static double[]		modelorg = new double[3] {0, 0, 0}, base_modelorg = new double[3] {0, 0, 0};
 								        // modelorg is the viewpoint reletive to
 								        // the currently rendering entity
-        static double[]		        r_entorigin = new double[3];	// the currently rendering entity in world
+        static double[]		        r_entorigin = new double[3] {0, 0, 0};	// the currently rendering entity in world
 								        // coordinates
 
-        static double[][]	        entity_rotation = { new double[3], new double[3], new double[3] };
+        static double[][]	        entity_rotation = { new double[3] {0, 0, 0}, new double[3] {0, 0, 0}, new double[3] {0, 0, 0} };
 
-        static double[]		        r_worldmodelorg = new double[3];
+        static double[]		        r_worldmodelorg = new double[3] {0, 0, 0};
 
         static int				    r_currentbkey;
 
@@ -65,7 +65,7 @@ namespace quake
         */
         static void R_EntityRotate (double[] vec)
         {
-	        double[]	tvec = new double[3];
+	        double[]	tvec = new double[3] {0, 0, 0};
 
 	        mathlib.VectorCopy (vec, tvec);
 	        vec[0] = mathlib.DotProduct (entity_rotation[0], tvec);
@@ -81,9 +81,9 @@ namespace quake
         public static void R_RotateBmodel ()
         {
             double      angle, s, c;
-            double[][]  temp1 = { new double[3], new double[3], new double[3] };
-            double[][]  temp2 = { new double[3], new double[3], new double[3] };
-            double[][]  temp3 = { new double[3], new double[3], new double[3] };
+            double[][]  temp1 = { new double[3] {0, 0, 0}, new double[3] {0, 0, 0}, new double[3] {0, 0, 0} };
+            double[][]  temp2 = { new double[3] {0, 0, 0}, new double[3] {0, 0, 0}, new double[3] {0, 0, 0} };
+            double[][]  temp3 = { new double[3] {0, 0, 0}, new double[3] {0, 0, 0}, new double[3] {0, 0, 0} };
 
         // TODO: should use a look-up table
         // TODO: should really be stored with the entity instead of being reconstructed
@@ -457,7 +457,7 @@ namespace quake
         static void R_RecursiveWorldNode (model.node_or_leaf_t node, int clipflags)
         {
 	        int			        i, c, side, pindex;
-            double[]            acceptpt = new double[3], rejectpt = new double[3];
+            double[]            acceptpt = new double[3] {0, 0, 0}, rejectpt = new double[3] {0, 0, 0};
 	        model.mplane_t	    plane;
 	        model.msurface_t	surf, mark;
 	        model.mleaf_t		pleaf;

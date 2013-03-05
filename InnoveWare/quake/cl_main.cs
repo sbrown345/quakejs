@@ -398,9 +398,9 @@ namespace quake
 	        render.entity_t ent;
             int             i, j;
             double          frac, f, d;
-            double[]        delta = new double[3];
+            double[]        delta = new double[3] {0, 0, 0};
             double          bobjrotate;
-            double[]        oldorg = new double[3];
+            double[]        oldorg = new double[3] {0, 0, 0};
             dlight_t        dl;
 
             // determine partial update time	
@@ -656,6 +656,14 @@ namespace quake
         //
 	        cvar_t.Cvar_RegisterVariable(cl_name);
             cvar_t.Cvar_RegisterVariable(cl_color);
+            cvar_t.Cvar_RegisterVariable(cl_upspeed);
+            cvar_t.Cvar_RegisterVariable(cl_forwardspeed);
+            cvar_t.Cvar_RegisterVariable(cl_backspeed);
+            cvar_t.Cvar_RegisterVariable(cl_sidespeed);
+            cvar_t.Cvar_RegisterVariable(cl_movespeedkey);
+            cvar_t.Cvar_RegisterVariable(cl_yawspeed);
+            cvar_t.Cvar_RegisterVariable(cl_pitchspeed);
+            cvar_t.Cvar_RegisterVariable(cl_anglespeedkey);
             cvar_t.Cvar_RegisterVariable(cl_shownet);
             cvar_t.Cvar_RegisterVariable(cl_nolerp);
             cvar_t.Cvar_RegisterVariable(lookspring);

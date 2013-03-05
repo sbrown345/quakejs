@@ -62,7 +62,7 @@ namespace quake
         static void CL_ParseBeam (model.model_t m)
         {
 	        int		    ent;
-            double[]    start = new double[3], end = new double[3];
+            double[]    start = new double[3] {0, 0, 0}, end = new double[3] {0, 0, 0};
 	        beam_t	    b;
 	        int		    i;
         	
@@ -114,7 +114,7 @@ namespace quake
         static void CL_ParseTEnt ()
         {
 	        int		    type;
-	        double[]	pos = new double[3];
+	        double[]	pos = new double[3] {0, 0, 0};
             dlight_t    dl;
             int         rnd;
 	        int		    colorStart, colorLength;
@@ -291,7 +291,7 @@ namespace quake
         {
 	        int			    i;
 	        beam_t		    b;
-            double[]        dist = new double[3], org = new double[3];
+            double[]        dist = new double[3] {0, 0, 0}, org = new double[3] {0, 0, 0};
 	        double		    d;
 	        render.entity_t	ent;
             double          yaw, pitch;

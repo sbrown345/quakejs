@@ -29,9 +29,9 @@ namespace quake
 
         static cvar_t	            sv_edgefriction = new cvar_t("edgefriction", "2");
 
-        static double[]             forward = new double[3], right = new double[3], up = new double[3];
+        static double[]             forward = new double[3] {0, 0, 0}, right = new double[3] {0, 0, 0}, up = new double[3] {0, 0, 0};
 
-        static double[]	            wishdir = new double[3];
+        static double[]	            wishdir = new double[3] {0, 0, 0};
         static double	            wishspeed;
 
         // world
@@ -55,7 +55,7 @@ namespace quake
         {
 	        double	    angleval, sinval, cosval;
 	        world.trace_t	tr;
-	        double[]    top = new double[3], bottom = new double[3];
+	        double[]    top = new double[3] {0, 0, 0}, bottom = new double[3] {0, 0, 0};
 	        double[]	z = new double[MAX_FORWARD];
 	        int		    i, j;
 	        int		    step, dir, steps;
@@ -122,7 +122,7 @@ namespace quake
         {
 	        double[]    vel;
 	        double	    speed, newspeed, control;
-	        double[]	start = new double[3], stop = new double[3];
+	        double[]	start = new double[3] {0, 0, 0}, stop = new double[3] {0, 0, 0};
 	        double	    friction;
 	        //trace_t	trace;
         	
@@ -224,7 +224,7 @@ namespace quake
         static void SV_WaterMove ()
         {
 	        int		    i;
-	        double[]    wishvel = new double[3];
+	        double[]    wishvel = new double[3] {0, 0, 0};
 	        double	    speed, newspeed, wishspeed, addspeed, accelspeed;
 
         //
@@ -302,7 +302,7 @@ namespace quake
         static void SV_AirMove ()
         {
 	        int			i;
-	        double[]	wishvel = new double[3];
+	        double[]	wishvel = new double[3] {0, 0, 0};
 	        double		fmove, smove;
 
 	        mathlib.AngleVectors (sv_player.v.angles, forward, right, up);
@@ -355,7 +355,7 @@ namespace quake
         */
         static void SV_ClientThink ()
         {
-            double[] v_angle = new double[3];
+            double[] v_angle = new double[3] {0, 0, 0};
 
             if (sv_player.v.movetype == MOVETYPE_NONE)
                 return;
@@ -413,7 +413,7 @@ namespace quake
         static void SV_ReadClientMove (client.usercmd_t move)
         {
 	        int		    i;
-	        double[]    angle = new double[3];
+	        double[]    angle = new double[3] {0, 0, 0};
 	        int		    bits;
         	
         // read ping time

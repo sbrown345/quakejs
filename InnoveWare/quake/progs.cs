@@ -29,7 +29,7 @@ namespace quake
         //{
         //    int		        @string;
         //    double			_float;
-        //    double[]		vector = new double[3];
+        //    double[]		vector = new double[3] {0, 0, 0};
         //    int			    function;
         //    int				_int;
         //    int				edict;
@@ -228,7 +228,7 @@ namespace quake
         static int G_EDICTNUM(int o) { return NUM_FOR_EDICT(G_EDICT(o)); }
         static double[] G_VECTOR(int o)
         {
-            double[] res = new double[3];
+            double[] res = new double[3] {0, 0, 0};
             res[0] = cast_float(pr_globals_read(o));
             res[1] = cast_float(pr_globals_read(o + 1));
             res[2] = cast_float(pr_globals_read(o + 2));

@@ -36,7 +36,7 @@ namespace quake
 
         // TODO: these probably will go away with optimized rasterization
         static model.mdl_t		        pmdl;
-        static double[]				    r_plightvec = new double[3];
+        static double[]				    r_plightvec = new double[3] {0, 0, 0};
         static int					    r_ambientlight;
         static double				    r_shadelight;
         static model.aliashdr_t	        paliashdr;
@@ -45,7 +45,7 @@ namespace quake
         static double		            ziscale;
         static model.model_t	        pmodel;
 
-        static double[]                 alias_forward = new double[3], alias_right = new double[3], alias_up = new double[3];
+        static double[]                 alias_forward = new double[3] {0, 0, 0}, alias_right = new double[3] {0, 0, 0}, alias_up = new double[3] {0, 0, 0};
 
         static model.maliasskindesc_t	pskindesc;
 
@@ -277,7 +277,7 @@ namespace quake
             int kk;
             for (kk = 0; kk < 16; kk++) viewpts[kk] = new draw.finalvert_t();
             for (kk = 0; kk < 16; kk++) viewaux[kk] = new auxvert_t();
-            for (kk = 0; kk < 8; kk++) basepts[kk] = new double[3];
+            for (kk = 0; kk < 8; kk++) basepts[kk] = new double[3] {0, 0, 0};
 
         // expand, rotate, and translate points into worldspace
 
@@ -518,7 +518,7 @@ namespace quake
             int i;
             double[][] rotationmatrix = { ArrayHelpers.ExplcitDoubleArray(4), ArrayHelpers.ExplcitDoubleArray(4), ArrayHelpers.ExplcitDoubleArray(4) };
             double[][] t2matrix = { ArrayHelpers.ExplcitDoubleArray(4), ArrayHelpers.ExplcitDoubleArray(4), ArrayHelpers.ExplcitDoubleArray(4) };
-            double[] angles = new double[3];
+            double[] angles = new double[3] {0, 0, 0};
             int kk;
 
 

@@ -32,7 +32,7 @@ namespace quake
         static int		ubasestep, errorterm, erroradjustup, erroradjustdown;
         int			vstartscan;
 
-        static double[]	transformed_modelorg = new double[3];
+        static double[]	transformed_modelorg = new double[3] {0, 0, 0};
 
         /*
         =============
@@ -115,8 +115,8 @@ namespace quake
         {
             model.mplane_t  pplane;
             double          mipscale;
-            double[]        p_temp1 = new double[3];
-            double[]        p_saxis = new double[3], p_taxis = new double[3];
+            double[]        p_temp1 = new double[3] {0, 0, 0};
+            double[]        p_saxis = new double[3] {0, 0, 0}, p_taxis = new double[3] {0, 0, 0};
             double          t;
 
             pplane = pface.plane;
@@ -166,8 +166,8 @@ namespace quake
 	        render.surf_t		s;
 	        model.msurface_t	pface;
             surfcache_t         pcurrentcache;
-            double[]            world_transformed_modelorg = new double[3];
-	        double[]		    local_modelorg = new double[3];
+            double[]            world_transformed_modelorg = new double[3] {0, 0, 0};
+	        double[]		    local_modelorg = new double[3] {0, 0, 0};
 
 	        render.currententity = client.cl_entities[0];
 	        render.TransformVector (render.modelorg, transformed_modelorg);

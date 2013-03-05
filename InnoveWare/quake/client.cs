@@ -27,7 +27,7 @@ namespace quake
     {
         public class usercmd_t
         {
-            public double[] viewangles = new double[3];
+            public double[] viewangles = new double[3] {0, 0, 0};
 
         // intended velocities
 	        public double	forwardmove;
@@ -82,7 +82,7 @@ namespace quake
         public const int	MAX_DLIGHTS = 32;
         public class dlight_t
         {
-            public double[]     origin = new double[3];
+            public double[]     origin = new double[3] {0, 0, 0};
             public double       radius;
             public double       die;				// stop lighting after this time
             public double       decay;				// drop this each second
@@ -96,7 +96,7 @@ namespace quake
 	        public int		        entity;
             public model.model_t    model;
             public double           endtime;
-            public double[]         start = new double[3], end = new double[3];
+            public double[]         start = new double[3] {0, 0, 0}, end = new double[3] {0, 0, 0};
         };
 
         const int	MAX_EFRAGS = 640;
@@ -170,15 +170,15 @@ namespace quake
         // sent to the server each frame.  The server sets punchangle when
         // the view is temporarliy offset, and an angle reset commands at the start
         // of each level and after teleporting.
-	        public double[][]	    mviewangles = { new double[3], new double[3] };	// during demo playback viewangles is lerped
+	        public double[][]	    mviewangles = { new double[3] {0, 0, 0}, new double[3] {0, 0, 0} };	// during demo playback viewangles is lerped
 								        // between these
-	        public double[]	        viewangles = new double[3];
+	        public double[]	        viewangles = new double[3] {0, 0, 0};
         	
-	        public double[][]	    mvelocity = { new double[3], new double[3] };	// update by server, used for lean+bob
+	        public double[][]	    mvelocity = { new double[3] {0, 0, 0}, new double[3] {0, 0, 0} };	// update by server, used for lean+bob
 								        // (0 is newest)
-	        public double[]	        velocity = new double[3];		// lerped between mvelocity[0] and [1]
+	        public double[]	        velocity = new double[3] {0, 0, 0};		// lerped between mvelocity[0] and [1]
 
-	        public double[]	        punchangle = new double[3];		// temporary offset
+	        public double[]	        punchangle = new double[3] {0, 0, 0};		// temporary offset
 
         // pitch drifting vars
 	        public double		    idealpitch;

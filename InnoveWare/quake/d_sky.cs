@@ -34,7 +34,7 @@ namespace quake
         static void D_Sky_uv_To_st (int u, int v, ref int s, ref int t)
         {
 	        double	    wu, wv, temp;
-	        double[]    end = new double[3];
+	        double[]    end = new double[3] {0, 0, 0};
 
             if (render.r_refdef.vrect.width >= render.r_refdef.vrect.height)
                 temp = (double)render.r_refdef.vrect.width;

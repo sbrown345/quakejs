@@ -104,7 +104,7 @@ namespace quake
         */
         static void CL_ParseStartSoundPacket()
         {
-            double[]    pos = new double[3];
+            double[]    pos = new double[3] {0, 0, 0};
             int 	    channel, ent;
             int 	    sound_num;
             int 	    volume;
@@ -674,7 +674,7 @@ namespace quake
         */
         static void CL_ParseStaticSound ()
         {
-            double[]    org = new double[3];
+            double[]    org = new double[3] {0, 0, 0};
 	        int			sound_num, vol, atten;
 	        int			i;
         	

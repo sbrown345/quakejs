@@ -47,10 +47,10 @@ namespace quake
         public class mdl_t {
 	        public int			ident;
 	        public int		    version;
-            public double[]     scale = new double[3];
-            public double[]     scale_origin = new double[3];
+            public double[]     scale = new double[3] {0, 0, 0};
+            public double[]     scale_origin = new double[3] {0, 0, 0};
             public double       boundingradius;
-            public double[]     eyeposition = new double[3];
+            public double[]     eyeposition = new double[3] {0, 0, 0};
             public int          numskins;
             public int          skinwidth;
             public int          skinheight;

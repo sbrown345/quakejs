@@ -435,7 +435,7 @@ namespace quake
 	        int		        e, i;
 	        int		        bits;
             Uint8Array      pvs;
-            double[] org = new double[3];
+            double[] org = new double[3] {0, 0, 0};
 	        double	        miss;
 	        prog.edict_t	ent;
 

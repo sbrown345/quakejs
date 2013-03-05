@@ -761,7 +761,7 @@ namespace quake
             FieldInfo d;
             //dfunction_t	*func;
             globalval[] variables = null;
-            double[] values = new double[3];
+            double[] values = new double[3] {0, 0, 0};
 
             //d = (void *)((int *)base + key->ofs);
             d = typeof(entvars_t).GetField(keyname, BindingFlags.Public | BindingFlags.Instance);

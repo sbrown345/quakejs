@@ -30,11 +30,11 @@ namespace quake
         static cvar_t	chase_right = new cvar_t("chase_right", "0");
         public static cvar_t	chase_active = new cvar_t("chase_active", "0");
 
-        double[]	chase_pos = new double[3];
-        double[]	chase_angles = new double[3];
+        double[]	chase_pos = new double[3] {0, 0, 0};
+        double[]	chase_angles = new double[3] {0, 0, 0};
 
-        static double[]	chase_dest = new double[3];
-        double[]	chase_dest_angles = new double[3];
+        static double[]	chase_dest = new double[3] {0, 0, 0};
+        double[]	chase_dest_angles = new double[3] {0, 0, 0};
         
         public static void Chase_Init ()
         {
@@ -64,8 +64,8 @@ namespace quake
         {
 	        int		    i;
 	        double	    dist;
-            double[]    forward = new double[3], up = new double[3], right = new double[3];
-            double[]    dest = new double[3], stop = new double[3];
+            double[]    forward = new double[3] {0, 0, 0}, up = new double[3] {0, 0, 0}, right = new double[3] {0, 0, 0};
+            double[]    dest = new double[3] {0, 0, 0}, stop = new double[3] {0, 0, 0};
 
             // if can't see player, reset
             mathlib.AngleVectors(client.cl.viewangles, forward, right, up);

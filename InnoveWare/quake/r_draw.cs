@@ -69,7 +69,7 @@ namespace quake
 	        edge_t	    edge, pcheck;
 	        int		    u_check;
 	        double	    u, u_step;
-            double[]    local = new double[3], transformed = new double[3];
+            double[]    local = new double[3] {0, 0, 0}, transformed = new double[3] {0, 0, 0};
 	        double[]	world;
 	        int		    v, v2, ceilv0;
 	        double	    scale, lzi0, u0, v0;
@@ -371,7 +371,7 @@ namespace quake
 	        uint	        mask;
 	        model.mplane_t	pplane;
 	        double		    distinv;
-	        double[]		p_normal = new double[3];
+	        double[]		p_normal = new double[3] {0, 0, 0};
 	        model.medge_t[]	pedges;
             model.medge_t   tedge = new model.medge_t();
 	        clipplane_t	    pclip;
@@ -565,7 +565,7 @@ namespace quake
 	        uint	        mask;
 	        model.mplane_t	pplane;
 	        double		    distinv;
-	        double[]        p_normal = new double[3];
+	        double[]        p_normal = new double[3] {0, 0, 0};
 	        model.medge_t	tedge = new model.medge_t();
 	        clipplane_t	    pclip;
 

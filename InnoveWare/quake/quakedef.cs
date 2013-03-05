@@ -169,8 +169,8 @@ namespace quake
 
         public class entity_state_t
         {
-	        public double[]	origin = new double[3];
-            public double[] angles = new double[3];
+	        public double[]	origin = new double[3] {0, 0, 0} ;
+            public double[] angles = new double[3] {0, 0, 0} ;
 	        public int		modelindex;
 	        public int		frame;
 	        public int		colormap;

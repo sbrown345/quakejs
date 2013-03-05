@@ -51,7 +51,7 @@ namespace quake
 
         public class auxvert_t
         {
-            public double[] fv = new double[3];		// viewspace x, y
+            public double[] fv = new double[3] {0, 0, 0};		// viewspace x, y
         };
 
         //===========================================================================
@@ -70,7 +70,7 @@ namespace quake
         // !!! if this is changed, it must be changed in asm_draw.h too !!!
         public class clipplane_t
         {
-            public double[]     normal = new double[3];
+            public double[]     normal = new double[3] {0, 0, 0};
             public double       dist;
             public clipplane_t  next;
             public bool         leftedge;

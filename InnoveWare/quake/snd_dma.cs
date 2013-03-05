@@ -40,10 +40,10 @@ namespace quake
         static bool	        snd_ambient = true;
         static bool		    snd_initialized = false;
 
-        static double[]	    listener_origin = new double[3];
-        static double[]	    listener_forward = new double[3];
-        static double[]	    listener_right = new double[3];
-        static double[]	    listener_up = new double[3];
+        static double[]	    listener_origin = new double[3] {0, 0, 0};
+        static double[]	    listener_forward = new double[3] {0, 0, 0};
+        static double[]	    listener_right = new double[3] {0, 0, 0};
+        static double[]	    listener_up = new double[3] {0, 0, 0};
         static double	    sound_nominal_clip_dist=1000.0;
 
         static int		    soundtime;		// sample PAIRS
@@ -337,7 +337,7 @@ namespace quake
             double      dot;
             double      ldist, rdist, dist;
             double      lscale, rscale, scale;
-            double[]    source_vec = new double[3];
+            double[]    source_vec = new double[3] {0, 0, 0};
 	        sfx_t       snd;
 
         // anything coming from the view entity will allways be full volume

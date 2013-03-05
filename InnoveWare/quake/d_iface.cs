@@ -43,11 +43,11 @@ namespace quake
         public class particle_t
         {
         // driver-usable fields
-	        public double[]	    org = new double[3];
+	        public double[]	    org = new double[3] {0, 0, 0};
 	        public double	    color;
         // drivers never touch the following fields
 	        public particle_t	next;
-            public double[]     vel = new double[3];
+            public double[]     vel = new double[3] {0, 0, 0};
 	        public double		ramp;
 	        public double	    die;
 	        public ptype_t		type;
@@ -106,7 +106,7 @@ namespace quake
 							        //  if the driver wants to duplicate element [0] at
 							        //  element [nump] to avoid dealing with wrapping
 	        public model.mspriteframe_t	pspriteframe;
-	        public double[]		        vup = new double[3], vright = new double[3], vpn = new double[3];	// in worldspace
+	        public double[]		        vup = new double[3] {0, 0, 0}, vright = new double[3] {0, 0, 0}, vpn = new double[3] {0, 0, 0};	// in worldspace
 	        public double			    nearzi;
         };
 

@@ -97,8 +97,8 @@ namespace quake
 
         public class dmodel_t
         {
-	        public double[]	mins = new double[3], maxs = new double[3];
-	        double[]	origin = new double[3];
+	        public double[]	mins = new double[3] {0, 0, 0}, maxs = new double[3] {0, 0, 0};
+	        double[]	origin = new double[3] {0, 0, 0};
 	        public int[]	headnode = new int[MAX_MAP_HULLS];
 	        public int		visleafs;		// not including the solid leaf 0
 	        public int		firstface, numfaces;
@@ -206,7 +206,7 @@ namespace quake
 
         public class dvertex_t
         {
-	        public double[]	point = new double[3];
+	        public double[]	point = new double[3] {0, 0, 0};
 
             public static implicit operator dvertex_t(ByteBuffer buf)
             {
@@ -235,7 +235,7 @@ namespace quake
 
         public class dplane_t
         {
-	        public double[]	normal = new double[3];
+	        public double[]	normal = new double[3] {0, 0, 0};
             public double   dist;
             public int      type;		// PLANE_X - PLANE_ANYZ ?remove? trivial to regenerate
 

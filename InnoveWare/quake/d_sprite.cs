@@ -346,7 +346,7 @@ namespace quake
         */
         static void D_SpriteCalculateGradients ()
         {
-            double[]    p_normal = new double[3], p_saxis = new double[3], p_taxis = new double[3], p_temp1 = new double[3];
+            double[]    p_normal = new double[3] {0, 0, 0}, p_saxis = new double[3] {0, 0, 0}, p_taxis = new double[3] {0, 0, 0}, p_temp1 = new double[3] {0, 0, 0};
 	        double		distinv;
 
 	        render.TransformVector (render.r_spritedesc.vpn, p_normal);
