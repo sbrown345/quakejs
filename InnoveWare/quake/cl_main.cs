@@ -35,13 +35,13 @@ namespace quake
         static cvar_t   cl_nolerp = new cvar_t("cl_nolerp", "0");
 
         static cvar_t   lookspring = new cvar_t("lookspring", "0", true);
-        static cvar_t   lookstrafe = new cvar_t("lookstrafe", "0", true);
-        static cvar_t   sensitivity = new cvar_t("sensitivity", "3", true);
+        public static cvar_t   lookstrafe = new cvar_t("lookstrafe", "0", true);
+        public static cvar_t   sensitivity = new cvar_t("sensitivity", "3", true);
 
-        static cvar_t   m_pitch = new cvar_t("m_pitch", "0.022", true);
-        static cvar_t   m_yaw = new cvar_t("m_yaw", "0.022", true);
-        static cvar_t   m_forward = new cvar_t("m_forward", "1", true);
-        static cvar_t   m_side = new cvar_t("m_side", "0.8", true);
+        public static cvar_t   m_pitch = new cvar_t("m_pitch", "0.022", true);
+        public static cvar_t m_yaw = new cvar_t("m_yaw", "0.022", true);
+        public static cvar_t m_forward = new cvar_t("m_forward", "1", true);
+        public static cvar_t m_side = new cvar_t("m_side", "0.8", true);
 
 
         public static client_static_t	cls = new client_static_t();
@@ -611,7 +611,7 @@ namespace quake
                 CL_BaseMove(cmd);
 
                 // allow mice or other external controllers to add to the move
-//                IN_Move(cmd);
+                input.IN_Move(cmd);
 
                 // send the unreliable message
                 CL_SendMove(cmd);

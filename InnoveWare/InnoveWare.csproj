@@ -78,6 +78,7 @@
     <Compile Include="Missing\StringExtensions.cs" />
     <Compile Include="quake\chase.cs" />
     <Compile Include="quake\cl_input.cs" />
+    <Compile Include="quake\input.cs" />
     <Compile Include="quake\sv_move.cs" />
     <Compile Include="quake\crc.cs" />
     <Compile Include="quake\d_polyse.cs" />

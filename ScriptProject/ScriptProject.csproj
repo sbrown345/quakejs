@@ -123,6 +123,9 @@
     <Compile Include="..\InnoveWare\quake\host_cmd.cs">
       <Link>quake\host_cmd.cs</Link>
     </Compile>
+    <Compile Include="..\InnoveWare\quake\input.cs">
+      <Link>quake\input.cs</Link>
+    </Compile>
     <Compile Include="..\InnoveWare\quake\keys.cs">
       <Link>quake\keys.cs</Link>
     </Compile>
