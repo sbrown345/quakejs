@@ -582,8 +582,8 @@ namespace quake
         ===========
         */
 
-        public static int mouseX = 0;
-        public static int mouseY = 0;
+        public static int mouseMovedX = 0;
+        public static int mouseMovedY = 0;
         private static void IN_MouseMove(client.usercmd_t cmd)
         {
             int mx, my;
@@ -655,21 +655,21 @@ namespace quake
             //    }
             //}
 
-            // perform button actions
-            for (i = 0; i < mouse_buttons; i++)
-            {
-                if ((mstate_di & (1 << i)) != 0 && (mouse_oldbuttonstate & (1 << i)) == 0)
-                {
-                    keys.Key_Event(keys.K_MOUSE1 + i, true);
-                }
+            //// perform button actions
+            //for (i = 0; i < mouse_buttons; i++)
+            //{
+            //    if ((mstate_di & (1 << i)) != 0 && (mouse_oldbuttonstate & (1 << i)) == 0)
+            //    {
+            //        keys.Key_Event(keys.K_MOUSE1 + i, true);
+            //    }
 
-                if ((mstate_di & (1 << i)) == 0 && (mouse_oldbuttonstate & (1 << i)) != 0)
-                {
-                    keys.Key_Event(keys.K_MOUSE1 + i, false);
-                }
-            }
+            //    if ((mstate_di & (1 << i)) == 0 && (mouse_oldbuttonstate & (1 << i)) != 0)
+            //    {
+            //        keys.Key_Event(keys.K_MOUSE1 + i, false);
+            //    }
+            //}
 
-            mouse_oldbuttonstate = mstate_di;
+            //mouse_oldbuttonstate = mstate_di;
             //}
             //else
             //{
@@ -680,31 +680,8 @@ namespace quake
             //    my_accum = 0;
             //}
 
-
-
-
-
-           //test:
-            quake.cmd.Cbuf_AddText("+speed;");
-            quake.cmd.Cbuf_AddText("+mlook;");
-            quake.cmd.Cbuf_AddText("sensitivity 30;");
-            quake.cmd.Cbuf_AddText("m_pitch -0.022;");
-            quake.cmd.Cbuf_AddText("bind w +forward;");
-            quake.cmd.Cbuf_AddText("bind s +back;");
-            quake.cmd.Cbuf_AddText("bind a +moveleft;");
-            quake.cmd.Cbuf_AddText("bind d +moveright;");
-            quake.cmd.Cbuf_AddText("bind AUX17 +toggleconsole;");
-            mx = mouseX;
-            my = mouseY;
-
-
-
-
-
-
-
-
-
+            mx = mouseMovedX;
+            my = mouseMovedY;
 
             //if (mx ||  my)
             //	Con_DPrintf("mx=%d, my=%d\n", mx, my);
@@ -728,21 +705,26 @@ namespace quake
 
             // add mouse X/Y movement to cmd
             if ((client.in_strafe.state & 1) != 0
-                || (client.lookstrafe.value != 0 && ((client.in_mlook.state & 1) != 0))) cmd.sidemove += client.m_side.value * mouse_x;
-            else client.cl.viewangles[quakedef.YAW] -= client.m_yaw.value * mouse_x;
+                || (client.lookstrafe.value != 0 && ((client.in_mlook.state & 1) != 0))) 
+                cmd.sidemove += client.m_side.value * mouse_x;
+            else 
+                client.cl.viewangles[quakedef.YAW] -= client.m_yaw.value * mouse_x;
 
             if ((client.in_mlook.state & 1) != 0) view.V_StopPitchDrift();
 
             if ((client.in_mlook.state & 1) != 0 && (client.in_strafe.state & 1) == 0)
             {
                 client.cl.viewangles[quakedef.PITCH] += client.m_pitch.value * mouse_y;
-                if (client.cl.viewangles[quakedef.PITCH] > 80) client.cl.viewangles[quakedef.PITCH] = 80;
-                if (client.cl.viewangles[quakedef.PITCH] < -70) client.cl.viewangles[quakedef.PITCH] = -70;
+                if (client.cl.viewangles[quakedef.PITCH] > 80) 
+                    client.cl.viewangles[quakedef.PITCH] = 80;
+                if (client.cl.viewangles[quakedef.PITCH] < -70) 
+                    client.cl.viewangles[quakedef.PITCH] = -70;
             }
             else
             {
                 if ((client.in_strafe.state & 1) != 0 && host.noclip_anglehack) cmd.upmove -= client.m_forward.value * mouse_y;
-                else cmd.forwardmove -= client.m_forward.value * mouse_y;
+                else 
+                    cmd.forwardmove -= client.m_forward.value * mouse_y;
             }
 
             //// if the mouse has moved, force it to the center, so there's room to move
@@ -750,23 +732,26 @@ namespace quake
             //{
             //    SetCursorPos(window_center_x, window_center_y);
             //}
+
+            mouseMovedX = 0;
+            mouseMovedY = 0;
         }
 
 
         /*
-===========
-IN_Move
-===========
-*/
-public static void IN_Move (client.usercmd_t cmd)
-{
+        ===========
+        IN_Move
+        ===========
+        */
+        public static void IN_Move (client.usercmd_t cmd)
+        {
 
-    //if (ActiveApp && !Minimized)
-    //{
-		IN_MouseMove (cmd);
-        //IN_JoyMove (cmd); // todo - html5 gamepad api (pointless for fps!!!)
-    //}
-}
+            //if (ActiveApp && !Minimized)
+            //{
+		        IN_MouseMove (cmd);
+                //IN_JoyMove (cmd); // todo - html5 gamepad api (pointless for fps!!!)
+            //}
+        }
 
 
 ///*

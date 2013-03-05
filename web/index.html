@@ -205,6 +205,17 @@
                 $scope.volume = 1;
 
                 global.executeCommands("volume 0.02");
+                
+                global.executeCommands("crosshair 1;");
+                global.executeCommands("+speed;");
+                global.executeCommands("+mlook;");
+                global.executeCommands("sensitivity 30;");
+                global.executeCommands("m_pitch -0.022;");
+                global.executeCommands("bind w +forward;");
+                global.executeCommands("bind s +back;");
+                global.executeCommands("bind a +moveleft;");
+                global.executeCommands("bind d +moveright;");
+                global.executeCommands("bind AUX17 toggleconsole;");
 
                 setTimeout(function () {
                     // wait some frames after

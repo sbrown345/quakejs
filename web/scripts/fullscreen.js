@@ -59,18 +59,8 @@
             });
         }
     }
-    
 
-
-
-
-
-
-    //////////////////////////////////////////
-
-
-
-
+    //Mouse pointer lock
 
     function pointerLockError() {
         console.log("Error while locking pointer.");
@@ -90,27 +80,22 @@
                 e.webkitMovementY ||
                 0;
 
-        // Print the mouse movement delta values
-        //console.log("movementX=" + movementX, "movementY=" + movementY);
         document.pointerLockElement = document.pointerLockElement ||
             document.mozPointerLockElement ||
             document.webkitPointerLockElement;
 
         // 1) Used as a boolean check--are we pointer locked?
         if (!!document.pointerLockElement) {
-            console.log(movementX, movementY)
+            // Print the mouse movement delta values
+            //console.log("movementX=" + movementX, "movementY=" + movementY);
             global.updateMouse(movementX, movementY);
 
         } else {
             // pointer is not locked
-            console.log("pointer is not locked")
         }
     }, false);
-    
-
 
     function fullscreenChange() {
-        console.log("fullscreenChange")
         if (document.webkitFullscreenElement /*=== gameCanvas */||
             document.mozFullscreenElement/* === gameCanvas*/ ||
             document.mozFullScreenElement/* === gameCanvas*/) { // Older API upper case 'S'.
@@ -118,18 +103,13 @@
             gameCanvas.requestPointerLock = gameCanvas.requestPointerLock ||
                                       gameCanvas.mozRequestPointerLock ||
                                       gameCanvas.webkitRequestPointerLock;
-            console.log("fullscreenChange>requestPointerLock")
             gameCanvas.requestPointerLock();
         }
-        
     }
 
     document.addEventListener('fullscreenchange', fullscreenChange, false);
     document.addEventListener('mozfullscreenchange', fullscreenChange, false);
     document.addEventListener('webkitfullscreenchange', fullscreenChange, false);
-
-
-
 
     function pointerLockChange() {
         if (document.mozPointerLockElement === gameCanvas ||
@@ -143,5 +123,4 @@
     document.addEventListener('pointerlockchange', pointerLockChange, false);
     document.addEventListener('mozpointerlockchange', pointerLockChange, false);
     document.addEventListener('webkitpointerlockchange', pointerLockChange, false);
-
 }

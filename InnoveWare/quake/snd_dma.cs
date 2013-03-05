@@ -58,7 +58,7 @@ namespace quake
         static int          sound_started=0;
 
         static cvar_t       bgmvolume = new cvar_t("bgmvolume", "1", true);
-        static cvar_t       volume = new cvar_t("volume", "0.7", true);
+        static cvar_t       volume = new cvar_t("volume", "0.02", true);
 
         static cvar_t       nosound = new cvar_t("nosound", "0");
         static cvar_t       precache = new cvar_t("precache", "1");

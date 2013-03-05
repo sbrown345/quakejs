@@ -105,7 +105,7 @@ namespace quake
 
         public class mtexinfo_t
         {
-	        public double[][]	vecs = { new double[4], new double[4] };
+            public double[][] vecs = { new double[4] { 0, 0, 0, 0 }, new double[4] { 0, 0, 0, 0 } };
             public double       mipadjust;
             public texture_t    texture;
             public int          flags;

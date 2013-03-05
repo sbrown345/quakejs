@@ -44,8 +44,8 @@
 
         public static void UpdateMouse(int mx, int my)
         {
-            input.mouseX = mx;
-            input.mouseY = my;
+            input.mouseMovedX = mx;
+            input.mouseMovedY = my;
         }
     }
 }

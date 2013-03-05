@@ -53,7 +53,7 @@ namespace quake
         static int				        a_skinwidth;
         static int				        r_anumverts;
 
-        static double[][]	            aliastransform = { new double[4], new double[4], new double[4] };
+        static double[][] aliastransform = { new double[4] { 0, 0, 0, 0 }, new double[4] { 0, 0, 0, 0 }, new double[4] { 0, 0, 0, 0 } };
 
         public class aedge_t {
 	        public int	index0;
