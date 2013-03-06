@@ -20,7 +20,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 namespace quake
 {
+    using System;
     using System.Diagnostics;
+    using System.IO;
+
+    using Helper;
 
     public partial class client
     {
@@ -65,9 +69,34 @@ namespace quake
         Dumps the current net message, prefixed by the length and view angles
         ====================
         */
+
+        private static bool isStopping = false;
         static void CL_WriteDemoMessage ()
         {
-            Debug.WriteLine("CL_WriteDemoMessage");
+            int len;
+            int i;
+            float f;
+
+            len = net.net_message.cursize;
+
+            if (cls.demofile.stream.Position >= cls.demofile.stream.Length - 100000 && !isStopping)
+            {
+                // todo: fix this properly
+                isStopping = true;
+                console.Con_Printf("Stopped recording demo, too long (todo!)");
+                CL_Stop_f();
+                return;
+            }
+
+            helper.fwrite(len, 4, 1, cls.demofile);
+            for (i = 0; i < 3; i++)
+            {
+                f = (float)cl.viewangles[i];
+                helper.fwrite(f, 4, 1, cls.demofile);
+            }
+            helper.fwrite(net.net_message.data, net.net_message.cursize, 1, cls.demofile);
+            helper.fflush(cls.demofile);
+            isStopping = false;
         }
 
         /*
@@ -156,7 +185,25 @@ namespace quake
         */
         static void CL_Stop_f()
         {
-            Debug.WriteLine("CL_Stop_f");
+            if (cmd.cmd_source != cmd.cmd_source_t.src_command)
+                return;
+
+            if (!cls.demorecording)
+            {
+                console.Con_Printf("Not recording a demo.\n");
+                return;
+            }
+
+            // write a disconnect message to the demo file
+            common.SZ_Clear(net.net_message);
+            common.MSG_WriteByte(net.net_message, net.svc_disconnect);
+            CL_WriteDemoMessage();
+
+            // finish up
+            helper.fclose(cls.demofile);
+            cls.demofile = null;
+            cls.demorecording = false;
+           console. Con_Printf("Completed demo\n");
         }
 
         /*
@@ -168,7 +215,69 @@ namespace quake
         */
         static void CL_Record_f ()
         {
-            Debug.WriteLine("CL_Record_f");
+	        int		c;
+	        string	name;
+	        int		track;
+
+            if (cmd.cmd_source != cmd.cmd_source_t.src_command)
+		        return;
+
+	        c = cmd. Cmd_Argc();
+	        if (c != 2 && c != 3 && c != 4)
+	        {
+		        console.Con_Printf ("record <demoname> [<map> [cd track]]\n");
+		        return;
+	        }
+
+            if (cmd.Cmd_Argv(1).StartsWith(".."))
+	        {
+                console.Con_Printf("Relative pathnames are not allowed.\n");
+		        return;
+	        }
+
+            if (c == 2 && cls.state == client.cactive_t.ca_connected)
+	        {
+                console.Con_Printf("Can not record - already connected to server\nClient demo recording must be started before connecting\n");
+		        return;
+	        }
+
+        // write the forced cd track number, or -1
+	        if (c == 4)
+	        {
+		        track =  int.Parse(cmd.Cmd_Argv(3));
+                console.Con_Printf(string.Format("Forcing CD track to {0}\n", cls.forcetrack));
+	        }
+	        else
+		        track = -1;
+            name = common.com_gamedir + "/" + cmd.Cmd_Argv(1);
+            if (name.Length > 1000 /*todo? how many*/)
+            {
+                throw new /*IO*/Exception("Filename too long");
+            }
+
+            //
+        // start the map up
+        //
+            if (c > 2) 
+                cmd.Cmd_ExecuteString(("map " + cmd.Cmd_Argv(2) + "\0").ToCharArray(), cmd.cmd_source_t.src_command);
+	
+        //
+        // open the demo file
+        //
+	        common.COM_DefaultExtension (ref name, ".dem");
+
+            console.Con_Printf(string.Format("recording to {0}.\n", name));
+	        cls.demofile = helper.fopen(name, "wb");
+	        if (cls.demofile ==null)
+	        {
+		        console. Con_Printf ("ERROR: couldn't open.\n");
+		        return;
+	        }
+
+	        cls.forcetrack = track;
+	        helper.fprintf (cls.demofile, cls.forcetrack + "\n");
+	
+	        cls.demorecording = true;
         }
 
         /*

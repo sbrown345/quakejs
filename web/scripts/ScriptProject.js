@@ -45,9 +45,6 @@
 		$quake_input.mouseMovedX = mx;
 		$quake_input.mouseMovedY = my;
 	};
-	global.testConfig = function() {
-		$quake_host.host_WriteConfiguration();
-	};
 	////////////////////////////////////////////////////////////////////////////////
 	// ArrayHelpers
 	var $ArrayHelpers = function() {
@@ -102,6 +99,33 @@
 		file.stream.close();
 		file.stream = null;
 		file = null;
+	};
+	$Helper_helper.fopen = function(name, mode) {
+		var stream = new MemoryStream(new Uint8Array(5242880));
+		// todo: not great
+		var file = new $Helper_helper$FILE(stream);
+		return file;
+	};
+	$Helper_helper.fwrite = function(value, size, count, file) {
+		if (size !== 4) {
+			throw new $System_NotImplementedException.$ctor1('writing int with size other than 4');
+		}
+		var writer = new $System_IO_BinaryWriter(file.stream);
+		writer.write(value);
+	};
+	$Helper_helper.fwrite$1 = function(value, size, count, file) {
+		if (size !== 4) {
+			throw new $System_NotImplementedException.$ctor1('writing float with size other than 4');
+		}
+		var writer = new $System_IO_BinaryWriter(file.stream);
+		writer.write$1(value);
+	};
+	$Helper_helper.fwrite$2 = function(array, size, count, file) {
+		var writer = new $System_IO_BinaryWriter(file.stream);
+		writer.write$2(array);
+	};
+	$Helper_helper.fflush = function(file) {
+		// ??
 	};
 	$Helper_helper.fprintf = function(file, str) {
 	};
@@ -790,7 +814,24 @@
 		}
 	};
 	$quake_client.$cL_WriteDemoMessage = function() {
-		ss.Debug.writeln('CL_WriteDemoMessage');
+		var len;
+		var i;
+		var f;
+		len = $quake_net.net_message.cursize;
+		if ($quake_client.cls.demofile.stream.get_position() >= $quake_client.cls.demofile.stream.get_length() - 100000 && !$quake_client.$isStoppping) {
+			$quake_client.$isStoppping = true;
+			$quake_console.con_Printf('Stopped recording demo, too long (todo!)');
+			$quake_client.$cL_Stop_f();
+			return;
+		}
+		$Helper_helper.fwrite(len, 4, 1, $quake_client.cls.demofile);
+		for (i = 0; i < 3; i++) {
+			f = $quake_client.cl.viewangles[i];
+			$Helper_helper.fwrite$1(f, 4, 1, $quake_client.cls.demofile);
+		}
+		$Helper_helper.fwrite$2($quake_net.net_message.data, $quake_net.net_message.cursize, 1, $quake_client.cls.demofile);
+		$Helper_helper.fflush($quake_client.cls.demofile);
+		$quake_client.$isStoppping = false;
 	};
 	$quake_client.$cL_GetMessage = function() {
 		var r, i;
@@ -854,10 +895,74 @@
 		return r;
 	};
 	$quake_client.$cL_Stop_f = function() {
-		ss.Debug.writeln('CL_Stop_f');
+		if ($quake_cmd.cmd_source !== 1) {
+			return;
+		}
+		if (!$quake_client.cls.demorecording) {
+			$quake_console.con_Printf('Not recording a demo.\n');
+			return;
+		}
+		// write a disconnect message to the demo file
+		$quake_common.sZ_Clear($quake_net.net_message);
+		$quake_common.msG_WriteByte($quake_net.net_message, $quake_net.svc_disconnect);
+		$quake_client.$cL_WriteDemoMessage();
+		// finish up
+		$Helper_helper.fclose($quake_client.cls.demofile);
+		$quake_client.cls.demofile = null;
+		$quake_client.cls.demorecording = false;
+		$quake_console.con_Printf('Completed demo\n');
 	};
 	$quake_client.$cL_Record_f = function() {
-		ss.Debug.writeln('CL_Record_f');
+		var c;
+		var name = {};
+		var track;
+		if ($quake_cmd.cmd_source !== 1) {
+			return;
+		}
+		c = $quake_cmd.cmd_Argc();
+		if (c !== 2 && c !== 3 && c !== 4) {
+			$quake_console.con_Printf('record <demoname> [<map> [cd track]]\n');
+			return;
+		}
+		if (ss.startsWithString($quake_cmd.cmd_Argv(1), '..')) {
+			$quake_console.con_Printf('Relative pathnames are not allowed.\n');
+			return;
+		}
+		if (c === 2 && $quake_client.cls.state === 2) {
+			$quake_console.con_Printf('Can not record - already connected to server\nClient demo recording must be started before connecting\n');
+			return;
+		}
+		// write the forced cd track number, or -1
+		if (c === 4) {
+			track = parseInt($quake_cmd.cmd_Argv(3));
+			$quake_console.con_Printf(ss.formatString('Forcing CD track to {0}\n', $quake_client.cls.forcetrack));
+		}
+		else {
+			track = -1;
+		}
+		name.$ = $quake_common.com_gamedir + '/' + $quake_cmd.cmd_Argv(1);
+		if (name.$.length > 1000) {
+			throw new ss.Exception('Filename too long');
+		}
+		//
+		// start the map up
+		//
+		if (c > 2) {
+			$quake_cmd.cmd_ExecuteString($System_StringExtensions.toCharArray('map ' + $quake_cmd.cmd_Argv(2) + '\0'), 1);
+		}
+		//
+		// open the demo file
+		//
+		$quake_common.coM_DefaultExtension(name, '.dem');
+		$quake_console.con_Printf(ss.formatString('recording to {0}.\n', name.$));
+		$quake_client.cls.demofile = $Helper_helper.fopen(name.$, 'wb');
+		if (ss.isNullOrUndefined($quake_client.cls.demofile)) {
+			$quake_console.con_Printf('ERROR: couldn\'t open.\n');
+			return;
+		}
+		$quake_client.cls.forcetrack = track;
+		$Helper_helper.fprintf($quake_client.cls.demofile, $quake_client.cls.forcetrack + '\n');
+		$quake_client.cls.demorecording = true;
 	};
 	$quake_client.$cL_PlayDemo_f = function() {
 		var name = {};
@@ -7029,7 +7134,8 @@
 		// dedicated servers initialize the host but don't parse and set the
 		// config.cfg cvars
 		if ($quake_host.host_initialized) {
-			//f = fopen(va("%s/config.cfg", com_gamedir), "w");
+			// todo: save to online storage e.g. google drive?
+			//f = fopen(va("%s/config.cfg", com_gamedir), "w"); //todo: fake disk with storage
 			//if (f == null)
 			//{
 			//    console.Con_Printf("Couldn't write config.cfg.\n");
@@ -7709,7 +7815,14 @@
 		$quake_client.cL_NextDemo();
 	};
 	$quake_host.$host_Stopdemo_f = function() {
-		ss.Debug.writeln('Host_Stopdemo_f');
+		if ($quake_client.cls.state === 0) {
+			return;
+		}
+		if (!$quake_client.cls.demoplayback) {
+			return;
+		}
+		$quake_client.cL_StopPlayback();
+		$quake_client.cL_Disconnect();
 	};
 	$quake_host.host_InitCommands = function() {
 		$quake_cmd.cmd_AddCommand('status', $quake_host.$host_Status_f);
@@ -26960,6 +27073,23 @@
 		}
 	};
 	////////////////////////////////////////////////////////////////////////////////
+	// System.IO.BinaryWriter
+	var $System_IO_BinaryWriter = function(stream) {
+		this.$stream = null;
+		this.$stream = stream;
+	};
+	$System_IO_BinaryWriter.prototype = {
+		write: function(value) {
+			this.$stream.writeInt32(value);
+		},
+		write$1: function(value) {
+			this.$stream.writeFloat32(value);
+		},
+		write$2: function(array) {
+			this.$stream.writeUint8Array(array);
+		}
+	};
+	////////////////////////////////////////////////////////////////////////////////
 	// System.IO.SeekOrigin
 	var $System_IO_SeekOrigin = function() {
 	};
@@ -27344,6 +27474,7 @@
 	ss.registerEnum(global, 'System.UriKind', $System_UriKind);
 	ss.registerClass(global, 'System.Globalization.CultureInfo', $System_Globalization_CultureInfo);
 	ss.registerClass(global, 'System.IO.BinaryReader', $System_IO_BinaryReader);
+	ss.registerClass(global, 'System.IO.BinaryWriter', $System_IO_BinaryWriter);
 	ss.registerEnum(global, 'System.IO.SeekOrigin', $System_IO_SeekOrigin);
 	ss.registerClass(global, 'System.Windows.Duration', $System_Windows_Duration);
 	ss.registerClass(global, 'System.Windows.MessageBox', $System_Windows_MessageBox);
@@ -27604,6 +27735,174 @@
 	$quake_menu.$gameoptions_cursor = 0;
 	$quake_cvar_t.$cvar_vars = null;
 	$quake_cvar_t.$cvar_null_string = '';
+	$quake_server.nuM_PING_TIMES = 16;
+	$quake_server.nuM_SPAWN_PARMS = 16;
+	$quake_server.movetypE_NONE = 0;
+	$quake_server.movetypE_ANGLENOCLIP = 1;
+	$quake_server.movetypE_ANGLECLIP = 2;
+	$quake_server.movetypE_WALK = 3;
+	$quake_server.movetypE_STEP = 4;
+	$quake_server.movetypE_FLY = 5;
+	$quake_server.movetypE_TOSS = 6;
+	$quake_server.movetypE_PUSH = 7;
+	$quake_server.movetypE_NOCLIP = 8;
+	$quake_server.movetypE_FLYMISSILE = 9;
+	$quake_server.movetypE_BOUNCE = 10;
+	$quake_server.soliD_NOT = 0;
+	$quake_server.soliD_TRIGGER = 1;
+	$quake_server.soliD_BBOX = 2;
+	$quake_server.soliD_SLIDEBOX = 3;
+	$quake_server.soliD_BSP = 4;
+	$quake_server.deaD_NO = 0;
+	$quake_server.deaD_DYING = 1;
+	$quake_server.deaD_DEAD = 2;
+	$quake_server.damagE_NO = 0;
+	$quake_server.damagE_YES = 1;
+	$quake_server.damagE_AIM = 2;
+	$quake_server.fL_FLY = 1;
+	$quake_server.fL_SWIM = 2;
+	$quake_server.fL_CONVEYOR = 4;
+	$quake_server.fL_CLIENT = 8;
+	$quake_server.fL_INWATER = 16;
+	$quake_server.fL_MONSTER = 32;
+	$quake_server.fL_GODMODE = 64;
+	$quake_server.fL_NOTARGET = 128;
+	$quake_server.fL_ITEM = 256;
+	$quake_server.fL_ONGROUND = 512;
+	$quake_server.fL_PARTIALGROUND = 1024;
+	$quake_server.fL_WATERJUMP = 2048;
+	$quake_server.fL_JUMPRELEASED = 4096;
+	$quake_server.eF_BRIGHTFIELD = 1;
+	$quake_server.eF_MUZZLEFLASH = 2;
+	$quake_server.eF_BRIGHTLIGHT = 4;
+	$quake_server.eF_DIMLIGHT = 8;
+	$quake_server.spawnflaG_NOT_EASY = 256;
+	$quake_server.spawnflaG_NOT_MEDIUM = 512;
+	$quake_server.spawnflaG_NOT_HARD = 1024;
+	$quake_server.spawnflaG_NOT_DEATHMATCH = 2048;
+	$quake_server.sv = new $quake_server$server_t();
+	$quake_server.svs = new $quake_server$server_static_t();
+	$quake_server.$localmodels = new Array($quake_quakedef.maX_MODELS);
+	$quake_server.$fatbytes = 0;
+	$quake_server.$fatpvs = new Uint8Array(1024);
+	$quake_server.STEPSIZE = 18;
+	$quake_server.$c_yes = 0;
+	$quake_server.$c_no = 0;
+	$quake_server.$sV_Movestep_count = -1;
+	$quake_server.$dI_NODIR = -1;
+	$quake_server.$sv_friction = new $quake_cvar_t.$ctor2('sv_friction', '4', false, true);
+	$quake_server.$sv_stopspeed = new $quake_cvar_t('sv_stopspeed', '100');
+	$quake_server.sv_gravity = new $quake_cvar_t.$ctor2('sv_gravity', '800', false, true);
+	$quake_server.$sv_maxvelocity = new $quake_cvar_t('sv_maxvelocity', '2000');
+	$quake_server.$sv_nostep = new $quake_cvar_t('sv_nostep', '0');
+	$quake_server.movE_EPSILON = 0.01;
+	$quake_server.$stoP_EPSILON = 0.1;
+	$quake_server.$maX_CLIP_PLANES = 5;
+	$quake_server.$phys_num = 0;
+	$quake_server.sv_player = null;
+	$quake_server.$sv_edgefriction = new $quake_cvar_t('edgefriction', '2');
+	$quake_server.$forward = [0, 0, 0];
+	$quake_server.$right = [0, 0, 0];
+	$quake_server.$up = [0, 0, 0];
+	$quake_server.$wishdir = [0, 0, 0];
+	$quake_server.$wishspeed = 0;
+	$quake_server.$angles = null;
+	$quake_server.$origin = null;
+	$quake_server.$velocity = null;
+	$quake_server.$onground = false;
+	$quake_server.$cmd = new $quake_client$usercmd_t();
+	$quake_server.$sv_idealpitchscale = new $quake_cvar_t('sv_idealpitchscale', '0.8');
+	$quake_server.$maX_FORWARD = 6;
+	$quake_server.$sv_maxspeed = new $quake_cvar_t.$ctor2('sv_maxspeed', '320', false, true);
+	$quake_server.$sv_accelerate = new $quake_cvar_t('sv_accelerate', '10');
+	$quake_prog.sizeof_globalvars_t = 368;
+	$quake_prog.sizeof_entvars_t = 420;
+	$quake_prog.progheadeR_CRC = 5927;
+	$quake_prog.maX_ENT_LEAFS = 16;
+	$quake_prog.sizeof_edict_t = 516;
+	$quake_prog.$out = $System_StringExtensions.stringOfLength(256);
+	$quake_prog.$checkpvs = new Uint8Array(1024);
+	$quake_prog.$c_invis = 0;
+	$quake_prog.$c_notvis = 0;
+	$quake_prog.$pr_string_temp = null;
+	$quake_prog.sv_aim = new $quake_cvar_t('sv_aim', '0.93');
+	$quake_prog.$msG_BROADCAST = 0;
+	$quake_prog.$msG_ONE = 1;
+	$quake_prog.$msG_ALL = 2;
+	$quake_prog.$msG_INIT = 3;
+	$quake_prog.$pr_builtin = [$quake_prog.$pF_Fixme, $quake_prog.$pF_makevectors, $quake_prog.$pF_setorigin, $quake_prog.$pF_setmodel, $quake_prog.$pF_setsize, $quake_prog.$pF_Fixme, $quake_prog.$pF_break, $quake_prog.$pF_random, $quake_prog.$pF_sound, $quake_prog.$pF_normalize, $quake_prog.$pF_error, $quake_prog.$pF_objerror, $quake_prog.$pF_vlen, $quake_prog.$pF_vectoyaw, $quake_prog.$pF_Spawn, $quake_prog.$pF_Remove, $quake_prog.$pF_traceline, $quake_prog.$pF_checkclient, $quake_prog.$pF_Find, $quake_prog.$pF_precache_sound, $quake_prog.$pF_precache_model, $quake_prog.$pF_stuffcmd, $quake_prog.$pF_findradius, $quake_prog.$pF_bprint, $quake_prog.$pF_sprint, $quake_prog.$pF_dprint, $quake_prog.$pF_ftos, $quake_prog.$pF_vtos, $quake_prog.$pF_coredump, $quake_prog.$pF_traceon, $quake_prog.$pF_traceoff, $quake_prog.$pF_eprint, $quake_prog.$pF_walkmove, $quake_prog.$pF_Fixme, $quake_prog.$pF_droptofloor, $quake_prog.$pF_lightstyle, $quake_prog.$pF_rint, $quake_prog.$pF_floor, $quake_prog.$pF_ceil, $quake_prog.$pF_Fixme, $quake_prog.$pF_checkbottom, $quake_prog.$pF_pointcontents, $quake_prog.$pF_Fixme, $quake_prog.$pF_fabs, $quake_prog.$pF_aim, $quake_prog.$pF_cvar, $quake_prog.$pF_localcmd, $quake_prog.$pF_nextent, $quake_prog.$pF_particle, $quake_prog.pF_changeyaw, $quake_prog.$pF_Fixme, $quake_prog.$pF_vectoangles, $quake_prog.$pF_WriteByte, $quake_prog.$pF_WriteChar, $quake_prog.$pF_WriteShort, $quake_prog.$pF_WriteLong, $quake_prog.$pF_WriteCoord, $quake_prog.$pF_WriteAngle, $quake_prog.$pF_WriteString, $quake_prog.$pF_WriteEntity, $quake_prog.$pF_Fixme, $quake_prog.$pF_Fixme, $quake_prog.$pF_Fixme, $quake_prog.$pF_Fixme, $quake_prog.$pF_Fixme, $quake_prog.$pF_Fixme, $quake_prog.$pF_Fixme, $quake_server.sV_MoveToGoal, $quake_prog.$pF_precache_file, $quake_prog.$pF_makestatic, $quake_prog.$pF_changelevel, $quake_prog.$pF_Fixme, $quake_prog.$pF_cvar_set, $quake_prog.$pF_centerprint, $quake_prog.$pF_ambientsound, $quake_prog.$pF_precache_model, $quake_prog.$pF_precache_sound, $quake_prog.$pF_precache_file, $quake_prog.$pF_setspawnparms];
+	$quake_prog.$pr_builtins = $quake_prog.$pr_builtin;
+	$quake_prog.$pr_numbuiltins = $quake_prog.$pr_builtin.length;
+	$quake_prog.ofS_NULL = 0;
+	$quake_prog.ofS_RETURN = 1;
+	$quake_prog.ofS_PARM0 = 4;
+	$quake_prog.ofS_PARM1 = 7;
+	$quake_prog.ofS_PARM2 = 10;
+	$quake_prog.ofS_PARM3 = 13;
+	$quake_prog.ofS_PARM4 = 16;
+	$quake_prog.ofS_PARM5 = 19;
+	$quake_prog.ofS_PARM6 = 22;
+	$quake_prog.ofS_PARM7 = 25;
+	$quake_prog.reserveD_OFS = 28;
+	$quake_prog.sizeof_dstatement_t = 8;
+	$quake_prog.sizeof_ddef_t = 8;
+	$quake_prog.deF_SAVEGLOBAL = 32768;
+	$quake_prog.maX_PARMS = 8;
+	$quake_prog.sizeof_dfunction_t = 36;
+	$quake_prog.proG_VERSION = 6;
+	$quake_prog.$progs = null;
+	$quake_prog.pr_functions = null;
+	$quake_prog.$pr_strings = null;
+	$quake_prog.$pr_fielddefs = null;
+	$quake_prog.$pr_globaldefs = null;
+	$quake_prog.$pr_statements = null;
+	$quake_prog.pr_global_struct = null;
+	$quake_prog.pr_edict_size = 0;
+	$quake_prog.pr_crc = 0;
+	$quake_prog.$nomonsters = new $quake_cvar_t('nomonsters', '0');
+	$quake_prog.$gamecfg = new $quake_cvar_t('gamecfg', '0');
+	$quake_prog.$scratch1 = new $quake_cvar_t('scratch1', '0');
+	$quake_prog.$scratch2 = new $quake_cvar_t('scratch2', '0');
+	$quake_prog.$scratch3 = new $quake_cvar_t('scratch3', '0');
+	$quake_prog.$scratch4 = new $quake_cvar_t('scratch4', '0');
+	$quake_prog.$savedgamecfg = new $quake_cvar_t.$ctor1('savedgamecfg', '0', true);
+	$quake_prog.$saved1 = new $quake_cvar_t.$ctor1('saved1', '0', true);
+	$quake_prog.$saved2 = new $quake_cvar_t.$ctor1('saved2', '0', true);
+	$quake_prog.$saved3 = new $quake_cvar_t.$ctor1('saved3', '0', true);
+	$quake_prog.$saved4 = new $quake_cvar_t.$ctor1('saved4', '0', true);
+	$quake_prog.$stringDictionary = new (ss.makeGenericType(ss.Dictionary$2, [String, ss.Int32]))();
+	$quake_prog.$stringPool = new Array(1000);
+	$quake_prog.$strings = 0;
+	$quake_prog.$line = $System_StringExtensions.stringOfLength(256);
+	$quake_prog.stringPoolOffset = 10000000;
+	$quake_prog.maX_STACK_DEPTH = 32;
+	$quake_prog.$pr_stack = $ArrayHelpers.initArray($quake_prog$prstack_t).call(null, $quake_prog.maX_STACK_DEPTH);
+	$quake_prog.$pr_depth = 0;
+	$quake_prog.localstacK_SIZE = 2048;
+	$quake_prog.$localstack = new Array($quake_prog.localstacK_SIZE);
+	$quake_prog.$localstack_used = 0;
+	$quake_prog.$pr_trace = false;
+	$quake_prog.$pr_xfunction = null;
+	$quake_prog.$pr_xstatement = 0;
+	$quake_prog.$pr_argc = 0;
+	$quake_prog.$pr_opnames = ['DONE', 'MUL_F', 'MUL_V', 'MUL_FV', 'MUL_VF', 'DIV', 'ADD_F', 'ADD_V', 'SUB_F', 'SUB_V', 'EQ_F', 'EQ_V', 'EQ_S', 'EQ_E', 'EQ_FNC', 'NE_F', 'NE_V', 'NE_S', 'NE_E', 'NE_FNC', 'LE', 'GE', 'LT', 'GT', 'INDIRECT', 'INDIRECT', 'INDIRECT', 'INDIRECT', 'INDIRECT', 'INDIRECT', 'ADDRESS', 'STORE_F', 'STORE_V', 'STORE_S', 'STORE_ENT', 'STORE_FLD', 'STORE_FNC', 'STOREP_F', 'STOREP_V', 'STOREP_S', 'STOREP_ENT', 'STOREP_FLD', 'STOREP_FNC', 'RETURN', 'NOT_F', 'NOT_V', 'NOT_S', 'NOT_ENT', 'NOT_FNC', 'IF', 'IFNOT', 'CALL0', 'CALL1', 'CALL2', 'CALL3', 'CALL4', 'CALL5', 'CALL6', 'CALL7', 'CALL8', 'STATE', 'GOTO', 'AND', 'OR', 'BITAND', 'BITOR'];
+	$quake_prog.prNum = 0;
+	$quake_world.movE_NORMAL = 0;
+	$quake_world.movE_NOMONSTERS = 1;
+	$quake_world.movE_MISSILE = 2;
+	$quake_world.$box_hull = new $quake_model$hull_t();
+	$quake_world.$box_clipnodes = $quake_world.$init_box_clip_nodes(6);
+	$quake_world.$box_planes = $quake_world.$init_box_planes(6);
+	$quake_world.$areA_DEPTH = 4;
+	$quake_world.$areA_NODES = 32;
+	$quake_world.$sv_areanodes = $quake_world.$init_areanode_t($quake_world.$areA_NODES);
+	$quake_world.$sv_numareanodes = 0;
+	$quake_world.$tchlinks = 0;
+	$quake_world.$tchlinksFunc = 0;
+	$quake_world.$sV_LinkEdict_count = 0;
+	$quake_world.$disT_EPSILON = 0.03125;
+	$quake_world.$num_hullcheck = 0;
+	$quake_world.$clipToLinks_for_num = 0;
 	$quake_chase.$chase_back = new $quake_cvar_t('chase_back', '100');
 	$quake_chase.$chase_up = new $quake_cvar_t('chase_up', '16');
 	$quake_chase.$chase_right = new $quake_cvar_t('chase_right', '0');
@@ -28259,6 +28558,8 @@
 		$quake_draw.$menu_cachepics[kk] = new $quake_draw$cachepic_t();
 	}
 	$quake_draw.$d_polyse_init();
+	$quake_mathlib.m_PI = 3.14159265358979;
+	$quake_mathlib.vec3_origin = [0, 0, 0];
 	$quake_model.$colors = [16, 224, 240, 16, 176, 128, 16, 48];
 	$quake_model.$icolor = 0;
 	$quake_model.sidE_FRONT = 0;
@@ -28318,307 +28619,48 @@
 	for (var kk = 0; kk < $quake_model.maX_MOD_KNOWN; kk++) {
 		$quake_model.$mod_known[kk] = new $quake_model$model_t();
 	}
-	$quake_world.movE_NORMAL = 0;
-	$quake_world.movE_NOMONSTERS = 1;
-	$quake_world.movE_MISSILE = 2;
-	$quake_world.$box_hull = new $quake_model$hull_t();
-	$quake_world.$box_clipnodes = $quake_world.$init_box_clip_nodes(6);
-	$quake_world.$box_planes = $quake_world.$init_box_planes(6);
-	$quake_world.$areA_DEPTH = 4;
-	$quake_world.$areA_NODES = 32;
-	$quake_world.$sv_areanodes = $quake_world.$init_areanode_t($quake_world.$areA_NODES);
-	$quake_world.$sv_numareanodes = 0;
-	$quake_world.$tchlinks = 0;
-	$quake_world.$tchlinksFunc = 0;
-	$quake_world.$sV_LinkEdict_count = 0;
-	$quake_world.$disT_EPSILON = 0.03125;
-	$quake_world.$num_hullcheck = 0;
-	$quake_world.$clipToLinks_for_num = 0;
+	$quake_host.host_initialized = false;
+	$quake_host.host_frametime = 0;
+	$quake_host.host_time = 0;
+	$quake_host.realtime = 0;
+	$quake_host.$oldrealtime = 0;
+	$quake_host.host_framecount = 0;
+	$quake_host.$minimum_memory = 0;
+	$quake_host.host_client = null;
+	$quake_host.host_basepal = null;
+	$quake_host.host_colormap = null;
+	$quake_host.$host_framerate = new $quake_cvar_t('host_framerate', '0');
+	$quake_host.$host_speeds = new $quake_cvar_t('host_speeds', '0');
+	$quake_host.$sys_ticrate = new $quake_cvar_t('sys_ticrate', '0.05');
+	$quake_host.$serverprofile = new $quake_cvar_t('serverprofile', '0');
+	$quake_host.fraglimit = new $quake_cvar_t.$ctor2('fraglimit', '0', false, true);
+	$quake_host.timelimit = new $quake_cvar_t.$ctor2('timelimit', '0', false, true);
+	$quake_host.teamplay = new $quake_cvar_t.$ctor2('teamplay', '0', false, true);
+	$quake_host.$samelevel = new $quake_cvar_t('samelevel', '0');
+	$quake_host.$noexit = new $quake_cvar_t.$ctor2('noexit', '0', false, true);
+	$quake_host.developer = new $quake_cvar_t('developer', '1');
+	$quake_host.skill = new $quake_cvar_t('skill', '1');
+	$quake_host.deathmatch = new $quake_cvar_t('deathmatch', '0');
+	$quake_host.coop = new $quake_cvar_t('coop', '0');
+	$quake_host.$pausable = new $quake_cvar_t('pausable', '1');
+	$quake_host.$temp1 = new $quake_cvar_t('temp1', '0');
+	$quake_host.$inerror = false;
+	$quake_host.$time1 = 0;
+	$quake_host.$time2 = 0;
+	$quake_host.$time3 = 0;
+	$quake_host.$timetotal = 0;
+	$quake_host.$timecount = 0;
+	$quake_host.$vcR_SIGNATURE = 1447252529;
+	$quake_host.$isdown = false;
+	$quake_host.current_skill = 0;
+	$quake_host.noclip_anglehack = false;
+	$quake_host.$savegamE_VERSION = 5;
 	$quake_sys_linux.$nostdout = 0;
 	$quake_sys_linux.$basedir = '.';
 	$quake_sys_linux.$sys_linerefresh = new $quake_cvar_t('sys_linerefresh', '0');
 	$quake_sys_linux.$printbuffer = '';
 	$quake_sys_linux.$maX_HANDLES = 10;
 	$quake_sys_linux.sys_handles = new Array($quake_sys_linux.$maX_HANDLES);
-	$quake_mathlib.m_PI = 3.14159265358979;
-	$quake_mathlib.vec3_origin = [0, 0, 0];
-	$quake_server.nuM_PING_TIMES = 16;
-	$quake_server.nuM_SPAWN_PARMS = 16;
-	$quake_server.movetypE_NONE = 0;
-	$quake_server.movetypE_ANGLENOCLIP = 1;
-	$quake_server.movetypE_ANGLECLIP = 2;
-	$quake_server.movetypE_WALK = 3;
-	$quake_server.movetypE_STEP = 4;
-	$quake_server.movetypE_FLY = 5;
-	$quake_server.movetypE_TOSS = 6;
-	$quake_server.movetypE_PUSH = 7;
-	$quake_server.movetypE_NOCLIP = 8;
-	$quake_server.movetypE_FLYMISSILE = 9;
-	$quake_server.movetypE_BOUNCE = 10;
-	$quake_server.soliD_NOT = 0;
-	$quake_server.soliD_TRIGGER = 1;
-	$quake_server.soliD_BBOX = 2;
-	$quake_server.soliD_SLIDEBOX = 3;
-	$quake_server.soliD_BSP = 4;
-	$quake_server.deaD_NO = 0;
-	$quake_server.deaD_DYING = 1;
-	$quake_server.deaD_DEAD = 2;
-	$quake_server.damagE_NO = 0;
-	$quake_server.damagE_YES = 1;
-	$quake_server.damagE_AIM = 2;
-	$quake_server.fL_FLY = 1;
-	$quake_server.fL_SWIM = 2;
-	$quake_server.fL_CONVEYOR = 4;
-	$quake_server.fL_CLIENT = 8;
-	$quake_server.fL_INWATER = 16;
-	$quake_server.fL_MONSTER = 32;
-	$quake_server.fL_GODMODE = 64;
-	$quake_server.fL_NOTARGET = 128;
-	$quake_server.fL_ITEM = 256;
-	$quake_server.fL_ONGROUND = 512;
-	$quake_server.fL_PARTIALGROUND = 1024;
-	$quake_server.fL_WATERJUMP = 2048;
-	$quake_server.fL_JUMPRELEASED = 4096;
-	$quake_server.eF_BRIGHTFIELD = 1;
-	$quake_server.eF_MUZZLEFLASH = 2;
-	$quake_server.eF_BRIGHTLIGHT = 4;
-	$quake_server.eF_DIMLIGHT = 8;
-	$quake_server.spawnflaG_NOT_EASY = 256;
-	$quake_server.spawnflaG_NOT_MEDIUM = 512;
-	$quake_server.spawnflaG_NOT_HARD = 1024;
-	$quake_server.spawnflaG_NOT_DEATHMATCH = 2048;
-	$quake_server.sv = new $quake_server$server_t();
-	$quake_server.svs = new $quake_server$server_static_t();
-	$quake_server.$localmodels = new Array($quake_quakedef.maX_MODELS);
-	$quake_server.$fatbytes = 0;
-	$quake_server.$fatpvs = new Uint8Array(1024);
-	$quake_server.STEPSIZE = 18;
-	$quake_server.$c_yes = 0;
-	$quake_server.$c_no = 0;
-	$quake_server.$sV_Movestep_count = -1;
-	$quake_server.$dI_NODIR = -1;
-	$quake_server.$sv_friction = new $quake_cvar_t.$ctor2('sv_friction', '4', false, true);
-	$quake_server.$sv_stopspeed = new $quake_cvar_t('sv_stopspeed', '100');
-	$quake_server.sv_gravity = new $quake_cvar_t.$ctor2('sv_gravity', '800', false, true);
-	$quake_server.$sv_maxvelocity = new $quake_cvar_t('sv_maxvelocity', '2000');
-	$quake_server.$sv_nostep = new $quake_cvar_t('sv_nostep', '0');
-	$quake_server.movE_EPSILON = 0.01;
-	$quake_server.$stoP_EPSILON = 0.1;
-	$quake_server.$maX_CLIP_PLANES = 5;
-	$quake_server.$phys_num = 0;
-	$quake_server.sv_player = null;
-	$quake_server.$sv_edgefriction = new $quake_cvar_t('edgefriction', '2');
-	$quake_server.$forward = [0, 0, 0];
-	$quake_server.$right = [0, 0, 0];
-	$quake_server.$up = [0, 0, 0];
-	$quake_server.$wishdir = [0, 0, 0];
-	$quake_server.$wishspeed = 0;
-	$quake_server.$angles = null;
-	$quake_server.$origin = null;
-	$quake_server.$velocity = null;
-	$quake_server.$onground = false;
-	$quake_server.$cmd = new $quake_client$usercmd_t();
-	$quake_server.$sv_idealpitchscale = new $quake_cvar_t('sv_idealpitchscale', '0.8');
-	$quake_server.$maX_FORWARD = 6;
-	$quake_server.$sv_maxspeed = new $quake_cvar_t.$ctor2('sv_maxspeed', '320', false, true);
-	$quake_server.$sv_accelerate = new $quake_cvar_t('sv_accelerate', '10');
-	$quake_prog.sizeof_globalvars_t = 368;
-	$quake_prog.sizeof_entvars_t = 420;
-	$quake_prog.progheadeR_CRC = 5927;
-	$quake_prog.maX_ENT_LEAFS = 16;
-	$quake_prog.sizeof_edict_t = 516;
-	$quake_prog.$out = $System_StringExtensions.stringOfLength(256);
-	$quake_prog.$checkpvs = new Uint8Array(1024);
-	$quake_prog.$c_invis = 0;
-	$quake_prog.$c_notvis = 0;
-	$quake_prog.$pr_string_temp = null;
-	$quake_prog.sv_aim = new $quake_cvar_t('sv_aim', '0.93');
-	$quake_prog.$msG_BROADCAST = 0;
-	$quake_prog.$msG_ONE = 1;
-	$quake_prog.$msG_ALL = 2;
-	$quake_prog.$msG_INIT = 3;
-	$quake_prog.$pr_builtin = [$quake_prog.$pF_Fixme, $quake_prog.$pF_makevectors, $quake_prog.$pF_setorigin, $quake_prog.$pF_setmodel, $quake_prog.$pF_setsize, $quake_prog.$pF_Fixme, $quake_prog.$pF_break, $quake_prog.$pF_random, $quake_prog.$pF_sound, $quake_prog.$pF_normalize, $quake_prog.$pF_error, $quake_prog.$pF_objerror, $quake_prog.$pF_vlen, $quake_prog.$pF_vectoyaw, $quake_prog.$pF_Spawn, $quake_prog.$pF_Remove, $quake_prog.$pF_traceline, $quake_prog.$pF_checkclient, $quake_prog.$pF_Find, $quake_prog.$pF_precache_sound, $quake_prog.$pF_precache_model, $quake_prog.$pF_stuffcmd, $quake_prog.$pF_findradius, $quake_prog.$pF_bprint, $quake_prog.$pF_sprint, $quake_prog.$pF_dprint, $quake_prog.$pF_ftos, $quake_prog.$pF_vtos, $quake_prog.$pF_coredump, $quake_prog.$pF_traceon, $quake_prog.$pF_traceoff, $quake_prog.$pF_eprint, $quake_prog.$pF_walkmove, $quake_prog.$pF_Fixme, $quake_prog.$pF_droptofloor, $quake_prog.$pF_lightstyle, $quake_prog.$pF_rint, $quake_prog.$pF_floor, $quake_prog.$pF_ceil, $quake_prog.$pF_Fixme, $quake_prog.$pF_checkbottom, $quake_prog.$pF_pointcontents, $quake_prog.$pF_Fixme, $quake_prog.$pF_fabs, $quake_prog.$pF_aim, $quake_prog.$pF_cvar, $quake_prog.$pF_localcmd, $quake_prog.$pF_nextent, $quake_prog.$pF_particle, $quake_prog.pF_changeyaw, $quake_prog.$pF_Fixme, $quake_prog.$pF_vectoangles, $quake_prog.$pF_WriteByte, $quake_prog.$pF_WriteChar, $quake_prog.$pF_WriteShort, $quake_prog.$pF_WriteLong, $quake_prog.$pF_WriteCoord, $quake_prog.$pF_WriteAngle, $quake_prog.$pF_WriteString, $quake_prog.$pF_WriteEntity, $quake_prog.$pF_Fixme, $quake_prog.$pF_Fixme, $quake_prog.$pF_Fixme, $quake_prog.$pF_Fixme, $quake_prog.$pF_Fixme, $quake_prog.$pF_Fixme, $quake_prog.$pF_Fixme, $quake_server.sV_MoveToGoal, $quake_prog.$pF_precache_file, $quake_prog.$pF_makestatic, $quake_prog.$pF_changelevel, $quake_prog.$pF_Fixme, $quake_prog.$pF_cvar_set, $quake_prog.$pF_centerprint, $quake_prog.$pF_ambientsound, $quake_prog.$pF_precache_model, $quake_prog.$pF_precache_sound, $quake_prog.$pF_precache_file, $quake_prog.$pF_setspawnparms];
-	$quake_prog.$pr_builtins = $quake_prog.$pr_builtin;
-	$quake_prog.$pr_numbuiltins = $quake_prog.$pr_builtin.length;
-	$quake_prog.ofS_NULL = 0;
-	$quake_prog.ofS_RETURN = 1;
-	$quake_prog.ofS_PARM0 = 4;
-	$quake_prog.ofS_PARM1 = 7;
-	$quake_prog.ofS_PARM2 = 10;
-	$quake_prog.ofS_PARM3 = 13;
-	$quake_prog.ofS_PARM4 = 16;
-	$quake_prog.ofS_PARM5 = 19;
-	$quake_prog.ofS_PARM6 = 22;
-	$quake_prog.ofS_PARM7 = 25;
-	$quake_prog.reserveD_OFS = 28;
-	$quake_prog.sizeof_dstatement_t = 8;
-	$quake_prog.sizeof_ddef_t = 8;
-	$quake_prog.deF_SAVEGLOBAL = 32768;
-	$quake_prog.maX_PARMS = 8;
-	$quake_prog.sizeof_dfunction_t = 36;
-	$quake_prog.proG_VERSION = 6;
-	$quake_prog.$progs = null;
-	$quake_prog.pr_functions = null;
-	$quake_prog.$pr_strings = null;
-	$quake_prog.$pr_fielddefs = null;
-	$quake_prog.$pr_globaldefs = null;
-	$quake_prog.$pr_statements = null;
-	$quake_prog.pr_global_struct = null;
-	$quake_prog.pr_edict_size = 0;
-	$quake_prog.pr_crc = 0;
-	$quake_prog.$nomonsters = new $quake_cvar_t('nomonsters', '0');
-	$quake_prog.$gamecfg = new $quake_cvar_t('gamecfg', '0');
-	$quake_prog.$scratch1 = new $quake_cvar_t('scratch1', '0');
-	$quake_prog.$scratch2 = new $quake_cvar_t('scratch2', '0');
-	$quake_prog.$scratch3 = new $quake_cvar_t('scratch3', '0');
-	$quake_prog.$scratch4 = new $quake_cvar_t('scratch4', '0');
-	$quake_prog.$savedgamecfg = new $quake_cvar_t.$ctor1('savedgamecfg', '0', true);
-	$quake_prog.$saved1 = new $quake_cvar_t.$ctor1('saved1', '0', true);
-	$quake_prog.$saved2 = new $quake_cvar_t.$ctor1('saved2', '0', true);
-	$quake_prog.$saved3 = new $quake_cvar_t.$ctor1('saved3', '0', true);
-	$quake_prog.$saved4 = new $quake_cvar_t.$ctor1('saved4', '0', true);
-	$quake_prog.$stringDictionary = new (ss.makeGenericType(ss.Dictionary$2, [String, ss.Int32]))();
-	$quake_prog.$stringPool = new Array(1000);
-	$quake_prog.$strings = 0;
-	$quake_prog.$line = $System_StringExtensions.stringOfLength(256);
-	$quake_prog.stringPoolOffset = 10000000;
-	$quake_prog.maX_STACK_DEPTH = 32;
-	$quake_prog.$pr_stack = $ArrayHelpers.initArray($quake_prog$prstack_t).call(null, $quake_prog.maX_STACK_DEPTH);
-	$quake_prog.$pr_depth = 0;
-	$quake_prog.localstacK_SIZE = 2048;
-	$quake_prog.$localstack = new Array($quake_prog.localstacK_SIZE);
-	$quake_prog.$localstack_used = 0;
-	$quake_prog.$pr_trace = false;
-	$quake_prog.$pr_xfunction = null;
-	$quake_prog.$pr_xstatement = 0;
-	$quake_prog.$pr_argc = 0;
-	$quake_prog.$pr_opnames = ['DONE', 'MUL_F', 'MUL_V', 'MUL_FV', 'MUL_VF', 'DIV', 'ADD_F', 'ADD_V', 'SUB_F', 'SUB_V', 'EQ_F', 'EQ_V', 'EQ_S', 'EQ_E', 'EQ_FNC', 'NE_F', 'NE_V', 'NE_S', 'NE_E', 'NE_FNC', 'LE', 'GE', 'LT', 'GT', 'INDIRECT', 'INDIRECT', 'INDIRECT', 'INDIRECT', 'INDIRECT', 'INDIRECT', 'ADDRESS', 'STORE_F', 'STORE_V', 'STORE_S', 'STORE_ENT', 'STORE_FLD', 'STORE_FNC', 'STOREP_F', 'STOREP_V', 'STOREP_S', 'STOREP_ENT', 'STOREP_FLD', 'STOREP_FNC', 'RETURN', 'NOT_F', 'NOT_V', 'NOT_S', 'NOT_ENT', 'NOT_FNC', 'IF', 'IFNOT', 'CALL0', 'CALL1', 'CALL2', 'CALL3', 'CALL4', 'CALL5', 'CALL6', 'CALL7', 'CALL8', 'STATE', 'GOTO', 'AND', 'OR', 'BITAND', 'BITOR'];
-	$quake_prog.prNum = 0;
-	$quake_net.neT_NAMELEN = 64;
-	$quake_net.neT_MAXMESSAGE = 8192;
-	$quake_net.maX_NET_DRIVERS = 8;
-	$quake_net.HOSTCACHESIZE = 8;
-	$quake_net.$localconnectpending = false;
-	$quake_net.$loop_client = null;
-	$quake_net.$loop_server = null;
-	$quake_net.$net_activeSockets = null;
-	$quake_net.$net_freeSockets = null;
-	$quake_net.$net_numsockets = 0;
-	$quake_net.$listening = false;
-	$quake_net.net_message = new $quake_common$sizebuf_t();
-	$quake_net.net_activeconnections = 0;
-	$quake_net.$messagesSent = 0;
-	$quake_net.$messagesReceived = 0;
-	$quake_net.$unreliableMessagesSent = 0;
-	$quake_net.$unreliableMessagesReceived = 0;
-	$quake_net.$net_messagetimeout = new $quake_cvar_t('net_messagetimeout', '300');
-	$quake_net.hostname = new $quake_cvar_t('hostname', 'UNNAMED');
-	$quake_net.$config_com_port = new $quake_cvar_t.$ctor1('_config_com_port', '0x3f8', true);
-	$quake_net.$config_com_irq = new $quake_cvar_t.$ctor1('_config_com_irq', '4', true);
-	$quake_net.$config_com_baud = new $quake_cvar_t.$ctor1('_config_com_baud', '57600', true);
-	$quake_net.$config_com_modem = new $quake_cvar_t.$ctor1('_config_com_modem', '1', true);
-	$quake_net.$config_modem_dialtype = new $quake_cvar_t.$ctor1('_config_modem_dialtype', 'T', true);
-	$quake_net.$config_modem_clear = new $quake_cvar_t.$ctor1('_config_modem_clear', 'ATZ', true);
-	$quake_net.$config_modem_init = new $quake_cvar_t.$ctor1('_config_modem_init', '', true);
-	$quake_net.$config_modem_hangup = new $quake_cvar_t.$ctor1('_config_modem_hangup', 'AT H', true);
-	$quake_net.$net_driverlevel = 0;
-	$quake_net.$net_time = 0;
-	$quake_net.$hostCacheCount = 0;
-	$quake_net.$hostcache = new Array($quake_net.HOSTCACHESIZE);
-	$quake_net.$net_drivers = [new $quake_net$net_driver_t('Loopback', false, $quake_net.$loop_Init, $quake_net.$loop_Listen, $quake_net.$loop_SearchForHosts, $quake_net.$loop_Connect, $quake_net.$loop_CheckNewConnections, $quake_net.$loop_GetMessage, $quake_net.$loop_SendMessage, $quake_net.$loop_SendUnreliableMessage, $quake_net.$loop_CanSendMessage, $quake_net.$loop_CanSendUnreliableMessage, $quake_net.$loop_Close, $quake_net.$loop_Shutdown)];
-	$quake_net.$net_numdrivers = 1;
-	$quake_net.protocoL_VERSION = 15;
-	$quake_net.u_MOREBITS = 1;
-	$quake_net.u_ORIGIN1 = 2;
-	$quake_net.u_ORIGIN2 = 4;
-	$quake_net.u_ORIGIN3 = 8;
-	$quake_net.u_ANGLE2 = 16;
-	$quake_net.u_NOLERP = 32;
-	$quake_net.u_FRAME = 64;
-	$quake_net.u_SIGNAL = 128;
-	$quake_net.u_ANGLE1 = 256;
-	$quake_net.u_ANGLE3 = 512;
-	$quake_net.u_MODEL = 1024;
-	$quake_net.u_COLORMAP = 2048;
-	$quake_net.u_SKIN = 4096;
-	$quake_net.u_EFFECTS = 8192;
-	$quake_net.u_LONGENTITY = 16384;
-	$quake_net.sU_VIEWHEIGHT = 1;
-	$quake_net.sU_IDEALPITCH = 2;
-	$quake_net.sU_PUNCH1 = 4;
-	$quake_net.sU_PUNCH2 = 8;
-	$quake_net.sU_PUNCH3 = 16;
-	$quake_net.sU_VELOCITY1 = 32;
-	$quake_net.sU_VELOCITY2 = 64;
-	$quake_net.sU_VELOCITY3 = 128;
-	$quake_net.sU_ITEMS = 512;
-	$quake_net.sU_ONGROUND = 1024;
-	$quake_net.sU_INWATER = 2048;
-	$quake_net.sU_WEAPONFRAME = 4096;
-	$quake_net.sU_ARMOR = 8192;
-	$quake_net.sU_WEAPON = 16384;
-	$quake_net.snD_VOLUME = 1;
-	$quake_net.snD_ATTENUATION = 2;
-	$quake_net.snD_LOOPING = 4;
-	$quake_net.defaulT_VIEWHEIGHT = 22;
-	$quake_net.gamE_COOP = 0;
-	$quake_net.gamE_DEATHMATCH = 1;
-	$quake_net.svc_bad = 0;
-	$quake_net.svc_nop = 1;
-	$quake_net.svc_disconnect = 2;
-	$quake_net.svc_updatestat = 3;
-	$quake_net.svc_version = 4;
-	$quake_net.svc_setview = 5;
-	$quake_net.svc_sound = 6;
-	$quake_net.svc_time = 7;
-	$quake_net.svc_print = 8;
-	$quake_net.svc_stufftext = 9;
-	$quake_net.svc_setangle = 10;
-	$quake_net.svc_serverinfo = 11;
-	$quake_net.svc_lightstyle = 12;
-	$quake_net.svc_updatename = 13;
-	$quake_net.svc_updatefrags = 14;
-	$quake_net.svc_clientdata = 15;
-	$quake_net.svc_stopsound = 16;
-	$quake_net.svc_updatecolors = 17;
-	$quake_net.svc_particle = 18;
-	$quake_net.svc_damage = 19;
-	$quake_net.svc_spawnstatic = 20;
-	$quake_net.svc_spawnbaseline = 22;
-	$quake_net.svc_temp_entity = 23;
-	$quake_net.svc_setpause = 24;
-	$quake_net.svc_signonnum = 25;
-	$quake_net.svc_centerprint = 26;
-	$quake_net.svc_killedmonster = 27;
-	$quake_net.svc_foundsecret = 28;
-	$quake_net.svc_spawnstaticsound = 29;
-	$quake_net.svc_intermission = 30;
-	$quake_net.svc_finale = 31;
-	$quake_net.svc_cdtrack = 32;
-	$quake_net.svc_sellscreen = 33;
-	$quake_net.svc_cutscene = 34;
-	$quake_net.clc_bad = 0;
-	$quake_net.clc_nop = 1;
-	$quake_net.clc_disconnect = 2;
-	$quake_net.clc_move = 3;
-	$quake_net.clc_stringcmd = 4;
-	$quake_net.tE_SPIKE = 0;
-	$quake_net.tE_SUPERSPIKE = 1;
-	$quake_net.tE_GUNSHOT = 2;
-	$quake_net.tE_EXPLOSION = 3;
-	$quake_net.tE_TAREXPLOSION = 4;
-	$quake_net.tE_LIGHTNING1 = 5;
-	$quake_net.tE_LIGHTNING2 = 6;
-	$quake_net.tE_WIZSPIKE = 7;
-	$quake_net.tE_KNIGHTSPIKE = 8;
-	$quake_net.tE_LIGHTNING3 = 9;
-	$quake_net.tE_LAVASPLASH = 10;
-	$quake_net.tE_TELEPORT = 11;
-	$quake_net.tE_EXPLOSION2 = 12;
-	$quake_net.tE_BEAM = 13;
-	for (var kk = 0; kk < $quake_net.HOSTCACHESIZE; kk++) {
-		$quake_net.$hostcache[kk] = new $quake_net$hostcache_t();
-	}
 	$quake_common.$nuM_SAFE_ARGVS = 7;
 	$quake_common.$registered = new $quake_cvar_t('registered', '0');
 	$quake_common.$cmdline = new $quake_cvar_t.$ctor2('cmdline', '0', false, true);
@@ -28767,42 +28809,131 @@
 	$quake_console.$cr = false;
 	$quake_console.$MAXPRINTMSG = 4096;
 	$quake_console.$inupdate = false;
-	$quake_host.host_initialized = false;
-	$quake_host.host_frametime = 0;
-	$quake_host.host_time = 0;
-	$quake_host.realtime = 0;
-	$quake_host.$oldrealtime = 0;
-	$quake_host.host_framecount = 0;
-	$quake_host.$minimum_memory = 0;
-	$quake_host.host_client = null;
-	$quake_host.host_basepal = null;
-	$quake_host.host_colormap = null;
-	$quake_host.$host_framerate = new $quake_cvar_t('host_framerate', '0');
-	$quake_host.$host_speeds = new $quake_cvar_t('host_speeds', '0');
-	$quake_host.$sys_ticrate = new $quake_cvar_t('sys_ticrate', '0.05');
-	$quake_host.$serverprofile = new $quake_cvar_t('serverprofile', '0');
-	$quake_host.fraglimit = new $quake_cvar_t.$ctor2('fraglimit', '0', false, true);
-	$quake_host.timelimit = new $quake_cvar_t.$ctor2('timelimit', '0', false, true);
-	$quake_host.teamplay = new $quake_cvar_t.$ctor2('teamplay', '0', false, true);
-	$quake_host.$samelevel = new $quake_cvar_t('samelevel', '0');
-	$quake_host.$noexit = new $quake_cvar_t.$ctor2('noexit', '0', false, true);
-	$quake_host.developer = new $quake_cvar_t('developer', '1');
-	$quake_host.skill = new $quake_cvar_t('skill', '1');
-	$quake_host.deathmatch = new $quake_cvar_t('deathmatch', '0');
-	$quake_host.coop = new $quake_cvar_t('coop', '0');
-	$quake_host.$pausable = new $quake_cvar_t('pausable', '1');
-	$quake_host.$temp1 = new $quake_cvar_t('temp1', '0');
-	$quake_host.$inerror = false;
-	$quake_host.$time1 = 0;
-	$quake_host.$time2 = 0;
-	$quake_host.$time3 = 0;
-	$quake_host.$timetotal = 0;
-	$quake_host.$timecount = 0;
-	$quake_host.$vcR_SIGNATURE = 1447252529;
-	$quake_host.$isdown = false;
-	$quake_host.current_skill = 0;
-	$quake_host.noclip_anglehack = false;
-	$quake_host.$savegamE_VERSION = 5;
+	$quake_net.neT_NAMELEN = 64;
+	$quake_net.neT_MAXMESSAGE = 8192;
+	$quake_net.maX_NET_DRIVERS = 8;
+	$quake_net.HOSTCACHESIZE = 8;
+	$quake_net.$localconnectpending = false;
+	$quake_net.$loop_client = null;
+	$quake_net.$loop_server = null;
+	$quake_net.$net_activeSockets = null;
+	$quake_net.$net_freeSockets = null;
+	$quake_net.$net_numsockets = 0;
+	$quake_net.$listening = false;
+	$quake_net.net_message = new $quake_common$sizebuf_t();
+	$quake_net.net_activeconnections = 0;
+	$quake_net.$messagesSent = 0;
+	$quake_net.$messagesReceived = 0;
+	$quake_net.$unreliableMessagesSent = 0;
+	$quake_net.$unreliableMessagesReceived = 0;
+	$quake_net.$net_messagetimeout = new $quake_cvar_t('net_messagetimeout', '300');
+	$quake_net.hostname = new $quake_cvar_t('hostname', 'UNNAMED');
+	$quake_net.$config_com_port = new $quake_cvar_t.$ctor1('_config_com_port', '0x3f8', true);
+	$quake_net.$config_com_irq = new $quake_cvar_t.$ctor1('_config_com_irq', '4', true);
+	$quake_net.$config_com_baud = new $quake_cvar_t.$ctor1('_config_com_baud', '57600', true);
+	$quake_net.$config_com_modem = new $quake_cvar_t.$ctor1('_config_com_modem', '1', true);
+	$quake_net.$config_modem_dialtype = new $quake_cvar_t.$ctor1('_config_modem_dialtype', 'T', true);
+	$quake_net.$config_modem_clear = new $quake_cvar_t.$ctor1('_config_modem_clear', 'ATZ', true);
+	$quake_net.$config_modem_init = new $quake_cvar_t.$ctor1('_config_modem_init', '', true);
+	$quake_net.$config_modem_hangup = new $quake_cvar_t.$ctor1('_config_modem_hangup', 'AT H', true);
+	$quake_net.$net_driverlevel = 0;
+	$quake_net.$net_time = 0;
+	$quake_net.$hostCacheCount = 0;
+	$quake_net.$hostcache = new Array($quake_net.HOSTCACHESIZE);
+	$quake_net.$net_drivers = [new $quake_net$net_driver_t('Loopback', false, $quake_net.$loop_Init, $quake_net.$loop_Listen, $quake_net.$loop_SearchForHosts, $quake_net.$loop_Connect, $quake_net.$loop_CheckNewConnections, $quake_net.$loop_GetMessage, $quake_net.$loop_SendMessage, $quake_net.$loop_SendUnreliableMessage, $quake_net.$loop_CanSendMessage, $quake_net.$loop_CanSendUnreliableMessage, $quake_net.$loop_Close, $quake_net.$loop_Shutdown)];
+	$quake_net.$net_numdrivers = 1;
+	$quake_net.protocoL_VERSION = 15;
+	$quake_net.u_MOREBITS = 1;
+	$quake_net.u_ORIGIN1 = 2;
+	$quake_net.u_ORIGIN2 = 4;
+	$quake_net.u_ORIGIN3 = 8;
+	$quake_net.u_ANGLE2 = 16;
+	$quake_net.u_NOLERP = 32;
+	$quake_net.u_FRAME = 64;
+	$quake_net.u_SIGNAL = 128;
+	$quake_net.u_ANGLE1 = 256;
+	$quake_net.u_ANGLE3 = 512;
+	$quake_net.u_MODEL = 1024;
+	$quake_net.u_COLORMAP = 2048;
+	$quake_net.u_SKIN = 4096;
+	$quake_net.u_EFFECTS = 8192;
+	$quake_net.u_LONGENTITY = 16384;
+	$quake_net.sU_VIEWHEIGHT = 1;
+	$quake_net.sU_IDEALPITCH = 2;
+	$quake_net.sU_PUNCH1 = 4;
+	$quake_net.sU_PUNCH2 = 8;
+	$quake_net.sU_PUNCH3 = 16;
+	$quake_net.sU_VELOCITY1 = 32;
+	$quake_net.sU_VELOCITY2 = 64;
+	$quake_net.sU_VELOCITY3 = 128;
+	$quake_net.sU_ITEMS = 512;
+	$quake_net.sU_ONGROUND = 1024;
+	$quake_net.sU_INWATER = 2048;
+	$quake_net.sU_WEAPONFRAME = 4096;
+	$quake_net.sU_ARMOR = 8192;
+	$quake_net.sU_WEAPON = 16384;
+	$quake_net.snD_VOLUME = 1;
+	$quake_net.snD_ATTENUATION = 2;
+	$quake_net.snD_LOOPING = 4;
+	$quake_net.defaulT_VIEWHEIGHT = 22;
+	$quake_net.gamE_COOP = 0;
+	$quake_net.gamE_DEATHMATCH = 1;
+	$quake_net.svc_bad = 0;
+	$quake_net.svc_nop = 1;
+	$quake_net.svc_disconnect = 2;
+	$quake_net.svc_updatestat = 3;
+	$quake_net.svc_version = 4;
+	$quake_net.svc_setview = 5;
+	$quake_net.svc_sound = 6;
+	$quake_net.svc_time = 7;
+	$quake_net.svc_print = 8;
+	$quake_net.svc_stufftext = 9;
+	$quake_net.svc_setangle = 10;
+	$quake_net.svc_serverinfo = 11;
+	$quake_net.svc_lightstyle = 12;
+	$quake_net.svc_updatename = 13;
+	$quake_net.svc_updatefrags = 14;
+	$quake_net.svc_clientdata = 15;
+	$quake_net.svc_stopsound = 16;
+	$quake_net.svc_updatecolors = 17;
+	$quake_net.svc_particle = 18;
+	$quake_net.svc_damage = 19;
+	$quake_net.svc_spawnstatic = 20;
+	$quake_net.svc_spawnbaseline = 22;
+	$quake_net.svc_temp_entity = 23;
+	$quake_net.svc_setpause = 24;
+	$quake_net.svc_signonnum = 25;
+	$quake_net.svc_centerprint = 26;
+	$quake_net.svc_killedmonster = 27;
+	$quake_net.svc_foundsecret = 28;
+	$quake_net.svc_spawnstaticsound = 29;
+	$quake_net.svc_intermission = 30;
+	$quake_net.svc_finale = 31;
+	$quake_net.svc_cdtrack = 32;
+	$quake_net.svc_sellscreen = 33;
+	$quake_net.svc_cutscene = 34;
+	$quake_net.clc_bad = 0;
+	$quake_net.clc_nop = 1;
+	$quake_net.clc_disconnect = 2;
+	$quake_net.clc_move = 3;
+	$quake_net.clc_stringcmd = 4;
+	$quake_net.tE_SPIKE = 0;
+	$quake_net.tE_SUPERSPIKE = 1;
+	$quake_net.tE_GUNSHOT = 2;
+	$quake_net.tE_EXPLOSION = 3;
+	$quake_net.tE_TAREXPLOSION = 4;
+	$quake_net.tE_LIGHTNING1 = 5;
+	$quake_net.tE_LIGHTNING2 = 6;
+	$quake_net.tE_WIZSPIKE = 7;
+	$quake_net.tE_KNIGHTSPIKE = 8;
+	$quake_net.tE_LIGHTNING3 = 9;
+	$quake_net.tE_LAVASPLASH = 10;
+	$quake_net.tE_TELEPORT = 11;
+	$quake_net.tE_EXPLOSION2 = 12;
+	$quake_net.tE_BEAM = 13;
+	for (var kk = 0; kk < $quake_net.HOSTCACHESIZE; kk++) {
+		$quake_net.$hostcache[kk] = new $quake_net$hostcache_t();
+	}
 	$quake_client.cshifT_CONTENTS = 0;
 	$quake_client.cshifT_DAMAGE = 1;
 	$quake_client.cshifT_BONUS = 2;
@@ -28819,6 +28950,7 @@
 	$quake_client.$maX_TEMP_ENTITIES = 64;
 	$quake_client.$maX_STATIC_ENTITIES = 128;
 	$quake_client.maX_VISEDICTS = 256;
+	$quake_client.$isStoppping = false;
 	$quake_client.in_mlook = new $quake_client$kbutton_t();
 	$quake_client.in_klook = new $quake_client$kbutton_t();
 	$quake_client.in_left = new $quake_client$kbutton_t();

@@ -29,6 +29,14 @@
             throw new ImplementedInJavaScript();
         }
 
+        public int Position
+        {
+            get
+            {
+                throw new ImplementedInJavaScript();
+            }
+        }
+
         public int Length
         {
             get
@@ -63,5 +71,20 @@
         }
 
         public ArrayBuffer Buffer { get; set; }
+
+        internal void WriteInt32(int value)
+        {
+            throw new ImplementedInJavaScript();
+        }
+
+        internal void WriteFloat32(float value)
+        {
+            throw new ImplementedInJavaScript();
+        }
+
+        internal void WriteUint8Array(Uint8Array array)
+        {
+            throw new ImplementedInJavaScript();
+        }
     }
 }

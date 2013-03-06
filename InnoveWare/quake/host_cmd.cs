@@ -853,7 +853,12 @@ namespace quake
         */
         static void Host_Stopdemo_f()
         {
-            Debug.WriteLine("Host_Stopdemo_f");
+            if (client.cls.state == client.cactive_t.ca_dedicated)
+                return;
+            if (!client.cls.demoplayback)
+                return;
+            client.CL_StopPlayback();
+            client.CL_Disconnect();
         }
 
         //=============================================================================

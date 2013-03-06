@@ -3,6 +3,9 @@ using System.IO;
 
 namespace Helper
 {
+    using System.Windows;
+    using System.Windows.Resources;
+
     public sealed class helper
     {
         public const int SEEK_SET = 0;
@@ -164,21 +167,21 @@ namespace Helper
 
         public static int fread(out double data, int size, int count, FILE file)
         {
-            BinaryReader reader = new BinaryReader(file.stream);
+            var reader = new BinaryReader(file.stream);
             data = (size == 4) ? reader.ReadSingle() : reader.ReadDouble();
             return count;
         }
 
         public static int fread(out int data, int size, int count, FILE file)
         {
-            BinaryReader reader = new BinaryReader(file.stream);
+            var reader = new BinaryReader(file.stream);
             data = reader.ReadInt32();
             return count;
         }
 
         public static int fread(Uint8Array data, int size, int count, FILE file)
         {
-            BinaryReader reader = new BinaryReader(file.stream);
+            var reader = new BinaryReader(file.stream);
             Uint8Array buf = reader.ReadBytes(size);
             Buffer.BlockCopy(buf, 0, data, 0, size);
             return count;
@@ -196,6 +199,40 @@ namespace Helper
             file = null;
         }
 
+        public static FILE fopen(string name, string mode)
+        {
+            var stream = new MemoryStream(new Uint8Array(5 * 1024 * 1024)); // todo: not great
+            FILE file = new FILE(stream);
+            return file;
+        }
+
+        public static void fwrite(int value, int size, int count, FILE file)
+        {
+            if (size != 4) 
+                throw new NotImplementedException("writing int with size other than 4");
+            var writer = new BinaryWriter(file.stream);
+            writer.Write(value);
+        }
+
+        public static void fwrite(float value, int size, int count, FILE file)
+        {
+            if (size != 4) 
+                throw new NotImplementedException("writing float with size other than 4");
+            var writer = new BinaryWriter(file.stream);
+            writer.Write(value);
+        }
+
+        public static void fwrite(Uint8Array array, int size, int count, FILE file)
+        {
+            var writer = new BinaryWriter(file.stream);
+            writer.Write(array);
+        }
+
+        public static void fflush(FILE file)
+        {
+            // ??
+        }
+
         public static void fprintf(helper.FILE file, string str)
         {
         }
@@ -208,5 +245,6 @@ namespace Helper
             return r.Next();
 #endif       
         }
+
     }
 }

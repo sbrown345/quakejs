@@ -228,6 +228,7 @@ namespace quake
             // config.cfg cvars
             if (host_initialized /*& !isDedicated*/)
             {
+                // todo: save to online storage e.g. google drive?
                 //f = fopen(va("%s/config.cfg", com_gamedir), "w"); //todo: fake disk with storage
                 //if (f == null)
                 //{

@@ -280,6 +280,7 @@
     <Compile Include="Missing\CastHelpers.cs" />
     <Compile Include="Missing\Libs\Stats.cs" />
     <Compile Include="Missing\NotImplementedException.cs" />
+    <Compile Include="Missing\System\IO\BinaryWriter.cs" />
     <Compile Include="Missing\Web\ArrayBuffer.cs" />
     <Compile Include="Missing\Web\AudioBuffer.cs" />
     <Compile Include="Missing\Web\AudioBufferSourceNode.cs" />

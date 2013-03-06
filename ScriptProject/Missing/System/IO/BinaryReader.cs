@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace System.IO
+﻿namespace System.IO
 {
     public class BinaryReader
     {

@@ -2,8 +2,11 @@
     this.dataStream = new DataStream(arrayBuffer, 0, DataStream.LITTLE_ENDIAN);
 };
 Stream.prototype = {
+    get_position: function() {
+        return this.dataStream.position;
+    },
     get_length: function() {
-        return this.byteLength;
+        return this.dataStream._byteLength;
     },
     get_buffer: function() {
         return this.dataStream.buffer;
@@ -34,6 +37,15 @@ Stream.prototype = {
     },
     close: function() {
         delete this.dataStream;
+    },
+    writeInt32: function(value) {
+        this.dataStream.writeInt32(value);
+    },
+    writeFloat32: function (value) {
+        this.dataStream.writeFloat32(value);
+    },
+    writeUint8Array: function (array) {
+        this.dataStream.writeUint8Array(array);
     }
 };
 
