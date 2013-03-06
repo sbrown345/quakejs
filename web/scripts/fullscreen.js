@@ -10,9 +10,7 @@
 
     $("#fullscreen").click(toggleFullScreen);
 
-    function toggleFullScreen(e) {
-        e.preventDefault();
-
+    function toggleFullScreen() {
         if ((document.fullscreenElement && document.fullscreenElement !== null) || // alternative standard method
             (!document.mozFullScreenElement && !document.webkitFullscreenElement)) { // current working methods
             if (document.documentElement.requestFullscreen) {

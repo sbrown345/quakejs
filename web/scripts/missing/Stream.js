@@ -12,7 +12,6 @@ Stream.prototype = {
         return this.dataStream.buffer;
     },
     read: function(buffer, offset, count) {
-        //could be done faster using a native array method?
         for (var i = 0; i < count; i++) {
             buffer[offset + i] = this.dataStream.readUint8();
         }
