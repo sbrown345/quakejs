@@ -6,12 +6,10 @@
 }
 
 function mousedown(e) {
-    e.preventDefault();
     global.keyPress(200, true);
 }
 
 function mouseup(e) {
-    e.preventDefault();
     global.keyPress(200, false);
 }
 
