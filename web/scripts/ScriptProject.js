@@ -103,7 +103,7 @@
 	$Helper_helper.fopen = function(name, mode) {
 		var stream = new MemoryStream(new Uint8Array(5242880));
 		// todo: not great
-		var file = new $Helper_helper$FILE(stream);
+		var file = new $Helper_helper$FILE(stream, name);
 		return file;
 	};
 	$Helper_helper.fwrite = function(value, size, count, file) {
@@ -175,9 +175,11 @@
 	};
 	////////////////////////////////////////////////////////////////////////////////
 	// Helper.helper.FILE
-	var $Helper_helper$FILE = function(stream) {
+	var $Helper_helper$FILE = function(stream, name) {
 		this.stream = null;
+		this.name = null;
 		this.stream = stream;
+		this.name = name;
 	};
 	////////////////////////////////////////////////////////////////////////////////
 	// Helper.helper.ObjectBuffer
@@ -818,13 +820,6 @@
 		var i;
 		var f;
 		len = $quake_net.net_message.cursize;
-		if ($quake_client.cls.demofile.stream.get_position() >= $quake_client.cls.demofile.stream.get_length() - 100000 && !$quake_client.$isStopping) {
-			// todo: fix this properly
-			$quake_client.$isStopping = true;
-			$quake_console.con_Printf('Stopped recording demo, too long (todo!)');
-			$quake_client.$cL_Stop_f();
-			return;
-		}
 		$Helper_helper.fwrite(len, 4, 1, $quake_client.cls.demofile);
 		for (i = 0; i < 3; i++) {
 			f = $quake_client.cl.viewangles[i];
@@ -832,7 +827,6 @@
 		}
 		$Helper_helper.fwrite$2($quake_net.net_message.data, $quake_net.net_message.cursize, 1, $quake_client.cls.demofile);
 		$Helper_helper.fflush($quake_client.cls.demofile);
-		$quake_client.$isStopping = false;
 	};
 	$quake_client.$cL_GetMessage = function() {
 		var r, i;
@@ -908,6 +902,11 @@
 		$quake_common.msG_WriteByte($quake_net.net_message, $quake_net.svc_disconnect);
 		$quake_client.$cL_WriteDemoMessage();
 		// finish up
+		GoogleDrive.insertFileIntoFolderFromUint8Array($quake_client.cls.demofile.name, $quake_client.cls.demofile.stream.get_bufferSubArray(), $quake_client.$completeSavingDemo);
+		$quake_client.cls.demorecording = false;
+		$quake_console.con_Printf('Saving demo\n');
+	};
+	$quake_client.$completeSavingDemo = function() {
 		$Helper_helper.fclose($quake_client.cls.demofile);
 		$quake_client.cls.demofile = null;
 		$quake_client.cls.demorecording = false;
@@ -3874,7 +3873,7 @@
 							}
 							var si = getResourceStream(new $System_Uri('InnoveWare;component/' + pf, 2));
 							if (ss.isValue(si)) {
-								file.$ = new $Helper_helper$FILE(si.get_stream());
+								file.$ = new $Helper_helper$FILE(si.get_stream(), pak.$filename);
 							}
 							//*file = fopen(pak->filename, "rb");
 							if (ss.isValue(file.$)) {
@@ -28972,7 +28971,6 @@
 	$quake_client.$maX_TEMP_ENTITIES = 64;
 	$quake_client.$maX_STATIC_ENTITIES = 128;
 	$quake_client.maX_VISEDICTS = 256;
-	$quake_client.$isStopping = false;
 	$quake_client.in_mlook = new $quake_client$kbutton_t();
 	$quake_client.in_klook = new $quake_client$kbutton_t();
 	$quake_client.in_left = new $quake_client$kbutton_t();

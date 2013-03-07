@@ -898,7 +898,7 @@ namespace quake
                                 StreamResourceInfo si = Application.GetResourceStream(new Uri("InnoveWare;component/" + pf, UriKind.Relative));
                                 if (si != null)
                                 {
-                                    file = new Helper.helper.FILE(si.Stream);
+                                    file = new Helper.helper.FILE(si.Stream, pak.filename);
                                 }
                                 //*file = fopen(pak->filename, "rb");
                                 if (file != null)

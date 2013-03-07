@@ -53,7 +53,7 @@ namespace quake
 	        if (!cls.demoplayback)
 		        return;
 
-	        Helper.helper.fclose (cls.demofile);
+	        helper.fclose (cls.demofile);
 	        cls.demoplayback = false;
 	        cls.demofile = null;
 	        cls.state = cactive_t.ca_disconnected;
@@ -70,7 +70,6 @@ namespace quake
         ====================
         */
 
-        private static bool isStopping = false;
         static void CL_WriteDemoMessage ()
         {
             int len;
@@ -78,15 +77,6 @@ namespace quake
             float f;
 
             len = net.net_message.cursize;
-
-            if (cls.demofile.stream.Position >= cls.demofile.stream.Length - 100000 && !isStopping)
-            {
-                // todo: fix this properly
-                isStopping = true;
-                console.Con_Printf("Stopped recording demo, too long (todo!)");
-                CL_Stop_f();
-                return;
-            }
 
             helper.fwrite(len, 4, 1, cls.demofile);
             for (i = 0; i < 3; i++)
@@ -96,7 +86,6 @@ namespace quake
             }
             helper.fwrite(net.net_message.data, net.net_message.cursize, 1, cls.demofile);
             helper.fflush(cls.demofile);
-            isStopping = false;
         }
 
         /*
@@ -135,18 +124,18 @@ namespace quake
                 // get the next message
                 int cursize;
                 int cursize_temp = net.net_message.cursize;
-                Helper.helper.fread(out cursize_temp, 4, 1, cls.demofile);
+                helper.fread(out cursize_temp, 4, 1, cls.demofile);
                 net.net_message.cursize = cursize_temp;
                 mathlib.VectorCopy(cl.mviewangles[0], cl.mviewangles[1]);
                 for (i = 0; i < 3; i++)
                 {
-                    r = Helper.helper.fread(out f, 4, 1, cls.demofile);
+                    r = helper.fread(out f, 4, 1, cls.demofile);
         		    cl.mviewangles[0][i] = f;
                 }
 
                 if (net.net_message.cursize > quakedef.MAX_MSGLEN)
                     sys_linux.Sys_Error("Demo message > MAX_MSGLEN");
-                r = Helper.helper.fread(net.net_message.data, net.net_message.cursize, 1, cls.demofile);
+                r = helper.fread(net.net_message.data, net.net_message.cursize, 1, cls.demofile);
                 if (r != 1)
                 {
                     CL_StopPlayback();
@@ -200,10 +189,21 @@ namespace quake
             CL_WriteDemoMessage();
 
             // finish up
+#if !SILVERLIGHT
+            GoogleDrive.InsertFileIntoFolderFromUint8Array(cls.demofile.name, cls.demofile.stream.BufferSubArray, CompleteSavingDemo);
+            cls.demorecording = false;
+            console.Con_Printf("Saving demo\n");
+#else
+            CompleteSavingDemo();
+#endif
+        }
+
+        static void CompleteSavingDemo()
+        {
             helper.fclose(cls.demofile);
             cls.demofile = null;
             cls.demorecording = false;
-           console. Con_Printf("Completed demo\n");
+            console.Con_Printf("Completed demo\n");
         }
 
         /*
@@ -314,7 +314,7 @@ namespace quake
 	        common.COM_DefaultExtension (ref name, ".dem");
 
 	        console.Con_Printf ("Playing demo from " + name + ".\n");
-            Helper.helper.FILE demofile_temp = null;
+            helper.FILE demofile_temp = null;
             common.COM_FOpenFile(name, ref demofile_temp);
             cls.demofile = demofile_temp;
             if (cls.demofile == null)
@@ -328,7 +328,7 @@ namespace quake
 	        cls.state = cactive_t.ca_connected;
 	        cls.forcetrack = 0;
 
-	        while ((c = Helper.helper.getc(cls.demofile)) != '\n')
+	        while ((c = helper.getc(cls.demofile)) != '\n')
 		        if (c == '-')
 			        neg = true;
 		        else

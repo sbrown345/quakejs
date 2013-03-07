@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 
+using Missing;
+
 [Imported]
 [ModuleName(null)]
 [IgnoreNamespace]
@@ -11,7 +13,7 @@ public static class GoogleDrive
         throw new ImplementedInJavaScript();
     }
 
-    public static void InsertFileIntoFolderFromUint8Array(string filename, Uint8Array array, Action action)
+    public static void InsertFileIntoFolderFromUint8Array(string filename, ArrayBuffer array, Action action)
     {
         throw new ImplementedInJavaScript();
     }

@@ -11,6 +11,9 @@ Stream.prototype = {
     get_buffer: function() {
         return this.dataStream.buffer;
     },
+    get_bufferSubArray: function () {
+        return this.dataStream.buffer.slice(0, this.dataStream.position);
+    },
     read: function(buffer, offset, count) {
         for (var i = 0; i < count; i++) {
             buffer[offset + i] = this.dataStream.readUint8();

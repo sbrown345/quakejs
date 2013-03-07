@@ -362,13 +362,17 @@ function GoogleDrive() {
 GoogleDrive.insertFileIntoFolderFromText = function (filename, text, callback) {
     insertFileFromBase64(filename, quakeFolderId, btoa(text), function () {
         console.log("done insertFileIntoFolderFromText ", arguments);
-        //callback();
+        if (typeof callback === "function") {
+            callback();
+        }
     });
 };
 
-GoogleDrive.insertFileIntoFolderFromUint8Array = function(filename, uint8Array, callback) {
-    insertFileFromBase64(filename, quakeFolderId, base64ArrayBuffer(uint8Array.buffer), function () {
+GoogleDrive.insertFileIntoFolderFromUint8Array = function(filename, arrayBuffer, callback) {
+    insertFileFromBase64(filename, quakeFolderId, base64ArrayBuffer(arrayBuffer), function () {
         console.log("done insertFileFromBase64 ", arguments);
-        //callback();
+        if (typeof callback === "function") {
+            callback();
+        }
     });
 };

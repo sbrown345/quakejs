@@ -153,10 +153,12 @@ namespace Helper
         public class FILE
         {
             public Stream stream;
+            public string name;
 
-            public FILE(Stream stream)
+            public FILE(Stream stream, string name)
             {
                 this.stream = stream;
+                this.name = name;
             }
         }
         
@@ -202,7 +204,7 @@ namespace Helper
         public static FILE fopen(string name, string mode)
         {
             var stream = new MemoryStream(new Uint8Array(5 * 1024 * 1024)); // todo: not great
-            FILE file = new FILE(stream);
+            FILE file = new FILE(stream, name);
             return file;
         }
 

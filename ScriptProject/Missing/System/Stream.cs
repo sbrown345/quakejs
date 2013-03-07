@@ -72,6 +72,8 @@
 
         public ArrayBuffer Buffer { get; set; }
 
+        public ArrayBuffer BufferSubArray { get; private set; }
+
         internal void WriteInt32(int value)
         {
             throw new ImplementedInJavaScript();
