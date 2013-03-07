@@ -309,6 +309,8 @@ function createFolder() {
 }
 
 
+var quakeFolderId;
+
 function initStuff() {
     retrieveAllFiles("mimeType='application/vnd.google-apps.folder' and title='quake_js' and trashed = false", function (files) {
         console.log("retrieveAllFiles", arguments);
@@ -323,7 +325,10 @@ function initStuff() {
                 //    console.log("created file");
                 //});
 
-                retrieveAllFiles("'" + quakeFolder.id + "' in parents and trashed = false", function (quakeFiles) {
+                quakeFolderId = quakeFolder.id;
+
+
+                retrieveAllFiles("'" + quakeFolderId + "' in parents and trashed = false", function (quakeFiles) {
                     console.log("retrieveAllFiles quake folder", arguments);
                     for (var j = 0; j < quakeFiles.length; j++) {
                         var quakeFile = quakeFiles[j];
@@ -348,3 +353,22 @@ function initStuff() {
         createFolder();
     });
 }
+
+
+function GoogleDrive() {
+    
+}
+
+GoogleDrive.insertFileIntoFolderFromText = function (filename, text, callback) {
+    insertFileFromBase64(filename, quakeFolderId, btoa(text), function () {
+        console.log("done insertFileIntoFolderFromText ", arguments);
+        //callback();
+    });
+};
+
+GoogleDrive.insertFileIntoFolderFromUint8Array = function(filename, uint8Array, callback) {
+    insertFileFromBase64(filename, quakeFolderId, base64ArrayBuffer(uint8Array.buffer), function () {
+        console.log("done insertFileFromBase64 ", arguments);
+        //callback();
+    });
+};

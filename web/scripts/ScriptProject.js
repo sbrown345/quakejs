@@ -818,8 +818,9 @@
 		var i;
 		var f;
 		len = $quake_net.net_message.cursize;
-		if ($quake_client.cls.demofile.stream.get_position() >= $quake_client.cls.demofile.stream.get_length() - 100000 && !$quake_client.$isStoppping) {
-			$quake_client.$isStoppping = true;
+		if ($quake_client.cls.demofile.stream.get_position() >= $quake_client.cls.demofile.stream.get_length() - 100000 && !$quake_client.$isStopping) {
+			// todo: fix this properly
+			$quake_client.$isStopping = true;
 			$quake_console.con_Printf('Stopped recording demo, too long (todo!)');
 			$quake_client.$cL_Stop_f();
 			return;
@@ -831,7 +832,7 @@
 		}
 		$Helper_helper.fwrite$2($quake_net.net_message.data, $quake_net.net_message.cursize, 1, $quake_client.cls.demofile);
 		$Helper_helper.fflush($quake_client.cls.demofile);
-		$quake_client.$isStoppping = false;
+		$quake_client.$isStopping = false;
 	};
 	$quake_client.$cL_GetMessage = function() {
 		var r, i;
@@ -7026,13 +7027,6 @@
 			//}
 			ss.Debug.writeln('todo Host_GetConsoleCommands');
 		},
-		$host_Shutdown: function() {
-			if ($quake_host.$isdown) {
-				ss.Debug.writeln('recursive shutdown');
-				return;
-			}
-			$quake_host.$isdown = true;
-		},
 		$host_SavegameComment: function(text) {
 			ss.Debug.writeln('todo Host_SavegameComment');
 		}
@@ -7144,7 +7138,8 @@
 			var config = { $: '' };
 			$quake_keys.key_WriteBindings(config);
 			$quake_cvar_t.cvar_WriteVariables(config);
-			ss.Debug.writeln(config.$);
+			//Debug.WriteLine(config);
+			GoogleDrive.insertFileIntoFolderFromText('config.cfg', config.$, null);
 			//fclose(f);
 		}
 	};
@@ -7179,6 +7174,7 @@
 		ss.Debug.writeln('SV_DropClient');
 	};
 	$quake_host.host_ShutdownServer = function(crash) {
+		// lots of missing stuff
 		if (!$quake_server.sv.active) {
 			return;
 		}
@@ -7346,6 +7342,24 @@
 		$quake_client.cL_Init();
 		$quake_cmd.cbuf_InsertText('exec quake.rc\n');
 		$quake_host.host_initialized = true;
+	};
+	$quake_host.host_Shutdown = function() {
+		if ($quake_host.$isdown) {
+			ss.Debug.writeln('recursive shutdown');
+			return;
+		}
+		$quake_host.$isdown = true;
+		// keep Con_Printf from trying to update the screen
+		//scr_disabled_for_loading = true;
+		$quake_host.host_WriteConfiguration();
+		//CDAudio_Shutdown();
+		//NET_Shutdown();
+		//S_Shutdown();
+		//IN_Shutdown();
+		//if (cls.state != ca_dedicated)
+		//{
+		//    VID_Shutdown();
+		//}
 	};
 	$quake_host.host_Quit_f = function() {
 		if ($quake_keys.key_dest !== 1 && $quake_client.cls.state !== 0) {
@@ -8169,14 +8183,13 @@
 	};
 	$quake_keys.$key_KeynumToString = function(keynum) {
 		var kn;
-		var tinystr = new Array(2);
+		var tinystr = new Array(1);
 		if (keynum === -1) {
 			return '<KEY NOT FOUND>';
 		}
 		if (keynum > 32 && keynum < 127) {
 			// printable ascii
 			tinystr[0] = keynum;
-			tinystr[1] = 0;
 			return String.fromCharCode.apply(null, tinystr);
 		}
 		for (var i = 0; i < $quake_keys.$keynames.length; i++) {
@@ -8263,6 +8276,7 @@
 				if (!ss.isNullOrEmptyString($quake_keys.$keybindings[i])) {
 					//helper.fprintf(f, string.Format("bind \"{0}\" \"{1}\"\n", Key_KeynumToString(i), keybindings[i]));
 					config.$ += ss.formatString('bind "{0}" "{1}"\n', $quake_keys.$key_KeynumToString(i), $quake_keys.$keybindings[i]);
+					//config += "bind \"" + Key_KeynumToString(i) + "\" \"" + keybindings[i] + "\"\n";
 				}
 			}
 		}
@@ -25374,6 +25388,14 @@
 		}
 	};
 	$quake_sys_linux.sys_Quit = function() {
+		//VID_ForceUnlockedAndReturnState();
+		$quake_host.host_Shutdown();
+		//if (tevent)
+		//    CloseHandle(tevent);
+		//if (isDedicated)
+		//    FreeConsole();
+		//DeinitConProc();
+		//exit(0);
 	};
 	$quake_sys_linux.$sys_Init = function() {
 	};
@@ -28950,7 +28972,7 @@
 	$quake_client.$maX_TEMP_ENTITIES = 64;
 	$quake_client.$maX_STATIC_ENTITIES = 128;
 	$quake_client.maX_VISEDICTS = 256;
-	$quake_client.$isStoppping = false;
+	$quake_client.$isStopping = false;
 	$quake_client.in_mlook = new $quake_client$kbutton_t();
 	$quake_client.in_klook = new $quake_client$kbutton_t();
 	$quake_client.in_left = new $quake_client$kbutton_t();

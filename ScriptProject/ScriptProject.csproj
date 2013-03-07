@@ -278,6 +278,7 @@
     </Compile>
     <Compile Include="InnoveWare\Page.cs" />
     <Compile Include="Missing\CastHelpers.cs" />
+    <Compile Include="Missing\GoogleDrive.cs" />
     <Compile Include="Missing\Libs\Stats.cs" />
     <Compile Include="Missing\NotImplementedException.cs" />
     <Compile Include="Missing\System\IO\BinaryWriter.cs" />

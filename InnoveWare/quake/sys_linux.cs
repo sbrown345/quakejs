@@ -41,6 +41,20 @@ namespace quake
 
         public static void Sys_Quit ()
         {
+            //VID_ForceUnlockedAndReturnState();
+
+            host.Host_Shutdown();
+
+            //if (tevent)
+            //    CloseHandle(tevent);
+
+            //if (isDedicated)
+            //    FreeConsole();
+
+            //// shut down QHOST hooks if necessary
+            //DeinitConProc();
+
+            //exit(0);
         }
 
         static void Sys_Init()

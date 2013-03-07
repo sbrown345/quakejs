@@ -470,17 +470,16 @@ namespace quake
         FIXME: handle quote special (general escape sequence?)
         ===================
         */
-        static string Key_KeynumToString (int keynum)
+        static string Key_KeynumToString(int keynum)
         {
-            keyname_t	kn;	
-            var	tinystr = new char[2];
-	
+            keyname_t kn;
+            var tinystr = new char[1];
+
             if (keynum == -1)
                 return "<KEY NOT FOUND>";
             if (keynum > 32 && keynum < 127)
             {	// printable ascii
-                tinystr[0] = (char) keynum;
-                tinystr[1] = (char)0;
+                tinystr[0] = (char)keynum;
                 return new string(tinystr);
             }
 
@@ -616,6 +615,7 @@ namespace quake
                     {
                         //helper.fprintf(f, string.Format("bind \"{0}\" \"{1}\"\n", Key_KeynumToString(i), keybindings[i]));
                         config += string.Format("bind \"{0}\" \"{1}\"\n", Key_KeynumToString(i), keybindings[i]);
+                        //config += "bind \"" + Key_KeynumToString(i) + "\" \"" + keybindings[i] + "\"\n";
                     }
                 }
             }

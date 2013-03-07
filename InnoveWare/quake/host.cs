@@ -238,7 +238,10 @@ namespace quake
                 string config = "";
                 keys.Key_WriteBindings(ref config);
                 cvar_t.Cvar_WriteVariables(ref config);
-                Debug.WriteLine(config);
+                //Debug.WriteLine(config);
+#if !SILVERLIGHT
+                GoogleDrive.InsertFileIntoFolderFromText("config.cfg", config, null);
+#endif
                 //fclose(f);
             }
         }
@@ -326,6 +329,8 @@ namespace quake
         */
         public static void Host_ShutdownServer(bool crash)
         {
+            // lots of missing stuff
+
             if (!server.sv.active)
                 return;
 
@@ -609,7 +614,7 @@ namespace quake
         ===============
         */
         static bool isdown = false;
-        void Host_Shutdown()
+        public static void Host_Shutdown()
         {
 	        if (isdown)
 	        {
@@ -617,6 +622,21 @@ namespace quake
 		        return;
 	        }
 	        isdown = true;
+
+            // keep Con_Printf from trying to update the screen
+            //scr_disabled_for_loading = true;
+
+            Host_WriteConfiguration();
+
+            //CDAudio_Shutdown();
+            //NET_Shutdown();
+            //S_Shutdown();
+            //IN_Shutdown();
+
+            //if (cls.state != ca_dedicated)
+            //{
+            //    VID_Shutdown();
+            //}
         }
     }
 }
