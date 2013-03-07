@@ -33,12 +33,10 @@
             return val;
         },
         getBytesFromFloat: function(f) {
-            //var view = new DataView(new ArrayBuffer(4));
             view.setFloat32(0, f, true);
             return new Uint8Array(view.buffer);
         },
         getBytesFromInt: function(i) {
-            //var view = new DataView(new ArrayBuffer(4));
             view.setUint32(0, i, true);
             return new Uint8Array(view.buffer);
         }
