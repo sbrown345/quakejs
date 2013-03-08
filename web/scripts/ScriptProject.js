@@ -902,7 +902,7 @@
 		$quake_common.msG_WriteByte($quake_net.net_message, $quake_net.svc_disconnect);
 		$quake_client.$cL_WriteDemoMessage();
 		// finish up
-		GoogleDrive.insertFileIntoFolderFromUint8Array($quake_client.cls.demofile.name, $quake_client.cls.demofile.stream.get_bufferSubArray(), $quake_client.$completeSavingDemo);
+		GoogleDrive.insertFileIntoFolder($quake_client.cls.demofile.name, $quake_client.cls.demofile.stream.get_bufferSubArray(), $quake_client.$completeSavingDemo);
 		$quake_client.cls.demorecording = false;
 		$quake_console.con_Printf('Saving demo\n');
 	};
@@ -7123,7 +7123,6 @@
 		// so a think at time 0 won't get called
 	};
 	$quake_host.host_WriteConfiguration = function() {
-		var f;
 		// dedicated servers initialize the host but don't parse and set the
 		// config.cfg cvars
 		if ($quake_host.host_initialized) {
@@ -22003,6 +22002,12 @@
 		}
 	};
 	$quake_screen.$scR_ScreenShot_f = function() {
+		// todo: videos from demos (or realtime???) http://antimatter15.com/wp/2012/08/whammy-a-real-time-javascript-webm-encoder/ 
+		var imageData = $quake_vid.surface.canvas.toDataURL('image/jpeg');
+		var filename = ss.formatString('quakejs-{0:yyyy-MM-dd_HH-mm-ss}.jpg', new Date());
+		GoogleDrive.insertFileIntoFolderFromDataUri(filename, imageData, null);
+		$quake_console.con_DPrintf('Writing screenshot ' + filename + '\n');
+		//todo errors? not logged in to google drive?
 	};
 	$quake_screen.scR_BeginLoadingPlaque = function() {
 		$quake_sound.s_StopAllSounds(true);
@@ -25545,8 +25550,8 @@
 		$quake_vid.viD_SetPalette(palette);
 		$quake_screen.vid.buffer = new Uint8Array($quake_screen.vid.width * $quake_screen.vid.height);
 		//surface = new BitmapData(vid_current_palette, screen.vid.buffer, (int)screen.vid.width, (int)screen.vid.height);
-		$quake_vid.$surface = new $System_Windows_Media_Imaging_WriteableBitmap($quake_screen.vid.width, $quake_screen.vid.height);
-		$InnoveWare_Page.thePage.get_image().source = $quake_vid.$surface;
+		$quake_vid.surface = new $System_Windows_Media_Imaging_WriteableBitmap($quake_screen.vid.width, $quake_screen.vid.height);
+		$InnoveWare_Page.thePage.get_image().source = $quake_vid.surface;
 		//Page.thePage.image2.Source = surface;
 		//Page.thePage.image3.Source = surface;
 		//Page.thePage.image4.Source = surface;
@@ -25570,8 +25575,8 @@
 		$quake_vid.viD_SetPalette(palette);
 	};
 	$quake_vid.viD_Update = function(rects) {
-		var ofs = $quake_vid.$surface.pixelWidth * rects.y + rects.x;
-		var imageData = $quake_vid.$surface.context.getImageData(0, 0, $quake_vid.$surface.canvas.width, $quake_vid.$surface.canvas.height);
+		var ofs = $quake_vid.surface.pixelWidth * rects.y + rects.x;
+		var imageData = $quake_vid.surface.context.getImageData(0, 0, $quake_vid.surface.canvas.width, $quake_vid.surface.canvas.height);
 		for (var r = 0; r < rects.height; r++) {
 			for (var col = 0; col < rects.width; col++) {
 				var pixelOffset = ofs + col;
@@ -25586,9 +25591,9 @@
 				imageData.data[offset + 3] = 255;
 				//a
 			}
-			ofs += $quake_vid.$surface.pixelWidth;
+			ofs += $quake_vid.surface.pixelWidth;
 		}
-		$quake_vid.$surface.context.putImageData(imageData, 0, 0);
+		$quake_vid.surface.context.putImageData(imageData, 0, 0);
 		//Page.thePage.image.Source = surface;
 	};
 	$quake_vid.d_BeginDirectRect = function(x, y, pbitmap, width, height) {
@@ -27929,35 +27934,6 @@
 	$quake_chase.$chase_right = new $quake_cvar_t('chase_right', '0');
 	$quake_chase.chase_active = new $quake_cvar_t('chase_active', '0');
 	$quake_chase.$chase_dest = [0, 0, 0];
-	$quake_vid.viD_CBITS = 6;
-	$quake_vid.viD_GRADES = 64;
-	$quake_vid.$surface = null;
-	$quake_vid.$vid_modenum = 0;
-	$quake_vid.$vid_testingmode = 0;
-	$quake_vid.$vid_realmode = 0;
-	$quake_vid.$vid_mode = new $quake_cvar_t.$ctor1('vid_mode', '0', false);
-	$quake_vid.$vid_wait = new $quake_cvar_t('vid_wait', '0');
-	$quake_vid.$vid_nopageflip = new $quake_cvar_t.$ctor1('vid_nopageflip', '0', true);
-	$quake_vid.$_vid_wait_override = new $quake_cvar_t.$ctor1('_vid_wait_override', '0', true);
-	$quake_vid.$_vid_default_mode = new $quake_cvar_t.$ctor1('_vid_default_mode', '0', true);
-	$quake_vid.$_vid_default_mode_win = new $quake_cvar_t.$ctor1('_vid_default_mode_win', '1', true);
-	$quake_vid.$vid_config_x = new $quake_cvar_t.$ctor1('vid_config_x', '800', true);
-	$quake_vid.$vid_config_y = new $quake_cvar_t.$ctor1('vid_config_y', '600', true);
-	$quake_vid.$vid_stretch_by_2 = new $quake_cvar_t.$ctor1('vid_stretch_by_2', '1', true);
-	$quake_vid.$_windowed_mouse = new $quake_cvar_t.$ctor1('_windowed_mouse', '0', true);
-	$quake_vid.$vid_fullscreen_mode = new $quake_cvar_t.$ctor1('vid_fullscreen_mode', '3', true);
-	$quake_vid.$vid_windowed_mode = new $quake_cvar_t.$ctor1('vid_windowed_mode', '0', true);
-	$quake_vid.$block_switch = new $quake_cvar_t.$ctor1('block_switch', '0', true);
-	$quake_vid.$vid_window_x = new $quake_cvar_t.$ctor1('vid_window_x', '0', true);
-	$quake_vid.$vid_window_y = new $quake_cvar_t.$ctor1('vid_window_y', '0', true);
-	$quake_vid.$numvidmodes = 1;
-	$quake_vid.$firstupdate = 1;
-	$quake_vid.$vid_current_palette = new Uint8Array(768);
-	$quake_vid.$nomodecheck = false;
-	$quake_vid.$vid_line = 0;
-	$quake_vid.$vid_wmodes = 0;
-	$quake_vid.$vid_column_size = 0;
-	$quake_vid.$maX_COLUMN_SIZE = 11;
 	$quake_view.lcd_x = new $quake_cvar_t('lcd_x', '0');
 	$quake_view.$lcd_yaw = new $quake_cvar_t('lcd_yaw', '0');
 	$quake_view.$scr_ofsx = new $quake_cvar_t.$ctor1('scr_ofsx', '0', false);
@@ -28034,6 +28010,35 @@
 	$quake_sound.defaulT_SOUND_PACKET_ATTENUATION = 1;
 	$quake_sound.maX_CHANNELS = 128;
 	$quake_sound.maX_DYNAMIC_CHANNELS = 8;
+	$quake_vid.viD_CBITS = 6;
+	$quake_vid.viD_GRADES = 64;
+	$quake_vid.surface = null;
+	$quake_vid.$vid_modenum = 0;
+	$quake_vid.$vid_testingmode = 0;
+	$quake_vid.$vid_realmode = 0;
+	$quake_vid.$vid_mode = new $quake_cvar_t.$ctor1('vid_mode', '0', false);
+	$quake_vid.$vid_wait = new $quake_cvar_t('vid_wait', '0');
+	$quake_vid.$vid_nopageflip = new $quake_cvar_t.$ctor1('vid_nopageflip', '0', true);
+	$quake_vid.$_vid_wait_override = new $quake_cvar_t.$ctor1('_vid_wait_override', '0', true);
+	$quake_vid.$_vid_default_mode = new $quake_cvar_t.$ctor1('_vid_default_mode', '0', true);
+	$quake_vid.$_vid_default_mode_win = new $quake_cvar_t.$ctor1('_vid_default_mode_win', '1', true);
+	$quake_vid.$vid_config_x = new $quake_cvar_t.$ctor1('vid_config_x', '800', true);
+	$quake_vid.$vid_config_y = new $quake_cvar_t.$ctor1('vid_config_y', '600', true);
+	$quake_vid.$vid_stretch_by_2 = new $quake_cvar_t.$ctor1('vid_stretch_by_2', '1', true);
+	$quake_vid.$_windowed_mouse = new $quake_cvar_t.$ctor1('_windowed_mouse', '0', true);
+	$quake_vid.$vid_fullscreen_mode = new $quake_cvar_t.$ctor1('vid_fullscreen_mode', '3', true);
+	$quake_vid.$vid_windowed_mode = new $quake_cvar_t.$ctor1('vid_windowed_mode', '0', true);
+	$quake_vid.$block_switch = new $quake_cvar_t.$ctor1('block_switch', '0', true);
+	$quake_vid.$vid_window_x = new $quake_cvar_t.$ctor1('vid_window_x', '0', true);
+	$quake_vid.$vid_window_y = new $quake_cvar_t.$ctor1('vid_window_y', '0', true);
+	$quake_vid.$numvidmodes = 1;
+	$quake_vid.$firstupdate = 1;
+	$quake_vid.$vid_current_palette = new Uint8Array(768);
+	$quake_vid.$nomodecheck = false;
+	$quake_vid.$vid_line = 0;
+	$quake_vid.$vid_wmodes = 0;
+	$quake_vid.$vid_column_size = 0;
+	$quake_vid.$maX_COLUMN_SIZE = 11;
 	$quake_sbar.$sbaR_HEIGHT = 24;
 	$quake_sbar.$sb_updates = 0;
 	$quake_sbar.$staT_MINUS = 10;

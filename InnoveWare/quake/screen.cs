@@ -541,7 +541,16 @@ namespace quake
         ================== 
         */  
         static void SCR_ScreenShot_f () 
-        { 
+        {
+            // todo: videos from demos (or realtime???) http://antimatter15.com/wp/2012/08/whammy-a-real-time-javascript-webm-encoder/ 
+#if !SILVERLIGHT
+            var imageData = quake.vid.surface.canvas.GetDataUrl("image/jpeg");
+            var filename = string.Format("quakejs-{0:yyyy-MM-dd_HH-mm-ss}.jpg", DateTime.Now);
+            GoogleDrive.InsertFileIntoFolderFromDataUri(filename, imageData, null);
+            console.Con_DPrintf("Writing screenshot " + filename + "\n");
+
+            //todo errors? not logged in to google drive?
+#endif
         } 
 
         //=============================================================================

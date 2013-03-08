@@ -222,8 +222,6 @@ namespace quake
         */
         public static void Host_WriteConfiguration ()
         {
-            helper.FILE f;
-
             // dedicated servers initialize the host but don't parse and set the
             // config.cfg cvars
             if (host_initialized /*& !isDedicated*/)

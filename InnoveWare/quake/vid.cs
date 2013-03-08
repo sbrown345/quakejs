@@ -64,8 +64,7 @@ namespace quake
 								        //  NULL
         };
 
-        //static BitmapData surface;
-        static WriteableBitmap surface;
+        public static WriteableBitmap surface;
 
         static int			vid_modenum;
         static int			vid_testingmode, vid_realmode;

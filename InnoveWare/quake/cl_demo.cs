@@ -190,7 +190,7 @@ namespace quake
 
             // finish up
 #if !SILVERLIGHT
-            GoogleDrive.InsertFileIntoFolderFromUint8Array(cls.demofile.name, cls.demofile.stream.BufferSubArray, CompleteSavingDemo);
+            GoogleDrive.InsertFileIntoFolder(cls.demofile.name, cls.demofile.stream.BufferSubArray, CompleteSavingDemo);
             cls.demorecording = false;
             console.Con_Printf("Saving demo\n");
 #else

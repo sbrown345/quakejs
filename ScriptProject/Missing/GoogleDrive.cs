@@ -13,7 +13,12 @@ public static class GoogleDrive
         throw new ImplementedInJavaScript();
     }
 
-    public static void InsertFileIntoFolderFromUint8Array(string filename, ArrayBuffer array, Action action)
+    public static void InsertFileIntoFolderFromDataUri(string filename, string dataUri, Action action)
+    {
+        throw new ImplementedInJavaScript();
+    }
+
+    public static void InsertFileIntoFolder(string filename, ArrayBuffer array, Action action)
     {
         throw new ImplementedInJavaScript();
     }

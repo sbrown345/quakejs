@@ -354,6 +354,14 @@ function initStuff() {
     });
 }
 
+function dataUriToArrayBuffer(dataUri) {
+    var binary = atob(dataUri.split(',')[1]);
+    var array = [];
+    for (var i = 0; i < binary.length; i++) {
+        array.push(binary.charCodeAt(i));
+    }
+    return new Uint8Array(array).buffer;
+}
 
 function GoogleDrive() {
     
@@ -368,11 +376,15 @@ GoogleDrive.insertFileIntoFolderFromText = function (filename, text, callback) {
     });
 };
 
-GoogleDrive.insertFileIntoFolderFromUint8Array = function(filename, arrayBuffer, callback) {
+GoogleDrive.insertFileIntoFolder = function(filename, arrayBuffer, callback) {
     insertFileFromBase64(filename, quakeFolderId, base64ArrayBuffer(arrayBuffer), function () {
         console.log("done insertFileFromBase64 ", arguments);
         if (typeof callback === "function") {
             callback();
         }
     });
+};
+
+GoogleDrive.insertFileIntoFolderFromDataUri = function(filename, dataUri, callback) {
+    return GoogleDrive.insertFileIntoFolder(filename, dataUriToArrayBuffer(dataUri), callback);
 };
