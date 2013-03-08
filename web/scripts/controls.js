@@ -25,6 +25,7 @@ function onKeyDown(e) {
         quakeCode = quakeCode + 32;
     }
 
+    console.log(quakeCode, e)
     global.keyPress(quakeCode, true);
 }
 
@@ -49,10 +50,13 @@ var keyMap = {
     40: 129,        //K_DOWNARROW	= 129;
     37: 130,        //K_LEFTARROW	= 130;
     39: 131,        //K_RIGHTARROW	= 131;
+    
+    187: "=".charCodeAt(0),
+    189: "-".charCodeAt(0),
 
     18: 132,        //K_ALT			= 132;
     17: 133,        //K_CTRL		= 133;
-    16: 137,        //K_SHIFT		= 134;
+    16:  134,        //K_SHIFT		= 134;
     112: 135,       //K_F1			= 135;
     113: 136,       //K_F2			= 136;
     114: 137,       //K_F3			= 137;
