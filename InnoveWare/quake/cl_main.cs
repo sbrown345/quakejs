@@ -22,6 +22,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 namespace quake
 {
+    using System.Collections.Generic;
+
     public partial class client
     {
         // we need to declare some mouse variables here, because the menu system
@@ -30,6 +32,8 @@ namespace quake
         // these two are not intended to be set directly
         public static cvar_t	cl_name = new cvar_t("_cl_name", "player", true);
         public static cvar_t    cl_color = new cvar_t("_cl_color", "0", true);
+
+        public static cvar_t cl_avidemo = new cvar_t("cl_avidemo", "0", true);
 
         static cvar_t   cl_shownet = new cvar_t("cl_shownet", "0");	// can be 0, 1, or 2
         static cvar_t   cl_nolerp = new cvar_t("cl_nolerp", "0");
@@ -656,6 +660,7 @@ namespace quake
         //
 	        cvar_t.Cvar_RegisterVariable(cl_name);
             cvar_t.Cvar_RegisterVariable(cl_color);
+            cvar_t.Cvar_RegisterVariable(cl_avidemo);
             cvar_t.Cvar_RegisterVariable(cl_upspeed);
             cvar_t.Cvar_RegisterVariable(cl_forwardspeed);
             cvar_t.Cvar_RegisterVariable(cl_backspeed);

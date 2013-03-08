@@ -388,3 +388,11 @@ GoogleDrive.insertFileIntoFolder = function(filename, arrayBuffer, callback) {
 GoogleDrive.insertFileIntoFolderFromDataUri = function(filename, dataUri, callback) {
     return GoogleDrive.insertFileIntoFolder(filename, dataUriToArrayBuffer(dataUri), callback);
 };
+
+//GoogleDrive.insertVideoIntoFolderFromFrames = function (filename, video, callback) {
+//    var output = video.compile();
+//    console.log(output);
+//    var url = (window.webkitURL || window.URL).createObjectURL(video);
+//    console.log(url);
+//    return GoogleDrive.insertFileIntoFolder("VIDEO.webp", dataUriToArrayBuffer(url), callback);
+//};

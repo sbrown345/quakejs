@@ -1836,6 +1836,7 @@
 		//
 		$quake_cvar_t.cvar_RegisterVariable($quake_client.cl_name);
 		$quake_cvar_t.cvar_RegisterVariable($quake_client.cl_color);
+		$quake_cvar_t.cvar_RegisterVariable($quake_client.cl_avidemo);
 		$quake_cvar_t.cvar_RegisterVariable($quake_client.$cl_upspeed);
 		$quake_cvar_t.cvar_RegisterVariable($quake_client.cl_forwardspeed);
 		$quake_cvar_t.cvar_RegisterVariable($quake_client.$cl_backspeed);
@@ -7256,6 +7257,18 @@
 		// client operations
 		//
 		//-------------------
+		// if recording an avi, lock to a fixed fps
+		if ($quake_client.cl_avidemo.value !== 0 && time > 0) {
+			//if (cls.state == CA_ACTIVE || cl_forceavidemo->integer)
+			//{
+			$quake_cmd.cmd_ExecuteString($System_StringExtensions.toCharArray('screenshot avi\0'), 1);
+			//}
+			//time = (1000 / cl_avidemo->integer) * com_timescale->value;
+			//if (time == 0)
+			//{
+			//    time = 1;
+			//}
+		}
 		// if running the server remotely, send intentions now after
 		// the incoming messages have been read
 		if (!$quake_server.sv.active) {
@@ -22003,11 +22016,26 @@
 	};
 	$quake_screen.$scR_ScreenShot_f = function() {
 		// todo: videos from demos (or realtime???) http://antimatter15.com/wp/2012/08/whammy-a-real-time-javascript-webm-encoder/ 
+		// use cl_avidemo from q3 source
 		var imageData = $quake_vid.surface.canvas.toDataURL('image/jpeg');
 		var filename = ss.formatString('quakejs-{0:yyyy-MM-dd_HH-mm-ss}.jpg', new Date());
-		GoogleDrive.insertFileIntoFolderFromDataUri(filename, imageData, null);
-		$quake_console.con_DPrintf('Writing screenshot ' + filename + '\n');
-		//todo errors? not logged in to google drive?
+		if ($quake_cmd.cmd_Argv(1) === 'avi') {
+			if ($quake_screen.$video.frames.length < 200) {
+				$quake_screen.$video.add($quake_vid.surface.canvas.getContext('2d'));
+			}
+			if ($quake_screen.$video.frames.length === 200 && !$quake_screen.$writtingVideo) {
+				$quake_console.con_DPrintf('Recorded 200 frames. Writing video\n');
+				$quake_screen.$writtingVideo = true;
+				GoogleDrive.insertFileIntoFolder(filename, $quake_screen.$video.compile(true).buffer, null);
+			}
+		}
+		else {
+			GoogleDrive.insertFileIntoFolderFromDataUri(filename, imageData, null);
+		}
+		if ($quake_cmd.cmd_Argv(1) !== 'silent' && $quake_cmd.cmd_Argv(1) !== 'avi') {
+			$quake_console.con_DPrintf('Writing screenshot ' + filename + '\n');
+		}
+		// todo errors? not logged in to google drive?
 	};
 	$quake_screen.scR_BeginLoadingPlaque = function() {
 		$quake_sound.s_StopAllSounds(true);
@@ -28102,6 +28130,8 @@
 	$quake_screen.$scr_erase_lines = 0;
 	$quake_screen.$scr_erase_center = 0;
 	$quake_screen.$count = 0;
+	$quake_screen.$video = new Whammy.Video(15);
+	$quake_screen.$writtingVideo = false;
 	$quake_screen.$scr_notifystring = null;
 	$quake_screen.$scr_drawdialog = false;
 	$quake_screen.$oldscr_viewsize = 0;
@@ -29004,6 +29034,7 @@
 	$quake_client.$cl_anglespeedkey = new $quake_cvar_t('cl_anglespeedkey', '1.5');
 	$quake_client.cl_name = new $quake_cvar_t.$ctor1('_cl_name', 'player', true);
 	$quake_client.cl_color = new $quake_cvar_t.$ctor1('_cl_color', '0', true);
+	$quake_client.cl_avidemo = new $quake_cvar_t.$ctor1('cl_avidemo', '0', true);
 	$quake_client.$cl_shownet = new $quake_cvar_t('cl_shownet', '0');
 	$quake_client.$cl_nolerp = new $quake_cvar_t('cl_nolerp', '0');
 	$quake_client.$lookspring = new $quake_cvar_t.$ctor1('lookspring', '0', true);

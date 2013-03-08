@@ -540,16 +540,45 @@ namespace quake
         SCR_ScreenShot_f
         ================== 
         */  
+
+#if !SILVERLIGHT
+        static Video video = new Video(15);
+
+        private static bool writtingVideo = false;
+#endif
+
+
         static void SCR_ScreenShot_f () 
         {
             // todo: videos from demos (or realtime???) http://antimatter15.com/wp/2012/08/whammy-a-real-time-javascript-webm-encoder/ 
+            // use cl_avidemo from q3 source
 #if !SILVERLIGHT
             var imageData = quake.vid.surface.canvas.GetDataUrl("image/jpeg");
             var filename = string.Format("quakejs-{0:yyyy-MM-dd_HH-mm-ss}.jpg", DateTime.Now);
-            GoogleDrive.InsertFileIntoFolderFromDataUri(filename, imageData, null);
-            console.Con_DPrintf("Writing screenshot " + filename + "\n");
+            if (cmd.Cmd_Argv(1) == "avi")
+            {
+                if (video.Frames.Length < 200)
+                {
+                    video.Add(quake.vid.surface.canvas.GetContext("2d"));
+                }
+                if (video.Frames.Length == 200 && !writtingVideo)
+                {
+                    console.Con_DPrintf("Recorded 200 frames. Writing video\n");
+                    writtingVideo = true;
+                    GoogleDrive.InsertFileIntoFolder("video.webm", video.Compile(true).Buffer, null);
+                }
+            }
+            else
+            {
+                GoogleDrive.InsertFileIntoFolderFromDataUri(filename, imageData, null);
+            }
 
-            //todo errors? not logged in to google drive?
+            if (cmd.Cmd_Argv(1) != "silent" && cmd.Cmd_Argv(1) != "avi")
+            {
+                console.Con_DPrintf("Writing screenshot " + filename + "\n");
+            }
+
+            // todo errors? not logged in to google drive?
 #endif
         } 
 

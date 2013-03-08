@@ -4,8 +4,8 @@ using System.Runtime.CompilerServices;
 using Missing;
 
 [Imported]
-[ModuleName(null)]
 [IgnoreNamespace]
+[ModuleName(null)]
 public static class GoogleDrive
 {
     public static void InsertFileIntoFolderFromText(string filename, string text, Action action)
@@ -22,4 +22,9 @@ public static class GoogleDrive
     {
         throw new ImplementedInJavaScript();
     }
+
+    //public static void InsertVideoIntoFolder(string filename, Video video, Action action)
+    //{
+    //    throw new ImplementedInJavaScript();
+    //}
 }

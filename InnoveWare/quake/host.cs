@@ -485,6 +485,24 @@ namespace quake
             //
             //-------------------
 
+
+            // if recording an avi, lock to a fixed fps
+            if (client.cl_avidemo.value != 0 && time > 0)
+            {
+                //// save the current screen
+                //if (cls.state == CA_ACTIVE || cl_forceavidemo->integer)
+                //{
+                cmd.Cmd_ExecuteString("screenshot avi\0".ToCharArray(), cmd.cmd_source_t.src_command);
+                //}
+                //// fixed time for next frame'
+                //time = (1000 / cl_avidemo->integer) * com_timescale->value;
+                //if (time == 0)
+                //{
+                //    time = 1;
+                //}
+            }
+	
+
             // if running the server remotely, send intentions now after
             // the incoming messages have been read
 	            if (!server.sv.active)
@@ -499,6 +517,7 @@ namespace quake
                 }
 
                 screen.SCR_UpdateScreen();
+
 
                 // update audio
                 if (client.cls.signon == client.SIGNONS)

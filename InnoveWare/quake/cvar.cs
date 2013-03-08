@@ -56,8 +56,6 @@ interface from being ambiguous.
 
 namespace quake
 {
-    using Helper;
-
     public class cvar_t
     {
         string name;
